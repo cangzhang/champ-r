@@ -1,11 +1,13 @@
 'use strict';
 const path = require('path');
-const {app, BrowserWindow, Menu} = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 /// const {autoUpdater} = require('electron-updater');
-const {is} = require('electron-util');
+const { is } = require('electron-util');
 const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
 const contextMenu = require('electron-context-menu');
+const isDev = require('electron-is-dev')
+
 const config = require('./config');
 const menu = require('./menu');
 
@@ -34,8 +36,8 @@ const createMainWindow = async () => {
 	const win = new BrowserWindow({
 		title: app.name,
 		show: false,
-		width: 600,
-		height: 400
+		width: 900,
+		height: 700
 	});
 
 	win.on('ready-to-show', () => {
@@ -48,7 +50,11 @@ const createMainWindow = async () => {
 		mainWindow = undefined;
 	});
 
-	await win.loadFile(path.join(__dirname, 'index.html'));
+	await win.loadURL(
+		isDev
+			? 'http://localhost:3000'
+			: `file://${path.join(__dirname, '../public/index.html')}`
+	);
 
 	return win;
 };
