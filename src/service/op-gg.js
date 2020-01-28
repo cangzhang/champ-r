@@ -15,6 +15,8 @@ export const getPositions = async () => {
 			const positions = champ.find(`.champion-index__champion-item__position`)
 				.toArray()
 				.map(i => $(i).text().toLowerCase());
+			// todo: champion avatar
+			// const avatar = champ.find(`.champion-index__champion-item__image`)
 
 			return {
 				key: championKey,
