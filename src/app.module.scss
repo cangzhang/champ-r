@@ -1,0 +1,11 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 1em;
+
+  .import {
+	margin: 2em auto;
+	width: 10em;
+  }
+}

@@ -6,10 +6,14 @@ const { is } = require('electron-util');
 const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
 const contextMenu = require('electron-context-menu');
-const isDev = require('electron-is-dev')
+const isDev = require('electron-is-dev');
 
 const config = require('./config');
 const menu = require('./menu');
+
+if (process.env.NODE_ENV === 'development') {
+	process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+}
 
 unhandled();
 debug();
@@ -36,14 +40,14 @@ const createMainWindow = async () => {
 	const win = new BrowserWindow({
 		title: app.name,
 		show: false,
-		width: 900,
-		height: 700,
 		webPreferences: {
-			nodeIntegration: true
+			nodeIntegration: true,
+			webSecurity: false,
 		}
 	});
 
 	win.on('ready-to-show', () => {
+		win.maximize();
 		win.show();
 	});
 

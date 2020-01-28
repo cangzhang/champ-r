@@ -453,6 +453,7 @@ module.exports = function(webpackEnv) {
                 modules: {
                   getLocalIdent: getCSSModuleLocalIdent,
                 },
+								camelCase: true,
               }),
             },
             // Opt-in support for SASS (using .scss or .sass extensions).
