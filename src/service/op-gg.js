@@ -38,26 +38,53 @@ export const getItems = async (championName, position) => {
 		return Promise.reject(`Please specify champion & position.`);
 
 	const $ = await requestHtml(`${ OpggUrl }/champion/${ championName }/statistics/${ position }`);
-	const overviewTables = $(`.champion-overview__table.champion-overview__table--summonerspell tbody`);
+	const spellTables = $(`.champion-overview__table.champion-overview__table--summonerspell tbody`);
 
-	const spells = overviewTables.eq(0).find(`tr`)
+	const spells = spellTables.eq(0).find(`tr`)
 		.toArray()
 		.map(item => {
 			const imgs = $(item).find(`.champion-stats__list__item img`);
 			const src = imgs.map((idx, i) => $(i).attr(`src`));
 			return src.toArray();
 		});
-	const skills = overviewTables.eq(1)
+	const skills = spellTables.eq(1)
 		.find(`.champion-stats__list`)
 		.find(`.champion-stats__list__item`).text().trim().replace(/\s+/g, '>');
-
 	const spellNames = spells.map(arr => arr.map(getSpellName));
+
+	const itemSet = $(`.champion-overview__table`).eq(1).find(`tbody > tr`)
+		.toArray()
+		.reduce((groups, row) => {
+			const len = groups.length;
+			const cur = groups[len] || {};
+
+			if ($(row).attr(`class`).includes(`--first`)) {
+				groups.length = len + 1;
+				cur.type = $(row).find(`th.champion-overview__sub-header`).text();
+			}
+
+			const items = $(row).find(`td.champion-overview__data .champion-stats__list .champion-stats__list__item img`)
+				.map((_, i) => {
+					const id = $(i).attr(`src`).match(/(.*)\/(.*)\.png/).pop();
+
+					return {
+						id,
+						count: 1,
+					};
+				});
+
+			cur.items = (cur.items || []).concat(items.toArray());
+			groups[len] = cur;
+			return groups;
+		}, { length: 0 });
+
 	const data = {
 		key: championName,
 		position,
 		spells,
 		spellNames,
 		skills,
+		items: itemSet,
 	};
 	console.log(data);
 	return data;
