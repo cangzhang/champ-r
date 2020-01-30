@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+
 import AppContext from 'src/share/context';
 
 export default () => {
@@ -10,7 +11,7 @@ export default () => {
 			</pre>;
 
 	return <div>
-		<h3>Fetching({fetching.length})</h3>
+		<h3>Fetching({fetching.length} left)</h3>
 		<ul>
 			{
 				fetching.map(i => <li key={ i }>

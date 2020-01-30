@@ -20,6 +20,7 @@ export default produce((draft, action) => {
 	switch (type) {
 		case Actions.ADD_FETCHING: {
 			draft.fetching.push(payload);
+			draft = draft.fetching.sort((a, b) => a.localeCompare(b));
 			break;
 		}
 		case Actions.ADD_FETCHED: {
@@ -27,6 +28,7 @@ export default produce((draft, action) => {
 			const idx = draft.fetching.findIndex(i => i.toLowerCase() === target.toLowerCase());
 			draft.fetching.splice(idx, 1);
 			draft.fetched.push(payload);
+			draft = draft.fetched.sort((a, b) => a.key.localeCompare(b.key));
 			break;
 		}
 		case Actions.INIT_REDUCER:
