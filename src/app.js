@@ -1,67 +1,75 @@
 import s from './app.module.scss';
 
-import React, { useState } from 'react';
+import React, { useReducer, useState, useMemo } from 'react';
 import { PrimaryButton } from 'office-ui-fabric-react';
 
-import { getLolVer, getChampions } from './service/ddragon';
+import appReducer, { initialState, init, Actions } from './reducer';
+import AppContext from './context';
+
+import { getLolVer } from './service/ddragon';
 import * as Opgg from './service/op-gg';
 
+import ChampionTable from './components/champion-table';
+import WaitingList from './components/waiting-list';
+
+const makeFetchTask = (champion, position, dispatch) => {
+	dispatch({
+		type: Actions.ADD_FETCHING,
+		payload: `${ champion }-${ position }`,
+	});
+
+	return Opgg.getItems(champion, position)
+		.then(data => {
+			dispatch({
+				type: Actions.ADD_FETCHED,
+				payload: data,
+			});
+
+			return data;
+		});
+};
+
 const App = () => {
+	const [store, dispatch] = useReducer(appReducer, initialState, init);
 	const [version, setVersion] = useState(null);
-	const [data, setData] = useState([]);
+	// const [data, setData] = useState([]);
 
 	const importItems = async () => {
 		const v = await getLolVer();
 		await setVersion(v);
-		const champions = await getChampions(v);
-		const res = await Opgg.getPositions();
 
-		const tasks = res.reduce((t, item) => {
+		const res = await Opgg.getPositions();
+		const tasks = res.slice(0, 10).reduce((t, item) => {
 			const { positions, key } = item;
-			const positionTasks = positions.map(pos => Opgg.getItems(key, pos));
+			const positionTasks = positions.map(position => makeFetchTask(key, position, dispatch));
+
 			return t.concat(positionTasks);
 		}, []);
 
-		const data = await Promise.all(tasks);
-		setData(data);
+		await Promise.all(tasks);
 	};
 
+	const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
+
 	return (
-		<div className={s.container}>
-			<h2>Champ Remix</h2>
+		<AppContext.Provider value={ contextValue }>
+			<div className={ s.container }>
+				<h2>Champ Remix</h2>
 
-			<PrimaryButton
-				className={s.import}
-				onClick={importItems}
-			>
-				import
-			</PrimaryButton>
-			<div>LOL version is: <code>{version}</code></div>
+				<PrimaryButton
+					className={ s.import }
+					onClick={ importItems }
+				>
+					import
+				</PrimaryButton>
+				<div>LOL version is: <code>{ version }</code></div>
 
-			<table>
-				<thead>
-				<tr>
-					<th>Champion</th>
-					<th>Position</th>
-					<th>Spells</th>
-					<th>Skills</th>
-				</tr>
-				</thead>
-				<tbody>
-				{
-					data.length > 0 &&
-					data.map(i => {
-						return <tr key={`${i.key}-${i.position}`}>
-							<td>{i.key}</td>
-							<td>{i.position}</td>
-							<td>{i.spells.map(s => <img src={s} alt={s}/>)}</td>
-							<td>{i.skills}</td>
-						</tr>;
-					})
-				}
-				</tbody>
-			</table>
-		</div>
+				<div className={s.champions}>
+					<WaitingList />
+					<ChampionTable />
+				</div>
+			</div>
+		</AppContext.Provider>
 	);
 };
 
