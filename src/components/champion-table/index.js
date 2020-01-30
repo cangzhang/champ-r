@@ -1,7 +1,7 @@
 import s from './style.module.scss';
 
 import React, { useContext } from 'react';
-import AppContext from '../../context';
+import AppContext from 'src/share/context';
 
 const ChampionTable = () => {
 	const { store: { fetched: data } } = useContext(AppContext);

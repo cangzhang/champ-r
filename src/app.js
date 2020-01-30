@@ -3,14 +3,14 @@ import s from './app.module.scss';
 import React, { useReducer, useState, useMemo } from 'react';
 import { PrimaryButton } from 'office-ui-fabric-react';
 
-import appReducer, { initialState, init, Actions } from './reducer';
-import AppContext from './context';
+import appReducer, { initialState, init, Actions } from 'src/share/reducer';
+import AppContext from 'src/share/context';
 
-import { getLolVer } from './service/ddragon';
-import * as Opgg from './service/op-gg';
+import { getLolVer } from 'src/service/ddragon';
+import * as Opgg from 'src/service/op-gg';
 
-import ChampionTable from './components/champion-table';
-import WaitingList from './components/waiting-list';
+import ChampionTable from 'src/components/champion-table';
+import WaitingList from 'src/components/waiting-list';
 
 const makeFetchTask = (champion, position, dispatch) => {
 	dispatch({
@@ -39,7 +39,7 @@ const App = () => {
 		await setVersion(v);
 
 		const res = await Opgg.getPositions();
-		const tasks = res.slice(0, 10).reduce((t, item) => {
+		const tasks = res.reduce((t, item) => {
 			const { positions, key } = item;
 			const positionTasks = positions.map(position => makeFetchTask(key, position, dispatch));
 
