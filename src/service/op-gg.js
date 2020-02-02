@@ -56,11 +56,15 @@ export const getItems = async (championName, position) => {
 		.toArray()
 		.reduce((groups, row) => {
 			const len = groups.length;
-			const cur = groups[len] || {};
+			let cur = groups[len - 1];
 
 			if ($(row).attr(`class`).includes(`--first`)) {
-				groups.length = len + 1;
-				cur.type = $(row).find(`th.champion-overview__sub-header`).text();
+				const type = $(row).find(`th.champion-overview__sub-header`).text();
+				cur = {
+					type,
+					items: [],
+				};
+				groups[len] = cur;
 			}
 
 			const items = $(row).find(`td.champion-overview__data .champion-stats__list .champion-stats__list__item img`)
@@ -73,10 +77,9 @@ export const getItems = async (championName, position) => {
 					};
 				});
 
-			cur.items = (cur.items || []).concat(items.toArray());
-			groups[len] = cur;
+			cur.items = cur.items.concat(items.toArray());
 			return groups;
-		}, { length: 0 });
+		}, []);
 
 	const data = {
 		key: championName,
