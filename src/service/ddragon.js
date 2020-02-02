@@ -1,5 +1,7 @@
 import http from './http';
 
+export const DDragonCDNUrl = `https://ddragon.leagueoflegends.com/cdn`;
+
 export const getLolVer = async () => {
 	const resp = await http.get(`https://ddragon.leagueoflegends.com/realms/na.json`);
 	return resp.v;

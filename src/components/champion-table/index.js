@@ -4,11 +4,10 @@ import _upperFirst from 'lodash/upperFirst';
 
 import React, { useContext } from 'react';
 import AppContext from 'src/share/context';
+import { DDragonCDNUrl } from 'src/service/ddragon';
 
-const DDragonUrl = `https://ddragon.leagueoflegends.com/cdn`;
-
-const getAvatar = (name, ver) => `${ DDragonUrl }/${ ver }/img/champion/${ _upperFirst(name) }.png`;
-const getSpellImg = (spell, ver) => `${ DDragonUrl }/${ ver }/img/spell/Summoner${ _upperFirst(spell) }.png`;
+const getAvatar = (name, ver) => `${ DDragonCDNUrl }/${ ver }/img/champion/${ _upperFirst(name) }.png`;
+const getSpellImg = (spell, ver) => `${ DDragonCDNUrl }/${ ver }/img/spell/Summoner${ _upperFirst(spell) }.png`;
 
 const ChampionTable = () => {
 	const { store: { fetched: data, version } } = useContext(AppContext);
