@@ -3,7 +3,7 @@ import s from './app.module.scss';
 import React, { useReducer, useState, useMemo } from 'react';
 import { PrimaryButton } from 'office-ui-fabric-react';
 
-import appReducer, { initialState, init, Actions } from 'src/share/reducer';
+import appReducer, { initialState, init, Actions, setLolVersion } from 'src/share/reducer';
 import AppContext from 'src/share/context';
 
 import { getLolVer } from 'src/service/ddragon';
@@ -32,14 +32,14 @@ const makeFetchTask = (champion, position, dispatch) => {
 const App = () => {
 	const [store, dispatch] = useReducer(appReducer, initialState, init);
 	const [version, setVersion] = useState(null);
-	// const [data, setData] = useState([]);
 
 	const importItems = async () => {
 		const v = await getLolVer();
 		await setVersion(v);
+		dispatch(setLolVersion(v));
 
 		const res = await Opgg.getPositions();
-		const tasks = res.slice(0, 1).reduce((t, item) => {
+		const tasks = res.slice(0, 5).reduce((t, item) => {
 			const { positions, key } = item;
 			const positionTasks = positions.map(position => makeFetchTask(key, position, dispatch));
 
@@ -64,7 +64,7 @@ const App = () => {
 				</PrimaryButton>
 				<div>LOL version is: <code>{ version }</code></div>
 
-				<div className={s.champions}>
+				<div className={ s.champions }>
 					<WaitingList />
 					<ChampionTable />
 				</div>

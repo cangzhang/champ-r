@@ -1,10 +1,17 @@
 import s from './style.module.scss';
 
+import _upperFirst from 'lodash/upperFirst';
+
 import React, { useContext } from 'react';
 import AppContext from 'src/share/context';
 
+const DDragonUrl = `https://ddragon.leagueoflegends.com/cdn`;
+
+const getAvatar = (name, ver) => `${ DDragonUrl }/${ ver }/img/champion/${ _upperFirst(name) }.png`;
+const getSpellImg = (spell, ver) => `${ DDragonUrl }/${ ver }/img/spell/Summoner${ _upperFirst(spell) }.png`;
+
 const ChampionTable = () => {
-	const { store: { fetched: data } } = useContext(AppContext);
+	const { store: { fetched: data, version } } = useContext(AppContext);
 
 	if (!data.length) {
 		return <pre><code>No data</code></pre>;
@@ -22,19 +29,28 @@ const ChampionTable = () => {
 		<tbody>
 		{
 			data.map(i => {
+				const avatar = getAvatar(i.key, version);
+
 				return <tr key={ `${ i.key }-${ i.position }` }>
-					<td>{ i.key }</td>
+					<td className={ s.avatar }>
+						<img src={ avatar } alt={ i.key } />
+						{ i.key }
+					</td>
 					<td>{ i.position }</td>
 					<td className={ s.spells }>
-						{
-							i.spellNames.map((n, nIdx) =>
-								<ul key={ nIdx }>
-									{
-										n.map((i, idx) => <li key={ idx }>{ i }</li>)
-									}
-								</ul>,
-							)
-						}
+						<ol>
+							{
+								i.spellNames.map((n, nIdx) =>
+									<li key={ nIdx }>
+										{ n.map((s, sIdx) => {
+											const img = getSpellImg(s, version);
+
+											return <img src={ img } alt={ n } key={ `${ nIdx }-${ sIdx }` } />;
+										}) }
+									</li>,
+								)
+							}
+						</ol>
 					</td>
 					<td>{ i.skills }</td>
 				</tr>;

@@ -1,16 +1,13 @@
 import produce from 'immer';
 
+import { Actions } from 'src/share/actions';
+
+export * from 'src/share/actions';
+
 export const initialState = {
 	fetching: [],
 	fetched: [],
-};
-
-export const Actions = {
-	ADD_FETCHING: `LIST.ADD_FETCHING`,
-	REMOVE_FETCHING: `LIST.REMOVE_FETCHING`,
-	ADD_FETCHED: `LIST.ADD_FETCHED`,
-	REMOVE_FETCHED: `LIST.REMOVE_FETCHED`,
-	INIT_REDUCER: `LIST.INIT_REDUCER`,
+	version: null,
 };
 
 export const init = payload => payload;
@@ -18,6 +15,10 @@ export const init = payload => payload;
 export default produce((draft, action) => {
 	const { type, payload } = action;
 	switch (type) {
+		case Actions.UPDATE_LOL_VERSION: {
+			draft.version = payload;
+			break;
+		}
 		case Actions.ADD_FETCHING: {
 			draft.fetching.push(payload);
 			draft = draft.fetching.sort((a, b) => a.localeCompare(b));
