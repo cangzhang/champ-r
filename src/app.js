@@ -12,19 +12,20 @@ import * as Opgg from 'src/service/op-gg';
 import ChampionTable from 'src/components/champion-table';
 import WaitingList from 'src/components/waiting-list';
 
-const makeFetchTask = (champion, position, dispatch) => {
+const makeFetchTask = (champion, position, v, dispatch) => {
 	dispatch({
 		type: Actions.ADD_FETCHING,
 		payload: `${ champion }-${ position }`,
 	});
 
-	return Opgg.getItems(champion, position)
+	return Opgg.getItems(champion, position, v)
 		.then(data => {
 			dispatch({
 				type: Actions.ADD_FETCHED,
 				payload: data,
 			});
 
+			console.log(data);
 			return data;
 		});
 };
@@ -41,7 +42,7 @@ const App = () => {
 		const res = await Opgg.getPositions();
 		const tasks = res.slice(0, 5).reduce((t, item) => {
 			const { positions, key } = item;
-			const positionTasks = positions.map(position => makeFetchTask(key, position, dispatch));
+			const positionTasks = positions.map(position => makeFetchTask(key, position, v, dispatch));
 
 			return t.concat(positionTasks);
 		}, []);

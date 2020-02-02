@@ -1,13 +1,9 @@
 import s from './style.module.scss';
 
-import _upperFirst from 'lodash/upperFirst';
-
 import React, { useContext } from 'react';
 import AppContext from 'src/share/context';
-import { DDragonCDNUrl } from 'src/service/ddragon';
 
-const getAvatar = (name, ver) => `${ DDragonCDNUrl }/${ ver }/img/champion/${ _upperFirst(name) }.png`;
-const getSpellImg = (spell, ver) => `${ DDragonCDNUrl }/${ ver }/img/spell/Summoner${ _upperFirst(spell) }.png`;
+import { getAvatar, getSpellImg } from 'src/service/ddragon';
 
 const ChampionTable = () => {
 	const { store: { fetched: data, version } } = useContext(AppContext);

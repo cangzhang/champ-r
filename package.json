@@ -6,9 +6,9 @@
 	"license": "MIT",
 	"repository": "cangzhang/champ-r",
 	"author": {
-		"name": "Al",
+		"name": "Al Cheung",
 		"email": "cangzan@gmail.com",
-		"url": "https://sindresorhus.com"
+		"url": "https://github.com/cangzhang"
 	},
 	"scripts": {
 		"postinstall": "electron-builder install-app-deps",
@@ -16,7 +16,7 @@
 		"test": "npm run lint",
 		"start-electron": "run-electron .",
 		"pack": "electron-builder --dir",
-		"dist": "electron-builder --macos --linux --windows",
+		"dist": "electron-builder --windows",
 		"release": "np",
 		"start-react": "BROWSER=none node scripts/start.js",
 		"build-react": "node scripts/build.js",
@@ -137,12 +137,15 @@
 		"releaseDraft": false
 	},
 	"build": {
-		"appId": "com.company.AppName",
-		"mac": {
+		"appId": "com.al.champR",
+		"win": {
+		  	"requestedExecutionLevel": "highestAvailable"
+		},
+		"#mac": {
 			"category": "public.app-category.social-networking",
 			"darkModeSupport": true
 		},
-		"dmg": {
+		"#dmg": {
 			"iconSize": 160,
 			"contents": [
 				{
@@ -157,7 +160,7 @@
 				}
 			]
 		},
-		"linux": {
+		"#linux": {
 			"target": [
 				"AppImage",
 				"deb"

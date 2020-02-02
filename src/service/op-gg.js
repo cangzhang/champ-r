@@ -33,7 +33,7 @@ export const getSpellName = (imgSrc = '') => {
 	return matched.pop();
 };
 
-export const getItems = async (championName, position) => {
+export const getItems = async (championName, position, version) => {
 	if (!championName || !position)
 		return Promise.reject(`Please specify champion & position.`);
 
@@ -52,7 +52,7 @@ export const getItems = async (championName, position) => {
 		.find(`.champion-stats__list__item`).text().trim().replace(/\s+/g, '>');
 	const spellNames = spells.map(arr => arr.map(getSpellName));
 
-	const itemSet = $(`.champion-overview__table`).eq(1).find(`tbody > tr`)
+	const blocks = $(`.champion-overview__table`).eq(1).find(`tbody > tr`)
 		.toArray()
 		.reduce((groups, row) => {
 			const len = groups.length;
@@ -81,15 +81,19 @@ export const getItems = async (championName, position) => {
 			return groups;
 		}, []);
 
-	const data = {
+	return {
 		key: championName,
+		champion: championName,
 		position,
-		spells,
 		spellNames,
 		skills,
-		items: itemSet,
+		'sortrank': 1,
+		priority: false,
+		map: `any`,
+		mode: `any`,
+		type: `custom`,
+		title: `[op.gg] ${ championName } - ${ position } - ${ version }`,
+		blocks,
 	};
-	console.log(data);
-	return data;
 };
 
