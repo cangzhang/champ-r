@@ -8,9 +8,12 @@ import AppContext from 'src/share/context';
 
 import { getLolVer } from 'src/service/ddragon';
 import * as Opgg from 'src/service/op-gg';
+import { saveToFile } from 'src/share/file';
 
 import ChampionTable from 'src/components/champion-table';
 import WaitingList from 'src/components/waiting-list';
+
+const { dialog } = require('electron').remote;
 
 const makeFetchTask = (champion, position, v, dispatch) => {
 	dispatch({
@@ -33,6 +36,19 @@ const makeFetchTask = (champion, position, v, dispatch) => {
 const App = () => {
 	const [store, dispatch] = useReducer(appReducer, initialState, init);
 	const [version, setVersion] = useState(null);
+	const [lolDir, setLolDir] = useState('');
+
+	const onSelectDir = async () => {
+		const { canceled, filePaths } = await dialog.showOpenDialog({
+			properties: ['openDirectory']
+		});
+		if (canceled) return;
+
+		const dir = filePaths[0];
+		setLolDir(dir);
+		const res = await saveToFile(dir);
+		console.log(`write to file: ${res}`);
+	};
 
 	const importItems = async () => {
 		const v = await getLolVer();
@@ -63,7 +79,14 @@ const App = () => {
 				>
 					import
 				</PrimaryButton>
-				<div>LOL version is: <code>{ version }</code></div>
+
+				<div>LOL version is <code>{ version }</code>, LOL dir is <code>{lolDir}</code></div>
+				<button
+					style={{ width: `6em` }}
+					onClick={onSelectDir}
+				>
+					Select dir
+				</button>
 
 				<div className={ s.champions }>
 					<WaitingList />
