@@ -61,7 +61,7 @@ const App = () => {
 		dispatch(setLolVersion(v));
 
 		const res = await Opgg.getPositions();
-		const tasks = res.slice(0, 5).reduce((t, item) => {
+		const tasks = res.reduce((t, item) => {
 			const { positions, key } = item;
 			const positionTasks = positions.map(position => makeFetchTask(key, position, v, dispatch));
 
