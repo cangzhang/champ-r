@@ -16,12 +16,13 @@
 		"test": "npm run lint",
 		"start-electron": "run-electron .",
 		"pack": "electron-builder --dir",
-		"dist": "electron-builder --windows",
+		"dist": "electron-builder --win --x64",
 		"release": "np",
 		"start-react": "cross-env BROWSER=none node scripts/start.js",
 		"build-react": "node scripts/build.js",
 		"test-react": "node scripts/test.js",
-		"start": "concurrently \"yarn start-react\" \"wait-on http://localhost:3000 && yarn start-electron\""
+		"start": "concurrently \"yarn start-react\" \"wait-on http://localhost:3000 && yarn start-electron\"",
+	    "build": "yarn build-react && yarn dist"
 	},
 	"dependencies": {
 		"@babel/core": "7.7.4",

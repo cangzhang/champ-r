@@ -11,16 +11,12 @@ const isDev = require('electron-is-dev');
 const config = require('./config');
 const menu = require('./menu');
 
-if (process.env.NODE_ENV === 'development') {
-	process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
-}
-
 unhandled();
 debug();
 contextMenu();
 
 // Note: Must match `build.appId` in package.json
-app.setAppUserModelId('com.company.AppName');
+app.setAppUserModelId('com.al.champR');
 
 // Uncomment this before publishing your first version.
 // It's commented out as it throws an error if there are no published versions.
@@ -60,7 +56,7 @@ const createMainWindow = async () => {
 	await win.loadURL(
 		isDev
 			? 'http://localhost:3000'
-			: `file://${path.join(__dirname, '../public/index.html')}`
+			: `file://${path.join(__dirname, '../build/index.html')}`
 	);
 
 	return win;
