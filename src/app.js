@@ -39,6 +39,8 @@ const App = () => {
 	const [lolDir, setLolDir] = useState('');
 
 	const onSelectDir = async () => {
+		const { fetched } = store;
+
 		const { canceled, filePaths } = await dialog.showOpenDialog({
 			properties: ['openDirectory']
 		});
@@ -46,7 +48,10 @@ const App = () => {
 
 		const dir = filePaths[0];
 		setLolDir(dir);
-		const res = await saveToFile(dir);
+
+		// const res = await saveToFile(dir);
+		const tasks = fetched.map(i => saveToFile(dir, i));
+		const res = await Promise.all(tasks);
 		console.log(`write to file: ${res}`);
 	};
 

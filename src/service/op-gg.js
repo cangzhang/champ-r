@@ -93,6 +93,7 @@ export const getItems = async (championName, position, version) => {
 		mode: `any`,
 		type: `custom`,
 		title: `[op.gg] ${ championName } - ${ position } - ${ version }`,
+		fileName: `[op.gg]${ championName }-${ position }-${ version }`,
 		blocks,
 	};
 };

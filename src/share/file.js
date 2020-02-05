@@ -1,16 +1,25 @@
 const path = require('path');
 const fs = require('fs');
+const _pick = require('lodash/pick');
 
 export const saveToFile = async (desDir, data) => {
 	try {
-		const date = +Date.now();
-		const random = Math.floor(Math.random() * 1000);
-		const file = `${desDir}/abc/${random}.txt`;
+		const content = _pick(data, [
+			'title',
+			'map',
+			'mode',
+			'type',
+			'priority',
+			'sortrank',
+			'blocks',
+		]);
+
+		const file = `${desDir}/Champions/${data.key}/Recommended/${data.fileName}.json`;
 
 		await fs.promises.mkdir(path.dirname(file), {
 			recursive: true
 		});
-		await fs.promises.writeFile(file, `hey there, ${date}`);
+		await fs.promises.writeFile(file, JSON.stringify(content));
 		return true;
 	} catch (err) {
 		return err
