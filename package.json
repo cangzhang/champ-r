@@ -140,9 +140,7 @@
 	},
 	"build": {
 		"appId": "com.al.champR",
-		"directories": {
-		  	"files": "**/*"
-		},
+	  	"files": "./build/**/*",
 		"win": {
 			"requestedExecutionLevel": "highestAvailable"
 		}
