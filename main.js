@@ -2,14 +2,14 @@
 const path = require('path');
 const { app, BrowserWindow, Menu } = require('electron');
 /// const {autoUpdater} = require('electron-updater');
-const { is } = require('electron-util');
+const { is, disableZoom, centerWindow } = require('electron-util');
 const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
 const contextMenu = require('electron-context-menu');
 const isDev = require('electron-is-dev');
 
 const config = require('./config');
-const menu = require('./menu');
+// const menu = require('./menu');
 
 unhandled();
 debug();
@@ -36,6 +36,9 @@ const createMainWindow = async () => {
 	const win = new BrowserWindow({
 		title: app.name,
 		show: false,
+		frame: false,
+		height: 800,
+		width: is.development ? 1300 : 500,
 		webPreferences: {
 			nodeIntegration: true,
 			webSecurity: false,
@@ -43,7 +46,6 @@ const createMainWindow = async () => {
 	});
 
 	win.on('ready-to-show', () => {
-		win.maximize();
 		win.show();
 	});
 
@@ -91,8 +93,14 @@ app.on('activate', async () => {
 
 (async () => {
 	await app.whenReady();
-	Menu.setApplicationMenu(menu);
+	Menu.setApplicationMenu(null);
 	mainWindow = await createMainWindow();
 
+	await disableZoom(mainWindow);
+	await centerWindow({
+		window: mainWindow,
+		animated: true,
+	});
+	
 	const favoriteAnimal = config.get('favoriteAnimal');
 })();
