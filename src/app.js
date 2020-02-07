@@ -6,6 +6,7 @@ import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { Button } from 'baseui/button';
+import { Checkbox } from 'baseui/checkbox';
 
 import appReducer, { initialState, init, Actions, setLolVersion } from 'src/share/reducer';
 import AppContext from 'src/share/context';
@@ -72,6 +73,12 @@ const App = () => {
 
 		const fetched = await Promise.all(tasks);
 		// const res = await saveToFile(dir);
+
+		if (!lolDir) {
+			// TODO: notification
+			return;
+		}
+
 		const t = fetched.map(i => saveToFile(lolDir, i));
 		const result = await Promise.all(t);
 		console.log(`write to file: ${ result }`);
@@ -86,6 +93,13 @@ const App = () => {
 					<Toolbar />
 					<div className={ s.container }>
 						<h2>Champ Remix</h2>
+
+						<Checkbox
+							checked={true}
+							onChange={() => null}
+						>
+							op.gg
+						</Checkbox>
 
 						<Button
 							className={ s.import }
