@@ -29,7 +29,6 @@ const ChampionTable = () => {
 				return <tr key={ `${ i.key }-${ i.position }` }>
 					<td className={ s.avatar }>
 						<img src={ avatar } alt={ i.key } />
-						{ i.key }
 					</td>
 					<td>{ i.position }</td>
 					<td className={ s.spells }>

@@ -1,7 +1,11 @@
 import s from './app.module.scss';
 
 import React, { useReducer, useState, useMemo } from 'react';
-import { PrimaryButton } from 'office-ui-fabric-react';
+
+import { Client as Styletron } from 'styletron-engine-atomic';
+import { Provider as StyletronProvider } from 'styletron-react';
+import { LightTheme, BaseProvider, styled } from 'baseui';
+import { Button } from 'baseui/button';
 
 import appReducer, { initialState, init, Actions, setLolVersion } from 'src/share/reducer';
 import AppContext from 'src/share/context';
@@ -14,6 +18,8 @@ import ChampionTable from 'src/components/champion-table';
 import WaitingList from 'src/components/waiting-list';
 
 const { dialog } = require('electron').remote;
+
+const engine = new Styletron();
 
 const makeFetchTask = (champion, position, v, dispatch) => {
 	dispatch({
@@ -42,7 +48,7 @@ const App = () => {
 		const { fetched } = store;
 
 		const { canceled, filePaths } = await dialog.showOpenDialog({
-			properties: ['openDirectory']
+			properties: ['openDirectory'],
 		});
 		if (canceled) return;
 
@@ -52,7 +58,7 @@ const App = () => {
 		// const res = await saveToFile(dir);
 		const tasks = fetched.map(i => saveToFile(dir, i));
 		const res = await Promise.all(tasks);
-		console.log(`write to file: ${res}`);
+		console.log(`write to file: ${ res }`);
 	};
 
 	const importItems = async () => {
@@ -75,29 +81,33 @@ const App = () => {
 
 	return (
 		<AppContext.Provider value={ contextValue }>
-			<div className={ s.container }>
-				<h2>Champ Remix</h2>
+			<StyletronProvider value={ engine }>
+				<BaseProvider theme={ LightTheme }>
+					<div className={ s.container }>
+						<h2>Champ Remix</h2>
 
-				<PrimaryButton
-					className={ s.import }
-					onClick={ importItems }
-				>
-					import
-				</PrimaryButton>
+						<Button
+							className={ s.import }
+							onClick={ importItems }
+						>
+							import
+						</Button>
 
-				<div>LOL version is <code>{ version }</code>, LOL dir is <code>{lolDir}</code></div>
-				<button
-					style={{ width: `6em` }}
-					onClick={onSelectDir}
-				>
-					Select dir
-				</button>
+						<div>LOL version is <code>{ version }</code>, LOL dir is <code>{ lolDir }</code></div>
+						<button
+							style={ { width: `6em` } }
+							onClick={ onSelectDir }
+						>
+							Select dir
+						</button>
 
-				<div className={ s.champions }>
-					<WaitingList />
-					<ChampionTable />
-				</div>
-			</div>
+						<div className={ s.champions }>
+							<WaitingList />
+							<ChampionTable />
+						</div>
+					</div>
+				</BaseProvider>
+			</StyletronProvider>
 		</AppContext.Provider>
 	);
 };

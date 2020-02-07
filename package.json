@@ -1,11 +1,11 @@
 {
 	"name": "champ-r",
 	"version": "0.2.0",
-  	"license": "MIT",
+	"license": "MIT",
 	"description": "Get champion items for lol, Windows only.",
-  	"productName": "ChampionR",
+	"productName": "ChampR",
 	"repository": "cangzhang/champ-r",
-  	"homepage": "./",
+	"homepage": "./",
 	"author": {
 		"name": "Al Cheung",
 		"email": "cangzan@gmail.com",
@@ -49,11 +49,9 @@
 			"browser"
 		]
 	},
-	"eslintConfig": {
-		"extends": "react-app"
-	},
 	"dependencies": {
 		"axios": "^0.19.2",
+		"baseui": "^9.51.0",
 		"cheerio": "^1.0.0-rc.3",
 		"electron-context-menu": "^0.15.0",
 		"electron-debug": "^3.0.0",
@@ -67,7 +65,9 @@
 		"normalize.css": "^8.0.1",
 		"office-ui-fabric-react": "^7.84.1",
 		"react": "^16.12.0",
-		"react-dom": "^16.12.0"
+		"react-dom": "^16.12.0",
+		"styletron-engine-atomic": "^1.4.4",
+		"styletron-react": "^5.2.6"
 	},
 	"devDependencies": {
 		"@babel/core": "7.7.4",
@@ -94,6 +94,7 @@
 		"eslint": "^6.6.0",
 		"eslint-config-react-app": "^5.1.0",
 		"eslint-loader": "3.0.2",
+		"eslint-plugin-baseui": "^9.51.0",
 		"eslint-plugin-flowtype": "3.13.0",
 		"eslint-plugin-import": "2.18.2",
 		"eslint-plugin-jsx-a11y": "6.2.3",
