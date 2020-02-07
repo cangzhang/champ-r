@@ -1,0 +1,27 @@
+.container {
+  width: 50vw;
+  display: flex;
+  justify-content: flex-end;
+  position: absolute;
+  top: 0.7em;
+  right: 0;
+  padding-right: 1em;
+
+  cursor: pointer;
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+
+  > svg {
+	height: 1.4em;
+	width: 1.4em;
+	-webkit-app-region: no-drag;
+
+	&:hover {
+	  background-color: #E2E2E2;
+	}
+
+	&:not(:last-child) {
+	  margin-right: 0.4em;
+	}
+  }
+}

@@ -19,7 +19,7 @@ export const saveToFile = async (desDir, data) => {
 		await fs.promises.mkdir(path.dirname(file), {
 			recursive: true
 		});
-		await fs.promises.writeFile(file, JSON.stringify(content));
+		await fs.promises.writeFile(file, JSON.stringify(content, null, 4));
 		return true;
 	} catch (err) {
 		return err

@@ -4,7 +4,7 @@ import React, { useReducer, useState, useMemo } from 'react';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
-import { LightTheme, BaseProvider, styled } from 'baseui';
+import { LightTheme, BaseProvider } from 'baseui';
 import { Button } from 'baseui/button';
 
 import appReducer, { initialState, init, Actions, setLolVersion } from 'src/share/reducer';
@@ -16,8 +16,10 @@ import { saveToFile } from 'src/share/file';
 
 import ChampionTable from 'src/components/champion-table';
 import WaitingList from 'src/components/waiting-list';
+import Toolbar from 'src/components/toolbar';
 
 const { dialog } = require('electron').remote;
+const config = require('./native/config');
 
 const engine = new Styletron();
 
@@ -42,11 +44,9 @@ const makeFetchTask = (champion, position, v, dispatch) => {
 const App = () => {
 	const [store, dispatch] = useReducer(appReducer, initialState, init);
 	const [version, setVersion] = useState(null);
-	const [lolDir, setLolDir] = useState('');
+	const [lolDir, setLolDir] = useState(config.get(`lolDir`));
 
 	const onSelectDir = async () => {
-		const { fetched } = store;
-
 		const { canceled, filePaths } = await dialog.showOpenDialog({
 			properties: ['openDirectory'],
 		});
@@ -54,11 +54,7 @@ const App = () => {
 
 		const dir = filePaths[0];
 		setLolDir(dir);
-
-		// const res = await saveToFile(dir);
-		const tasks = fetched.map(i => saveToFile(dir, i));
-		const res = await Promise.all(tasks);
-		console.log(`write to file: ${ res }`);
+		config.set('lolDir', dir);
 	};
 
 	const importItems = async () => {
@@ -74,7 +70,11 @@ const App = () => {
 			return t.concat(positionTasks);
 		}, []);
 
-		await Promise.all(tasks);
+		const fetched = await Promise.all(tasks);
+		// const res = await saveToFile(dir);
+		const t = fetched.map(i => saveToFile(lolDir, i));
+		const result = await Promise.all(t);
+		console.log(`write to file: ${ result }`);
 	};
 
 	const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
@@ -83,6 +83,7 @@ const App = () => {
 		<AppContext.Provider value={ contextValue }>
 			<StyletronProvider value={ engine }>
 				<BaseProvider theme={ LightTheme }>
+					<Toolbar />
 					<div className={ s.container }>
 						<h2>Champ Remix</h2>
 
@@ -94,12 +95,11 @@ const App = () => {
 						</Button>
 
 						<div>LOL version is <code>{ version }</code>, LOL dir is <code>{ lolDir }</code></div>
-						<button
-							style={ { width: `6em` } }
+						<Button
 							onClick={ onSelectDir }
 						>
 							Select dir
-						</button>
+						</Button>
 
 						<div className={ s.champions }>
 							<WaitingList />
