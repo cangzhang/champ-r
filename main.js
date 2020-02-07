@@ -10,14 +10,12 @@ const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
 const isDev = require('electron-is-dev');
 
-const pkgInfo = require('./package');
-
 unhandled();
 debug();
 contextMenu();
 
 // Note: Must match `build.appId` in package.json
-app.setAppUserModelId(pkgInfo.build.appId);
+app.setAppUserModelId(`com.al.champ-r`);
 
 // Uncomment this before publishing your first version.
 // It's commented out as it throws an error if there are no published versions.
