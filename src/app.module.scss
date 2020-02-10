@@ -11,9 +11,45 @@
 
   .champions {
 	display: flex;
+	height: 60vh;
+	overflow-y: auto;
+	margin-top: 1em;
 
 	> * {
 	  flex: 1;
+	}
+  }
+
+  .info {
+	display: flex;
+	align-items: center;
+
+	code {
+	  margin-left: 0.5em;
+	  padding: 0 0.4em;
+	  cursor: pointer;
+	  background-color: rgb(237, 243, 253);
+	}
+
+	span {
+	  margin-left: 0.4em;
+	  display: inline-flex;
+	  align-items: center;
+	  justify-content: center;
+	  cursor: pointer;
+	  width: 2em;
+	  height: 2em;
+	  border: 2px solid transparent;
+	  border-radius: 30%;
+
+	  &:hover {
+		border-color: rgb(236, 240, 246);
+	  }
+	}
+
+	svg {
+	  width: 1.4em;
+	  height: 1.4em;
 	}
   }
 }

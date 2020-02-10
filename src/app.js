@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import TrashIcon from '-!react-svg-loader!ionicons/dist/svg/trash.svg';
 import s from './app.module.scss';
 
 import React, { useReducer, useState, useMemo } from 'react';
@@ -7,6 +9,7 @@ import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { Button } from 'baseui/button';
 import { Checkbox } from 'baseui/checkbox';
+import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 
 import appReducer, { initialState, init, Actions, setLolVersion } from 'src/share/reducer';
 import AppContext from 'src/share/context';
@@ -44,7 +47,7 @@ const makeFetchTask = (champion, position, v, dispatch) => {
 
 const App = () => {
 	const [store, dispatch] = useReducer(appReducer, initialState, init);
-	const [version, setVersion] = useState(null);
+	const [version, setVersion] = useState(config.get(`lolVer`));
 	const [lolDir, setLolDir] = useState(config.get(`lolDir`));
 
 	const onSelectDir = async () => {
@@ -58,10 +61,16 @@ const App = () => {
 		config.set('lolDir', dir);
 	};
 
+	const clearFolder = () => {
+		setLolDir(``);
+		config.set('lolDir', ``);
+	};
+
 	const importItems = async () => {
 		const v = await getLolVer();
 		await setVersion(v);
 		dispatch(setLolVersion(v));
+		config.set(`lolVer`, v);
 
 		const res = await Opgg.getPositions();
 		const tasks = res.reduce((t, item) => {
@@ -95,25 +104,52 @@ const App = () => {
 						<h2>Champ Remix</h2>
 
 						<Checkbox
-							checked={true}
-							onChange={() => null}
+							checked={ true }
+							onChange={ () => null }
 						>
 							op.gg
 						</Checkbox>
 
 						<Button
 							className={ s.import }
+							disabled={ !lolDir }
 							onClick={ importItems }
 						>
 							import
 						</Button>
 
-						<div>LOL version is <code>{ version }</code>, LOL dir is <code>{ lolDir }</code></div>
-						<Button
-							onClick={ onSelectDir }
-						>
-							Select dir
-						</Button>
+						<div className={ s.info }>
+							LOL version is<code>{ version }</code>
+						</div>
+						<div className={ s.info }>
+							{
+								lolDir
+									? <>
+										LOL folder is
+										<Tooltip content={ `Click here to re-select folder` }>
+											<code
+												onClick={ onSelectDir }
+											>
+												{ lolDir }
+											</code>
+										</Tooltip>
+
+										<Tooltip content={ `Clear selected folder` }>
+										<span
+											onClick={ clearFolder }
+										>
+											<TrashIcon
+												preserveAspectRatio="xMidYMid meet"
+												viewBox="0 0 512 512"
+												width={ `24` }
+												height={ `24` }
+											/>
+										</span>
+										</Tooltip>
+									</>
+									: <Button onClick={ onSelectDir }>Select LOL folder</Button>
+							}
+						</div>
 
 						<div className={ s.champions }>
 							<WaitingList />

@@ -2,6 +2,7 @@ const Store = require('electron-store');
 
 module.exports = new Store({
 	defaults: {
-		lolDir: '',
+		lolDir: ``,
+		lolVer: ``,
 	},
 });
