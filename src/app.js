@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import TrashIcon from '-!react-svg-loader!ionicons/dist/svg/trash.svg';
 import s from './app.module.scss';
 
 import React, { useReducer, useState, useMemo } from 'react';
@@ -10,6 +8,7 @@ import { LightTheme, BaseProvider } from 'baseui';
 import { Button } from 'baseui/button';
 import { Checkbox } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
+import { Tag, VARIANT } from 'baseui/tag';
 
 import appReducer, { initialState, init, Actions, setLolVersion } from 'src/share/reducer';
 import AppContext from 'src/share/context';
@@ -30,7 +29,7 @@ const engine = new Styletron();
 const makeFetchTask = (champion, position, v, dispatch) => {
 	dispatch({
 		type: Actions.ADD_FETCHING,
-		payload: `${ champion }-${ position }`,
+		payload: `${champion}-${position}`,
 	});
 
 	return Opgg.getItems(champion, position, v)
@@ -90,68 +89,53 @@ const App = () => {
 
 		const t = fetched.map(i => saveToFile(lolDir, i));
 		const result = await Promise.all(t);
-		console.log(`write to file: ${ result }`);
+		console.log(`write to file: ${result}`);
 	};
 
 	const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
 
 	return (
-		<AppContext.Provider value={ contextValue }>
-			<StyletronProvider value={ engine }>
-				<BaseProvider theme={ LightTheme }>
+		<AppContext.Provider value={contextValue}>
+			<StyletronProvider value={engine}>
+				<BaseProvider theme={LightTheme}>
 					<Toolbar />
-					<div className={ s.container }>
+					<div className={s.container}>
 						<h2>Champ Remix</h2>
 
 						<Checkbox
-							checked={ true }
-							onChange={ () => null }
+							checked={true}
+							onChange={() => null}
 						>
 							op.gg
 						</Checkbox>
 
+						<div className={s.info}>
+							LOL version is <Tag closeable={false} kind="accent">{version}</Tag>
+						</div>
+						<div className={s.info}>
+							LOL folder is
+							<Tag
+								closeable={!!lolDir}
+								kind="accent"
+								variant={VARIANT.light}
+								onClick={onSelectDir}
+								onActionClick={clearFolder}
+							>
+								<Tooltip content={lolDir && `Click to re-select.`}>
+									{lolDir || `Click here to select`}
+								</Tooltip>
+							</Tag>
+						</div>
+
 						<Button
-							className={ s.import }
-							disabled={ !lolDir }
-							onClick={ importItems }
+							className={s.import}
+							disabled={!lolDir}
+							onClick={importItems}
 						>
 							import
 						</Button>
 
-						<div className={ s.info }>
-							LOL version is<code>{ version }</code>
-						</div>
-						<div className={ s.info }>
-							{
-								lolDir
-									? <>
-										LOL folder is
-										<Tooltip content={ `Click here to re-select folder` }>
-											<code
-												onClick={ onSelectDir }
-											>
-												{ lolDir }
-											</code>
-										</Tooltip>
-
-										<Tooltip content={ `Clear selected folder` }>
-										<span
-											onClick={ clearFolder }
-										>
-											<TrashIcon
-												preserveAspectRatio="xMidYMid meet"
-												viewBox="0 0 512 512"
-												width={ `24` }
-												height={ `24` }
-											/>
-										</span>
-										</Tooltip>
-									</>
-									: <Button onClick={ onSelectDir }>Select LOL folder</Button>
-							}
-						</div>
-
-						<div className={ s.champions }>
+						<div className={s.champions}>
 							<WaitingList />
 							<ChampionTable />
 						</div>

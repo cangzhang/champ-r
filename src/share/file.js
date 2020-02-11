@@ -14,7 +14,7 @@ export const saveToFile = async (desDir, data) => {
 			'blocks',
 		]);
 
-		const file = `${desDir}/Champions/${data.key}/Recommended/${data.fileName}.json`;
+		const file = `${desDir}/Game/Config/Champions/${data.key}/Recommended/${data.fileName}.json`;
 
 		await fs.promises.mkdir(path.dirname(file), {
 			recursive: true

@@ -5,7 +5,7 @@
   padding: 1em;
 
   .import {
-	margin: 2em auto;
+	margin: 0.6em auto;
 	width: 10em;
   }
 
@@ -31,25 +31,9 @@
 	  background-color: rgb(237, 243, 253);
 	}
 
-	span {
-	  margin-left: 0.4em;
-	  display: inline-flex;
-	  align-items: center;
-	  justify-content: center;
-	  cursor: pointer;
-	  width: 2em;
-	  height: 2em;
-	  border: 2px solid transparent;
-	  border-radius: 30%;
-
-	  &:hover {
-		border-color: rgb(236, 240, 246);
-	  }
-	}
-
 	svg {
-	  width: 1.4em;
-	  height: 1.4em;
+	  width: 1.2em;
+	  height: 1.2em;
 	}
   }
 }

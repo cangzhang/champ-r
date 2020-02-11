@@ -92,7 +92,7 @@ export const getItems = async (championName, position, version) => {
 		map: `any`,
 		mode: `any`,
 		type: `custom`,
-		title: `[op.gg] ${ championName } - ${ position } - ${ version }`,
+		title: `[OP.GG] ${ position } - ${ version }`,
 		fileName: `[op.gg]${ championName }-${ position }-${ version }`,
 		blocks,
 	};
