@@ -3,7 +3,7 @@ import { requestHtml } from './utils';
 const OpggUrl = `https://www.op.gg`;
 
 export const getPositions = async () => {
-	const $ = await requestHtml(`${ OpggUrl }/champion/statistics`);
+	const $ = await requestHtml(`${OpggUrl}/champion/statistics`);
 
 	const items = $(`.champion-index__champion-list`)
 		.find(`.champion-index__champion-item`);
@@ -33,68 +33,66 @@ export const getSpellName = (imgSrc = '') => {
 	return matched.pop();
 };
 
-export const getItems = async (championName, position, version) => {
+export const genChampionData = async (championName, position, version) => {
 	if (!championName || !position)
 		return Promise.reject(`Please specify champion & position.`);
 
-	const $ = await requestHtml(`${ OpggUrl }/champion/${ championName }/statistics/${ position }`);
-	const spellTables = $(`.champion-overview__table.champion-overview__table--summonerspell tbody`);
-
-	const spells = spellTables.eq(0).find(`tr`)
-		.toArray()
-		.map(item => {
-			const imgs = $(item).find(`.champion-stats__list__item img`);
-			const src = imgs.map((idx, i) => $(i).attr(`src`));
-			return src.toArray();
-		});
-	const skills = spellTables.eq(1)
-		.find(`.champion-stats__list`)
-		.find(`.champion-stats__list__item`).text().trim().replace(/\s+/g, '>');
-	const spellNames = spells.map(arr => arr.map(getSpellName));
-
-	const blocks = $(`.champion-overview__table`).eq(1).find(`tbody > tr`)
-		.toArray()
-		.reduce((groups, row) => {
-			const len = groups.length;
-			let cur = groups[len - 1];
-
-			if ($(row).attr(`class`).includes(`--first`)) {
-				const type = $(row).find(`th.champion-overview__sub-header`).text();
-				cur = {
-					type,
-					items: [],
-				};
-				groups[len] = cur;
-			}
-
-			const items = $(row).find(`td.champion-overview__data .champion-stats__list .champion-stats__list__item img`)
-				.map((_, i) => {
-					const id = $(i).attr(`src`).match(/(.*)\/(.*)\.png/).pop();
-
-					return {
-						id,
-						count: 1,
-					};
-				});
-
-			cur.items = cur.items.concat(items.toArray());
-			return groups;
-		}, []);
+	const [blocks, skills] = await Promise.all([
+		genBlocks(championName, position),
+		genSkills(championName, position),
+	]);
 
 	return {
-		key: championName,
-		champion: championName,
-		position,
-		spellNames,
-		skills,
 		'sortrank': 1,
 		priority: false,
 		map: `any`,
 		mode: `any`,
 		type: `custom`,
-		title: `[OP.GG] ${ position } - ${ version }`,
-		fileName: `[op.gg]${ championName }-${ position }-${ version }`,
+		key: championName,
+		champion: championName,
+		position,
+		title: `[OP.GG] ${position} - ${version}`,
+		fileName: `[op.gg]${championName}-${position}-${version}`,
+		skills,
 		blocks,
 	};
 };
 
+// TODO: sort
+export const genBlocks = async (champion, position) => {
+	const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}/item`);
+
+	const itemTable = $(`.l-champion-statistics-content__side .champion-stats__table`)[0];
+	const blocks = $(itemTable)
+		.find(`tbody tr`)
+		.toArray()
+		.map(tr => {
+			const [itemTd, pRateTd, wRateTd] = $(tr).find(`td`).toArray();
+			const itemId = $(itemTd).find(`img`).attr(`src`).match(/(.*)\/(.*)\.png/).pop();
+			const pRate = $(pRateTd).find(`em`).text().replace(',', '');
+			const wRate = $(wRateTd).text().replace(`%`, '');
+
+			return {
+				id: itemId,
+				count: 1,
+				pRate,
+				wRate,
+			};
+		});
+
+	return blocks;
+};
+
+export const genSkills = async (champion, position) => {
+	const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}/skill`);
+
+	const skills = $(`.champion-stats__filter__item .champion-stats__list`)
+		.toArray()
+		.map(i =>
+			$(i).find(`.champion-stats__list__item`)
+				.toArray()
+				.map(j => $(j).text().trim()),
+		);
+
+	return skills;
+};

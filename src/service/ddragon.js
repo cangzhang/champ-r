@@ -51,8 +51,8 @@ export const ChampionNames = [
 export const DDragonCDNUrl = `https://ddragon.leagueoflegends.com/cdn`;
 
 export const getLolVer = async () => {
-	const resp = await http.get(`https://ddragon.leagueoflegends.com/realms/na.json`);
-	return resp.v;
+	const resp = await http.get(`https://ddragon.leagueoflegends.com/api/versions.json`);
+	return resp[0];
 };
 
 export const getChampions = async (ver, region = `en_US`) => {

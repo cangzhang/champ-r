@@ -32,7 +32,7 @@ const makeFetchTask = (champion, position, v, dispatch) => {
 		payload: `${champion}-${position}`,
 	});
 
-	return Opgg.getItems(champion, position, v)
+	return Opgg.genChampionData(champion, position, v)
 		.then(data => {
 			dispatch({
 				type: Actions.ADD_FETCHED,
@@ -72,7 +72,9 @@ const App = () => {
 		config.set(`lolVer`, v);
 
 		const res = await Opgg.getPositions();
-		const tasks = res.reduce((t, item) => {
+		const tasks = res
+			.slice(0, 1)
+			.reduce((t, item) => {
 			const { positions, key } = item;
 			const positionTasks = positions.map(position => makeFetchTask(key, position, v, dispatch));
 
