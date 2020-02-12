@@ -1,22 +1,23 @@
-import { requestHtml } from './utils';
+import { requestHtml } from 'src/service/utils';
+
+import { saveToFile } from 'src/share/file';
+import { Actions } from 'src/share/actions';
 
 const OpggUrl = `https://www.op.gg`;
 
-export const getPositions = async () => {
+export const getStat = async () => {
 	const $ = await requestHtml(`${OpggUrl}/champion/statistics`);
 
-	const items = $(`.champion-index__champion-list`)
-		.find(`.champion-index__champion-item`);
+	const items = $(`.champion-index__champion-list`).find(`.champion-index__champion-item`);
 	const result = items
 		.toArray()
 		.map(itm => {
 			const champ = $(itm);
 			const { championKey, championName } = champ.data();
-			const positions = champ.find(`.champion-index__champion-item__position`)
+			const positions = champ
+				.find(`.champion-index__champion-item__position`)
 				.toArray()
 				.map(i => $(i).text().toLowerCase());
-			// todo: champion avatar
-			// const avatar = champ.find(`.champion-index__champion-item__image`)
 
 			return {
 				key: championKey,
@@ -108,3 +109,49 @@ export const genSkills = async (champion, position) => {
 		return err;
 	}
 };
+
+export default async function importItems(version, lolDir, dispatch) {
+	const res = await getStat();
+	const tasks = res
+		// TODO: remove
+		.slice(0, 10)
+		.reduce((t, item) => {
+			const { positions, key: champion } = item;
+			const positionTasks = positions.map(position => {
+				dispatch({
+					type: Actions.ADD_FETCHING,
+					payload: `${champion}-${position}`,
+				});
+
+				// TODO: save after got data
+				return genChampionData(champion, position, version)
+					.then(data => {
+						dispatch({
+							type: Actions.ADD_FETCHED,
+							payload: data,
+						});
+
+						console.log(data);
+						return data;
+					});
+			});
+
+			return t.concat(positionTasks);
+		}, []);
+
+	const fetched = await Promise.all(tasks);
+
+	if (!lolDir) {
+		// TODO: notification
+		return;
+	}
+
+	const t = fetched.map(i => saveToFile(lolDir, i));
+
+	try {
+		const result = await Promise.all(t);
+		return result;
+	} catch (err) {
+		return err;
+	}
+}
