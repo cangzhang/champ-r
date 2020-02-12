@@ -30,7 +30,13 @@ const ChampionTable = () => {
 						<img src={avatar} alt={i.key} />
 					</td>
 					<td>{i.position}</td>
-					<td>{i.skills.join(` > `)}</td>
+					<td>
+						<ol>
+							{i.skills.map((s, idx) =>
+								<li key={idx}>{s.join(` > `)}</li>,
+							)}
+						</ol>
+					</td>
 				</tr>;
 			})
 		}

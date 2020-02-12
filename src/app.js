@@ -73,13 +73,14 @@ const App = () => {
 
 		const res = await Opgg.getPositions();
 		const tasks = res
-			.slice(0, 1)
+			// TODO: remove
+			// .slice(0, 10)
 			.reduce((t, item) => {
-			const { positions, key } = item;
-			const positionTasks = positions.map(position => makeFetchTask(key, position, v, dispatch));
+				const { positions, key } = item;
+				const positionTasks = positions.map(position => makeFetchTask(key, position, v, dispatch));
 
-			return t.concat(positionTasks);
-		}, []);
+				return t.concat(positionTasks);
+			}, []);
 
 		const fetched = await Promise.all(tasks);
 		// const res = await saveToFile(dir);
@@ -90,11 +91,17 @@ const App = () => {
 		}
 
 		const t = fetched.map(i => saveToFile(lolDir, i));
-		const result = await Promise.all(t);
-		console.log(`write to file: ${result}`);
+		try {
+			const result = await Promise.all(t);
+			console.log(`write to file: ${result}`);
+		} catch (err) {
+			console.log(err);
+		}
 	};
 
 	const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
+
+	const isFetching = store.fetching.length > 0;
 
 	return (
 		<AppContext.Provider value={contextValue}>
@@ -104,16 +111,6 @@ const App = () => {
 					<div className={s.container}>
 						<h2>Champ Remix</h2>
 
-						<Checkbox
-							checked={true}
-							onChange={() => null}
-						>
-							op.gg
-						</Checkbox>
-
-						<div className={s.info}>
-							LOL version is <Tag closeable={false} kind="accent">{version}</Tag>
-						</div>
 						<div className={s.info}>
 							LOL folder is
 							<Tag
@@ -128,10 +125,21 @@ const App = () => {
 								</Tooltip>
 							</Tag>
 						</div>
+						<div className={s.info}>
+							LOL version is <Tag closeable={false} kind="accent">{version}</Tag>
+						</div>
+
+						<Checkbox
+							checked={true}
+							onChange={() => null}
+						>
+							op.gg
+						</Checkbox>
 
 						<Button
 							className={s.import}
 							disabled={!lolDir}
+							isLoading={isFetching}
 							onClick={importItems}
 						>
 							import
