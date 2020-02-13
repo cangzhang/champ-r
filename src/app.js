@@ -16,12 +16,12 @@ import AppContext from 'src/share/context';
 import Sources from 'src/share/sources';
 
 import { getLolVer } from 'src/service/ddragon';
-import importOpgg from 'src/service/data-source/op-gg';
+import fetchOpgg from 'src/service/data-source/op-gg';
+import fetchLolqq from 'src/service/data-source/101-qq';
 
 import ChampionTable from 'src/components/champion-table';
 import WaitingList from 'src/components/waiting-list';
 import Toolbar from 'src/components/toolbar';
-import { Check } from 'baseui/icon';
 
 const { dialog } = require('electron').remote;
 const config = require('./native/config');
@@ -52,11 +52,12 @@ const App = () => {
 
 	const importFromSources = async () => {
 		if (selectedSources.includes(Sources.Opgg)) {
-			const result = await importOpgg(version, lolDir, dispatch);
+			const result = await fetchOpgg(version, lolDir, dispatch);
 			console.log(`write to file: ${result}`);
 		}
 		if (selectedSources.includes(Sources.Lolqq)) {
-
+			const result = await fetchLolqq();
+			console.log(result)
 		}
 	};
 
