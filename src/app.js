@@ -17,7 +17,7 @@ import Sources from 'src/share/sources';
 
 import { getLolVer } from 'src/service/ddragon';
 import fetchOpgg from 'src/service/data-source/op-gg';
-import fetchLolqq from 'src/service/data-source/101-qq';
+import fetchLolqq from 'src/service/data-source/lol-qq';
 
 import ChampionTable from 'src/components/champion-table';
 import WaitingList from 'src/components/waiting-list';
@@ -50,14 +50,17 @@ const App = () => {
 		config.set('lolDir', ``);
 	};
 
-	const importFromSources = async () => {
+	const importFromSources = () => {
 		if (selectedSources.includes(Sources.Opgg)) {
-			const result = await fetchOpgg(version, lolDir, dispatch);
-			console.log(`write to file: ${result}`);
+			fetchOpgg(version, lolDir, dispatch)
+				.then(result => {
+					console.log(`op.gg: ${result}`);
+				});
 		}
 		if (selectedSources.includes(Sources.Lolqq)) {
-			const result = await fetchLolqq();
-			console.log(result)
+			fetchLolqq(lolDir).then(result => {
+				console.log(`lol.qq.com: ${result}`);
+			});
 		}
 	};
 
@@ -67,10 +70,10 @@ const App = () => {
 			toggleSource(selectedSources.concat(val));
 		} else {
 			const idx = selectedSources.indexOf(val);
-			toggleSource(
-				selectedSources.slice(0, idx),
-				selectedSources.slice(idx + 1),
-			);
+			toggleSource([
+				...selectedSources.slice(0, idx),
+				...selectedSources.slice(idx + 1),
+			]);
 		}
 	};
 

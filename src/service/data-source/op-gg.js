@@ -39,7 +39,7 @@ export const genChampionData = async (championName, position, version) => {
 		return Promise.reject(`Please specify champion & position.`);
 
 	try {
-		const [blocks, skills] = await Promise.all([
+		const [items, skills] = await Promise.all([
 			genBlocks(championName, position),
 			genSkills(championName, position),
 		]);
@@ -54,9 +54,13 @@ export const genChampionData = async (championName, position, version) => {
 			champion: championName,
 			position,
 			title: `[OP.GG] ${position} - ${version}`,
-			fileName: `[op.gg]${championName}-${position}-${version}`,
+			fileName: `[OP.GG]${championName}-${position}-${version}`,
 			skills,
-			blocks,
+			// TODO
+			blocks: [{
+				type: `op.gg`,
+				items: items,
+			}],
 		};
 	} catch (err) {
 		return err;
