@@ -1,7 +1,7 @@
 import { requestHtml } from 'src/service/utils';
 
 import { saveToFile } from 'src/share/file';
-import { Actions } from 'src/share/actions';
+import { addFetched, addFetching } from 'src/share/actions';
 
 const OpggUrl = `https://www.op.gg`;
 
@@ -122,18 +122,12 @@ export default async function importItems(version, lolDir, dispatch) {
 		.reduce((t, item) => {
 			const { positions, key: champion } = item;
 			const positionTasks = positions.map(position => {
-				dispatch({
-					type: Actions.ADD_FETCHING,
-					payload: `${champion}-${position}`,
-				});
+				dispatch(addFetching(`${champion}-${position}`));
 
 				// TODO: save after got data
 				return genChampionData(champion, position, version)
 					.then(data => {
-						dispatch({
-							type: Actions.ADD_FETCHED,
-							payload: data,
-						});
+						dispatch(addFetched(data));
 
 						console.log(data);
 						return data;

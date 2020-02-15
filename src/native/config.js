@@ -4,5 +4,6 @@ module.exports = new Store({
 	defaults: {
 		lolDir: ``,
 		lolVer: ``,
+		language: ``,
 	},
 });

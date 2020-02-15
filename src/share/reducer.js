@@ -8,6 +8,7 @@ export const initialState = {
 	fetching: [],
 	fetched: [],
 	version: null,
+	itemMap: null,
 };
 
 export const init = payload => payload;
@@ -25,13 +26,16 @@ export default produce((draft, action) => {
 			break;
 		}
 		case Actions.ADD_FETCHED: {
-			const target = `${ payload.key }-${ payload.position }`;
+			const target = `${payload.key}-${payload.position}`;
 			const idx = draft.fetching.findIndex(i => i.toLowerCase() === target.toLowerCase());
 			draft.fetching.splice(idx, 1);
 			draft.fetched.push(payload);
 			draft = draft.fetched.sort((a, b) => a.key.localeCompare(b.key));
 			break;
 		}
+		case Actions.UPDATE_ITEM_MAP:
+			draft.itemMap = payload;
+			break;
 		case Actions.INIT_REDUCER:
 			draft = init(payload);
 			break;

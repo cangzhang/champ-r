@@ -10,12 +10,12 @@ import { Checkbox } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Tag, VARIANT } from 'baseui/tag';
 
-import appReducer, { initialState, init, setLolVersion } from 'src/share/reducer';
+import appReducer, { initialState, init, setLolVersion, updateItemMap } from 'src/share/reducer';
 import AppContext from 'src/share/context';
 
 import Sources from 'src/share/sources';
 
-import { getLolVer } from 'src/service/ddragon';
+import { getLolVer, getItemList } from 'src/service/ddragon';
 import fetchOpgg from 'src/service/data-source/op-gg';
 import fetchLolqq from 'src/service/data-source/lol-qq';
 
@@ -58,9 +58,10 @@ const App = () => {
 				});
 		}
 		if (selectedSources.includes(Sources.Lolqq)) {
-			fetchLolqq(lolDir).then(result => {
-				console.log(`lol.qq.com: ${result}`);
-			});
+			fetchLolqq(lolDir, store.itemMap)
+				.then(result => {
+					console.log(`lol.qq.com: ${result}`);
+				});
 		}
 	};
 
@@ -78,14 +79,18 @@ const App = () => {
 	};
 
 	useEffect(() => {
-		const getVer = async () => {
+		const getVernItems = async () => {
 			const v = await getLolVer();
 			await setVersion(v);
 			dispatch(setLolVersion(v));
 			config.set(`lolVer`, v);
+
+			const language = config.get(`language`);
+			const data = await getItemList(v, language);
+			dispatch(updateItemMap(data));
 		};
 
-		getVer();
+		getVernItems();
 	}, []);
 
 	const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);

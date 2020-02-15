@@ -1,29 +1,16 @@
 import _get from 'lodash/get';
 import _find from 'lodash/find';
+import _sortBy from 'lodash/sortBy'
 
 import http from 'src/service/http';
 import { saveToFile } from 'src/share/file';
-
-// import { saveToFile } from 'src/share/file';
 // import { Actions } from 'src/share/actions';
-
-// const vm = require('vm');
-// const context = {
-// 	CHAMPION_POSITION: {
-// 		list: {},
-// 		gameVer: ``,
-// 	},
-// };
-// vm.createContext(context);
-// export const runCode = (code, varName) => {
-// 	vm.runInContext(code, context);
-// 	return context[varName];
-// };
 
 const API = {
 	List: `https://game.gtimg.cn/images/lol/act/img/js/heroList/hero_list.js`,
 	Positions: `https://lol.qq.com/act/lbp/common/guides/guideschampion_position.js`,
 	detail: id => `https://lol.qq.com/act/lbp/common/guides/champDetail/champDetail_${id}.js`,
+	Items: `https://ossweb-img.qq.com/images/lol/act/img/js/items/items.js`,
 };
 
 export const parseCode = str => {
@@ -31,6 +18,15 @@ export const parseCode = str => {
 		const [result] = str.match(/{"(.*)"}/);
 		const data = JSON.parse(result);
 		return data;
+	} catch (err) {
+		return err;
+	}
+};
+
+export const getItemList = async () => {
+	try {
+		const { items: itemList } = await http.get(API.Items);
+		return itemList;
 	} catch (err) {
 		return err;
 	}
@@ -66,19 +62,64 @@ export const getChampionPositions = async () => {
 	}
 };
 
-export const makeItem = (data, positions, champion, version) => {
+export const sortBlocks = (items, itemMap) => {
+	const { tags: StarterTags } = _find(itemMap.tree, { header: `START` });
+	const startItems = [];
+	const incompleteItems = [];
+	const completedItems = [];
+	const boots = [];
+
+	for (const i of items) {
+		const itemDetail = itemMap.data[i.id];
+
+		const isBoot = itemDetail.tags.includes(`Boots`);
+		if (isBoot) {
+			boots.push(i);
+			continue;
+		}
+
+		const isStartItem = itemDetail.tags.some(t => StarterTags.includes(t.toUpperCase()));
+		const isInCompleteItem = !isStartItem && itemDetail.into;
+		const isCompletedItem = !isStartItem && !itemDetail.into;
+
+		isStartItem && startItems.push(i);
+		isInCompleteItem && incompleteItems.push(i);
+		isCompletedItem && completedItems.push(i);
+	}
+
+	const sortByPickRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, [`pRate`]));
+	const sortByWinRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, [`wRate`]));
+
+	return [sortByPickRate, sortByWinRate];
+};
+
+export const makeItem = ({ data, positions, champion, version, itemMap }) => {
 	const { alias } = champion;
 	const { championLane } = data;
 
 	const result = positions.reduce((res, position) => {
 		const laneItemsStr = _get(championLane, `${position}.hold3`, []);
 		const rawBlocks = JSON.parse(laneItemsStr);
-		const items = rawBlocks.map(i => ({
+		const rawItems = rawBlocks.map(i => ({
 			id: i.itemid,
 			count: 1,
 			pRate: i.showrate,
 			wRate: i.winrate,
 		}));
+		const [
+			[
+				pStartItems,
+				pIncompleteItems,
+				pCompletedItems,
+				pBoots,
+			],
+			[
+				wStartItems,
+				wIncompleteItems,
+				wCompletedItems,
+				wBoots,
+			],
+		] = sortBlocks(rawItems, itemMap);
 
 		const item = {
 			'sortrank': 1,
@@ -92,11 +133,41 @@ export const makeItem = (data, positions, champion, version) => {
 			title: `[LOL.QQ.COM] ${position} - ${version}`,
 			fileName: `[LOL.QQ.COM]${alias}-${position}-${version}`,
 			skills: [],
-			// TODO
-			blocks: [{
-				type: `lol.qq.com`,
-				items: items,
-			}],
+			// TODO: boots
+			blocks: [
+				{
+					type: `Starter Items | by pick rate`,
+					items: pStartItems,
+				},
+				{
+					type: `Starter Items | by win rate`,
+					items: wStartItems,
+				},
+				{
+					type: `Incomplete | by pick rate`,
+					items: pIncompleteItems,
+				},
+				{
+					type: `Incomplete | by win rate`,
+					items: wIncompleteItems,
+				},
+				{
+					type: `Completed | by pick rate`,
+					items: pCompletedItems,
+				},
+				{
+					type: `Completed | by win rate`,
+					items: wCompletedItems,
+				},
+				{
+					type: `Boots | by pick rate`,
+					items: pBoots,
+				},
+				{
+					type: `Boots | by win rate`,
+					items: wBoots,
+				},
+			],
 		};
 
 		return res.concat(item);
@@ -105,7 +176,7 @@ export const makeItem = (data, positions, champion, version) => {
 	return result;
 };
 
-export default async function getItems(lolDir) {
+export default async function getItems(lolDir, itemMap) {
 	try {
 		const [
 			{
@@ -127,7 +198,13 @@ export default async function getItems(lolDir) {
 			const positions = Object.keys(positionMap[id]);
 			const champion = _find(list, { heroId: id });
 
-			const block = makeItem(item, positions, champion, version);
+			const block = makeItem({
+				data: item,
+				positions,
+				champion,
+				version,
+				itemMap,
+			});
 			return res.concat(block);
 		}, []);
 
