@@ -51,14 +51,15 @@ const App = () => {
 	};
 
 	const importFromSources = () => {
+		const { itemMap } = store;
 		if (selectedSources.includes(Sources.Opgg)) {
-			fetchOpgg(version, lolDir, dispatch)
+			fetchOpgg(version, lolDir, dispatch, itemMap)
 				.then(result => {
 					console.log(`op.gg: ${result}`);
 				});
 		}
 		if (selectedSources.includes(Sources.Lolqq)) {
-			fetchLolqq(lolDir, store.itemMap)
+			fetchLolqq(lolDir, itemMap)
 				.then(result => {
 					console.log(`lol.qq.com: ${result}`);
 				});
@@ -96,7 +97,7 @@ const App = () => {
 	const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
 
 	const isFetching = store.fetching.length > 0;
-	const shouldDisableImport = !version || !lolDir || !selectedSources.length;
+	const shouldDisableImport = !version || !lolDir || !selectedSources.length || !store.itemMap;
 
 	return (
 		<AppContext.Provider value={contextValue}>

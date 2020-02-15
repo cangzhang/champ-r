@@ -2,6 +2,7 @@ import { requestHtml } from 'src/service/utils';
 
 import { saveToFile } from 'src/share/file';
 import { addFetched, addFetching } from 'src/share/actions';
+import { genFileBlocks } from 'src/service/utils';
 
 const OpggUrl = `https://www.op.gg`;
 
@@ -34,18 +35,18 @@ export const getSpellName = (imgSrc = '') => {
 	return matched.pop();
 };
 
-export const genChampionData = async (championName, position, version) => {
+export const genChampionData = async (championName, position, version, itemMap) => {
 	if (!championName || !position)
 		return Promise.reject(`Please specify champion & position.`);
 
 	try {
-		const [items, skills] = await Promise.all([
-			genBlocks(championName, position),
+		const [blocks, skills] = await Promise.all([
+			genBlocks(championName, position, itemMap),
 			genSkills(championName, position),
 		]);
 
 		return {
-			'sortrank': 1,
+			sortrank: 1,
 			priority: false,
 			map: `any`,
 			mode: `any`,
@@ -56,24 +57,18 @@ export const genChampionData = async (championName, position, version) => {
 			title: `[OP.GG] ${position} - ${version}`,
 			fileName: `[OP.GG]${championName}-${position}-${version}`,
 			skills,
-			// TODO
-			blocks: [{
-				type: `op.gg`,
-				items: items,
-			}],
+			blocks,
 		};
 	} catch (err) {
 		return err;
 	}
 };
 
-// TODO: sort
-export const genBlocks = async (champion, position) => {
+export const genBlocks = async (champion, position, itemMap) => {
 	try {
 		const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}/item`);
-
 		const itemTable = $(`.l-champion-statistics-content__side .champion-stats__table`)[0];
-		const blocks = $(itemTable)
+		const rawItems = $(itemTable)
 			.find(`tbody tr`)
 			.toArray()
 			.map(tr => {
@@ -90,6 +85,7 @@ export const genBlocks = async (champion, position) => {
 				};
 			});
 
+		const blocks = genFileBlocks(rawItems, itemMap);
 		return blocks;
 	} catch (err) {
 		return err;
@@ -114,18 +110,16 @@ export const genSkills = async (champion, position) => {
 	}
 };
 
-export default async function importItems(version, lolDir, dispatch) {
+export default async function importItems(version, lolDir, dispatch, itemMap) {
 	const res = await getStat();
 	const tasks = res
-		// TODO: remove
-		.slice(0, 10)
 		.reduce((t, item) => {
 			const { positions, key: champion } = item;
 			const positionTasks = positions.map(position => {
 				dispatch(addFetching(`${champion}-${position}`));
 
 				// TODO: save after got data
-				return genChampionData(champion, position, version)
+				return genChampionData(champion, position, version, itemMap)
 					.then(data => {
 						dispatch(addFetched(data));
 
