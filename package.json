@@ -140,10 +140,9 @@
 	"build": {
 		"appId": "com.al.champ-r",
 		"files": [
-			"build/",
-			"dist/",
 			"node_modules/",
-			"*.js",
+			"build/",
+			"main.js",
 			"package.json"
 		],
 		"win": {
