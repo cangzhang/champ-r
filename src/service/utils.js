@@ -5,100 +5,114 @@ import cheerio from 'cheerio';
 import http from './http';
 
 export const requestHtml = async (url) => {
-	try {
-		const rawHtml = await http.get(
-			url,
-			// get partial html
-			{
-				headers: { 'X-Requested-With': 'XMLHttpRequest' },
-			},
-		);
-		const $ = cheerio.load(rawHtml);
-		return $;
-	} catch (err) {
-		return err;
-	}
+  try {
+    const rawHtml = await http.get(
+      url,
+      // get partial html
+      {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      },
+    );
+    const $ = cheerio.load(rawHtml);
+    return $;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const getUpgradeableCompletedItems = ({ data }) => {
+  const result = Object.values(data)
+    .filter(i => i.requiredAlly)
+    .reduce((dataSet, item) => {
+      const { from } = item;
+      from.forEach(j => dataSet.add(j));
+      return dataSet;
+    }, new Set());
+
+  return Array.from(result);
 };
 
 export const sortBlocksByRate = (items, itemMap) => {
-	const { tags: StarterTags } = _find(itemMap.tree, { header: `START` });
-	const startItems = [];
-	const incompleteItems = [];
-	const completedItems = [];
-	const boots = [];
+  const { upgradeableCompletedItems } = itemMap;
+  const { tags: StarterTags } = _find(itemMap.tree, { header: `START` });
+  const startItems = [];
+  const incompleteItems = [];
+  const completedItems = [];
+  const boots = [];
 
-	for (const i of items) {
-		const itemDetail = itemMap.data[i.id];
+  for (const i of items) {
+    const itemDetail = itemMap.data[i.id];
 
-		const isBoot = itemDetail.tags.includes(`Boots`);
-		if (isBoot) {
-			boots.push(i);
-			continue;
-		}
+    const isBoot = itemDetail.tags.includes(`Boots`);
+    if (isBoot) {
+      boots.push(i);
+      continue;
+    }
 
-		const isStartItem = itemDetail.tags.some(t => StarterTags.includes(t.toUpperCase()));
-		const isInCompleteItem = !isStartItem && itemDetail.into;
-		const isCompletedItem = !isStartItem && !itemDetail.into;
+    const isUpgradeableCompleted = upgradeableCompletedItems.includes(i.id);
+    const isStartItem = itemDetail.tags.some(t => StarterTags.includes(t.toUpperCase()));
+    const isInCompleteItem = !isStartItem && !isUpgradeableCompleted && itemDetail.into;
+    const isCompletedItem = !isStartItem && (isUpgradeableCompleted || !itemDetail.into);
 
-		isStartItem && startItems.push(i);
-		isInCompleteItem && incompleteItems.push(i);
-		isCompletedItem && completedItems.push(i);
-	}
+    isStartItem && startItems.push(i);
+    isInCompleteItem && incompleteItems.push(i);
+    isCompletedItem && completedItems.push(i);
+  }
 
-	const sortByPickRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, [`pRate`]));
-	const sortByWinRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, [`wRate`]));
+  const sortByPickRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, [`pRate`]));
+  const sortByWinRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, [`wRate`]));
 
-	return [sortByPickRate, sortByWinRate];
+  return [sortByPickRate, sortByWinRate];
 };
 
 export const genFileBlocks = (rawItems, itemMap) => {
-	const [
-		[
-			pStartItems,
-			pIncompleteItems,
-			pCompletedItems,
-			pBoots,
-		],
-		[
-			wStartItems,
-			wIncompleteItems,
-			wCompletedItems,
-			wBoots,
-		],
-	] = sortBlocksByRate(rawItems, itemMap);
+  const [
+    [
+      pStartItems,
+      pIncompleteItems,
+      pCompletedItems,
+      pBoots,
+    ],
+    [
+      wStartItems,
+      wIncompleteItems,
+      wCompletedItems,
+      wBoots,
+    ],
+  ] = sortBlocksByRate(rawItems, itemMap);
 
-	return [
-		{
-			type: `Starter Items | by pick rate`,
-			items: pStartItems,
-		},
-		{
-			type: `Starter Items | by win rate`,
-			items: wStartItems,
-		},
-		{
-			type: `Incomplete | by pick rate`,
-			items: pIncompleteItems,
-		},
-		{
-			type: `Incomplete | by win rate`,
-			items: wIncompleteItems,
-		},
-		{
-			type: `Completed | by pick rate`,
-			items: pCompletedItems,
-		},
-		{
-			type: `Completed | by win rate`,
-			items: wCompletedItems,
-		},
-		{
-			type: `Boots | by pick rate`,
-			items: pBoots,
-		},
-		{
-			type: `Boots | by win rate`,
-			items: wBoots,
-		},
-	];
+  return [
+    {
+      type: `Starter Items | by pick rate`,
+      items: pStartItems,
+    },
+    {
+      type: `Starter Items | by win rate`,
+      items: wStartItems,
+    },
+    {
+      type: `Incomplete | by pick rate`,
+      items: pIncompleteItems,
+    },
+    {
+      type: `Incomplete | by win rate`,
+      items: wIncompleteItems,
+    },
+    {
+      type: `Completed | by pick rate`,
+      items: pCompletedItems,
+    },
+    {
+      type: `Completed | by win rate`,
+      items: wCompletedItems,
+    },
+    {
+      type: `Boots | by pick rate`,
+      items: pBoots,
+    },
+    {
+      type: `Boots | by win rate`,
+      items: wBoots,
+    },
+  ];
 };

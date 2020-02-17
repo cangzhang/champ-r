@@ -10,10 +10,10 @@ import { Checkbox } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Tag, VARIANT } from 'baseui/tag';
 
+import Sources from 'src/share/sources';
 import appReducer, { initialState, init, setLolVersion, updateItemMap } from 'src/share/reducer';
 import AppContext from 'src/share/context';
-
-import Sources from 'src/share/sources';
+import { getUpgradeableCompletedItems } from 'src/service/utils';
 
 import { getLolVer, getItemList } from 'src/service/ddragon';
 import fetchOpgg from 'src/service/data-source/op-gg';
@@ -88,7 +88,11 @@ const App = () => {
 
 			const language = config.get(`language`);
 			const data = await getItemList(v, language);
-			dispatch(updateItemMap(data));
+			const upgradeableCompletedItems = getUpgradeableCompletedItems(data);
+			dispatch(updateItemMap({
+				...data,
+				upgradeableCompletedItems,
+			}));
 		};
 
 		getVernItems();
