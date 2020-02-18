@@ -65,7 +65,7 @@ export const sortBlocksByRate = (items, itemMap) => {
   return [sortByPickRate, sortByWinRate];
 };
 
-export const genFileBlocks = (rawItems, itemMap) => {
+export const genFileBlocks = (rawItems, itemMap, showIncomplete = false) => {
   const [
     [
       pStartItems,
@@ -90,11 +90,11 @@ export const genFileBlocks = (rawItems, itemMap) => {
       type: `Starter Items | by win rate`,
       items: wStartItems,
     },
-    {
+    showIncomplete && {
       type: `Incomplete | by pick rate`,
       items: pIncompleteItems,
     },
-    {
+    showIncomplete && {
       type: `Incomplete | by win rate`,
       items: wIncompleteItems,
     },
@@ -114,5 +114,5 @@ export const genFileBlocks = (rawItems, itemMap) => {
       type: `Boots | by win rate`,
       items: wBoots,
     },
-  ];
+  ].filter(Boolean);
 };

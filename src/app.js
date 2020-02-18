@@ -19,8 +19,6 @@ import { getLolVer, getItemList } from 'src/service/ddragon';
 import fetchOpgg from 'src/service/data-source/op-gg';
 import fetchLolqq from 'src/service/data-source/lol-qq';
 
-import ChampionTable from 'src/components/champion-table';
-import WaitingList from 'src/components/waiting-list';
 import Toolbar from 'src/components/toolbar';
 
 const { dialog } = require('electron').remote;
@@ -150,10 +148,7 @@ const App = () => {
 							import
 						</Button>
 
-						<div className={s.champions}>
-							<WaitingList />
-							<ChampionTable />
-						</div>
+						<div className={s.champions} />
 					</div>
 				</BaseProvider>
 			</StyletronProvider>
