@@ -131,7 +131,6 @@ export default async function importItems(version, lolDir, itemMap, dispatch) {
 							$identity: identity,
 						}));
 
-						console.log(data);
 						return data;
 					});
 			});

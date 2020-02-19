@@ -29,9 +29,12 @@ const engine = new Styletron();
 
 const App = () => {
 	const [store, dispatch] = useReducer(appReducer, initialState, init);
+
 	const [version, setVersion] = useState(config.get(`lolVer`));
 	const [lolDir, setLolDir] = useState(config.get(`lolDir`));
+
 	const [selectedSources, toggleSource] = useState([Sources.Opgg, Sources.Lolqq]);
+	const [importing, setImporting] = useState(false);
 
 	const onSelectDir = async () => {
 		const { canceled, filePaths } = await dialog.showOpenDialog({
@@ -52,8 +55,12 @@ const App = () => {
 	const importFromSources = () => {
 		const { itemMap } = store;
 
+		setImporting(true);
+		let opggTask = null;
+		let lolqqTask = null;
+
 		if (selectedSources.includes(Sources.Opgg)) {
-			fetchOpgg(version, lolDir, itemMap, dispatch)
+			opggTask = fetchOpgg(version, lolDir, itemMap, dispatch)
 				.then(() => {
 					const content = `[OP.GG] Completed`;
 					toaster.positive(content);
@@ -61,12 +68,18 @@ const App = () => {
 		}
 
 		if (selectedSources.includes(Sources.Lolqq)) {
-			fetchLolqq(lolDir, itemMap, dispatch)
+			lolqqTask = fetchLolqq(lolDir, itemMap, dispatch)
 				.then(() => {
 					const content = `[101.QQ.COM] Completed`;
 					toaster.positive(content);
 				});
 		}
+
+		// TODO: show progress
+		Promise.all([opggTask, lolqqTask])
+			.finally(() => {
+				setImporting(false);
+			});
 	};
 
 	const onCheck = val => ev => {
@@ -102,8 +115,6 @@ const App = () => {
 	}, []);
 
 	const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
-
-	const isFetching = store.fetching.length > 0;
 	const shouldDisableImport = !version || !lolDir || !selectedSources.length || !store.itemMap;
 
 	return (
@@ -147,7 +158,7 @@ const App = () => {
 						<Button
 							className={s.import}
 							disabled={shouldDisableImport}
-							isLoading={isFetching}
+							isLoading={importing}
 							onClick={importFromSources}
 						>
 							import
