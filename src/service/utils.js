@@ -100,11 +100,11 @@ export const genFileBlocks = (rawItems, itemMap, showIncomplete = false) => {
     },
     {
       type: `Completed | by pick rate`,
-      items: pCompletedItems,
+      items: pCompletedItems.slice(0, 6),
     },
     {
       type: `Completed | by win rate`,
-      items: wCompletedItems,
+      items: wCompletedItems.slice(0, 6),
     },
     {
       type: `Boots | by pick rate`,

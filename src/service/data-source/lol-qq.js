@@ -1,9 +1,11 @@
+import { v4 as uuid } from 'uuid';
 import _get from 'lodash/get';
 import _find from 'lodash/find';
 
 import http from 'src/service/http';
 import { saveToFile } from 'src/share/file';
 import { genFileBlocks } from 'src/service/utils';
+import { addFetched, addFetching } from 'src/share/actions';
 // import { Actions } from 'src/share/actions';
 
 const API = {
@@ -41,12 +43,25 @@ export const getChampionList = async () => {
 	}
 };
 
-export const getChampionDetail = async id => {
+export const getChampionDetail = (champions, dispatch) => async id => {
 	try {
+		const { alias } = _find(champions, { heroId: id });
+		const $identity = uuid();
+
+		dispatch(addFetching({
+			$identity,
+			champion: alias.toLowerCase(),
+		}));
+
 		const apiUrl = API.detail(id);
 		const code = await http.get(apiUrl);
-		const { list } = parseCode(code);
-		return list;
+
+		dispatch(addFetched({
+			$identity,
+		}));
+
+		const data = parseCode(code);
+		return data.list;
 	} catch (err) {
 		return err;
 	}
@@ -98,12 +113,12 @@ export const makeItem = ({ data, positions, champion, version, itemMap }) => {
 	return result;
 };
 
-export default async function getItems(lolDir, itemMap) {
+export default async function getItems(lolDir, itemMap, dispatch) {
 	try {
 		const [
 			{
 				version,
-				hero: list,
+				hero: championList,
 			},
 			positionMap,
 		] = await Promise.all([
@@ -112,13 +127,13 @@ export default async function getItems(lolDir, itemMap) {
 		]);
 
 		const championIds = Object.keys(positionMap);
-		const tasks = championIds.map(getChampionDetail);
+		const tasks = championIds.map(getChampionDetail(championList, dispatch));
 		const detailList = await Promise.all(tasks);
 
 		const items = detailList.reduce((res, item, idx) => {
 			const id = championIds[idx];
 			const positions = Object.keys(positionMap[id]);
-			const champion = _find(list, { heroId: id });
+			const champion = _find(championList, { heroId: id });
 
 			const block = makeItem({
 				data: item,

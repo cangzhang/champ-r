@@ -9,6 +9,7 @@ import { Button } from 'baseui/button';
 import { Checkbox } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Tag, VARIANT } from 'baseui/tag';
+import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 
 import Sources from 'src/share/sources';
 import appReducer, { initialState, init, setLolVersion, updateItemMap } from 'src/share/reducer';
@@ -50,16 +51,20 @@ const App = () => {
 
 	const importFromSources = () => {
 		const { itemMap } = store;
+
 		if (selectedSources.includes(Sources.Opgg)) {
-			fetchOpgg(version, lolDir, dispatch, itemMap)
-				.then(result => {
-					console.log(`op.gg: ${result}`);
+			fetchOpgg(version, lolDir, itemMap, dispatch)
+				.then(() => {
+					const content = `[OP.GG] Completed`;
+					toaster.positive(content);
 				});
 		}
+
 		if (selectedSources.includes(Sources.Lolqq)) {
-			fetchLolqq(lolDir, itemMap)
-				.then(result => {
-					console.log(`lol.qq.com: ${result}`);
+			fetchLolqq(lolDir, itemMap, dispatch)
+				.then(() => {
+					const content = `[101.QQ.COM] Completed`;
+					toaster.positive(content);
 				});
 		}
 	};
@@ -107,7 +112,7 @@ const App = () => {
 				<BaseProvider theme={LightTheme}>
 					<Toolbar />
 					<div className={s.container}>
-						<h2>Champ Remix</h2>
+						<h2 className={s.title}>Champ Remix</h2>
 
 						<div className={s.info}>
 							LOL folder is
@@ -149,6 +154,18 @@ const App = () => {
 						</Button>
 
 						<div className={s.champions} />
+
+						<ToasterContainer
+							autoHideDuration={1500}
+							placement={PLACEMENT.bottom}
+							overrides={{
+								ToastBody: {
+									style: () => ({
+										backgroundColor: `#5383e8`,
+									}),
+								},
+							}}
+						/>
 					</div>
 				</BaseProvider>
 			</StyletronProvider>

@@ -1,8 +1,9 @@
-import { requestHtml } from 'src/service/utils';
+import { v4 as uuid } from 'uuid';
 
-import { saveToFile } from 'src/share/file';
-import { addFetched, addFetching } from 'src/share/actions';
+import { requestHtml } from 'src/service/utils';
 import { genFileBlocks } from 'src/service/utils';
+import { addFetched, addFetching } from 'src/share/actions';
+import { saveToFile } from 'src/share/file';
 
 const OpggUrl = `https://www.op.gg`;
 
@@ -110,18 +111,25 @@ export const genSkills = async (champion, position) => {
 	}
 };
 
-export default async function importItems(version, lolDir, dispatch, itemMap) {
+export default async function importItems(version, lolDir, itemMap, dispatch) {
 	const res = await getStat();
 	const tasks = res
 		.reduce((t, item) => {
+			const identity = uuid();
 			const { positions, key: champion } = item;
 			const positionTasks = positions.map(position => {
-				dispatch(addFetching(`${champion}-${position}`));
+				dispatch(addFetching({
+					champion,
+					position,
+					$identity: identity,
+				}));
 
-				// TODO: save after got data
 				return genChampionData(champion, position, version, itemMap)
 					.then(data => {
-						dispatch(addFetched(data));
+						dispatch(addFetched({
+							...data,
+							$identity: identity,
+						}));
 
 						console.log(data);
 						return data;

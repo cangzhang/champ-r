@@ -4,6 +4,10 @@
   //height: 100vh;
   padding: 1em;
 
+  .title {
+	user-select: none;
+  }
+
   .import {
 	margin: 0.6em auto;
 	width: 10em;

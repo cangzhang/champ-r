@@ -22,15 +22,14 @@ export default produce((draft, action) => {
 		}
 		case Actions.ADD_FETCHING: {
 			draft.fetching.push(payload);
-			draft = draft.fetching.sort((a, b) => a.localeCompare(b));
+			// draft = draft.fetching.sort((a, b) => a.localeCompare(b));
 			break;
 		}
 		case Actions.ADD_FETCHED: {
-			const target = `${payload.key}-${payload.position}`;
-			const idx = draft.fetching.findIndex(i => i.toLowerCase() === target.toLowerCase());
+			const idx = draft.fetching.findIndex(i => i.$identity === payload.$identity);
 			draft.fetching.splice(idx, 1);
 			draft.fetched.push(payload);
-			draft = draft.fetched.sort((a, b) => a.key.localeCompare(b.key));
+			// draft = draft.fetched.sort((a, b) => a.key.localeCompare(b.key));
 			break;
 		}
 		case Actions.UPDATE_ITEM_MAP:
