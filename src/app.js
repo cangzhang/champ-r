@@ -1,5 +1,6 @@
 import s from './app.module.scss';
 
+import { remote } from 'electron';
 import React, { useReducer, useState, useMemo, useEffect } from 'react';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
@@ -11,19 +12,26 @@ import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Tag, VARIANT } from 'baseui/tag';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 
-import Sources from 'src/share/sources';
-import appReducer, { initialState, init, setLolVersion, updateItemMap } from 'src/share/reducer';
-import AppContext from 'src/share/context';
-import { getUpgradeableCompletedItems } from 'src/service/utils';
+import config from 'src/native/config';
 
+import Sources from 'src/share/sources';
+import AppContext from 'src/share/context';
+import appReducer, {
+	initialState,
+	init,
+	setLolVersion,
+	updateItemMap,
+	prepareReimport,
+} from 'src/share/reducer';
+
+import { getUpgradeableCompletedItems } from 'src/service/utils';
 import { getLolVer, getItemList } from 'src/service/ddragon';
+
 import fetchOpgg from 'src/service/data-source/op-gg';
 import fetchLolqq from 'src/service/data-source/lol-qq';
 
 import Toolbar from 'src/components/toolbar';
-
-const { dialog } = require('electron').remote;
-const config = require('./native/config');
+import Progress from 'src/components/progress-bar';
 
 const engine = new Styletron();
 
@@ -37,7 +45,7 @@ const App = () => {
 	const [importing, setImporting] = useState(false);
 
 	const onSelectDir = async () => {
-		const { canceled, filePaths } = await dialog.showOpenDialog({
+		const { canceled, filePaths } = await remote.dialog.showOpenDialog({
 			properties: ['openDirectory'],
 		});
 		if (canceled) return;
@@ -53,6 +61,10 @@ const App = () => {
 	};
 
 	const importFromSources = () => {
+		if (store.fetched.length) {
+			dispatch(prepareReimport());
+		}
+
 		const { itemMap } = store;
 
 		setImporting(true);
@@ -96,7 +108,7 @@ const App = () => {
 	};
 
 	useEffect(() => {
-		const getVernItems = async () => {
+		const getVerAndItems = async () => {
 			const v = await getLolVer();
 			await setVersion(v);
 			dispatch(setLolVersion(v));
@@ -111,7 +123,7 @@ const App = () => {
 			}));
 		};
 
-		getVernItems();
+		getVerAndItems();
 	}, []);
 
 	const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
@@ -164,7 +176,7 @@ const App = () => {
 							import
 						</Button>
 
-						<div className={s.champions} />
+						{importing && <Progress />}
 
 						<ToasterContainer
 							autoHideDuration={1500}

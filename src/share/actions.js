@@ -8,6 +8,8 @@ export const Actions = {
 	UPDATE_LOL_VERSION: `APP.UPDATE_LOL_VERSION`,
 
 	UPDATE_ITEM_MAP: `APP.UPDATE_ITEM_MAP`,
+
+	PREPARE_REIMPORT: `APP.PREPARE_REIMPORT`,
 };
 
 export const setLolVersion = ver => ({
@@ -30,4 +32,8 @@ export const addFetched = data => ({
 export const updateItemMap = data => ({
 	type: Actions.UPDATE_ITEM_MAP,
 	payload: data,
+});
+
+export const prepareReimport = () => ({
+	type: Actions.PREPARE_REIMPORT,
 });

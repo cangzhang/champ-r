@@ -38,6 +38,10 @@ export default produce((draft, action) => {
 		case Actions.INIT_REDUCER:
 			draft = init(payload);
 			break;
+		case Actions.PREPARE_REIMPORT:
+			draft.fetched = [];
+			draft.fetching = [];
+			break;
 		default:
 			return draft;
 	}

@@ -139,12 +139,6 @@ export default async function importItems(version, lolDir, itemMap, dispatch) {
 		}, []);
 
 	const fetched = await Promise.all(tasks);
-
-	if (!lolDir) {
-		// TODO: notification
-		return;
-	}
-
 	const t = fetched.map(i => saveToFile(lolDir, i));
 
 	try {
