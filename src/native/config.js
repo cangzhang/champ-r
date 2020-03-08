@@ -5,5 +5,6 @@ module.exports = new Store({
 		lolDir: ``,
 		lolVer: ``,
 		language: ``,
+		keepOldItems: true,
 	},
 });

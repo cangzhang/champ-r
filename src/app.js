@@ -7,7 +7,7 @@ import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { Button } from 'baseui/button';
-import { Checkbox } from 'baseui/checkbox';
+import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Tag, VARIANT } from 'baseui/tag';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
@@ -24,6 +24,7 @@ import appReducer, {
 	prepareReimport,
 } from 'src/share/reducer';
 
+import { removeFolderContent } from 'src/share/file';
 import { getUpgradeableCompletedItems } from 'src/service/utils';
 import { getLolVer, getItemList } from 'src/service/ddragon';
 
@@ -40,9 +41,16 @@ const App = () => {
 
 	const [version, setVersion] = useState(config.get(`lolVer`));
 	const [lolDir, setLolDir] = useState(config.get(`lolDir`));
+	const [keepOld, setKeepOld] = useState(config.get(`keepOldItems`));
 
 	const [selectedSources, toggleSource] = useState([Sources.Opgg, Sources.Lolqq]);
 	const [importing, setImporting] = useState(false);
+
+	const toggleKeepOldItems = ev => {
+		const { checked } = ev.target;
+		setKeepOld(checked);
+		config.set(`keepOldItems`, checked);
+	};
 
 	const onSelectDir = async () => {
 		const { canceled, filePaths } = await remote.dialog.showOpenDialog({
@@ -60,14 +68,20 @@ const App = () => {
 		config.set('lolDir', ``);
 	};
 
-	const importFromSources = () => {
+	const importFromSources = async () => {
 		if (store.fetched.length) {
 			dispatch(prepareReimport());
 		}
 
+		setImporting(true);
+		if (!keepOld) {
+			await removeFolderContent(`${lolDir}/Game/Config/Champions`);
+			toaster.positive(`Removed outdated items.`);
+			return;
+		}
+
 		const { itemMap } = store;
 
-		setImporting(true);
 		let opggTask = null;
 		let lolqqTask = null;
 
@@ -135,7 +149,9 @@ const App = () => {
 				<BaseProvider theme={LightTheme}>
 					<Toolbar />
 					<div className={s.container}>
-						<h2 className={s.title}>Champ Remix</h2>
+						<h2 className={s.title}>
+							<span>Champ Remix</span>
+						</h2>
 
 						<div className={s.info}>
 							LOL folder is
@@ -155,26 +171,65 @@ const App = () => {
 							LOL version is <Tag closeable={false} kind="accent">{version}</Tag>
 						</div>
 
-						{
-							Object.values(Sources).map(v =>
-								<Checkbox
-									key={v}
-									checked={selectedSources.includes(v)}
-									onChange={onCheck(v)}
-								>
-									{v}
-								</Checkbox>,
-							)
-						}
+						<div className={s.sources}>
+							{
+								Object.values(Sources).map(v =>
+									<Checkbox
+										key={v}
+										checked={selectedSources.includes(v)}
+										onChange={onCheck(v)}
+										overrides={{
+											Checkmark: {
+												style: ({ $checked, $theme }) => ({
+													borderColor: $checked ? $theme.colors.positive : $theme.colors.primary,
+													backgroundColor: $checked ? $theme.colors.positive : null,
+												}),
+											},
+										}}
+									>
+										{v}
+									</Checkbox>,
+								)
+							}
+						</div>
 
-						<Button
-							className={s.import}
-							disabled={shouldDisableImport}
-							isLoading={importing}
-							onClick={importFromSources}
-						>
-							import
-						</Button>
+						<div className={s.control}>
+							<Button
+								className={s.import}
+								disabled={shouldDisableImport}
+								isLoading={importing}
+								onClick={importFromSources}
+							>
+								Import Now!
+							</Button>
+
+							<Checkbox
+								className={s.keepOld}
+								labelPlacement={LABEL_PLACEMENT.right}
+								// eslint-disable-next-line
+								checkmarkType={STYLE_TYPE.toggle}
+								checked={keepOld}
+								onChange={toggleKeepOldItems}
+								overrides={{
+									Root: {
+										style: () => ({
+											// ...$theme.borders.border100,
+											display: `flex`,
+											alignSelf: `flex-end`,
+											marginLeft: `2ex`,
+											marginBottom: `0.8ex`,
+										}),
+									},
+									Checkmark: {
+										style: ({ $checked, $theme }) => ({
+											backgroundColor: $checked ? $theme.colors.primary50 : null,
+										}),
+									},
+								}}
+							>
+								Keep old items
+							</Checkbox>
+						</div>
 
 						{importing && <Progress />}
 

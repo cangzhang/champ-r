@@ -5,12 +5,12 @@
   padding: 1em;
 
   .title {
+	margin-bottom: 2ex;
 	user-select: none;
-  }
 
-  .import {
-	margin: 0.6em auto;
-	width: 10em;
+	span {
+	  box-shadow: 0 4px 0px 0px #276EF1;
+	}
   }
 
   .champions {
@@ -27,6 +27,7 @@
   .info {
 	display: flex;
 	align-items: center;
+	margin-bottom: 0.6ex;
 
 	code {
 	  margin-left: 0.5em;
@@ -40,4 +41,31 @@
 	  height: 1.2em;
 	}
   }
+
+  .sources {
+	display: flex;
+	flex-direction: column;
+	margin-top: 1.4ex;
+
+	> *:not(:last-child) {
+	  margin-bottom: 1.8ex;
+	}
+  }
+
+  .control {
+	display: flex;
+	margin-top: 4ex;
+	margin-bottom: 5ex;
+
+	.import {
+	  width: 10em;
+	  background-color: #0F2C60;
+	}
+
+	.keep-old {
+	  display: flex;
+	  align-self: flex-end;
+	}
+  }
+
 }
