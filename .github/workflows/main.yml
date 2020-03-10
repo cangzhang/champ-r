@@ -22,9 +22,9 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - uses: actions/setup-node@master
+    - uses: actions/setup-node@v1
       with:
-        node-version: 12.16.1
+        node-version: '12.x'
       
     # Runs a single command using the runners shell
     - name: Install Dependencies
@@ -33,3 +33,21 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: Start building
       run: yarn build 
+    
+    - name: make dir
+      run: md -Name ./dist/artifacts -Force
+    
+    - uses: edgarrc/action-7zip@v1.0.4
+      with:
+        args: 7z a -ttar -mx=9 ./dist/artifacts/windows-unpacked.tar ./dist/win-unpacked
+    
+    - name: move artifacts
+      run: Copy-Item ./dist/*.exe -Destination ./dist/artifacts
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: champ-r-installer
+        # Directory containing files to upload
+        path: "./dist/artifacts"
