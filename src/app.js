@@ -74,19 +74,21 @@ const App = () => {
 		}
 
 		setImporting(true);
+
+		let cleanFolderTask = () => Promise.resolve();
 		if (!keepOld) {
-			await removeFolderContent(`${lolDir}/Game/Config/Champions`);
-			toaster.positive(`Removed outdated items.`);
-			return;
+			cleanFolderTask = () => removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
+				toaster.positive(`Removed outdated items.`);
+			});
 		}
 
 		const { itemMap } = store;
 
-		let opggTask = null;
-		let lolqqTask = null;
+		let opggTask = Promise.resolve();
+		let lolqqTask = Promise.resolve();
 
 		if (selectedSources.includes(Sources.Opgg)) {
-			opggTask = fetchOpgg(version, lolDir, itemMap, dispatch)
+			opggTask = () => fetchOpgg(version, lolDir, itemMap, dispatch)
 				.then(() => {
 					const content = `[OP.GG] Completed`;
 					toaster.positive(content);
@@ -94,15 +96,16 @@ const App = () => {
 		}
 
 		if (selectedSources.includes(Sources.Lolqq)) {
-			lolqqTask = fetchLolqq(lolDir, itemMap, dispatch)
+			lolqqTask = () => fetchLolqq(lolDir, itemMap, dispatch)
 				.then(() => {
 					const content = `[101.QQ.COM] Completed`;
 					toaster.positive(content);
 				});
 		}
 
+		await cleanFolderTask();
 		// TODO: show progress
-		Promise.all([opggTask, lolqqTask])
+		Promise.all([opggTask(), lolqqTask()])
 			.finally(() => {
 				setImporting(false);
 			});
