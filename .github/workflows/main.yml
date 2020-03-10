@@ -34,15 +34,11 @@ jobs:
     - name: Start building
       run: yarn build 
     
-    - name: make dir
-      run: md -Name ./dist/artifacts -Force
-    
-    - uses: edgarrc/action-7zip@v1.0.4
-      with:
-        args: 7z a -ttar -mx=9 ./dist/artifacts/windows-unpacked.tar ./dist/win-unpacked
-    
-    - name: move artifacts
-      run: Copy-Item ./dist/*.exe -Destination ./dist/artifacts
+    - name: Move artifacts
+      run: |
+        md -Name ./dist/artifacts -Force
+        7z a -ttar -mx=9 ./dist/artifacts/windows-unpacked.tar ./dist/win-unpacked
+        Copy-Item ./dist/*.exe -Destination ./dist/artifacts
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v1.0.0
