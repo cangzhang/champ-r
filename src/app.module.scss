@@ -1,7 +1,6 @@
 .container {
   display: flex;
   flex-direction: column;
-  //height: 100vh;
   padding: 1em;
 
   .title {
@@ -10,6 +9,11 @@
 
 	span {
 	  box-shadow: 0 4px 0px 0px #276EF1;
+
+	  &::before {
+		display: block;
+		background-image: url(~src/assets/image.png);
+	  }
 	}
   }
 
@@ -67,5 +71,13 @@
 	  align-self: flex-end;
 	}
   }
+}
 
+.app-ver {
+  position: fixed;
+  bottom: 2vh;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #b5b4b4;
+  font-size: 1.4ex;
 }

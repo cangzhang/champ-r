@@ -152,9 +152,9 @@ const App = () => {
 				<BaseProvider theme={LightTheme}>
 					<Toolbar />
 					<div className={s.container}>
-						<h2 className={s.title}>
+						<h1 className={s.title}>
 							<span>Champ Remix</span>
-						</h2>
+						</h1>
 
 						<div className={s.info}>
 							LOL folder is
@@ -184,8 +184,13 @@ const App = () => {
 										overrides={{
 											Checkmark: {
 												style: ({ $checked, $theme }) => ({
-													borderColor: $checked ? $theme.colors.positive : $theme.colors.primary,
-													backgroundColor: $checked ? $theme.colors.positive : null,
+													borderColor: $checked ? $theme.colors.positive : `#ffffff`,
+													backgroundColor: $checked ? $theme.colors.positive : `#ffffff`,
+												}),
+											},
+											Label: {
+												style: () => ({
+													color: `#ffffff`,
 												}),
 											},
 										}}
@@ -225,7 +230,12 @@ const App = () => {
 									},
 									Checkmark: {
 										style: ({ $checked, $theme }) => ({
-											backgroundColor: $checked ? $theme.colors.primary50 : null,
+											backgroundColor: $checked ? $theme.colors.primary50 : `#ffffff`,
+										}),
+									},
+									Label: {
+										style: () => ({
+											color: `#ffffff`,
 										}),
 									},
 								}}
@@ -248,6 +258,7 @@ const App = () => {
 							}}
 						/>
 					</div>
+					<div className={s.appVer}>App Version: {config.get(`appVersion`)}</div>
 				</BaseProvider>
 			</StyletronProvider>
 		</AppContext.Provider>
