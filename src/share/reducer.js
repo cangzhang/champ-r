@@ -5,6 +5,8 @@ import { Actions } from 'src/share/actions';
 export * from 'src/share/actions';
 
 export const initialState = {
+	fetchingSources: [],
+	fetchedSources: [],
 	fetching: [],
 	fetched: [],
 	version: null,
@@ -22,14 +24,20 @@ export default produce((draft, action) => {
 		}
 		case Actions.ADD_FETCHING: {
 			draft.fetching.push(payload);
-			// draft = draft.fetching.sort((a, b) => a.localeCompare(b));
 			break;
 		}
 		case Actions.ADD_FETCHED: {
-			const idx = draft.fetching.findIndex(i => i.$identity === payload.$identity);
-			draft.fetching.splice(idx, 1);
+			draft.fetching = draft.fetching.filter(i => i.$identity !== payload.$identity);
 			draft.fetched.push(payload);
-			// draft = draft.fetched.sort((a, b) => a.key.localeCompare(b.key));
+			break;
+		}
+		case Actions.FETCHING_SOURCE: {
+			draft.fetchingSources = payload;
+			break;
+		}
+		case Actions.FETCH_SOURCE_DONE: {
+			draft.fetchingSources = draft.fetchingSources.filter(i => i !== payload);
+			draft.fetchedSources.push(payload);
 			break;
 		}
 		case Actions.UPDATE_ITEM_MAP:
@@ -41,6 +49,8 @@ export default produce((draft, action) => {
 		case Actions.PREPARE_REIMPORT:
 			draft.fetched = [];
 			draft.fetching = [];
+			draft.fetchingSources = [];
+			draft.fetchedSources = [];
 			break;
 		default:
 			return draft;

@@ -1,11 +1,12 @@
-import { v4 as uuid } from 'uuid';
+import uuid from 'nanoid';
 import _get from 'lodash/get';
 import _find from 'lodash/find';
 
 import http from 'src/service/http';
 import { saveToFile } from 'src/share/file';
 import { genFileBlocks } from 'src/service/utils';
-import { addFetched, addFetching } from 'src/share/actions';
+import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
+import Sources from 'src/share/sources';
 // import { Actions } from 'src/share/actions';
 
 const API = {
@@ -51,6 +52,7 @@ export const getChampionDetail = (champions, dispatch) => async id => {
 		dispatch(addFetching({
 			$identity,
 			champion: alias.toLowerCase(),
+			source: Sources.Lolqq,
 		}));
 
 		const apiUrl = API.detail(id);
@@ -147,6 +149,8 @@ export default async function getItems(lolDir, itemMap, dispatch) {
 
 		const fileTasks = items.map(i => saveToFile(lolDir, i));
 		const result = await Promise.all(fileTasks);
+
+		dispatch(fetchSourceDone(Sources.Lolqq));
 
 		return result;
 	} catch (err) {

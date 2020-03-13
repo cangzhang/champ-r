@@ -22,6 +22,7 @@ import appReducer, {
 	setLolVersion,
 	updateItemMap,
 	prepareReimport,
+	updateFetchingSource,
 } from 'src/share/reducer';
 
 import { removeFolderContent } from 'src/share/file';
@@ -32,7 +33,7 @@ import fetchOpgg from 'src/service/data-source/op-gg';
 import fetchLolqq from 'src/service/data-source/lol-qq';
 
 import Toolbar from 'src/components/toolbar';
-import Progress from 'src/components/progress-bar';
+import WaitingList from 'src/components/waiting-list';
 
 const engine = new Styletron();
 
@@ -73,6 +74,7 @@ const App = () => {
 			dispatch(prepareReimport());
 		}
 
+		dispatch(updateFetchingSource(selectedSources));
 		setImporting(true);
 
 		let cleanFolderTask = () => Promise.resolve();
@@ -156,35 +158,82 @@ const App = () => {
 							<span>Champ Remix</span>
 						</h1>
 
-						<div className={s.info}>
-							LOL folder is
-							<Tag
-								closeable={!!lolDir}
-								kind="accent"
-								variant={VARIANT.light}
-								onClick={onSelectDir}
-								onActionClick={clearFolder}
-							>
-								<Tooltip content={lolDir && `Click to re-select.`}>
-									{lolDir || `Click here to select`}
-								</Tooltip>
-							</Tag>
-						</div>
-						<div className={s.info}>
-							LOL version is <Tag closeable={false} kind="accent">{version}</Tag>
-						</div>
+						{
+							!importing &&
+							<>
+								<div className={s.info}>
+									LOL folder is
+									<Tag
+										closeable={!!lolDir}
+										kind="accent"
+										variant={VARIANT.light}
+										onClick={onSelectDir}
+										onActionClick={clearFolder}
+									>
+										<Tooltip content={lolDir && `Click to re-select.`}>
+											{lolDir || `Click here to select`}
+										</Tooltip>
+									</Tag>
+								</div>
+								<div className={s.info}>
+									LOL version is <Tag closeable={false} kind="accent">{version}</Tag>
+								</div>
 
-						<div className={s.sources}>
-							{
-								Object.values(Sources).map(v =>
+								<div className={s.sources}>
+									{
+										Object.values(Sources).map(v =>
+											<Checkbox
+												key={v}
+												checked={selectedSources.includes(v)}
+												onChange={onCheck(v)}
+												overrides={{
+													Checkmark: {
+														style: ({ $checked, $theme }) => ({
+															borderColor: $checked ? $theme.colors.positive : `#ffffff`,
+															backgroundColor: $checked ? $theme.colors.positive : `#ffffff`,
+														}),
+													},
+													Label: {
+														style: () => ({
+															color: `#ffffff`,
+														}),
+													},
+												}}
+											>
+												{v}
+											</Checkbox>,
+										)
+									}
+								</div>
+
+								<div className={s.control}>
+									<Button
+										className={s.import}
+										disabled={shouldDisableImport}
+										isLoading={importing}
+										onClick={importFromSources}
+									>
+										Import Now!
+									</Button>
+
 									<Checkbox
-										key={v}
-										checked={selectedSources.includes(v)}
-										onChange={onCheck(v)}
+										className={s.keepOld}
+										labelPlacement={LABEL_PLACEMENT.right}
+										checkmarkType={STYLE_TYPE.toggle_round}
+										checked={keepOld}
+										onChange={toggleKeepOldItems}
 										overrides={{
+											Root: {
+												style: () => ({
+													// ...$theme.borders.border100,
+													display: `flex`,
+													alignSelf: `flex-end`,
+													marginLeft: `2ex`,
+													marginBottom: `0.8ex`,
+												}),
+											},
 											Checkmark: {
 												style: ({ $checked, $theme }) => ({
-													borderColor: $checked ? $theme.colors.positive : `#ffffff`,
 													backgroundColor: $checked ? $theme.colors.positive : `#ffffff`,
 												}),
 											},
@@ -195,56 +244,13 @@ const App = () => {
 											},
 										}}
 									>
-										{v}
-									</Checkbox>,
-								)
-							}
-						</div>
+										Keep old items
+									</Checkbox>
+								</div>
+							</>
+						}
 
-						<div className={s.control}>
-							<Button
-								className={s.import}
-								disabled={shouldDisableImport}
-								isLoading={importing}
-								onClick={importFromSources}
-							>
-								Import Now!
-							</Button>
-
-							<Checkbox
-								className={s.keepOld}
-								labelPlacement={LABEL_PLACEMENT.right}
-								// eslint-disable-next-line
-								checkmarkType={STYLE_TYPE.toggle}
-								checked={keepOld}
-								onChange={toggleKeepOldItems}
-								overrides={{
-									Root: {
-										style: () => ({
-											// ...$theme.borders.border100,
-											display: `flex`,
-											alignSelf: `flex-end`,
-											marginLeft: `2ex`,
-											marginBottom: `0.8ex`,
-										}),
-									},
-									Checkmark: {
-										style: ({ $checked, $theme }) => ({
-											backgroundColor: $checked ? $theme.colors.primary50 : `#ffffff`,
-										}),
-									},
-									Label: {
-										style: () => ({
-											color: `#ffffff`,
-										}),
-									},
-								}}
-							>
-								Keep old items
-							</Checkbox>
-						</div>
-
-						{importing && <Progress />}
+						{importing && <WaitingList />}
 
 						<ToasterContainer
 							autoHideDuration={1500}

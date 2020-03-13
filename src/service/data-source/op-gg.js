@@ -1,9 +1,10 @@
-import { v4 as uuid } from 'uuid';
+import uuid from 'nanoid';
 
 import { requestHtml } from 'src/service/utils';
 import { genFileBlocks } from 'src/service/utils';
-import { addFetched, addFetching } from 'src/share/actions';
+import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
+import Sources from 'src/share/sources';
 
 const OpggUrl = `https://www.op.gg`;
 
@@ -115,13 +116,15 @@ export default async function importItems(version, lolDir, itemMap, dispatch) {
 	const res = await getStat();
 	const tasks = res
 		.reduce((t, item) => {
-			const identity = uuid();
 			const { positions, key: champion } = item;
 			const positionTasks = positions.map(position => {
+				const identity = uuid();
+
 				dispatch(addFetching({
 					champion,
 					position,
 					$identity: identity,
+					source: Sources.Opgg,
 				}));
 
 				return genChampionData(champion, position, version, itemMap)
@@ -143,6 +146,7 @@ export default async function importItems(version, lolDir, itemMap, dispatch) {
 
 	try {
 		const result = await Promise.all(t);
+		dispatch(fetchSourceDone(Sources.Opgg));
 		return result;
 	} catch (err) {
 		return err;

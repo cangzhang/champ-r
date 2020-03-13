@@ -1,6 +1,6 @@
 {
 	"name": "champ-r",
-	"version": "0.5.3",
+	"version": "0.5.4",
 	"license": "MIT",
 	"description": "Get champion items for lol, Windows only.",
 	"productName": "ChampR",
@@ -68,8 +68,7 @@
 		"react": "^16.12.0",
 		"react-dom": "^16.12.0",
 		"styletron-engine-atomic": "^1.4.4",
-		"styletron-react": "^5.2.6",
-		"uuid": "^3.4.0"
+		"styletron-react": "^5.2.6"
 	},
 	"devDependencies": {
 		"@babel/core": "7.7.4",
