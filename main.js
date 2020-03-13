@@ -56,7 +56,7 @@ const createMainWindow = async () => {
 
 	await win.loadURL(
 		isDev
-			? 'http://localhost:3000'
+			? 'http://127.0.0.1:3000'
 			: `file://${path.join(__dirname, 'build/index.html')}`
 	);
 
