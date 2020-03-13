@@ -21,7 +21,7 @@
 		"pack": "electron-builder --dir",
 		"release": "np",
 		"start": "concurrently \"yarn start-react\" \"wait-on http://localhost:3000 && yarn start-electron\"",
-		"start-electron": "run-electron .",
+		"start-electron": "cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true run-electron .",
 		"start-react": "cross-env BROWSER=none node scripts/start.js",
 		"test": "npm run lint",
 		"test-react": "node scripts/test.js"
