@@ -1,0 +1,15 @@
+.container {
+  position: relative;
+
+  h3 {
+	position: absolute;
+	font-weight: 500;
+  }
+
+  ul {
+	font-weight: normal;
+	height: 60vh;
+	overflow-y: auto;
+	margin-top: 4em;
+  }
+}

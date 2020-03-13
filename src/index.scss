@@ -42,10 +42,15 @@ body {
 	  opacity: 1;
 	  content: '';
 	  transform: scale(1.05);
+
+	  background-image: url("~src/assets/freljord-gatewayhowling.jpg");
+	  background-position: right;
 	  background-size: cover;
-	  background-image: url("~src/assets/freljord-gatewayhowling.jpg"),
-	  linear-gradient(to right, #43e97b 0%, #38f9d7 100%);
-	  background-blend-mode: darken;
+
+	  //background-blend-mode: darken;
+	  //background: #232526;  /* fallback for old browsers */
+	  //background: linear-gradient(to right, #414345, #232526); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+	  //background-image: linear-gradient(to right, #43e97b 0%, #38f9d7 100%);
 	}
   }
 }
