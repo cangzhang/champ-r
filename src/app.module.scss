@@ -9,11 +9,6 @@
 
 	span {
 	  box-shadow: 0 4px 0px 0px #276EF1;
-
-	  &::before {
-		display: block;
-		background-image: url(~src/assets/image.png);
-	  }
 	}
   }
 
@@ -50,10 +45,6 @@
 	display: flex;
 	flex-direction: column;
 	margin-top: 1.4ex;
-
-	> *:not(:last-child) {
-	  margin-bottom: 1.8ex;
-	}
   }
 
   .control {
@@ -63,7 +54,7 @@
 
 	.import {
 	  width: 10em;
-	  background-color: #0F2C60;
+	  background-color: #276EF1;
 	}
 
 	.keep-old {

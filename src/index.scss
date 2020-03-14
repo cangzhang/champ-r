@@ -23,9 +23,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 2.6ex;
+  //color: #ffffff;
+  font-weight: 600;
+  font-size: 2.4ex;
 
   .bg-holder {
 	display: block;
@@ -43,7 +43,7 @@ body {
 	  content: '';
 	  transform: scale(1.05);
 
-	  background-image: url("~src/assets/freljord-gatewayhowling.jpg");
+	  //background-image: url("~src/assets/freljord-gatewayhowling.jpg");
 	  background-position: right;
 	  background-size: cover;
 

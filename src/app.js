@@ -6,11 +6,13 @@ import React, { useReducer, useState, useMemo, useEffect } from 'react';
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
+
 import { Button } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
-import { Tag, VARIANT } from 'baseui/tag';
+import { Tag } from 'baseui/tag';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
+import { ArrowRight } from 'baseui/icon';
 
 import config from 'src/native/config';
 
@@ -43,7 +45,6 @@ const App = () => {
 	const [version, setVersion] = useState(config.get(`lolVer`));
 	const [lolDir, setLolDir] = useState(config.get(`lolDir`));
 	const [keepOld, setKeepOld] = useState(config.get(`keepOldItems`));
-
 	const [selectedSources, toggleSource] = useState([Sources.Opgg, Sources.Lolqq]);
 	const [importing, setImporting] = useState(false);
 
@@ -166,9 +167,15 @@ const App = () => {
 									<Tag
 										closeable={!!lolDir}
 										kind="accent"
-										variant={VARIANT.light}
 										onClick={onSelectDir}
 										onActionClick={clearFolder}
+										overrides={{
+											Text: {
+												style: ({ $theme }) => ({
+													fontSize: $theme.sizing.scale550,
+												}),
+											},
+										}}
 									>
 										<Tooltip content={lolDir && `Click to re-select.`}>
 											{lolDir || `Click here to select`}
@@ -176,7 +183,20 @@ const App = () => {
 									</Tag>
 								</div>
 								<div className={s.info}>
-									LOL version is <Tag closeable={false} kind="accent">{version}</Tag>
+									LOL version is
+									<Tag
+										kind="accent"
+										closeable={false}
+										overrides={{
+											Text: {
+												style: ({ $theme }) => ({
+													fontSize: $theme.sizing.scale550,
+												}),
+											},
+										}}
+									>
+										{version}
+									</Tag>
 								</div>
 
 								<div className={s.sources}>
@@ -187,15 +207,23 @@ const App = () => {
 												checked={selectedSources.includes(v)}
 												onChange={onCheck(v)}
 												overrides={{
+													Root: {
+														style: ({ $theme }) => ({
+															display: `flex`,
+															alignItems: `center`,
+															height: `3em`,
+															boxShadow: `0px 1px 0 ${$theme.colors.borderTransparent}`,
+														}),
+													},
 													Checkmark: {
 														style: ({ $checked, $theme }) => ({
-															borderColor: $checked ? $theme.colors.positive : `#ffffff`,
-															backgroundColor: $checked ? $theme.colors.positive : `#ffffff`,
+															borderColor: $checked ? $theme.colors.positive : $theme.colors.backgroundNegative,
+															backgroundColor: $checked ? $theme.colors.positive : $theme.colors.backgroundAlwaysLight,
 														}),
 													},
 													Label: {
-														style: () => ({
-															color: `#ffffff`,
+														style: ({ $theme }) => ({
+															fontSize: $theme.sizing.scale600,
 														}),
 													},
 												}}
@@ -208,9 +236,25 @@ const App = () => {
 
 								<div className={s.control}>
 									<Button
-										className={s.import}
+										overrides={{
+											BaseButton: {
+												style: ({ $theme, $disabled }) => {
+													return {
+														':hover': {
+															backgroundColor: $disabled
+																? $theme.colors.backgroundLightAccent
+																: $theme.colors.accent,
+														},
+														backgroundColor: $disabled
+															? $theme.colors.borderAccentLight
+															: $theme.colors.accent500,
+													};
+												},
+											},
+										}}
 										disabled={shouldDisableImport}
 										isLoading={importing}
+										startEnhancer={() => <ArrowRight size={24} />}
 										onClick={importFromSources}
 									>
 										Import Now!
@@ -237,10 +281,20 @@ const App = () => {
 													backgroundColor: $checked ? $theme.colors.positive : `#ffffff`,
 												}),
 											},
-											Label: {
-												style: () => ({
-													color: `#ffffff`,
-												}),
+											ToggleTrack: {
+												style: ({ $theme }) => {
+													return {
+														backgroundColor: $theme.colors.backgroundLightAccent,
+													};
+												},
+											},
+											Toggle: {
+												style: ({ $theme, $checked }) => {
+													return {
+														// outline: `${$theme.colors.warning200} solid`,
+														backgroundColor: $checked ? $theme.colors.borderPositive : $theme.colors.backgroundLightAccent,
+													};
+												},
 											},
 										}}
 									>
