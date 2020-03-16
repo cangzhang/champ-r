@@ -85,3 +85,6 @@ $ npm run release
 ```
 
 After Travis finishes building your app, open the release draft it created and click "Publish".
+
+### App Icon
+From [here](https://iconscout.com/icon/league-3) by [@Icons8](https://iconscout.com/contributors/icons8), **thx**.

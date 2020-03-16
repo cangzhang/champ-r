@@ -147,6 +147,7 @@
 			"package.json"
 		],
 		"win": {
+		  	"icon": "./src/assets/app-icon.ico",
 			"requestedExecutionLevel": "highestAvailable"
 		}
 	},
