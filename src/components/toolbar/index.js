@@ -6,20 +6,20 @@ import { CheckIndeterminate as MinimalizeIcon, Delete as CloseIcon } from 'baseu
 const { remote } = require('electron');
 
 const Toolbar = () => {
-	const onHide = () => {
-		remote.BrowserWindow.getFocusedWindow().minimize();
-	};
+  const onHide = () => {
+    remote.BrowserWindow.getFocusedWindow().minimize();
+  };
 
-	const onClose = () => {
-		remote.BrowserWindow.getFocusedWindow().close();
-	};
+  const onClose = () => {
+    remote.BrowserWindow.getFocusedWindow().close();
+  };
 
-	return <div
-		className={ s.container }
-	>
-		<MinimalizeIcon onClick={ onHide } />
-		<CloseIcon onClick={ onClose } />
-	</div>;
+  return <div
+    className={ s.container }
+  >
+    <MinimalizeIcon onClick={ onHide } />
+    <CloseIcon onClick={ onClose } />
+  </div>;
 };
 
 export default Toolbar;

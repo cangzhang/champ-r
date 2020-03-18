@@ -7,42 +7,42 @@ const Total = 100;
 const Step = 2;
 
 export default () => {
-	const [value, setVal] = useState(0);
+  const [value, setValue] = useState(0);
 
-	useInterval(() => {
-		if (value + Step < Total) {
-			setVal(value + Step);
-		} else {
-			setVal(100);
-		}
-	}, 2000);
+  useInterval(() => {
+    if (value + Step < Total) {
+      setValue(value + Step);
+    } else {
+      setValue(100);
+    }
+  }, 2000);
 
-	return (
-		<ProgressBar
-			value={value}
-			successValue={Total}
-			overrides={{
-				BarProgress: {
-					style: ({ $theme, $value }) => {
-						return {
-							...$theme.typography.LabelMedium,
-							backgroundColor: $theme.colors.positive,
-							color: $theme.colors.mono200,
-							position: 'relative',
-							':after': {
-								position: 'absolute',
-								content: $value > 5 ? `"${$value}%"` : '',
-								right: '10px',
-							},
-						};
-					},
-				},
-				Bar: {
-					style: ({ $theme }) => ({
-						height: $theme.sizing.scale800,
-					}),
-				},
-			}}
-		/>
-	);
+  return (
+    <ProgressBar
+      value={value}
+      successValue={Total}
+      overrides={{
+        BarProgress: {
+          style: ({ $theme, $value }) => {
+            return {
+              ...$theme.typography.LabelMedium,
+              backgroundColor: $theme.colors.positive,
+              color: $theme.colors.mono200,
+              position: 'relative',
+              ':after': {
+                position: 'absolute',
+                content: $value > 5 ? `"${$value}%"` : '',
+                right: '10px',
+              },
+            };
+          },
+        },
+        Bar: {
+          style: ({ $theme }) => ({
+            height: $theme.sizing.scale800,
+          }),
+        },
+      }}
+    />
+  );
 };

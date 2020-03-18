@@ -1,4 +1,4 @@
-'use strict';
+
 const path = require('path');
 
 const { app, BrowserWindow, Menu } = require('electron');
@@ -15,7 +15,7 @@ debug();
 contextMenu();
 
 // Note: Must match `build.appId` in package.json
-app.setAppUserModelId(`com.al.champ-r`);
+app.setAppUserModelId('com.al.champ-r');
 
 // Uncomment this before publishing your first version.
 // It's commented out as it throws an error if there are no published versions.
@@ -32,72 +32,72 @@ app.setAppUserModelId(`com.al.champ-r`);
 let mainWindow;
 
 const createMainWindow = async () => {
-	const win = new BrowserWindow({
-		title: app.name,
-		show: false,
-		frame: false,
-		height: 800,
-		width: is.development ? 1300 : 500,
-		webPreferences: {
-			nodeIntegration: true,
-			webSecurity: false,
-		}
-	});
+  const win = new BrowserWindow({
+    title: app.name,
+    show: false,
+    frame: false,
+    height: 800,
+    width: is.development ? 1300 : 500,
+    webPreferences: {
+      nodeIntegration: true,
+      webSecurity: false,
+    },
+  });
 
-	win.on('ready-to-show', () => {
-		win.show();
-	});
+  win.on('ready-to-show', () => {
+    win.show();
+  });
 
-	win.on('closed', () => {
-		// Dereference the window
-		// For multiple windows store them in an array
-		mainWindow = undefined;
-	});
+  win.on('closed', () => {
+    // Dereference the window
+    // For multiple windows store them in an array
+    mainWindow = undefined;
+  });
 
-	await win.loadURL(
-		isDev
-			? 'http://127.0.0.1:3000'
-			: `file://${path.join(__dirname, 'build/index.html')}`
-	);
+  await win.loadURL(
+    isDev ?
+      'http://127.0.0.1:3000' :
+      `file://${path.join(__dirname, 'build/index.html')}`,
+  );
 
-	return win;
+  return win;
 };
 
 // Prevent multiple instances of the app
 if (!app.requestSingleInstanceLock()) {
-	app.quit();
+  app.quit();
 }
 
 app.on('second-instance', () => {
-	if (mainWindow) {
-		if (mainWindow.isMinimized()) {
-			mainWindow.restore();
-		}
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
 
-		mainWindow.show();
-	}
+    mainWindow.show();
+  }
 });
 
 app.on('window-all-closed', () => {
-	if (!is.macos) {
-		app.quit();
-	}
+  if (!is.macos) {
+    app.quit();
+  }
 });
 
 app.on('activate', async () => {
-	if (!mainWindow) {
-		mainWindow = await createMainWindow();
-	}
+  if (!mainWindow) {
+    mainWindow = await createMainWindow();
+  }
 });
 
 (async () => {
-	await app.whenReady();
-	Menu.setApplicationMenu(null);
-	mainWindow = await createMainWindow();
+  await app.whenReady();
+  Menu.setApplicationMenu(null);
+  mainWindow = await createMainWindow();
 
-	await disableZoom(mainWindow);
-	await centerWindow({
-		window: mainWindow,
-		animated: true,
-	});
+  await disableZoom(mainWindow);
+  await centerWindow({
+    window: mainWindow,
+    animated: true,
+  });
 })();

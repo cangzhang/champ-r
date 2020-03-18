@@ -1,18 +1,18 @@
 export const Actions = {
-  ADD_FETCHING: `LIST.ADD_FETCHING`,
-  REMOVE_FETCHING: `LIST.REMOVE_FETCHING`,
-  ADD_FETCHED: `LIST.ADD_FETCHED`,
-  REMOVE_FETCHED: `LIST.REMOVE_FETCHED`,
+  ADD_FETCHING: 'LIST.ADD_FETCHING',
+  REMOVE_FETCHING: 'LIST.REMOVE_FETCHING',
+  ADD_FETCHED: 'LIST.ADD_FETCHED',
+  REMOVE_FETCHED: 'LIST.REMOVE_FETCHED',
 
-  INIT_REDUCER: `APP.INIT_REDUCER`,
-  UPDATE_LOL_VERSION: `APP.UPDATE_LOL_VERSION`,
+  INIT_REDUCER: 'APP.INIT_REDUCER',
+  UPDATE_LOL_VERSION: 'APP.UPDATE_LOL_VERSION',
 
-  UPDATE_ITEM_MAP: `APP.UPDATE_ITEM_MAP`,
+  UPDATE_ITEM_MAP: 'APP.UPDATE_ITEM_MAP',
 
-  PREPARE_REIMPORT: `APP.PREPARE_REIMPORT`,
+  PREPARE_REIMPORT: 'APP.PREPARE_REIMPORT',
 
-  FETCHING_SOURCE: `FETCHING_SOURCE`,
-  FETCH_SOURCE_DONE: `FETCH_SOURCE_DONE`,
+  FETCHING_SOURCE: 'FETCHING_SOURCE',
+  FETCH_SOURCE_DONE: 'FETCH_SOURCE_DONE',
 };
 
 export const setLolVersion = ver => ({
@@ -21,15 +21,15 @@ export const setLolVersion = ver => ({
 });
 
 export const addFetching = data => ({
-    type: Actions.ADD_FETCHING,
-    payload: data,
-  }
+  type: Actions.ADD_FETCHING,
+  payload: data,
+}
 );
 
 export const addFetched = data => ({
-    type: Actions.ADD_FETCHED,
-    payload: data,
-  }
+  type: Actions.ADD_FETCHED,
+  payload: data,
+}
 );
 
 export const updateItemMap = data => ({
