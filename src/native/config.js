@@ -8,5 +8,6 @@ module.exports = new Store({
     language: '',
     keepOldItems: true,
     appVersion,
+    selectedSources: [],
   },
 });

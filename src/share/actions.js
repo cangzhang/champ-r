@@ -13,6 +13,9 @@ export const Actions = {
 
   FETCHING_SOURCE: 'FETCHING_SOURCE',
   FETCH_SOURCE_DONE: 'FETCH_SOURCE_DONE',
+
+  UPDATE_SELECT_SOURCES: `UPDATE_SELECT_SOURCES`,
+  UPDATE_APP_CONFIG: `UPDATE_APP_CONFIG`,
 };
 
 export const setLolVersion = ver => ({
@@ -23,14 +26,12 @@ export const setLolVersion = ver => ({
 export const addFetching = data => ({
   type: Actions.ADD_FETCHING,
   payload: data,
-}
-);
+});
 
 export const addFetched = data => ({
   type: Actions.ADD_FETCHED,
   payload: data,
-}
-);
+});
 
 export const updateItemMap = data => ({
   type: Actions.UPDATE_ITEM_MAP,
@@ -49,4 +50,9 @@ export const updateFetchingSource = source => ({
 export const fetchSourceDone = source => ({
   type: Actions.FETCH_SOURCE_DONE,
   payload: source,
+});
+
+export const updateConfig = payload => ({
+  type: Actions.UPDATE_APP_CONFIG,
+  payload,
 });

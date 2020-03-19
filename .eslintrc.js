@@ -10,8 +10,14 @@ module.exports = {
     'baseui/deprecated-component-api': 'warn',
     'baseui/no-deep-imports': 'warn',
 
+    'indent': [
+      'error',
+      2,
+      {
+        'SwitchCase': 1,
+      }
+    ],
     'no-warning-comments': 0,
-    'indent': ['error', 2],
     'comma-dangle': ['error', 'always-multiline'],
     'object-curly-spacing': [
       'error',

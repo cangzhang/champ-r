@@ -15,6 +15,7 @@ import appReducer, {
 
 import Toolbar from 'src/components/toolbar';
 import Home from 'src/modules/home';
+import Import from 'src/modules/import';
 
 const engine = new Styletron();
 
@@ -29,9 +30,8 @@ const App = () => {
           <Toolbar />
           <Router>
             <Switch>
-              <Route path={'/'}>
-                <Home />
-              </Route>
+              <Route exact path={'/'} component={Home} />
+              <Route path={`/import`} component={Import} />
             </Switch>
           </Router>
           <div className={s.appVer}>App Version: {config.get('appVersion')}</div>
