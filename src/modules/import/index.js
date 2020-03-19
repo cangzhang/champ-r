@@ -1,5 +1,9 @@
-import React, { useCallback, useContext, useEffect } from 'react';
+import _noop from 'lodash/noop';
+
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
+import { Button } from 'baseui/button';
 
 import Sources from 'src/share/sources';
 import { prepareReimport, updateFetchingSource } from 'src/share/actions';
@@ -14,12 +18,18 @@ import WaitingList from 'src/components/waiting-list';
 export default function Importing() {
   const lolDir = config.get(`lolDir`);
   const lolVer = config.get(`lolVer`);
-
+  const history = useHistory();
   const { store, dispatch } = useContext(AppContext);
+  const { selectedSources, keepOld, fetched } = store;
+
+  const [loading, setLoading] = useState(false);
+
+  const goBack = () => {
+    history.push(`/`);
+  };
 
   const importFromSources = useCallback(async () => {
-    const { selectedSources, keepOld, fetched } = store;
-
+    setLoading(true);
     if (fetched.length) {
       dispatch(prepareReimport());
     }
@@ -35,8 +45,8 @@ export default function Importing() {
 
     const { itemMap } = store;
 
-    let opggTask = Promise.resolve();
-    let lolqqTask = Promise.resolve();
+    let opggTask = _noop;
+    let lolqqTask = _noop;
 
     if (selectedSources.includes(Sources.Opgg)) {
       opggTask = () => fetchOpgg(lolVer, lolDir, itemMap, dispatch)
@@ -55,9 +65,14 @@ export default function Importing() {
     }
 
     await cleanFolderTask();
-    await Promise.all([opggTask(), lolqqTask()]);
-  }, [store]);
+    try {
+      await Promise.all([opggTask(), lolqqTask()]);
+    } finally {
+      setLoading(false);
+    }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSources, keepOld, fetched]);
 
   useEffect(() => {
     importFromSources();
@@ -66,6 +81,8 @@ export default function Importing() {
 
   return <div>
     <WaitingList />
+
+    <Button onClick={goBack}>{loading ? `Stop` : `Go back`}</Button>
 
     <ToasterContainer
       autoHideDuration={1500}

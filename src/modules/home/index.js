@@ -28,7 +28,7 @@ export default function Home() {
   const history = useHistory();
 
   const [keepOld, setKeepOld] = useState(config.get('keepOldItems'));
-  const [selectedSources, toggleSource] = useState([Sources.Opgg, Sources.Lolqq]);
+  const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
 
   const [version, setVersion] = useState(config.get('lolVer'));
   const [lolDir, setLolDir] = useState(config.get('lolDir'));
