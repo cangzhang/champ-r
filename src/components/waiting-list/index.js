@@ -7,8 +7,8 @@ import AppContext from 'src/share/context';
 export default () => {
   const { store: { fetching, fetchingSources } } = useContext(AppContext);
 
-  return <div className={s.container}>
-    <h3>Fetching from: {fetchingSources.join(', ')}</h3>
+  return <div className={s.waitingList}>
+    <h3>FETCHING: {fetchingSources.map(s => <b key={s}>{s}</b>)}</h3>
     <ul>
       {
         fetching.map(i =>

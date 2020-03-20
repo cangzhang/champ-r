@@ -1,9 +1,10 @@
-.container {
+.toolbar {
   width: 100vw;
   display: flex;
   justify-content: flex-end;
   position: absolute;
   right: 0;
+  top: 0;
   padding-right: 1em;
   padding-top: 0.7em;
 
@@ -12,17 +13,17 @@
   -webkit-app-region: drag;
 
   > svg {
-	height: 1.4em;
-	width: 1.4em;
-	-webkit-app-region: no-drag;
+    height: 1.4em;
+    width: 1.4em;
+    -webkit-app-region: no-drag;
 
-	&:hover {
-	  background-color: #E2E2E2;
-	  cursor: pointer;
-	}
+    &:hover {
+      background-color: #e2e2e2;
+      cursor: pointer;
+    }
 
-	&:not(:last-child) {
-	  margin-right: 0.4em;
-	}
+    &:not(:last-child) {
+      margin-right: 0.4em;
+    }
   }
 }

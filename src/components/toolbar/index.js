@@ -14,11 +14,9 @@ const Toolbar = () => {
     remote.BrowserWindow.getFocusedWindow().close();
   };
 
-  return <div
-    className={ s.container }
-  >
-    <MinimalizeIcon onClick={ onHide } />
-    <CloseIcon onClick={ onClose } />
+  return <div className={s.toolbar}>
+    <MinimalizeIcon onClick={onHide} />
+    <CloseIcon onClick={onClose} />
   </div>;
 };
 

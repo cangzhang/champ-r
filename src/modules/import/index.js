@@ -1,3 +1,5 @@
+import s from './style.module.scss'
+
 import _noop from 'lodash/noop';
 
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -15,7 +17,7 @@ import config from 'src/native/config';
 import AppContext from 'src/share/context';
 import WaitingList from 'src/components/waiting-list';
 
-export default function Importing() {
+export default function Import() {
   const lolDir = config.get(`lolDir`);
   const lolVer = config.get(`lolVer`);
   const history = useHistory();
@@ -79,10 +81,10 @@ export default function Importing() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div>
+  return <div className={s.import}>
     <WaitingList />
 
-    <Button onClick={goBack}>{loading ? `Stop` : `Go back`}</Button>
+    <Button className={s.back} onClick={goBack}>{loading ? `STOP` : `BACK TO HOME`}</Button>
 
     <ToasterContainer
       autoHideDuration={1500}
