@@ -52,7 +52,7 @@ export const fetchSourceDone = source => ({
   payload: source,
 });
 
-export const updateConfig = payload => ({
+export const updateConfig = (k, v) => ({
   type: Actions.UPDATE_APP_CONFIG,
-  payload,
+  payload: [k, v],
 });

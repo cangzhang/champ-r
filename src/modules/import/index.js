@@ -1,4 +1,4 @@
-import s from './style.module.scss'
+import s from './style.module.scss';
 
 import _noop from 'lodash/noop';
 
@@ -6,6 +6,8 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
+import { Check } from 'baseui/icon';
+import { useStyletron } from 'baseui';
 
 import Sources from 'src/share/sources';
 import { prepareReimport, updateFetchingSource } from 'src/share/actions';
@@ -18,12 +20,13 @@ import AppContext from 'src/share/context';
 import WaitingList from 'src/components/waiting-list';
 
 export default function Import() {
+  const history = useHistory();
+  const [css, theme] = useStyletron();
+
   const lolDir = config.get(`lolDir`);
   const lolVer = config.get(`lolVer`);
-  const history = useHistory();
-  const { store, dispatch } = useContext(AppContext);
-  const { selectedSources, keepOld, fetched } = store;
 
+  const { store, dispatch } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
 
   const goBack = () => {
@@ -31,6 +34,8 @@ export default function Import() {
   };
 
   const importFromSources = useCallback(async () => {
+    const { selectedSources, keepOld, fetched } = store;
+
     setLoading(true);
     if (fetched.length) {
       dispatch(prepareReimport());
@@ -74,15 +79,35 @@ export default function Import() {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSources, keepOld, fetched]);
+  }, [store]);
 
   useEffect(() => {
     importFromSources();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // todo: real stop
   return <div className={s.import}>
-    <WaitingList />
+    {
+      loading
+        ? <WaitingList />
+        : <Check
+          size={128}
+          title={`Done`}
+          color={theme.colors.backgroundPositive}
+          className={css({
+
+
+            animation: `rr 1s linear infinite`,
+
+            '@keyframes rr': {
+              '100%': {
+                transform: `rotate(360deg)`,
+              },
+            },
+          })}
+        />
+    }
 
     <Button className={s.back} onClick={goBack}>{loading ? `STOP` : `BACK TO HOME`}</Button>
 

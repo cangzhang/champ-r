@@ -71,9 +71,7 @@ export default function Home() {
     }
 
     toggleSource(res);
-    dispatch(updateConfig({
-      selectedSources: res,
-    }));
+    dispatch(updateConfig(`selectedSources`, res));
     config.set(`selectedSources`, res);
   };
 

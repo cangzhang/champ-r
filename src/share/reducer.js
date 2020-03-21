@@ -52,9 +52,11 @@ export default produce((draft, action) => {
     case Actions.UPDATE_ITEM_MAP:
       draft.itemMap = payload;
       break;
+
     case Actions.INIT_REDUCER:
       draft = init(payload);
       break;
+
     case Actions.PREPARE_REIMPORT:
       draft.fetched = [];
       draft.fetching = [];
@@ -64,6 +66,11 @@ export default produce((draft, action) => {
 
     case Actions.UPDATE_SELECT_SOURCES:
       draft.selectedSources = payload;
+      break;
+
+    case Actions.UPDATE_APP_CONFIG:
+      const [k, v] = payload;
+      draft[k] = v;
       break;
 
     default:
