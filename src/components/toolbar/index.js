@@ -15,8 +15,8 @@ const Toolbar = () => {
   };
 
   return <div className={s.toolbar}>
-    <MinimalizeIcon onClick={onHide} />
-    <CloseIcon onClick={onClose} />
+    <MinimalizeIcon title={`Minimize`} onClick={onHide} />
+    <CloseIcon title={`Close`} onClick={onClose} />
   </div>;
 };
 
