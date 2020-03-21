@@ -6,7 +6,6 @@ import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 
-import config from 'src/native/config';
 import AppContext from 'src/share/context';
 import appReducer, {
   initialState,
@@ -34,7 +33,7 @@ const App = () => {
               <Route path={`/import`} component={Import} />
             </Switch>
           </Router>
-          <div className={s.appVer}>App Version: {config.get('appVersion')}</div>
+          <div className={s.appVer}>App Version: {process.env.APP_VERSION}</div>
         </BaseProvider>
       </StyletronProvider>
     </AppContext.Provider>

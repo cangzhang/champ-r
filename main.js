@@ -1,4 +1,3 @@
-
 const path = require('path');
 
 const { app, BrowserWindow, Menu } = require('electron');
