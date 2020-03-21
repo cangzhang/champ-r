@@ -14,28 +14,27 @@ jobs:
     # The type of runner that the job will run on
     runs-on: windows-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
       
-    # Runs a single command using the runners shell
-    - name: Install Dependencies
-      run: yarn
-
-    # Runs a set of commands using the runners shell
-    - name: Start building
-      run: yarn build 
+    - name: Build
+      run: | 
+        yarn
+        yarn build
     
     - name: Move artifacts
+      id: vars
+      shell: pwsh
       run: |
         md -Name ./dist/artifacts -Force
         #7z a -ttar -mx=9 ./dist/artifacts/windows-unpacked.tar ./dist/win-unpacked
         Copy-Item ./dist/*.exe -Destination ./dist/artifacts
+        $file = Get-ChildItem -Path ./dist/artifacts/ -Filter "*.exe" | select-object -first 1
+        echo "::set-output name=fileName::$($file.Name)"
     
     - name: Create Release
       id: create_release
@@ -49,20 +48,18 @@ jobs:
         prerelease: true
 
     - name: Upload Release Assets
-      id: upload-release-asset 
+      id: upload_release_assets
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./dist/artifacts/*.exe
-        asset_name: champ-r-installer.exe
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/artifacts/${{ steps.vars.outputs.fileName }}
+        asset_name: ${{ steps.vars.outputs.fileName }}
         asset_content_type: application/vnd.microsoft.portable-executable
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
-        # Artifact name
         name: champ-r-installer
-        # Directory containing files to upload
         path: "./dist/artifacts"
