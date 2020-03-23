@@ -16,10 +16,12 @@ export default () => {
           <li key={i.$identity}>
             <span className={s.source}>{i.source}</span>
             <span className={s.champion}>{i.champion}</span>
-            <span className={s.at}>@</span>
             {
               i.position &&
-              <i className={cn(s.lane, s[i.position])} />
+              <>
+                <span className={s.at}>@</span>
+                <i className={cn(s.lane, s[i.position])} />
+              </>
             }
           </li>)
       }
