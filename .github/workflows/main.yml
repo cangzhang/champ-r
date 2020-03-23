@@ -5,7 +5,7 @@ name: build-win-installer
 on:
   push:
     branches: [ release ]
-    tags: 
+    tags:
     - 'v*'
 
 jobs:
@@ -20,12 +20,12 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-      
+
     - name: Build
-      run: | 
+      run: |
         yarn
         yarn build
-    
+
     - name: Move artifacts
       id: vars
       shell: pwsh
@@ -35,7 +35,7 @@ jobs:
         Copy-Item ./dist/*.exe -Destination ./dist/artifacts
         $file = Get-ChildItem -Path ./dist/artifacts/ -Filter "*.exe" | select-object -first 1
         echo "::set-output name=fileName::$($file.Name)"
-    
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -45,7 +45,7 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         draft: false
-        prerelease: true
+        prerelease: false
 
     - name: Upload Release Assets
       id: upload_release_assets
