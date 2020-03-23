@@ -1,6 +1,6 @@
 {
   "name": "champ-r",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "license": "MIT",
   "description": "Get champion items for lol, Windows only.",
   "productName": "ChampR",
@@ -47,6 +47,7 @@
     "axios": "^0.19.2",
     "baseui": "^9.51.0",
     "cheerio": "^1.0.0-rc.3",
+    "classnames": "^2.2.6",
     "electron-context-menu": "^0.15.0",
     "electron-debug": "^3.0.0",
     "electron-is-dev": "^1.1.0",

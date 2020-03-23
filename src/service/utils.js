@@ -10,7 +10,10 @@ export const requestHtml = async url => {
       url,
       // Get partial html
       {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        headers: {
+          'X-Requested-With': `XMLHttpRequest`,
+          customLocale: `en_US`,
+        },
       },
     );
     const $ = cheerio.load(rawHtml);

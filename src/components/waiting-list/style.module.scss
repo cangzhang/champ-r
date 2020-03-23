@@ -17,11 +17,71 @@
   }
 
   ul {
+    display: flex;
+    flex-direction: column;
     padding-left: 8vw;
     padding-top: 0;
     margin: 0;
     font-weight: normal;
     height: 65vh;
     overflow-y: auto;
+
+    li {
+      display: inline-flex;
+      align-items: center;
+      line-height: 2em;
+
+      > span {
+        &:not(:first-child) {
+          margin-left: 1ex;
+        }
+      }
+
+      .at {
+        color: #c19132;
+        font-size: 1.4ex;
+      }
+
+      .source {
+        text-transform: uppercase;
+        font-style: italic;
+        color: cadetblue;
+      }
+
+      .champion {
+        text-transform: capitalize;
+      }
+    }
+  }
+}
+
+.lane {
+  $icon-size: 136px;
+
+  background: url('~src/assets/lanes.png') no-repeat;
+  overflow: hidden;
+  width: $icon-size;
+  height: $icon-size;
+  zoom: 0.2;
+  margin-left: 2ex;
+
+  &.bottom {
+    background-position: 0 0;
+  }
+
+  &.jungle {
+    background-position: -136px 0;
+  }
+
+  &.middle {
+    background-position: 0 -136px;
+  }
+
+  &.support {
+    background-position: -136px -136px;
+  }
+
+  &.top {
+    background-position: 0 -272px;
   }
 }
