@@ -4,6 +4,8 @@ import cheerio from 'cheerio';
 
 import http from './http';
 
+const RequestLocale = `en-US`;
+
 export const requestHtml = async url => {
   try {
     const rawHtml = await http.get(
@@ -12,7 +14,8 @@ export const requestHtml = async url => {
       {
         headers: {
           'X-Requested-With': `XMLHttpRequest`,
-          customLocale: `en_US`,
+          'Content-Language': RequestLocale,
+          'Accept-Language': RequestLocale,
         },
       },
     );

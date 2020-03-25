@@ -40,6 +40,7 @@ const createMainWindow = async () => {
     webPreferences: {
       nodeIntegration: true,
       webSecurity: false,
+      zoomFactor: 1,
     },
   });
 
