@@ -2,8 +2,9 @@ import s from './style.module.scss';
 
 import _noop from 'lodash/noop';
 
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useCallback, useContext, useEffect, useState, useRef } from 'react';
+// import { useHistory } from 'react-router-dom';
+
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
 import { Check } from 'baseui/icon';
@@ -12,7 +13,7 @@ import { useStyletron } from 'baseui';
 import Sources from 'src/share/sources';
 import { prepareReimport, updateFetchingSource } from 'src/share/actions';
 import { removeFolderContent } from 'src/share/file';
-import fetchOpgg from 'src/service/data-source/op-gg';
+import OpGGImporter from 'src/service/data-source/op-gg';
 import fetchLolqq from 'src/service/data-source/lol-qq';
 
 import config from 'src/native/config';
@@ -20,7 +21,7 @@ import AppContext from 'src/share/context';
 import WaitingList from 'src/components/waiting-list';
 
 export default function Import() {
-  const history = useHistory();
+  // const history = useHistory();
   const [css, theme] = useStyletron();
 
   const lolDir = config.get(`lolDir`);
@@ -29,8 +30,12 @@ export default function Import() {
   const { store, dispatch } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
 
-  const goBack = () => {
-    history.push(`/`);
+  const workers = useRef({});
+
+  const cancelImport = () => {
+    const ins = Object.values(workers.current);
+    ins.map(i => i.cancel());
+    // history.push(`/`);
   };
 
   const importFromSources = useCallback(async () => {
@@ -56,7 +61,10 @@ export default function Import() {
     let lolqqTask = _noop;
 
     if (selectedSources.includes(Sources.Opgg)) {
-      opggTask = () => fetchOpgg(lolVer, lolDir, itemMap, dispatch)
+      const instance = new OpGGImporter(lolVer, lolDir, itemMap, dispatch);
+      workers.current[Sources.Opgg] = instance;
+
+      opggTask = () => instance.import()
         .then(() => {
           const content = '[OP.GG] Completed';
           toaster.positive(content);
@@ -96,10 +104,7 @@ export default function Import() {
           title={`Done`}
           color={theme.colors.backgroundPositive}
           className={css({
-
-
             animation: `rr 1s linear infinite`,
-
             '@keyframes rr': {
               '100%': {
                 transform: `rotate(360deg)`,
@@ -109,7 +114,7 @@ export default function Import() {
         />
     }
 
-    <Button className={s.back} onClick={goBack}>{loading ? `STOP` : `BACK TO HOME`}</Button>
+    <Button className={s.back} onClick={cancelImport}>{loading ? `STOP` : `BACK TO HOME`}</Button>
 
     <ToasterContainer
       autoHideDuration={1500}

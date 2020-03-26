@@ -1,12 +1,13 @@
 import _find from 'lodash/find';
 import _sortBy from 'lodash/sortBy';
 import cheerio from 'cheerio';
+import { CancelToken } from 'axios'
 
 import http from './http';
 
 const RequestLocale = `en-US`;
 
-export const requestHtml = async url => {
+export const requestHtml = async (url, [prop, target]) => {
   try {
     const rawHtml = await http.get(
       url,
@@ -17,6 +18,9 @@ export const requestHtml = async url => {
           'Content-Language': RequestLocale,
           'Accept-Language': RequestLocale,
         },
+        cancelToken: new CancelToken(c => {
+          target[prop] = c;
+        }),
       },
     );
     const $ = cheerio.load(rawHtml);

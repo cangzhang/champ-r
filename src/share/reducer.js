@@ -14,6 +14,7 @@ export const initialState = {
   itemMap: null,
   selectedSources: config.get(`selectedSources`),
   keepOld: config.get('keepOldItems'),
+  importerInstances: {},
 };
 
 export const init = payload => payload;
@@ -68,10 +69,17 @@ export default produce((draft, action) => {
       draft.selectedSources = payload;
       break;
 
-    case Actions.UPDATE_APP_CONFIG:
+    case Actions.UPDATE_APP_CONFIG: {
       const [k, v] = payload;
       draft[k] = v;
       break;
+    }
+
+    case Actions.SET_IMPORTER_INSTANCE: {
+      const [k, v] = payload;
+      draft.importerInstances[k] = v;
+      break;
+    }
 
     default:
       return draft;

@@ -16,6 +16,8 @@ export const Actions = {
 
   UPDATE_SELECT_SOURCES: `UPDATE_SELECT_SOURCES`,
   UPDATE_APP_CONFIG: `UPDATE_APP_CONFIG`,
+
+  SET_IMPORTER_INSTANCE: `SET_IMPORTER_INSTANCE`,
 };
 
 export const setLolVersion = ver => ({
@@ -54,5 +56,10 @@ export const fetchSourceDone = source => ({
 
 export const updateConfig = (k, v) => ({
   type: Actions.UPDATE_APP_CONFIG,
+  payload: [k, v],
+});
+
+export const setImporterInstance = (k, v) => ({
+  type: Actions.SET_IMPORTER_INSTANCE,
   payload: [k, v],
 });

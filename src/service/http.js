@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { CancelToken } from 'axios';
 
 axios.interceptors.response.use(response => {
   // Any status code that lie within the range of 2xx cause this function to trigger
@@ -9,5 +9,7 @@ axios.interceptors.response.use(response => {
   // Do something with response error
   return Promise.reject(error);
 });
+
+export { CancelToken };
 
 export default axios;
