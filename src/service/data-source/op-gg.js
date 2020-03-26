@@ -24,7 +24,7 @@ export default class OpGG {
   }
 
   getStat = async () => {
-    const $ = await requestHtml(`${OpggUrl}/champion/statistics`, [`stats`, this.cancelHandlers]);
+    const $ = await requestHtml(`${OpggUrl}/champion/statistics`, this.setCancelHook(`stats`));
 
     const items = $('.champion-index__champion-list').find('.champion-index__champion-item');
     const result = items
@@ -48,9 +48,9 @@ export default class OpGG {
   };
 
   genBlocks = async (champion, position, id) => {
-    const { itemMap, cancelHandlers } = this;
+    const { itemMap } = this;
     try {
-      const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}/item`, [id, cancelHandlers]);
+      const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}/item`, this.setCancelHook(id));
       const itemTable = $('.l-champion-statistics-content__side .champion-stats__table')[0];
       const rawItems = $(itemTable)
         .find('tbody tr')
@@ -77,9 +77,8 @@ export default class OpGG {
   };
 
   genSkills = async (champion, position, id) => {
-    const { cancelHandlers } = this;
     try {
-      const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}/skill`, [id, cancelHandlers]);
+      const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}/skill`, this.setCancelHook(id));
 
       const skills = $('.champion-stats__filter__item .champion-stats__list')
         .toArray()
@@ -169,6 +168,10 @@ export default class OpGG {
     } catch (error) {
       return error;
     }
+  };
+
+  setCancelHook = ns => cancel => {
+    this.cancelHandlers[ns] = cancel;
   };
 
   cancel = () => {

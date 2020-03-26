@@ -1,13 +1,13 @@
 import _find from 'lodash/find';
 import _sortBy from 'lodash/sortBy';
 import cheerio from 'cheerio';
-import { CancelToken } from 'axios'
+import { CancelToken } from 'axios';
 
 import http from './http';
 
 const RequestLocale = `en-US`;
 
-export const requestHtml = async (url, [prop, target]) => {
+export const requestHtml = async (url, setCancel) => {
   try {
     const rawHtml = await http.get(
       url,
@@ -19,7 +19,9 @@ export const requestHtml = async (url, [prop, target]) => {
           'Accept-Language': RequestLocale,
         },
         cancelToken: new CancelToken(c => {
-          target[prop] = c;
+          if (setCancel) {
+            setCancel(c);
+          }
         }),
       },
     );
