@@ -1,11 +1,11 @@
 import uuid from 'nanoid';
-import _noop from 'lodash/noop';
 
 import { requestHtml, genFileBlocks } from 'src/service/utils';
 
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
 import Sources from 'src/share/sources';
+import SourceProto from './source-proto';
 
 const OpggUrl = 'https://www.op.gg';
 
@@ -14,9 +14,9 @@ export const getSpellName = (imgSrc = '') => {
   return matched.pop();
 };
 
-export default class OpGG {
+export default class OpGG extends SourceProto {
   constructor(version, lolDir, itemMap, dispatch) {
-    this.cancelHandlers = {};
+    super();
     this.version = version;
     this.lolDir = lolDir;
     this.itemMap = itemMap;
@@ -72,7 +72,7 @@ export default class OpGG {
       const blocks = genFileBlocks(rawItems, itemMap);
       return blocks;
     } catch (error) {
-      return error;
+      throw new Error(error);
     }
   };
 
@@ -90,7 +90,7 @@ export default class OpGG {
 
       return skills;
     } catch (error) {
-      return error;
+      throw new Error(error);
     }
   };
 
@@ -122,7 +122,7 @@ export default class OpGG {
         blocks,
       };
     } catch (error) {
-      return error;
+      throw new Error(error);
     }
   };
 
@@ -166,17 +166,8 @@ export default class OpGG {
 
       return result;
     } catch (error) {
-      return error;
+      throw new Error(error);
     }
-  };
-
-  setCancelHook = ns => cancel => {
-    this.cancelHandlers[ns] = cancel;
-  };
-
-  cancel = () => {
-    Object.values(this.cancelHandlers).map((i = _noop) => i());
-    return true;
   };
 }
 
