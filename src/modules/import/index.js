@@ -1,3 +1,5 @@
+/* eslint react-hooks/exhaustive-deps: 0 */
+
 import s from './style.module.scss';
 
 import _noop from 'lodash/noop';
@@ -5,9 +7,10 @@ import _noop from 'lodash/noop';
 import React, { useCallback, useContext, useEffect, useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
-import { ArrowUp } from 'baseui/icon';
+import { PauseCircle, RefreshCw, CheckCircle } from 'react-feather';
 
 import Sources from 'src/share/sources';
 import { prepareReimport, updateFetchingSource } from 'src/share/actions';
@@ -21,6 +24,7 @@ import WaitingList from 'src/components/waiting-list';
 
 export default function Import() {
   const history = useHistory();
+  const [css, theme] = useStyletron();
 
   const lolDir = config.get(`lolDir`);
   const lolVer = config.get(`lolVer`);
@@ -100,8 +104,6 @@ export default function Import() {
     } finally {
       setLoading(false);
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store]);
 
   useEffect(() => {
@@ -110,12 +112,31 @@ export default function Import() {
     }
 
     importFromSources();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const userCancelled = cancelled.length > 0;
 
-  const renderControl = () => {
+  const renderStatus = useCallback(() => {
+    if (loading) {
+      return <WaitingList />;
+    }
+
+    if (userCancelled) {
+      return <PauseCircle
+        size={128}
+        color={theme.colors.warning}
+      />;
+    }
+
+    return <CheckCircle
+      size={128}
+      color={theme.colors.contentPositive}
+    />
+  }, [userCancelled, loading]);
+
+  const backToHome = useCallback(() => history.replace(`/`), []);
+
+  const renderControl = useCallback(() => {
     if (loading) {
       return <Button className={s.back} onClick={cancelImport}>Stop</Button>;
     }
@@ -124,12 +145,12 @@ export default function Import() {
       return <>
         <Button
           className={s.back}
-          startEnhancer={() => <ArrowUp title={'Restart'} />}
+          startEnhancer={<RefreshCw title={'Restart'} />}
           overrides={{
             BaseButton: {
               style: ({ $theme }) => {
                 return {
-                  backgroundColor: $theme.colors.backgroundLightAccent,
+                  backgroundColor: $theme.colors.accent500,
                 };
               },
             },
@@ -140,13 +161,13 @@ export default function Import() {
       </>;
     }
 
-    return <Button className={s.back} onClick={() => history.replace(`/`)}>Return to home</Button>;
-  };
+    return <Button className={s.back} onClick={backToHome}>Return to home</Button>;
+  }, [userCancelled, loading]);
 
   return <div className={s.import}>
-    {loading && <WaitingList />}
+    {renderStatus(userCancelled)}
 
-    {renderControl()}
+    {renderControl(userCancelled)}
 
     <ToasterContainer
       autoHideDuration={1500}
