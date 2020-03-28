@@ -4,7 +4,7 @@ import s from './style.module.scss';
 
 import _noop from 'lodash/noop';
 
-import React, { useCallback, useContext, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useContext, useEffect, useState, useRef, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { useStyletron } from 'baseui';
@@ -24,7 +24,7 @@ import WaitingList from 'src/components/waiting-list';
 
 export default function Import() {
   const history = useHistory();
-  const [css, theme] = useStyletron();
+  const [, theme] = useStyletron();
 
   const lolDir = config.get(`lolDir`);
   const lolVer = config.get(`lolVer`);
@@ -35,13 +35,6 @@ export default function Import() {
 
   const workers = useRef({});
 
-  const cancelImport = () => {
-    setLoading(false);
-
-    const ins = Object.values(workers.current);
-    ins.map(i => i.cancel());
-  };
-
   const importFromSources = useCallback(async () => {
     const { selectedSources, keepOld, fetched } = store;
 
@@ -49,7 +42,6 @@ export default function Import() {
     if (fetched.length) {
       dispatch(prepareReimport());
     }
-
     dispatch(updateFetchingSource(selectedSources));
 
     let cleanFolderTask = () => Promise.resolve();
@@ -60,7 +52,6 @@ export default function Import() {
     }
 
     const { itemMap } = store;
-
     let opggTask = _noop;
     let lolqqTask = _noop;
 
@@ -99,6 +90,7 @@ export default function Import() {
     }
 
     await cleanFolderTask();
+
     try {
       await Promise.all([opggTask(), lolqqTask()]);
     } finally {
@@ -114,7 +106,19 @@ export default function Import() {
     importFromSources();
   }, []);
 
-  const userCancelled = cancelled.length > 0;
+  const stop = () => {
+    setLoading(false);
+    setCancel(Object.keys(workers.current));
+
+    const ins = Object.values(workers.current);
+    ins.map(i => i.cancel());
+  };
+
+  const restart = () => {
+    importFromSources();
+  };
+
+  const userCancelled = useMemo(() => cancelled.length > 0, [cancelled]);
 
   const renderStatus = useCallback(() => {
     if (loading) {
@@ -124,21 +128,21 @@ export default function Import() {
     if (userCancelled) {
       return <PauseCircle
         size={128}
-        color={theme.colors.warning}
+        color={theme.colors.contentWarning}
       />;
     }
 
     return <CheckCircle
       size={128}
       color={theme.colors.contentPositive}
-    />
+    />;
   }, [userCancelled, loading]);
 
   const backToHome = useCallback(() => history.replace(`/`), []);
 
   const renderControl = useCallback(() => {
     if (loading) {
-      return <Button className={s.back} onClick={cancelImport}>Stop</Button>;
+      return <Button className={s.back} onClick={stop}>Stop</Button>;
     }
 
     if (userCancelled) {
@@ -146,11 +150,12 @@ export default function Import() {
         <Button
           className={s.back}
           startEnhancer={<RefreshCw title={'Restart'} />}
+          onClick={restart}
           overrides={{
             BaseButton: {
               style: ({ $theme }) => {
                 return {
-                  backgroundColor: $theme.colors.accent500,
+                  backgroundColor: $theme.colors.contentPositive,
                 };
               },
             },
@@ -165,20 +170,12 @@ export default function Import() {
   }, [userCancelled, loading]);
 
   return <div className={s.import}>
-    {renderStatus(userCancelled)}
-
-    {renderControl(userCancelled)}
+    {renderStatus()}
+    {renderControl()}
 
     <ToasterContainer
       autoHideDuration={1500}
       placement={PLACEMENT.bottom}
-      // overrides={{
-      //   ToastBody: {
-      //     style: () => ({
-      //       backgroundColor: '#5383e8',
-      //     }),
-      //   },
-      // }}
     />
   </div>;
 };
