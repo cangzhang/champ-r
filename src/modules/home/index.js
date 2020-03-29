@@ -6,12 +6,15 @@ import { remote } from 'electron';
 
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import cn from 'classnames';
 
+import { useStyletron } from 'baseui';
 import { Button } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Tag } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
+import { CornerDownRight } from 'react-feather';
 
 import config from 'src/native/config';
 import {
@@ -26,6 +29,7 @@ import Sources from 'src/share/sources';
 import AppContext from 'src/share/context';
 
 export default function Home() {
+  const [css, theme] = useStyletron();
   const { store, dispatch } = useContext(AppContext);
   const history = useHistory();
 
@@ -118,9 +122,19 @@ export default function Home() {
         onClick={onSelectDir}
         onActionClick={clearFolder}
         overrides={{
+          Root: {
+            style: () => ({
+              minWidth: 0,
+              maxWidth: `calc(100vw - 14em)`,
+              paddingTop: `4px`,
+            }),
+          },
           Text: {
             style: ({ $theme }) => ({
               fontSize: $theme.sizing.scale550,
+              flexGrow: 1,
+              maxWidth: `unset`,
+              alignSelf: `flex-start`,
             }),
           },
         }}
@@ -130,6 +144,15 @@ export default function Home() {
         </Tooltip>
       </Tag>
     </div>
+    <code
+      className={cn(s.folderTip, css({
+        backgroundColor: theme.colors.backgroundLightWarning,
+        borderRadius: theme.borders.radius300,
+      }))}
+    >
+      <CornerDownRight size={`1.6em`} color={`#43BF75`} /><b>INSTALLATION PATH</b> of League of Legends.
+    </code>
+
     <div className={s.info}>
       LOL version is
       <Tag

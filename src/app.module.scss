@@ -4,63 +4,85 @@
   padding: 1em;
 
   .title {
-	margin-bottom: 2ex;
-	user-select: none;
+    margin-bottom: 2ex;
+    user-select: none;
 
-	span {
-	  box-shadow: 0 4px 0px 0px #276EF1;
-	}
+    span {
+      box-shadow: 0 4px 0px 0px #276ef1;
+    }
+  }
+
+  .folder-tip {
+    display: flex;
+    align-self: flex-start;
+    align-items: center;
+    margin-bottom: 1em;
+    height: 2.4em;
+    line-height: 2.4em;
+
+    color: #000000;
+    font-weight: 500;
+    font-size: 85%;
+    padding: 0.2em 1em;
+
+    svg {
+      margin-right: 1em;
+    }
+
+    b {
+      margin-right: 1ex;
+    }
   }
 
   .champions {
-	display: flex;
-	height: 60vh;
-	overflow-y: auto;
-	margin-top: 1em;
+    display: flex;
+    height: 60vh;
+    overflow-y: auto;
+    margin-top: 1em;
 
-	> * {
-	  flex: 1;
-	}
+    > * {
+      flex: 1;
+    }
   }
 
   .info {
-	display: flex;
-	align-items: center;
-	margin-bottom: 0.6ex;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.6ex;
 
-	code {
-	  margin-left: 0.5em;
-	  padding: 0 0.4em;
-	  cursor: pointer;
-	  background-color: rgb(237, 243, 253);
-	}
+    code {
+      margin-left: 0.5em;
+      padding: 0 0.4em;
+      cursor: pointer;
+      background-color: rgb(237, 243, 253);
+    }
 
-	svg {
-	  width: 1.2em;
-	  height: 1.2em;
-	}
+    svg {
+      width: 1.2em;
+      height: 1.2em;
+    }
   }
 
   .sources {
-	display: flex;
-	flex-direction: column;
-	margin-top: 1.4ex;
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.4ex;
   }
 
   .control {
-	display: flex;
-	margin-top: 4ex;
-	margin-bottom: 5ex;
+    display: flex;
+    margin-top: 4ex;
+    margin-bottom: 5ex;
 
-	.import {
-	  width: 10em;
-	  background-color: #276EF1;
-	}
+    .import {
+      width: 10em;
+      background-color: #276ef1;
+    }
 
-	.keep-old {
-	  display: flex;
-	  align-self: flex-end;
-	}
+    .keep-old {
+      display: flex;
+      align-self: flex-end;
+    }
   }
 }
 
