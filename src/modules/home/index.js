@@ -1,3 +1,5 @@
+/* eslint react-hooks/exhaustive-deps: 0 */
+
 import s from 'src/app.module.scss';
 
 import { remote } from 'electron';
@@ -36,7 +38,6 @@ export default function Home() {
   const toggleKeepOldItems = ev => {
     const { checked } = ev.target;
     setKeepOld(checked);
-    config.set('keepOldItems', checked);
   };
 
   const onSelectDir = async () => {
@@ -49,12 +50,10 @@ export default function Home() {
 
     const dir = filePaths[0];
     setLolDir(dir);
-    config.set('lolDir', dir);
   };
 
   const clearFolder = () => {
     setLolDir('');
-    config.set('lolDir', '');
   };
 
   const onCheck = value => ev => {
@@ -72,7 +71,6 @@ export default function Home() {
 
     toggleSource(res);
     dispatch(updateConfig(`selectedSources`, res));
-    config.set(`selectedSources`, res);
   };
 
   const startImport = () => {
@@ -84,7 +82,6 @@ export default function Home() {
       const v = await getLolVer();
       await setVersion(v);
       dispatch(setLolVersion(v));
-      config.set('lolVer', v);
 
       const language = config.get('language');
       const data = await getItemList(v, language);
@@ -96,8 +93,15 @@ export default function Home() {
     };
 
     getVerAndItems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // persist user preference
+    config.set('keepOldItems', keepOld);
+    config.set('lolDir', lolDir);
+    config.set('lolVer', version);
+    config.set(`selectedSources`, selectedSources);
+  }, [keepOld, lolDir, version, selectedSources]);
 
   const shouldDisableImport = !version || !lolDir || !selectedSources.length || !store.itemMap;
 
