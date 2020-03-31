@@ -16,6 +16,7 @@
 
 html {
   height: 100vh;
+  font-size: 16px;
 }
 
 body {
@@ -27,7 +28,6 @@ body {
 
   //color: #ffffff;
   font-weight: 600;
-  font-size: 2.4ex;
 
   .bg-holder {
     display: block;
@@ -58,5 +58,5 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-family: SF Mono, source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

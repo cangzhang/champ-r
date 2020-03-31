@@ -2,7 +2,7 @@ const path = require('path');
 
 const { app, BrowserWindow, Menu } = require('electron');
 /// const { autoUpdater } = require('electron-updater');
-const { is, disableZoom, centerWindow } = require('electron-util');
+const { is, centerWindow } = require('electron-util');
 const contextMenu = require('electron-context-menu');
 
 const unhandled = require('electron-unhandled');
@@ -37,6 +37,7 @@ const createMainWindow = async () => {
     frame: false,
     height: 800,
     width: is.development ? 1300 : 500,
+    resizable: false,
     webPreferences: {
       nodeIntegration: true,
       webSecurity: false,
@@ -95,7 +96,6 @@ app.on('activate', async () => {
   Menu.setApplicationMenu(null);
   mainWindow = await createMainWindow();
 
-  await disableZoom(mainWindow);
   await centerWindow({
     window: mainWindow,
     animated: true,
