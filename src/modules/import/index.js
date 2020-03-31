@@ -10,7 +10,7 @@ import { useHistory } from 'react-router-dom';
 import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
-import { PauseCircle, RefreshCw, CheckCircle } from 'react-feather';
+import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home } from 'react-feather';
 
 import Sources from 'src/share/sources';
 import { prepareReimport, updateFetchingSource } from 'src/share/actions';
@@ -163,10 +163,32 @@ export default function Import() {
         >
           Restart
         </Button>
+        <Button
+          className={s.back}
+          startEnhancer={<XCircle title={'Homepage'} />}
+          onClick={backToHome}
+          overrides={{
+            BaseButton: {
+              style: ({ $theme }) => {
+                return {
+                  backgroundColor: $theme.colors.negative,
+                };
+              },
+            },
+          }}
+        >
+          Cancel
+        </Button>
       </>;
     }
 
-    return <Button className={s.back} onClick={backToHome}>Return to home</Button>;
+    return <Button
+      className={s.back}
+      onClick={backToHome}
+      startEnhancer={<Home title={`Home`} />}
+    >
+      Back to home
+    </Button>;
   }, [userCancelled, loading]);
 
   return <div className={s.import}>
