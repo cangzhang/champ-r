@@ -4,7 +4,7 @@ module.exports = new Store({
   defaults: {
     lolDir: '',
     lolVer: '',
-    language: '',
+    appLang: '',
     keepOldItems: true,
     selectedSources: [],
   },

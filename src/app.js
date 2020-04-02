@@ -2,6 +2,7 @@ import s from './app.module.scss';
 
 import React, { useReducer, useMemo } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
@@ -15,6 +16,7 @@ import appReducer, {
 import Toolbar from 'src/components/toolbar';
 import Home from 'src/modules/home';
 import Import from 'src/modules/import';
+import Settings from 'src/modules/settings';
 
 const engine = new Styletron();
 
@@ -26,11 +28,12 @@ const App = () => {
     <AppContext.Provider value={contextValue}>
       <StyletronProvider value={engine}>
         <BaseProvider theme={LightTheme}>
-          <Toolbar />
           <Router>
+            <Toolbar />
             <Switch>
               <Route exact path={'/'} component={Home} />
               <Route path={`/import`} component={Import} />
+              <Route path={`/settings`} component={Settings} />
             </Switch>
           </Router>
           <div className={s.appVer}>App Version: {process.env.APP_VERSION}</div>
