@@ -3,14 +3,14 @@ import './index.scss';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import './modules/i18n';
 import App from './app';
 // Import * as serviceWorker from './serviceWorker';
 
 const config = require('./native/config');
 
-if (!config.get('language')) {
-  const language = navigator.language.replace('-', '_');
-  config.set('language', language);
+if (!config.get('appLang')) {
+  config.set('appLang', navigator.language);
 }
 
 ReactDOM.render(<App />, document.querySelector('#root'));

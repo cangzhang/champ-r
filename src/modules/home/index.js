@@ -27,11 +27,13 @@ import { getUpgradeableCompletedItems } from 'src/service/utils';
 
 import Sources from 'src/share/sources';
 import AppContext from 'src/share/context';
+import { useTranslation } from 'react-i18next';
 
 export default function Home() {
   const [css, theme] = useStyletron();
   const { store, dispatch } = useContext(AppContext);
   const history = useHistory();
+  const { t } = useTranslation();
 
   const [keepOld, setKeepOld] = useState(config.get('keepOldItems'));
   const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
@@ -87,9 +89,11 @@ export default function Home() {
       await setVersion(v);
       dispatch(setLolVersion(v));
 
-      const language = config.get('language');
+      const appLang = config.get('appLang');
+      const language = appLang.replace('-', '_');
       const data = await getItemList(v, language);
       const upgradeableCompletedItems = getUpgradeableCompletedItems(data);
+
       dispatch(updateItemMap({
         ...data,
         upgradeableCompletedItems,
@@ -115,7 +119,7 @@ export default function Home() {
     </h1>
 
     <div className={s.info}>
-      LOL folder is
+      {t(`lol folder is`)}
       <Tag
         closeable={Boolean(lolDir)}
         kind="accent"
@@ -140,7 +144,7 @@ export default function Home() {
         }}
       >
         <Tooltip content={lolDir && 'Click to re-select.'}>
-          {lolDir || 'Click here to select'}
+          {lolDir || t('click here to select')}
         </Tooltip>
       </Tag>
     </div>
@@ -150,11 +154,12 @@ export default function Home() {
         borderRadius: theme.borders.radius300,
       }))}
     >
-      <CornerDownRight size={`1.6em`} color={`#43BF75`} /><b>INSTALLATION PATH</b> of League of Legends.
+      <CornerDownRight size={`1.6em`} color={`#43BF75`} />
+      <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }} />
     </code>
 
     <div className={s.info}>
-      LOL version is
+      {t(`lol version is`)}
       <Tag
         kind="accent"
         closeable={false}
@@ -227,7 +232,7 @@ export default function Home() {
         startEnhancer={() => <ArrowRight size={24} />}
         onClick={startImport}
       >
-        Import Now!
+        {t(`import now`)}!
       </Button>
 
       <Checkbox
@@ -268,7 +273,7 @@ export default function Home() {
           },
         }}
       >
-        Keep old items
+        {t('keep old items')}
       </Checkbox>
     </div>
   </div>;
