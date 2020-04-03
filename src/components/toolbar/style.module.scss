@@ -7,10 +7,12 @@
   top: 0;
   padding-right: 0.7em;
   padding-top: 0.7em;
-
-  //cursor: move;
   -webkit-user-select: none;
   -webkit-app-region: drag;
+
+  &:hover {
+    cursor: move;
+  }
 
   .icon {
     height: 2em;
@@ -18,6 +20,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    -webkit-app-region: no-drag;
 
     &:hover {
       background-color: #e2e2e2;
