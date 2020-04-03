@@ -5,25 +5,23 @@
   position: absolute;
   right: 0;
   top: 0;
-  padding-right: 1em;
+  padding-right: 0.7em;
   padding-top: 0.7em;
 
   //cursor: move;
   -webkit-user-select: none;
   -webkit-app-region: drag;
 
-  > svg {
-    height: 1.4em;
-    width: 1.4em;
-    -webkit-app-region: no-drag;
+  .icon {
+    height: 2em;
+    width: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     &:hover {
       background-color: #e2e2e2;
       cursor: pointer;
-    }
-
-    &:not(:last-child) {
-      margin-right: 0.4em;
     }
   }
 }

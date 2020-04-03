@@ -143,7 +143,7 @@ export default function Home() {
           },
         }}
       >
-        <Tooltip content={lolDir && 'Click to re-select.'}>
+        <Tooltip content={lolDir && t(`click here to re-select`)}>
           {lolDir || t('click here to select')}
         </Tooltip>
       </Tag>

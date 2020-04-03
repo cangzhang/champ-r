@@ -2,12 +2,15 @@ import s from './style.module.scss';
 
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { CheckIndeterminate as MinimalizeIcon, Delete as CloseIcon } from 'baseui/icon';
-import { Settings } from 'react-feather';
+import { useTranslation } from 'react-i18next';
+
+import { StatefulTooltip } from 'baseui/tooltip';
+import { Settings, Minimize2, X } from 'react-feather';
 
 const { remote } = require('electron');
 
 const Toolbar = () => {
+  const [t] = useTranslation();
   const history = useHistory();
 
   const onHide = () => {
@@ -18,9 +21,31 @@ const Toolbar = () => {
   };
 
   return <div className={s.toolbar}>
-    <Settings title={`Settings`} onClick={() => history.replace(`/settings`)} />
-    <MinimalizeIcon title={`Minimize`} onClick={onHide} />
-    <CloseIcon title={`Close`} onClick={onClose} />
+    <StatefulTooltip
+      accessibilityType={'tooltip'}
+      content={t(`settings`)}
+    >
+      <span
+        className={s.icon}
+        onClick={() => history.replace(`/settings`)}
+      >
+        <Settings size={16} />
+      </span>
+    </StatefulTooltip>
+
+    <StatefulTooltip
+      accessibilityType={'tooltip'}
+      content={t(`minimize`)}
+    >
+      <span className={s.icon} onClick={onHide} ><Minimize2 size={16} /></span>
+    </StatefulTooltip>
+
+    <StatefulTooltip
+      accessibilityType={'tooltip'}
+      content={t(`close`)}
+    >
+      <span className={s.icon} onClick={onClose} ><X size={16} /></span>
+    </StatefulTooltip>
   </div>;
 };
 

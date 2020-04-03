@@ -6,7 +6,7 @@ import _noop from 'lodash/noop';
 
 import React, { useCallback, useContext, useEffect, useState, useRef, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
 import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
@@ -25,6 +25,7 @@ import WaitingList from 'src/components/waiting-list';
 export default function Import() {
   const history = useHistory();
   const [, theme] = useStyletron();
+  const [t] = useTranslation();
 
   const lolDir = config.get(`lolDir`);
   const lolVer = config.get(`lolVer`);
@@ -142,7 +143,7 @@ export default function Import() {
 
   const renderControl = useCallback(() => {
     if (loading) {
-      return <Button className={s.back} onClick={stop}>Stop</Button>;
+      return <Button className={s.back} onClick={stop}>{t(`stop`)}</Button>;
     }
 
     if (userCancelled) {
@@ -161,7 +162,7 @@ export default function Import() {
             },
           }}
         >
-          Restart
+          {t(`restart`)}
         </Button>
         <Button
           className={s.back}
@@ -177,7 +178,7 @@ export default function Import() {
             },
           }}
         >
-          Cancel
+          {t(`cancel`)}
         </Button>
       </>;
     }
@@ -187,7 +188,7 @@ export default function Import() {
       onClick={backToHome}
       startEnhancer={<Home title={`Home`} />}
     >
-      Back to home
+      {t(`back to home`)}
     </Button>;
   }, [userCancelled, loading]);
 

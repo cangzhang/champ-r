@@ -2,14 +2,16 @@ import s from './style.module.scss';
 
 import React, { useContext } from 'react';
 import cn from 'classnames';
+import { useTranslation } from 'react-i18next';
 
 import AppContext from 'src/share/context';
 
 export default () => {
+  const [t] = useTranslation();
   const { store: { fetching, fetchingSources } } = useContext(AppContext);
 
   return <div className={s.waitingList}>
-    <h3>FETCHING:{fetchingSources.map(s => <b key={s}>{s}</b>)}</h3>
+    <h3>{t(`fetching`)}:{fetchingSources.map(s => <b key={s}>{s}</b>)}</h3>
     <ul>
       {
         fetching.map(i =>

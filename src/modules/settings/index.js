@@ -1,7 +1,11 @@
+/* eslint react-hooks/exhaustive-deps: 0 */
 import s from './style.module.scss';
 
+import _get from 'lodash/get';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
 import { Select } from 'baseui/select';
 import { Button } from 'baseui/button';
 
@@ -20,6 +24,7 @@ const LangList = [
 const getLangItem = value => LangList.find(i => i.value === value) || {};
 
 export default function Settings() {
+  const [t, i18n] = useTranslation();
   const history = useHistory();
   const sysLang = config.get(`appLang`);
   const [values, setLangValues] = useState([getLangItem(sysLang)]);
@@ -29,14 +34,18 @@ export default function Settings() {
   };
 
   useEffect(() => {
-    config.set(`appLang`, values[0].value);
+    const lang = _get(values, `0.value`, '');
+    if (lang && lang !== sysLang) {
+      config.set(`appLang`, lang);
+      i18n.changeLanguage(lang);
+    }
   }, [values]);
 
   return <div className={s.settings}>
     <div className={s.lang}>
-      <label>App language</label>
+      <label>{t(`display language`)}</label>
       <Select
-        placeholder={`Select language`}
+        placeholder={t(`select language`)}
         options={LangList}
         labelKey={'label'}
         valueKey={'value'}
@@ -73,7 +82,7 @@ export default function Settings() {
         },
       }}
     >
-      Back
+      {t(`back to home`)}
     </Button>
   </div>;
 }
