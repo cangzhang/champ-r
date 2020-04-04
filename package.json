@@ -26,48 +26,30 @@
     "test": "npm run lint",
     "test-react": "node scripts/test.js"
   },
-  "babel": {
-    "presets": [
-      "react-app"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "dependencies": {
     "axios": "^0.19.2",
-    "baseui": "^9.51.0",
+    "baseui": "9.67.2",
     "cheerio": "^1.0.0-rc.3",
     "classnames": "^2.2.6",
-    "electron-context-menu": "^0.15.0",
-    "electron-debug": "^3.0.0",
+    "electron-context-menu": "0.16.0",
+    "electron-debug": "3.0.1",
     "electron-is-dev": "^1.1.0",
-    "electron-store": "^5.1.0",
+    "electron-store": "5.1.1",
     "electron-unhandled": "^3.0.0",
     "electron-updater": "^4.0.6",
-    "electron-util": "^0.13.0",
+    "electron-util": "0.14.0",
     "i18next": "^19.3.4",
-    "immer": "^5.3.2",
-    "ionicons": "^5.0.0",
+    "immer": "6.0.3",
     "lodash": "^4.17.15",
-    "nanoid": "^2.1.11",
+    "nanoid": "3.0.2",
     "normalize.css": "^8.0.1",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
     "react-feather": "^2.0.3",
     "react-i18next": "^11.3.4",
     "react-router-dom": "^5.1.2",
-    "styletron-engine-atomic": "^1.4.4",
-    "styletron-react": "^5.2.6"
+    "styletron-engine-atomic": "1.4.6",
+    "styletron-react": "5.2.7"
   },
   "devDependencies": {
     "@babel/core": "7.7.4",
@@ -90,17 +72,17 @@
     "css-loader": "3.2.0",
     "dotenv": "8.2.0",
     "dotenv-expand": "5.1.0",
-    "electron": "^7.1.1",
-    "electron-builder": "^21.2.0",
+    "electron": "8.2.0",
+    "electron-builder": "22.4.1",
     "eslint": "^6.6.0",
     "eslint-config-react-app": "^5.1.0",
     "eslint-loader": "3.0.2",
-    "eslint-plugin-baseui": "^9.51.0",
+    "eslint-plugin-baseui": "9.67.2",
     "eslint-plugin-flowtype": "3.13.0",
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-react": "^7.19.0",
-    "eslint-plugin-react-hooks": "^2.5.0",
+    "eslint-plugin-react-hooks": "3.0.0",
     "file-loader": "4.3.0",
     "fs-extra": "^8.1.0",
     "html-webpack-plugin": "4.0.0-beta.5",
@@ -139,6 +121,19 @@
     "webpack-dev-server": "3.9.0",
     "webpack-manifest-plugin": "2.2.0",
     "workbox-webpack-plugin": "4.3.1"
+  },
+  "babel": {
+    "presets": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      "last 1 chrome version"
+    ],
+    "development": [
+      "last 1 chrome version"
+    ]
   },
   "build": {
     "appId": "com.al.champ-r",

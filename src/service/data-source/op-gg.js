@@ -1,4 +1,4 @@
-import uuid from 'nanoid';
+import { nanoid as uuid } from 'nanoid';
 
 import { requestHtml, genFileBlocks } from 'src/service/utils';
 

@@ -1,4 +1,4 @@
-import uuid from 'nanoid';
+import { nanoid as uuid } from 'nanoid';
 import _get from 'lodash/get';
 import _find from 'lodash/find';
 import { CancelToken } from 'axios';
