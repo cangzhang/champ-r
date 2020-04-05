@@ -69,7 +69,7 @@ export default class OpGG extends SourceProto {
           };
         });
 
-      const blocks = genFileBlocks(rawItems, itemMap);
+      const blocks = genFileBlocks(rawItems, itemMap, position);
       return blocks;
     } catch (error) {
       throw new Error(error);

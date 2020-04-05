@@ -44,9 +44,19 @@ export const getUpgradeableCompletedItems = ({ data }) => {
   return Array.from(result);
 };
 
-export const sortBlocksByRate = (items, itemMap) => {
-  const { upgradeableCompletedItems } = itemMap;
+const isItStartItem = (itemDetail, itemMap, isJungle) => {
   const { tags: StarterTags } = _find(itemMap.tree, { header: 'START' });
+  const { tags, gold } = itemDetail;
+
+  const hasStartTag = tags.some(t => StarterTags.includes(t.toUpperCase()));
+  const hasJungleTag = tags.join(`,`).toLowerCase().includes(`jungle`);
+  const affordable = gold.total <= 500;
+
+  return hasStartTag && affordable && (isJungle ? hasJungleTag : true);
+};
+
+export const sortBlocksByRate = (items, itemMap, position) => {
+  const { upgradeableCompletedItems } = itemMap;
   const startItems = [];
   const incompleteItems = [];
   const completedItems = [];
@@ -62,7 +72,7 @@ export const sortBlocksByRate = (items, itemMap) => {
     }
 
     const isUpgradeableCompleted = upgradeableCompletedItems.includes(i.id);
-    const isStartItem = itemDetail.tags.some(t => StarterTags.includes(t.toUpperCase()));
+    const isStartItem = isItStartItem(itemDetail, itemMap, position.toLowerCase() === 'jungle');
     const isInCompleteItem = !isStartItem && !isUpgradeableCompleted && itemDetail.into;
     const isCompletedItem = !isStartItem && (isUpgradeableCompleted || !itemDetail.into);
 
@@ -77,7 +87,7 @@ export const sortBlocksByRate = (items, itemMap) => {
   return [sortByPickRate, sortByWinRate];
 };
 
-export const genFileBlocks = (rawItems, itemMap, showIncomplete = false) => {
+export const genFileBlocks = (rawItems, itemMap, position, showIncomplete = false) => {
   const [
     [
       pStartItems,
@@ -91,7 +101,7 @@ export const genFileBlocks = (rawItems, itemMap, showIncomplete = false) => {
       wCompletedItems,
       wBoots,
     ],
-  ] = sortBlocksByRate(rawItems, itemMap);
+  ] = sortBlocksByRate(rawItems, itemMap, position);
 
   return [
     {

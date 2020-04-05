@@ -115,7 +115,8 @@ export default class LolQQ extends SourceProto {
         pRate: i.showrate,
         wRate: i.winrate,
       }));
-      const blocks = genFileBlocks(rawItems, itemMap);
+      
+      const blocks = genFileBlocks(rawItems, itemMap, position);
 
       const item = {
         sortrank: 1,
