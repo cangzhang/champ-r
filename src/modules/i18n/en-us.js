@@ -20,5 +20,8 @@ export default {
     'settings': `Settings`,
     'display language': `Display language`,
     'select language': `Select language`,
+    'removed outdated items': `Removed outdated items`,
+    'completed': `Completed`,
+    'cancelled': `Cancelled`,
   },
 };

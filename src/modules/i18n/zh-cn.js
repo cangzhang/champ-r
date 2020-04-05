@@ -20,5 +20,8 @@ export default {
     'settings': `设置`,
     'display language': `显示语言`,
     'select language': `选择`,
+    'removed outdated items': `已移除旧出装文件`,
+    'completed': `已完成`,
+    'cancelled': `已取消`,
   },
 };

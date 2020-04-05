@@ -7,6 +7,7 @@ import _noop from 'lodash/noop';
 import React, { useCallback, useContext, useEffect, useState, useRef, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+
 import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
@@ -48,7 +49,7 @@ export default function Import() {
     let cleanFolderTask = () => Promise.resolve();
     if (!keepOld) {
       cleanFolderTask = () => removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
-        toaster.positive('Removed outdated items.');
+        toaster.positive(t(`removed outdated items`));
       });
     }
 
@@ -62,13 +63,12 @@ export default function Import() {
 
       opggTask = () => instance.import()
         .then(() => {
-          const content = '[OP.GG] Completed';
-          toaster.positive(content);
+          toaster.positive(`[OP.GG] ${t(`completed`)}`);
         })
         .catch(err => {
           if (err.message === `Error: Cancel`) {
             setCancel(cancelled.concat(Sources.Opgg));
-            toaster.negative(`Cancelled: ${Sources.Opgg}`);
+            toaster.negative(`${t(`cancelled`)}: ${Sources.Opgg}`);
           }
         });
     }
@@ -79,13 +79,12 @@ export default function Import() {
 
       lolqqTask = () => instance.import()
         .then(() => {
-          const content = '[101.QQ.COM] Completed';
-          toaster.positive(content);
+          toaster.positive(`[101.QQ.COM] ${t(`completed`)}`);
         })
         .catch(err => {
           if (err.message === `Error: Cancel`) {
             setCancel(cancelled.concat(Sources.Lolqq));
-            toaster.negative(`Cancelled: ${Sources.Lolqq}`);
+            toaster.negative(`${t(`cancelled`)}: ${Sources.Lolqq}`);
           }
         });
     }
