@@ -34,8 +34,8 @@ export default function Settings() {
   };
 
   useEffect(() => {
-    const lang = _get(values, `0.value`, '');
-    if (lang && lang !== sysLang) {
+    const lang = _get(values, `0.value`, sysLang);
+    if (lang !== sysLang) {
       config.set(`appLang`, lang);
       i18n.changeLanguage(lang);
     }

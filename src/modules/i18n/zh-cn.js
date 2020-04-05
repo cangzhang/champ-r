@@ -5,7 +5,7 @@ export default {
     'lol folder is': `LOL 文件夹`,
     'lol version is': `LOL 版本`,
     'import now': `立刻导入`,
-    'keep old items': `保留旧文件`,
+    'keep old items': `保留旧出装文件`,
     'click here to select': '点击此处选择文件夹',
     'click here to re-select': '点击此处重新选择',
     'installation path of League of Legends': `LOL <b>安装文件夹</b>`,

@@ -35,7 +35,6 @@ export default function Home() {
   const history = useHistory();
   const { t } = useTranslation();
 
-  const [keepOld, setKeepOld] = useState(config.get('keepOldItems'));
   const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
 
   const [version, setVersion] = useState(config.get('lolVer'));
@@ -43,7 +42,7 @@ export default function Home() {
 
   const toggleKeepOldItems = ev => {
     const { checked } = ev.target;
-    setKeepOld(checked);
+    dispatch(updateConfig('keepOld', checked));
   };
 
   const onSelectDir = async () => {
@@ -105,11 +104,11 @@ export default function Home() {
 
   useEffect(() => {
     // persist user preference
-    config.set('keepOldItems', keepOld);
+    config.set('keepOldItems', store.keepOld);
     config.set('lolDir', lolDir);
     config.set('lolVer', version);
     config.set(`selectedSources`, selectedSources);
-  }, [keepOld, lolDir, version, selectedSources]);
+  }, [store.keepOld, lolDir, version, selectedSources]);
 
   const shouldDisableImport = !version || !lolDir || !selectedSources.length || !store.itemMap;
 
@@ -239,7 +238,7 @@ export default function Home() {
         className={s.keepOld}
         labelPlacement={LABEL_PLACEMENT.right}
         checkmarkType={STYLE_TYPE.toggle_round}
-        checked={keepOld}
+        checked={store.keepOld}
         onChange={toggleKeepOldItems}
         overrides={{
           Root: {
