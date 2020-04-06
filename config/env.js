@@ -81,6 +81,7 @@ function getClientEnvironment(publicUrl) {
         PUBLIC_URL: publicUrl,
 
         APP_VERSION: process.env.NODE_ENV === 'production' ? appPackageJson.version : `dev`,
+        NODE_TLS_REJECT_UNAUTHORIZED: 0,
       },
     );
   // Stringify all values so we can feed into Webpack DefinePlugin
