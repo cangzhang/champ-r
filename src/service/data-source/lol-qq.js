@@ -1,11 +1,12 @@
 import { nanoid as uuid } from 'nanoid';
 import _get from 'lodash/get';
 import _find from 'lodash/find';
+import _orderBy from 'lodash/orderBy';
 import { CancelToken } from 'axios';
 
 import http from 'src/service/http';
 import { saveToFile } from 'src/share/file';
-import { genFileBlocks } from 'src/service/utils';
+import { genFileBlocks, parseJson } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import Sources from 'src/share/sources';
 
@@ -22,7 +23,7 @@ const API = {
 export const parseCode = string => {
   try {
     const [result] = string.match(/{"(.*)"}/);
-    const data = JSON.parse(result);
+    const data = parseJson(result);
     return data;
   } catch (error) {
     throw new Error(error);
@@ -50,7 +51,7 @@ export default class LolQQ extends SourceProto {
     try {
       const data = await http.get(API.List, {
         cancelToken: new CancelToken(c => {
-          this.setCancelHook(`qq-stats`)(c)
+          this.setCancelHook(`qq-stats`)(c);
         }),
       });
       return data;
@@ -63,7 +64,7 @@ export default class LolQQ extends SourceProto {
     try {
       const code = await http.get(API.Positions, {
         cancelToken: new CancelToken(c => {
-          this.setCancelHook(`qq-positions`)(c)
+          this.setCancelHook(`qq-positions`)(c);
         }),
       });
       const { list } = parseCode(code);
@@ -87,7 +88,7 @@ export default class LolQQ extends SourceProto {
       const apiUrl = API.detail(id);
       const code = await http.get(apiUrl, {
         cancelToken: new CancelToken(c => {
-          this.setCancelHook($identity)(c)
+          this.setCancelHook($identity)(c);
         }),
       });
 
@@ -107,8 +108,21 @@ export default class LolQQ extends SourceProto {
     const { championLane } = data;
 
     const result = positions.reduce((res, position) => {
+      const perkDetail = parseJson(championLane[position].perkdetail);
+      const perkData = Object.values(perkDetail).reduce((result, i) => {
+        const vals = Object.values(i).map(({ perk, ...rest }) => ({
+          perks: perk.split(`&`),
+          ...rest,
+        }));
+        return result.concat(vals);
+      }, []);
+
+      // TODO: perks
+      const byWinRate = _orderBy(perkData, i => i.winrate, [`desc`]);
+      const byPickRate = _orderBy(perkData, i => i.showrate, [`desc`]);
+
       const laneItemsString = _get(championLane, `${position}.hold3`, []);
-      const rawBlocks = JSON.parse(laneItemsString);
+      const rawBlocks = parseJson(laneItemsString);
       const rawItems = rawBlocks.map(i => ({
         id: i.itemid,
         count: 1,

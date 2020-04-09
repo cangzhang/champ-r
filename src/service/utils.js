@@ -138,3 +138,11 @@ export const genFileBlocks = (rawItems, itemMap, position, showIncomplete = fals
     },
   ].filter(Boolean);
 };
+
+export const parseJson = str => {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return {};
+  }
+};
