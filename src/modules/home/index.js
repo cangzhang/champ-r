@@ -25,9 +25,6 @@ import {
 import { getItemList, getLolVer } from 'src/service/ddragon';
 import { getUpgradeableCompletedItems } from 'src/service/utils';
 
-// import { getLcuToken } from 'src/share/file';
-// import LCUService from 'src/service/lcu';
-
 import Sources from 'src/share/sources';
 import AppContext from 'src/share/context';
 import { useTranslation } from 'react-i18next';
@@ -82,16 +79,6 @@ export default function Home() {
   };
 
   const startImport = () => {
-    // getLcuToken(lolDir)
-    //   .then(res => {
-    //     console.log(res)
-    //     const [token, port, fullUrl] = res;
-    //     const lcu = new LCUService(lolDir, token, port, fullUrl);
-    //     lcu.getCurrentSession()
-    //     lcu.getCurPerk()
-    //   })
-    // return;
-
     history.push(`/import`);
   };
 

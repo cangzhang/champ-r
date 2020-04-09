@@ -42,7 +42,7 @@ export const getLcuToken = async dirPath => {
       .pop();
 
     const content = await fs.readFile(`${dir}/${latest}`, 'utf8');
-    
+
     const url = content.match(/https(.*)\/index\.html/)[1];
     const token = url.match(/riot:(.*)@/)[1];
     const port = url.match(/:(\d+)/)[1];
@@ -52,4 +52,4 @@ export const getLcuToken = async dirPath => {
   } catch (err) {
     throw new Error(err);
   }
-}
+};
