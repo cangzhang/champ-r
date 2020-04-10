@@ -6,7 +6,7 @@ import { CancelToken } from 'axios';
 
 import http from 'src/service/http';
 import { saveToFile } from 'src/share/file';
-import { genFileBlocks, parseJson } from 'src/service/utils';
+import { genFileBlocks, parseJson, isDifferentStyleId } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import Sources from 'src/share/sources';
 
@@ -18,6 +18,40 @@ const API = {
   Positions: 'https://lol.qq.com/act/lbp/common/guides/guideschampion_position.js',
   detail: id => `https://lol.qq.com/act/lbp/common/guides/champDetail/champDetail_${id}.js`,
   Items: 'https://ossweb-img.qq.com/images/lol/act/img/js/items/items.js',
+};
+
+const getStyleId = i => i.replace(/\d{2}$/, `00`);
+const strToPercent = str => parseInt(str / 100, 10);
+
+const makePerkData = (perk, champion, position) => {
+  const { runes, winrate, showrate } = perk;
+  const data = runes.reduce(({ primaryStyleId, subStyleId }, i) => {
+    if (!primaryStyleId) {
+      primaryStyleId = getStyleId(i);
+    }
+
+    if (primaryStyleId && !subStyleId) {
+      const isStyleId = isDifferentStyleId(primaryStyleId, i);
+      if (isStyleId) {
+        subStyleId = getStyleId(i);
+      }
+    }
+
+    return {
+      primaryStyleId,
+      subStyleId,
+    };
+  }, {
+    primaryStyleId: ``,
+    subStyleId: ``,
+  });
+
+  data.selectedPerkIds = runes;
+  const wRate = strToPercent(winrate);
+  const pRate = strToPercent(showrate);
+  data.name = `[lol.qq.com]${champion}-${position}, win ${wRate}%, pick ${pRate}%`;
+
+  return data;
 };
 
 export const parseCode = string => {
@@ -111,7 +145,7 @@ export default class LolQQ extends SourceProto {
       const perkDetail = parseJson(championLane[position].perkdetail);
       const perkData = Object.values(perkDetail).reduce((result, i) => {
         const vals = Object.values(i).map(({ perk, ...rest }) => ({
-          perks: perk.split(`&`),
+          runes: perk.split(`&`),
           ...rest,
         }));
         return result.concat(vals);
@@ -120,6 +154,8 @@ export default class LolQQ extends SourceProto {
       // TODO: perks
       const byWinRate = _orderBy(perkData, i => i.winrate, [`desc`]);
       const byPickRate = _orderBy(perkData, i => i.showrate, [`desc`]);
+      const perks = [...byWinRate.slice(0, 2), ...byPickRate.slice(0, 2)]
+        .map(i => makePerkData(i, alias, position));
 
       const laneItemsString = _get(championLane, `${position}.hold3`, []);
       const rawBlocks = parseJson(laneItemsString);
@@ -145,6 +181,7 @@ export default class LolQQ extends SourceProto {
         fileName: `[LOL.QQ.COM]${alias}-${position}-${version}`,
         skills: [],
         blocks,
+        perks,
       };
 
       return res.concat(item);

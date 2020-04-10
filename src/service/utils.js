@@ -146,3 +146,12 @@ export const parseJson = str => {
     return {};
   }
 };
+
+export const isDifferentStyleId = (a, b) => {
+  if (!a || !b) {
+    return false;
+  }
+
+  const res = Math.abs(a - b);
+  return res > 100 && res < 1000;
+};
