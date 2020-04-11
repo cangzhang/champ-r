@@ -1,3 +1,7 @@
+try {
+  require("electron-reloader")(module)
+} catch (_) {}
+
 const path = require('path');
 
 const { app, BrowserWindow, Menu, ipcMain, remote, screen } = require('electron');
@@ -140,7 +144,7 @@ function registerMainListeners() {
     if (!popupWindow) {
       popupWindow = await createPopupWindow();
     }
-
+    
     popupWindow.show();
   });
 }
@@ -149,7 +153,7 @@ function registerMainListeners() {
   await app.whenReady();
   Menu.setApplicationMenu(null);
   registerMainListeners();
-  
+
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();
 
