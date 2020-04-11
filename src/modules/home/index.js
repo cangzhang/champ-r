@@ -1,7 +1,7 @@
 /* eslint react-hooks/exhaustive-deps: 0 */
 import s from 'src/app.module.scss';
 
-import { remote, ipcRenderer } from 'electron';
+import { remote } from 'electron';
 
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -290,14 +290,5 @@ export default function Home() {
         {t('keep old items')}
       </Checkbox>
     </div>
-
-    <button
-      style={{ width: `8em` }}
-      onClick={() => {
-        ipcRenderer.send(`show-popup`);
-      }}
-    >
-      show popup
-    </button>
   </div>;
 }

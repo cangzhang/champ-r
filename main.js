@@ -153,9 +153,12 @@ function registerMainListeners() {
     if (!popupWindow) {
       popupWindow = await createPopupWindow();
     }
+
     if (!popupWindow.isVisible()) {
-      popupWindow.showInactive();
+      // popupWindow.showInactive();
+      popupWindow.show();
     }
+
     popupWindow.webContents.send(`for-popup`, {
       championId: data.championId,
       position: data.position,

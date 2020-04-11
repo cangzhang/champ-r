@@ -2,6 +2,7 @@ import { nanoid as uuid } from 'nanoid';
 import _get from 'lodash/get';
 import _find from 'lodash/find';
 import _orderBy from 'lodash/orderBy';
+import _noop from 'lodash/noop';
 import { CancelToken } from 'axios';
 
 import http from 'src/service/http';
@@ -21,7 +22,7 @@ const API = {
 };
 
 const getStyleId = i => i.replace(/\d{2}$/, `00`);
-const strToPercent = str => parseInt(str / 100, 10);
+const strToPercent = str => (str / 100).toFixed(1);
 
 const makePerkData = (perk, champion, position) => {
   const { runes, winrate, showrate } = perk;
@@ -47,9 +48,10 @@ const makePerkData = (perk, champion, position) => {
   });
 
   data.selectedPerkIds = runes;
+  data.position = position;
   const wRate = strToPercent(winrate);
   const pRate = strToPercent(showrate);
-  data.name = `[lol.qq.com]${champion}-${position}, win ${wRate}%, pick ${pRate}%`;
+  data.name = `[lol.qq.com] ${champion}-${position}, win ${wRate}%, pick ${pRate}%`;
 
   return data;
 };
@@ -74,7 +76,7 @@ export const getItemList = async () => {
 };
 
 export default class LolQQ extends SourceProto {
-  constructor(lolDir, itemMap, dispatch) {
+  constructor(lolDir = '', itemMap = {}, dispatch = _noop) {
     super();
     this.lolDir = lolDir;
     this.itemMap = itemMap;
@@ -105,6 +107,41 @@ export default class LolQQ extends SourceProto {
       return list;
     } catch (error) {
       throw new Error(error);
+    }
+  };
+
+  getChampionPerks = async (championId, alias) => {
+    try {
+      const $identity = uuid();
+      const apiUrl = API.detail(championId);
+      const code = await http.get(apiUrl, {
+        cancelToken: new CancelToken(c => {
+          this.setCancelHook($identity)(c);
+        }),
+      });
+      const { list: { championLane } } = parseCode(code);
+
+      const perks = Object.values(championLane)
+        .map(l => {
+          const perkDetail = parseJson(l.perkdetail);
+          const position = l.lane;
+          const pData = Object.values(perkDetail)
+            .reduce((result, i) => {
+              const vals = Object.values(i).map(({ perk, ...rest }) => ({
+                runes: perk.split(`&`),
+                ...rest,
+              }));
+              return result.concat(vals);
+            }, []);
+
+          const byWinRate = _orderBy(pData, i => i.wincnt, [`desc`]);
+          const byPickRate = _orderBy(pData, i => i.igamecnt, [`desc`]);
+          return [...byWinRate.slice(0, 1), ...byPickRate.slice(0, 1)]
+            .map(i => makePerkData(i, alias, position));
+        })
+      return perks;
+    } catch (e) {
+      throw new Error(e);
     }
   };
 
@@ -151,7 +188,6 @@ export default class LolQQ extends SourceProto {
         return result.concat(vals);
       }, []);
 
-      // TODO: perks
       const byWinRate = _orderBy(perkData, i => i.winrate, [`desc`]);
       const byPickRate = _orderBy(perkData, i => i.showrate, [`desc`]);
       const perks = [...byWinRate.slice(0, 2), ...byPickRate.slice(0, 2)]

@@ -35,30 +35,32 @@ const App = () => {
 
   useEffect(() => {
     checkTask.current = setInterval(async () => {
-      const lolVer = config.get(`lolVer`);
-      const lolDir = config.get(`lolDir`);
-      if (!lolDir || !lolVer)
-        return false;
+      try {
+        const lolVer = config.get(`lolVer`);
+        const lolDir = config.get(`lolDir`);
+        if (!lolDir || !lolVer)
+          return false;
 
-      if (!lcuInstance.current.getAuthToken) {
-        lcuInstance.current = new LCUService(lolDir)
-      }
-      const lcuIns = lcuInstance.current
-      await lcuIns.getAuthToken()
-      const { actions } = await lcuIns.getCurrentSession()
+        if (!lcuInstance.current.getAuthToken) {
+          lcuInstance.current = new LCUService(lolDir)
+        }
+        const lcuIns = lcuInstance.current
+        await lcuIns.getAuthToken()
+        const { actions } = await lcuIns.getCurrentSession()
 
-      const championId = _get(actions, `0.0.championId`, 0);
+        const championId = _get(actions, `0.0.championId`, 0);
 
-      if (!championId) {
-        ipcRenderer.send(`hide-popup`);
-        return false;
-      }
+        if (!championId) {
+          ipcRenderer.send(`hide-popup`);
+          return false;
+        }
 
-      ipcRenderer.send(`show-popup`, {
-        championId,
-        position: null,
-      })
-      return true
+        ipcRenderer.send(`show-popup`, {
+          championId,
+          position: null,
+        })
+        return true
+      } catch (err) {}
     }, 2000)
 
     return () => {
