@@ -1,13 +1,12 @@
 import s from './style.module.scss';
 
+import { remote } from 'electron';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import { StatefulTooltip } from 'baseui/tooltip';
 import { Settings, Minimize2, X } from 'react-feather';
-
-const { remote } = require('electron');
 
 const Toolbar = () => {
   const [t] = useTranslation();
@@ -37,14 +36,14 @@ const Toolbar = () => {
       accessibilityType={'tooltip'}
       content={t(`minimize`)}
     >
-      <span className={s.icon} onClick={onHide} ><Minimize2 size={16} /></span>
+      <span className={s.icon} onClick={onHide}><Minimize2 size={16} /></span>
     </StatefulTooltip>
 
     <StatefulTooltip
       accessibilityType={'tooltip'}
       content={t(`close`)}
     >
-      <span className={s.icon} onClick={onClose} ><X size={16} /></span>
+      <span className={s.icon} onClick={onClose}><X size={16} /></span>
     </StatefulTooltip>
   </div>;
 };

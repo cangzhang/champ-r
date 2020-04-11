@@ -1,6 +1,6 @@
 const path = require('path');
 
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, remote, screen } = require('electron');
 /// const { autoUpdater } = require('electron-updater');
 const { is, centerWindow } = require('electron-util');
 const contextMenu = require('electron-context-menu');
@@ -32,6 +32,14 @@ app.allowRendererProcessReuse = false;
 
 // Prevent window from being garbage collected
 let mainWindow;
+let popupWindow;
+
+const webPreferences = {
+  nodeIntegration: true,
+  webSecurity: false,
+  allowRunningInsecureContent: true,
+  zoomFactor: 1,
+};
 
 const createMainWindow = async () => {
   const win = new BrowserWindow({
@@ -41,12 +49,7 @@ const createMainWindow = async () => {
     height: 800,
     width: is.development ? 1300 : 500,
     resizable: false,
-    webPreferences: {
-      nodeIntegration: true,
-      webSecurity: false,
-      allowRunningInsecureContent: true,
-      zoomFactor: 1,
-    },
+    webPreferences,
   });
 
   win.on('ready-to-show', () => {
@@ -66,6 +69,40 @@ const createMainWindow = async () => {
   );
 
   return win;
+};
+
+const createPopupWindow = async () => {
+  const [mX, mY] = mainWindow.getPosition();
+  const displays = screen.getDisplayNearestPoint({
+    x: mX,
+    y: mY,
+  });
+
+  const popup = new BrowserWindow({
+    show: false,
+    frame: false,
+    width: 800,
+    height: 600,
+    x: displays.bounds.width * 0.8 + 400,
+    y: displays.bounds.height / 2,
+    webPreferences,
+  });
+
+  // popup.on(`ready-to-show`, () => {
+  //   popup.show();
+  // });
+
+  popup.on('closed', () => {
+    popupWindow = null;
+  });
+
+  await popup.loadURL(
+    isDev
+      ? `http://127.0.0.1:3000/popup.html`
+      : `file://${path.join(__dirname, 'build/popup.html')}`,
+  );
+
+  return popup;
 };
 
 // Prevent multiple instances of the app
@@ -95,10 +132,26 @@ app.on('activate', async () => {
   }
 });
 
+function registerMainListeners() {
+  ipcMain.on(`broadcast`, (ev, data) => {
+    ev.sender.send(data.channel, data);
+  });
+  ipcMain.on(`show-popup`, async () => {
+    if (!popupWindow) {
+      popupWindow = await createPopupWindow();
+    }
+
+    popupWindow.show();
+  });
+}
+
 (async () => {
   await app.whenReady();
   Menu.setApplicationMenu(null);
+  registerMainListeners();
+  
   mainWindow = await createMainWindow();
+  popupWindow = await createPopupWindow();
 
   await centerWindow({
     window: mainWindow,

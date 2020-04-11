@@ -2,7 +2,7 @@
 
 import s from 'src/app.module.scss';
 
-import { remote } from 'electron';
+import { remote, ipcRenderer } from 'electron';
 
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -275,5 +275,14 @@ export default function Home() {
         {t('keep old items')}
       </Checkbox>
     </div>
+
+    <button
+      style={{ width: `6em` }}
+      onClick={() => {
+        ipcRenderer.send(`show-popup`);
+      }}
+    >
+      show popup
+    </button>
   </div>;
 }
