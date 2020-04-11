@@ -15,7 +15,9 @@ contextMenu();
 
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId('com.al.champ-r');
+
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
+app.allowRendererProcessReuse = false;
 
 // Uncomment this before publishing your first version.
 // It's commented out as it throws an error if there are no published versions.
