@@ -15,8 +15,8 @@ const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
 const isDev = require('electron-is-dev');
 
-const config = require('./src/native/config');
-const { getLolVer, getItemList, getChampions } = require('./src/service/ddragon');
+// const config = require('./src/native/config');
+// const { getLolVer, getItemList, getChampions } = require('./src/service/ddragon');
 
 unhandled();
 debug();
@@ -170,32 +170,32 @@ function registerMainListeners() {
   });
 }
 
-async function prepareData() {
-  const lolVer = config.get(`lolVer`);
-  const itemMap = config.get(`itemMap`);
-  const championMap = config.get(`championMap`);
-  let appLang = config.get(`appLang`);
-  if (!appLang) {
-    appLang = osLocale.sync().replace(`-`, `_`);
-  }
-
-  const version = await getLolVer();
-  if (version === lolVer && itemMap && championMap) {
-    return [lolVer, itemMap, championMap];
-  }
-
-  const [items, champions] = await Promise.all([
-    getItemList(version),
-    getChampions(version),
-  ]);
-
-  config.set(`appLang`, appLang);
-  config.set(`itemMap`, items);
-  config.set(`championMap`, champions);
-  config.set(`lolVer`, version);
-
-  return [version, items, champions];
-}
+// async function prepareData() {
+//   const lolVer = config.get(`lolVer`);
+//   const itemMap = config.get(`itemMap`);
+//   const championMap = config.get(`championMap`);
+//   let appLang = config.get(`appLang`);
+//   if (!appLang) {
+//     appLang = osLocale.sync().replace(`-`, `_`);
+//   }
+//
+//   const version = await getLolVer();
+//   if (version === lolVer && itemMap && championMap) {
+//     return [lolVer, itemMap, championMap];
+//   }
+//
+//   const [items, champions] = await Promise.all([
+//     getItemList(version),
+//     getChampions(version),
+//   ]);
+//
+//   config.set(`appLang`, appLang);
+//   config.set(`itemMap`, items);
+//   config.set(`championMap`, champions);
+//   config.set(`lolVer`, version);
+//
+//   return [version, items, champions];
+// }
 
 (async () => {
   await app.whenReady();
