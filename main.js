@@ -4,9 +4,9 @@ try {
 }
 
 const path = require('path');
-const osLocale = require('os-locale');
+// const osLocale = require('os-locale');
 
-const { app, BrowserWindow, Menu, ipcMain, remote, screen } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, screen } = require('electron');
 /// const { autoUpdater } = require('electron-updater');
 const { is, centerWindow } = require('electron-util');
 const contextMenu = require('electron-context-menu');

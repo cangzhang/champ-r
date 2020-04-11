@@ -6,8 +6,7 @@ import ReactDOM from 'react-dom';
 import './modules/i18n';
 import App from './app';
 // Import * as serviceWorker from './serviceWorker';
-
-const config = require('./native/config');
+import config from 'src/native/config';
 
 if (!config.get('appLang')) {
   config.set('appLang', navigator.language);
