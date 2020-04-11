@@ -9,13 +9,13 @@ export default function Popup() {
   const lolVer = config.get(`lolVer`);
 
   const [championMap, setChampionMap] = useState(null);
-  const [champion, setChampion] = useState('');
+  const [championId, setChampion] = useState('');
   const [position, setPosition] = useState('');
 
   useEffect(() => {
     ipcRenderer.on('for-popup', function (event, data) {
       console.log(`popup data: `, data);
-      setChampion(data.champion);
+      setChampion(data.championId);
       setPosition(data.position);
     });
   }, []);
@@ -30,9 +30,9 @@ export default function Popup() {
 
   return <div>
     {
-      championMap && champion
+      championMap && championId
         ? <p>
-          Champion: {champion}, Position: {position}.
+          championId: {championId}, Position: {position}.
         </p>
         : <p>No selected.</p>
     }

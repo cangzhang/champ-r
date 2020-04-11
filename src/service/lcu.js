@@ -27,6 +27,7 @@ export default class LCUService {
   getAuthToken = async () => {
     const [token, port, url] = await getLcuToken(this.lolDir);
     this.setVars(token, port, url);
+    return [token, port, url];
   };
 
   getLcuStatus = async () => {
@@ -43,8 +44,11 @@ export default class LCUService {
   };
 
   getCurrentSession = async () => {
-    const res = await http.get(this.urls.curSession, this.auth);
-    console.log(res);
+    const res = await http.get(this.urls.curSession, {
+      ...this.auth,
+      validateStatus: status => status < 500,
+    });
+    return res;
   };
 
   getCurPerk = async () => {

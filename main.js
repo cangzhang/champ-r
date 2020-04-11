@@ -69,6 +69,9 @@ const createMainWindow = async () => {
     // Dereference the window
     // For multiple windows store them in an array
     mainWindow = undefined;
+    if (popupWindow) {
+      popupWindow = undefined;
+    }
   });
 
   await win.loadURL(
@@ -146,14 +149,16 @@ function registerMainListeners() {
     ev.sender.send(data.channel, data);
   });
 
-  ipcMain.on(`show-popup`, async () => {
+  ipcMain.on(`show-popup`, async (ev, data) => {
     if (!popupWindow) {
       popupWindow = await createPopupWindow();
     }
-    popupWindow.show();
+    if (!popupWindow.isVisible()) {
+      popupWindow.showInactive();
+    }
     popupWindow.webContents.send(`for-popup`, {
-      champion: `rengar`,
-      position: `jungle`,
+      championId: data.championId,
+      position: data.position,
     });
   });
 
