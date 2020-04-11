@@ -43,6 +43,7 @@
     "lodash": "^4.17.15",
     "nanoid": "3.0.2",
     "normalize.css": "^8.0.1",
+    "os-locale": "^5.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-feather": "^2.0.3",

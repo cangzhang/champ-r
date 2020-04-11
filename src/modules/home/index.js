@@ -1,5 +1,4 @@
 /* eslint react-hooks/exhaustive-deps: 0 */
-
 import s from 'src/app.module.scss';
 
 import { remote, ipcRenderer } from 'electron';
@@ -101,6 +100,22 @@ export default function Home() {
 
     getVerAndItems();
   }, []);
+
+  // useEffect(() => {
+  //   ipcRenderer.on(`lol-data-loaded`, (ev, data) => {
+  //     console.log(`lol-data-loaded`, data);
+  //
+  //     dispatch(setLolVersion(data.lolVer));
+  //     setVersion(data.lolVer);
+  //
+  //     const upgradeableCompletedItems = getUpgradeableCompletedItems(data.itemMap);
+  //     console.log(upgradeableCompletedItems);
+  //     dispatch(updateItemMap({
+  //       ...data.itemMap,
+  //       upgradeableCompletedItems,
+  //     }));
+  //   });
+  // }, []);
 
   useEffect(() => {
     // persist user preference
@@ -277,7 +292,7 @@ export default function Home() {
     </div>
 
     <button
-      style={{ width: `6em` }}
+      style={{ width: `8em` }}
       onClick={() => {
         ipcRenderer.send(`show-popup`);
       }}

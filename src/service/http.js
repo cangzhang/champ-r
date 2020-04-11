@@ -1,4 +1,4 @@
-import axios  from 'axios';
+const axios = require('axios');
 
 axios.interceptors.response.use(response => {
   // Any status code that lie within the range of 2xx cause this function to trigger
@@ -10,4 +10,4 @@ axios.interceptors.response.use(response => {
   return Promise.reject(error);
 });
 
-export default axios;
+module.exports = axios;

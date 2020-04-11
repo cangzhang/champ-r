@@ -1,8 +1,10 @@
 try {
-  require("electron-reloader")(module)
-} catch (_) {}
+  require('electron-reloader')(module);
+} catch (_) {
+}
 
 const path = require('path');
+const osLocale = require('os-locale');
 
 const { app, BrowserWindow, Menu, ipcMain, remote, screen } = require('electron');
 /// const { autoUpdater } = require('electron-updater');
@@ -12,6 +14,9 @@ const contextMenu = require('electron-context-menu');
 const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
 const isDev = require('electron-is-dev');
+
+const config = require('./src/native/config');
+const { getLolVer, getItemList, getChampions } = require('./src/service/ddragon');
 
 unhandled();
 debug();
@@ -77,7 +82,7 @@ const createMainWindow = async () => {
 
 const createPopupWindow = async () => {
   const [mX, mY] = mainWindow.getPosition();
-  const displays = screen.getDisplayNearestPoint({
+  const curDisplay = screen.getDisplayNearestPoint({
     x: mX,
     y: mY,
   });
@@ -87,8 +92,8 @@ const createPopupWindow = async () => {
     frame: false,
     width: 800,
     height: 600,
-    x: displays.bounds.width * 0.8 + 400,
-    y: displays.bounds.height / 2,
+    x: curDisplay.bounds.width * 0.8,
+    y: curDisplay.bounds.height / 2,
     webPreferences,
   });
 
@@ -140,13 +145,48 @@ function registerMainListeners() {
   ipcMain.on(`broadcast`, (ev, data) => {
     ev.sender.send(data.channel, data);
   });
+
   ipcMain.on(`show-popup`, async () => {
     if (!popupWindow) {
       popupWindow = await createPopupWindow();
     }
-    
     popupWindow.show();
+    popupWindow.webContents.send(`for-popup`, {
+      champion: `rengar`,
+      position: `jungle`,
+    });
   });
+
+  ipcMain.on(`hide-popup`, async () => {
+    popupWindow.hide();
+  });
+}
+
+async function prepareData() {
+  const lolVer = config.get(`lolVer`);
+  const itemMap = config.get(`itemMap`);
+  const championMap = config.get(`championMap`);
+  let appLang = config.get(`appLang`);
+  if (!appLang) {
+    appLang = osLocale.sync().replace(`-`, `_`);
+  }
+
+  const version = await getLolVer();
+  if (version === lolVer && itemMap && championMap) {
+    return [lolVer, itemMap, championMap];
+  }
+
+  const [items, champions] = await Promise.all([
+    getItemList(version),
+    getChampions(version),
+  ]);
+
+  config.set(`appLang`, appLang);
+  config.set(`itemMap`, items);
+  config.set(`championMap`, champions);
+  config.set(`lolVer`, version);
+
+  return [version, items, champions];
 }
 
 (async () => {
@@ -161,4 +201,11 @@ function registerMainListeners() {
     window: mainWindow,
     animated: true,
   });
+
+  // const [lolVer, itemMap, championMap] = await prepareData();
+  // mainWindow.webContents.send(`lol-data-loaded`, {
+  //   lolVer,
+  //   itemMap,
+  //   championMap,
+  // });
 })();

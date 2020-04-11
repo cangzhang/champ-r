@@ -7,5 +7,7 @@ module.exports = new Store({
     appLang: '',
     keepOldItems: true,
     selectedSources: [],
+    itemMap: {},
+    championMap: {},
   },
 });
