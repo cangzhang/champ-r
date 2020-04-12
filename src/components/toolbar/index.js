@@ -16,7 +16,7 @@ const Toolbar = () => {
     remote.BrowserWindow.getFocusedWindow().minimize();
   };
   const onClose = () => {
-    remote.BrowserWindow.getFocusedWindow().close();
+    remote.app.quit();
   };
 
   return <div className={s.toolbar}>
