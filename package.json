@@ -19,7 +19,7 @@
     "postinstall": "electron-builder install-app-deps",
     "lint": "eslint --fix",
     "pack": "electron-builder --dir",
-    "release": "np",
+    "###release": "np",
     "start": "concurrently \"yarn start-react\" \"wait-on http://localhost:3000 && yarn start-electron\"",
     "start-electron": "cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true run-electron .",
     "start-react": "cross-env BROWSER=none node scripts/start.js",
@@ -150,7 +150,7 @@
       "requestedExecutionLevel": "highestAvailable"
     }
   },
-  "np": {
+  "##np": {
     "publish": false,
     "releaseDraft": false
   },

@@ -1,11 +1,10 @@
 # This is a basic workflow to help you get started with Actions
 
-name: build-and-release
+name: build
 
 on:
   push:
-    tags:
-    - 'v*'
+    branches: [ build ]
 
 jobs:
   # This workflow contains a single job called "build"
@@ -34,28 +33,6 @@ jobs:
         Copy-Item ./dist/*.exe -Destination ./dist/artifacts
         $file = Get-ChildItem -Path ./dist/artifacts/ -Filter "*.exe" | select-object -first 1
         echo "::set-output name=fileName::$($file.Name)"
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Assets
-      id: upload_release_assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/artifacts/${{ steps.vars.outputs.fileName }}
-        asset_name: ${{ steps.vars.outputs.fileName }}
-        asset_content_type: application/vnd.microsoft.portable-executable
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v1.0.0
