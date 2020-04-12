@@ -4,9 +4,9 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 
 import config from 'src/native/config';
 import { getChampions } from 'src/service/ddragon';
-import LolQQ from "src/service/data-source/lol-qq";
-import LCUService from "src/service/lcu";
-import { getChampionInfo } from './utils'
+import LolQQ from 'src/service/data-source/lol-qq';
+import LCUService from 'src/service/lcu';
+import { getChampionInfo } from './utils';
 
 export default function Popup() {
   const lolVer = config.get(`lolVer`);
@@ -20,8 +20,8 @@ export default function Popup() {
 
   useEffect(() => {
     lcu.current = new LCUService(lolDir);
-    lcu.current.getAuthToken()
-  }, [lolDir])
+    lcu.current.getAuthToken();
+  }, [lolDir]);
 
   useEffect(() => {
     getChampions(lolVer)
@@ -53,21 +53,21 @@ export default function Popup() {
     lolqqInstance.getChampionPerks(champ.key, champ.id)
       .then(perks => {
         setPerkList(perks);
-        console.log(perks)
-      })
-  }, [championId, championMap])
+        console.log(perks);
+      });
+  }, [championId, championMap]);
 
   const apply = async perk => {
     if (!lcu.current.applyPerk)
-      return ;
+      return;
 
     const res = await lcu.current.applyPerk(perk);
     console.log(`updated perk`, res);
-  }
+  };
 
   const renderList = useCallback(() => {
     if (!championMap || !perks.length) {
-      return <div>loading</div>
+      return <div>loading</div>;
     }
 
     return perks
@@ -79,7 +79,7 @@ export default function Popup() {
             <p>{p.selectedPerkIds.join(`, `)}</p>
             <button onClick={() => apply(p)}>apply</button>
           </div>));
-  }, [championMap, perks, championId])
+  }, [championMap, perks, championId]);
 
   return <div>
     {renderList()}

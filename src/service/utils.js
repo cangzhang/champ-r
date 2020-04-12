@@ -147,11 +147,17 @@ export const parseJson = str => {
   }
 };
 
+export const getStyleId = i => i.replace(/\d{2}$/, `00`);
+
 export const isDifferentStyleId = (a, b) => {
   if (!a || !b) {
     return false;
   }
 
-  const res = Math.abs(a - b);
-  return res > 100 && res < 1000;
+  const idA = getStyleId(a);
+  const idB = getStyleId(b);
+  const res = Math.abs(idA - idB);
+  return res >= 100 && res < 1000;
 };
+
+export const strToPercent = str => (str / 100).toFixed(2);

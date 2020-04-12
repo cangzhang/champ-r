@@ -7,7 +7,7 @@ import { CancelToken } from 'axios';
 
 import http from 'src/service/http';
 import { saveToFile } from 'src/share/file';
-import { genFileBlocks, parseJson, isDifferentStyleId } from 'src/service/utils';
+import { genFileBlocks, parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import Sources from 'src/share/sources';
 
@@ -20,9 +20,6 @@ const API = {
   detail: id => `https://lol.qq.com/act/lbp/common/guides/champDetail/champDetail_${id}.js`,
   Items: 'https://ossweb-img.qq.com/images/lol/act/img/js/items/items.js',
 };
-
-const getStyleId = i => i.replace(/\d{2}$/, `00`);
-const strToPercent = str => (str / 100).toFixed(1);
 
 const makePerkData = (perk, champion, position) => {
   const { runes, winrate, showrate } = perk;
@@ -51,7 +48,7 @@ const makePerkData = (perk, champion, position) => {
   data.position = position;
   const wRate = strToPercent(winrate);
   const pRate = strToPercent(showrate);
-  data.name = `[lol.qq.com] ${champion}-${position}, win ${wRate}%, pick ${pRate}%`;
+  data.name = `${champion}-${position}, win ${wRate}%, pick ${pRate}% [lol.qq.com]`;
 
   return data;
 };
@@ -138,7 +135,7 @@ export default class LolQQ extends SourceProto {
           const byPickRate = _orderBy(pData, i => i.igamecnt, [`desc`]);
           return [...byWinRate.slice(0, 1), ...byPickRate.slice(0, 1)]
             .map(i => makePerkData(i, alias, position));
-        })
+        });
       return perks;
     } catch (e) {
       throw new Error(e);
