@@ -15,7 +15,7 @@
   "scripts": {
     "build": "yarn build-react && yarn dist",
     "build-react": "node scripts/build.js",
-    "dist": "electron-builder --win --x64",
+    "dist": "electron-builder --win --x64 -p never",
     "postinstall": "electron-builder install-app-deps",
     "lint": "eslint --fix",
     "pack": "electron-builder --dir",
