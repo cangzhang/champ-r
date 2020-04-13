@@ -56,7 +56,7 @@ const createMainWindow = async () => {
     show: false,
     frame: false,
     height: 800,
-    width: is.development ? 1300 : 500,
+    width: isDev ? 1300 : 500,
     resizable: false,
     webPreferences,
   });
@@ -91,9 +91,10 @@ const createPopupWindow = async () => {
   const popup = new BrowserWindow({
     show: false,
     frame: false,
-    width: 800,
+    transparent: true,
+    width: isDev ? 800 : 400,
     height: 600,
-    x: curDisplay.bounds.width * 0.8,
+    x: curDisplay.bounds.width - 400 - (isDev ? 0 : 200),
     y: curDisplay.bounds.height / 2,
     webPreferences,
   });
@@ -207,7 +208,6 @@ function registerMainListeners() {
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();
-
   await centerWindow({
     window: mainWindow,
     animated: true,
