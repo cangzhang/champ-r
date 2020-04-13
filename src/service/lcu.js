@@ -9,6 +9,10 @@ export default class LCUService {
 
   setVars = (token, port, url) => {
     this.active = !!token;
+    // if (!token) {
+    //   console.info(`League client not active!`)
+    // }
+
     this.url = url;
     this.token = token;
     this.port = port;

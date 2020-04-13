@@ -44,11 +44,15 @@ const makePerkData = (perk, champion, position) => {
     subStyleId: ``,
   });
 
-  data.selectedPerkIds = runes;
-  data.position = position;
   const wRate = strToPercent(winrate);
   const pRate = strToPercent(showrate);
   data.name = `${champion}-${position}, win ${wRate}%, pick ${pRate}% [lol.qq.com]`;
+  data.selectedPerkIds = runes;
+  data.alias = champion;
+  data.position = position;
+  data.wRate = wRate;
+  data.pRate = pRate;
+  data.source = Sources.Lolqq;
 
   return data;
 };

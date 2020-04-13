@@ -61,13 +61,16 @@ export default function Popup() {
     if (!lcu.current.applyPerk || !lcu.current.active)
       return;
 
-    const res = await lcu.current.applyPerk(perk);
+    const res = await lcu.current.applyPerk({
+      ...perk,
+      name: `${perk.alias} @ ${perk.position}`,
+    });
     console.log(`updated perk`, res);
   };
 
   const renderList = useCallback(() => {
     if (!championMap || !perks.length) {
-      return <div>loading</div>;
+      return <div>loading...</div>;
     }
 
     return perks
