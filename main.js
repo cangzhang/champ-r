@@ -69,9 +69,7 @@ const createMainWindow = async () => {
     // Dereference the window
     // For multiple windows store them in an array
     mainWindow = undefined;
-    if (popupWindow) {
-      popupWindow = undefined;
-    }
+    popupWindow = undefined;
   });
 
   await win.loadURL(
@@ -105,7 +103,7 @@ const createPopupWindow = async () => {
   // });
 
   popup.on('closed', () => {
-    popupWindow = null;
+    popupWindow = undefined;
   });
 
   await popup.loadURL(
@@ -130,6 +128,11 @@ app.on('second-instance', () => {
 
     mainWindow.show();
   }
+});
+
+app.on(`quit`, () => {
+  mainWindow = undefined;
+  popupWindow = undefined;
 });
 
 app.on('window-all-closed', () => {
@@ -166,7 +169,7 @@ function registerMainListeners() {
   });
 
   ipcMain.on(`hide-popup`, async () => {
-    popupWindow.hide();
+    popupWindow && popupWindow.hide();
   });
 }
 
