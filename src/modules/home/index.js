@@ -1,7 +1,7 @@
 /* eslint react-hooks/exhaustive-deps: 0 */
 import s from 'src/app.module.scss';
 
-import { remote } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -290,5 +290,20 @@ export default function Home() {
         {t('keep old items')}
       </Checkbox>
     </div>
+
+    {
+      process.env.NODE_ENV === `development` &&
+      <button
+        style={{ width: `6em` }}
+        onClick={() => {
+          ipcRenderer.send(`show-popup`, {
+            championId: 133,
+            position: null,
+          });
+        }}
+      >
+        apply
+      </button>
+    }
   </div>;
 }

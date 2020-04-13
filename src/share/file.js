@@ -50,6 +50,6 @@ export const getLcuToken = async dirPath => {
 
     return [token, port, urlWithAuth];
   } catch (err) {
-    throw new Error(err);
+    return [null, null, null];
   }
 };

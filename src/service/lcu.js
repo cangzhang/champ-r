@@ -4,9 +4,11 @@ import { getLcuToken } from 'src/share/file';
 export default class LCUService {
   constructor(lolDir) {
     this.lolDir = lolDir;
+    this.active = false;
   }
 
   setVars = (token, port, url) => {
+    this.active = !!token;
     this.url = url;
     this.token = token;
     this.port = port;
