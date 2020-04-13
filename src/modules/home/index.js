@@ -24,7 +24,7 @@ import {
 import { getItemList, getLolVer } from 'src/service/ddragon';
 import { getUpgradeableCompletedItems } from 'src/service/utils';
 
-import Sources from 'src/share/sources';
+import Sources from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
 import { useTranslation } from 'react-i18next';
 

@@ -1,4 +1,6 @@
 /* eslint react-hooks/exhaustive-deps: 0 */
+import s from './style.module.scss';
+
 import { ipcRenderer } from 'electron';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 
@@ -6,6 +8,8 @@ import config from 'src/native/config';
 import { getChampions } from 'src/service/ddragon';
 import LolQQ from 'src/service/data-source/lol-qq';
 import LCUService from 'src/service/lcu';
+import PerkShowcase from 'src/components/perk-showcase';
+
 import { getChampionInfo } from './utils';
 
 export default function Popup() {
@@ -74,9 +78,11 @@ export default function Popup() {
     }
 
     return perks
-      .map(i =>
+      .map((i, $idx) =>
         i.map((p, idx) =>
           <div key={`${championId}-${idx}`}>
+            <PerkShowcase perk={p} key={`${$idx}-${idx}`} />
+
             <p>{p.name}</p>
             <p>{p.primaryStyleId}, {p.subStyleId}</p>
             <p>{p.selectedPerkIds.join(`, `)}</p>
@@ -84,7 +90,7 @@ export default function Popup() {
           </div>));
   }, [championMap, perks, championId]);
 
-  return <div>
+  return <div className={s.list}>
     {renderList()}
   </div>;
 }

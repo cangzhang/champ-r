@@ -4,7 +4,7 @@ import { requestHtml, genFileBlocks } from 'src/service/utils';
 
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
-import Sources from 'src/share/sources';
+import Sources from 'src/share/constants/sources';
 import SourceProto from './source-proto';
 
 const OpggUrl = 'https://www.op.gg';

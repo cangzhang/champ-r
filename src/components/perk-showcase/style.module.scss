@@ -1,0 +1,104 @@
+.item {
+  display: flex;
+
+  div {
+    height: 6em;
+    width: 6em;
+    background-size: contain;
+    background-repeat: no-repeat;
+
+    &.sub,
+    &.primary {
+      height: 3em;
+      width: 3em;
+    }
+
+    &.8000 {
+      background-image: url('~src/assets/runes/8000.png');
+    }
+
+    &.8008 {
+      background-image: url('~src/assets/runes/8008.png');
+    }
+
+    &.8021 {
+      background-image: url('~src/assets/runes/8021.png');
+    }
+
+    &.8112 {
+      background-image: url('~src/assets/runes/8112.png');
+    }
+
+    &.8128 {
+      background-image: url('~src/assets/runes/8128.png');
+    }
+
+    &.8214 {
+      background-image: url('~src/assets/runes/8214.png');
+    }
+
+    &.8230 {
+      background-image: url('~src/assets/runes/8230.png');
+    }
+
+    &.8351 {
+      background-image: url('~src/assets/runes/8351.png');
+    }
+
+    &.8360 {
+      background-image: url('~src/assets/runes/8360.png');
+    }
+
+    &.8437 {
+      background-image: url('~src/assets/runes/8437.png');
+    }
+
+    &.8465 {
+      background-image: url('~src/assets/runes/8465.png');
+    }
+
+    &.8005 {
+      background-image: url('~src/assets/runes/8005.png');
+    }
+
+    &.8010 {
+      background-image: url('~src/assets/runes/8010.png');
+    }
+
+    &.8100 {
+      background-image: url('~src/assets/runes/8100.png');
+    }
+
+    &.8124 {
+      background-image: url('~src/assets/runes/8124.png');
+    }
+
+    &.8200 {
+      background-image: url('~src/assets/runes/8200.png');
+    }
+
+    &.8229 {
+      background-image: url('~src/assets/runes/8229.png');
+    }
+
+    &.8300 {
+      background-image: url('~src/assets/runes/8300.png');
+    }
+
+    &.8358 {
+      background-image: url('~src/assets/runes/8358.png');
+    }
+
+    &.8400 {
+      background-image: url('~src/assets/runes/8400.png');
+    }
+
+    &.8439 {
+      background-image: url('~src/assets/runes/8439.png');
+    }
+
+    &.9923 {
+      background-image: url('~src/assets/runes/9923.png');
+    }
+  }
+}

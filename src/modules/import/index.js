@@ -13,7 +13,7 @@ import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
 import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home } from 'react-feather';
 
-import Sources from 'src/share/sources';
+import Sources from 'src/share/constants/sources';
 import { prepareReimport, updateFetchingSource } from 'src/share/actions';
 import { removeFolderContent } from 'src/share/file';
 import OpGGImporter from 'src/service/data-source/op-gg';

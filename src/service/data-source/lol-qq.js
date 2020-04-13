@@ -9,7 +9,7 @@ import http from 'src/service/http';
 import { saveToFile } from 'src/share/file';
 import { genFileBlocks, parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
-import Sources from 'src/share/sources';
+import Sources from 'src/share/constants/sources';
 
 import SourceProto from './source-proto';
 // Import { Actions } from 'src/share/actions';
