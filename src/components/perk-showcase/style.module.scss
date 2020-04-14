@@ -1,16 +1,60 @@
 .item {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1ex 1em 1ex 2ex;
 
-  div {
-    height: 4em;
-    width: 4em;
+  &:hover {
+    background-color: #f6f6f6;
+
+    .name {
+      display: none;
+    }
+  }
+
+  .apply {
+    display: none;
+    height: 48px;
+    width: 48px;
+    border-radius: 10px;
+    //margin-right: 1em;
+    justify-content: center;
+    align-items: center;
+    background: #ffffff;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  &:hover {
+    .apply {
+      display: flex;
+    }
+  }
+
+  .info {
+    display: flex;
+    align-items: center;
+    width: max-content;
+  }
+
+  .info > div {
+    height: 48px;
+    width: 48px;
+    border-radius: 50%;
     background-size: contain;
     background-repeat: no-repeat;
 
+    &.big {
+      margin: 0 1ex;
+      background-color: #000000;
+    }
+
     &.sub,
     &.primary {
-      height: 2em;
-      width: 2em;
+      height: 24px;
+      width: 24px;
     }
 
     &.8000 {

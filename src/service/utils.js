@@ -3,6 +3,7 @@ import _sortBy from 'lodash/sortBy';
 import cheerio from 'cheerio';
 import { CancelToken } from 'axios';
 
+import { flatRunes } from 'src/share/constants/runes';
 import http from './http';
 
 const RequestLocale = `en-US`;
@@ -147,7 +148,21 @@ export const parseJson = str => {
   }
 };
 
-export const getStyleId = i => i.replace(/\d{2}$/, `00`);
+export const getStyleId = i => {
+  let result = null;
+  for (const [mId, ids] of flatRunes) {
+    if (+i === +mId) {
+      result = +i;
+      break;
+    }
+
+    if (ids.includes(+i)) {
+      result = +mId;
+      break;
+    }
+  }
+  return result;
+};
 
 export const isDifferentStyleId = (a, b) => {
   if (!a || !b) {
@@ -156,8 +171,9 @@ export const isDifferentStyleId = (a, b) => {
 
   const idA = getStyleId(a);
   const idB = getStyleId(b);
-  const res = Math.abs(idA - idB);
-  return res >= 100 && res < 1000;
+  const notSame = idA !== idB;
+
+  return idA && idB && notSame;
 };
 
 export const strToPercent = str => (str / 100).toFixed(2);

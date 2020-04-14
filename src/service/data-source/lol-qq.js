@@ -25,13 +25,13 @@ const makePerkData = (perk, champion, position) => {
   const { runes, winrate, showrate } = perk;
   const data = runes.reduce(({ primaryStyleId, subStyleId }, i) => {
     if (!primaryStyleId) {
-      primaryStyleId = getStyleId(i);
+      primaryStyleId = getStyleId(+i);
     }
 
     if (primaryStyleId && !subStyleId) {
-      const isStyleId = isDifferentStyleId(primaryStyleId, i);
+      const isStyleId = isDifferentStyleId(+primaryStyleId, +i);
       if (isStyleId) {
-        subStyleId = getStyleId(i);
+        subStyleId = getStyleId(+i);
       }
     }
 

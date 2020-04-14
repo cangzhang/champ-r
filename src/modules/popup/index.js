@@ -52,12 +52,11 @@ export default function Popup() {
     if (!champ)
       return;
 
-    console.log(champ);
     const lolqqInstance = new LolQQ();
     lolqqInstance.getChampionPerks(champ.key, champ.id)
       .then(perks => {
         setPerkList(perks);
-        console.log(perks);
+        // console.log(`perks`, perks);
       });
   }, [championId, championMap]);
 
@@ -69,25 +68,23 @@ export default function Popup() {
       ...perk,
       name: `${perk.alias} @ ${perk.position}`,
     });
-    console.log(`updated perk`, res);
+    console.info(`updated perk`, res);
   };
 
   const renderList = useCallback(() => {
     if (!championMap || !perks.length) {
-      return <div>loading...</div>;
+      return <div className={s.loading}>loading...</div>;
     }
 
     return perks
-      .map((i, $idx) =>
+      .map(i =>
         i.map((p, idx) =>
-          <div key={`${championId}-${idx}`}>
-            <PerkShowcase perk={p} key={`${$idx}-${idx}`} />
-
-            <p>{p.name}</p>
-            <p>{p.primaryStyleId}, {p.subStyleId}</p>
-            <p>{p.selectedPerkIds.join(`, `)}</p>
-            <button onClick={() => apply(p)}>apply</button>
-          </div>));
+          <PerkShowcase
+            key={`${championId}-${idx}`}
+            perk={p}
+            onApply={() => apply(p)}
+          />,
+        ));
   }, [championMap, perks, championId]);
 
   return <div className={s.list}>
