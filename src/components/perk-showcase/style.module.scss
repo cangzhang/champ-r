@@ -2,15 +2,15 @@
   display: flex;
 
   div {
-    height: 6em;
-    width: 6em;
+    height: 4em;
+    width: 4em;
     background-size: contain;
     background-repeat: no-repeat;
 
     &.sub,
     &.primary {
-      height: 3em;
-      width: 3em;
+      height: 2em;
+      width: 2em;
     }
 
     &.8000 {
