@@ -2,6 +2,8 @@ import s from './app.module.scss';
 
 import { ipcRenderer } from 'electron';
 import _get from 'lodash/get';
+import _findIdx from 'lodash/findIndex';
+
 import React, { useReducer, useMemo, useRef, useEffect } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -50,8 +52,9 @@ const App = () => {
         if (!lcuIns.active)
           return false;
 
-        const { actions } = await lcuIns.getCurrentSession();
-        const championId = _get(actions, `0.0.championId`, 0);
+        const { actions, myTeam = []} = await lcuIns.getCurrentSession();
+        const pickIdx = _findIdx(myTeam, i => i.summonerId > 0);
+        const championId = _get(actions, `0.${pickIdx}.championId`, 0);
 
         if (!championId) {
           ipcRenderer.send(`hide-popup`);
