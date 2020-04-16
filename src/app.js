@@ -1,8 +1,7 @@
 import s from './app.module.scss';
 
 import { ipcRenderer } from 'electron';
-import _get from 'lodash/get';
-import _findIdx from 'lodash/findIndex';
+import _find from 'lodash/find';
 
 import React, { useReducer, useMemo, useRef, useEffect } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
@@ -53,9 +52,9 @@ const App = () => {
           return false;
 
         const { actions, myTeam = []} = await lcuIns.getCurrentSession();
-        const pickIdx = _findIdx(myTeam, i => i.summonerId > 0);
-        const championId = _get(actions, `0.${pickIdx}.championId`, 0);
-
+        const { cellId } = _find(myTeam, i => i.summonerId > 0) || {};
+        const { championId } = _find(actions[0] || [], i => i.actorCellId === cellId) || {};
+        console.log(`got champion id: `, championId)
         if (!championId) {
           ipcRenderer.send(`hide-popup`);
           return false;

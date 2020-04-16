@@ -56,9 +56,6 @@ export default function Popup() {
   }, [championId, championMap]);
 
   const apply = async perk => {
-    if (!lcu.current.applyPerk || !lcu.current.active)
-      return;
-
     lcu.current = new LCUService(lolDir);
     await lcu.current.getAuthToken();
     const res = await lcu.current.applyPerk({
