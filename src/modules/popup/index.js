@@ -23,11 +23,6 @@ export default function Popup() {
   const [perks, setPerkList] = useState([]);
 
   useEffect(() => {
-    lcu.current = new LCUService(lolDir);
-    lcu.current.getAuthToken();
-  }, [lolDir]);
-
-  useEffect(() => {
     getChampions(lolVer)
       .then(championList => {
         setChampionMap(championList);
@@ -64,6 +59,8 @@ export default function Popup() {
     if (!lcu.current.applyPerk || !lcu.current.active)
       return;
 
+    lcu.current = new LCUService(lolDir);
+    await lcu.current.getAuthToken();
     const res = await lcu.current.applyPerk({
       ...perk,
       name: `${perk.alias} @ ${perk.position}`,
