@@ -26,6 +26,23 @@ import LCUService from 'src/service/lcu';
 
 const engine = new Styletron();
 
+const findUserChampion = (cellId, actions = []) => {
+  let id = 0;
+  if (!actions || !actions.length)
+    return id;
+
+  for(const action of actions) {
+    for(const cell of action) {
+      if (cell.actorCellId === cellId && cell.type === 'pick') {
+        id = cell.championId;
+        break;
+      }
+    }
+  }
+
+  return id;
+}
+
 const App = () => {
   const [t] = useTranslation();
   const [store, dispatch] = useReducer(appReducer, initialState, init);
@@ -52,16 +69,24 @@ const App = () => {
           return false;
 
         const { actions = [], myTeam = []} = await lcuIns.getCurrentSession();
-        const { cellId } = _find(myTeam, i => i.summonerId > 0) || {};
-        const { championId } = _find(actions[0] || [], i => i.actorCellId === cellId) || {};
-        
-        console.log(`got champion id: `, championId)
+        const member = _find(myTeam, i => i.summonerId > 0) || {};
+        const { cellId } = member;
+        let championId = 0;
+
+        if (!actions.length && myTeam.length && member) {
+          // special mode
+          championId = member.championId;
+        } else {
+          // classic mode
+          championId = findUserChampion(cellId, actions);
+        }
 
         if (!championId) {
           ipcRenderer.send(`hide-popup`);
           return false;
         }
-
+        
+        console.log(`got champion id: `, championId);
         ipcRenderer.send(`show-popup`, {
           championId,
           position: null,
