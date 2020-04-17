@@ -176,4 +176,4 @@ export const isDifferentStyleId = (a, b) => {
   return idA && idB && notSame;
 };
 
-export const strToPercent = str => (str / 100).toFixed(2);
+export const strToPercent = (str, decimal = 2) => (str / 100).toFixed(decimal);

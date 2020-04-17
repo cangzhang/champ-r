@@ -22,7 +22,7 @@ const API = {
 };
 
 const makePerkData = (perk, champion, position) => {
-  const { runes, winrate, showrate } = perk;
+  const { runes, winrate, igamecnt } = perk;
   const data = runes.reduce(({ primaryStyleId, subStyleId }, i) => {
     if (!primaryStyleId) {
       primaryStyleId = getStyleId(+i);
@@ -44,14 +44,14 @@ const makePerkData = (perk, champion, position) => {
     subStyleId: ``,
   });
 
-  const wRate = strToPercent(winrate);
-  const pRate = strToPercent(showrate);
-  data.name = `${champion}-${position}, win ${wRate}%, pick ${pRate}% [lol.qq.com]`;
+  const wRate = strToPercent(winrate, 1);
+  
+  data.name = `${champion}-${position}, pick ${igamecnt} win ${wRate}% [lol.qq.com]`;
   data.selectedPerkIds = runes;
   data.alias = champion;
   data.position = position;
   data.wRate = wRate;
-  data.pRate = pRate;
+  data.pickCount = igamecnt;
   data.source = Sources.Lolqq;
 
   return data;
@@ -123,7 +123,7 @@ export default class LolQQ extends SourceProto {
       const { list: { championLane } } = parseCode(code);
 
       const perks = Object.values(championLane)
-        .map(l => {
+        .reduce((res, l) => {
           const perkDetail = parseJson(l.perkdetail);
           const position = l.lane;
           const pData = Object.values(perkDetail)
@@ -135,12 +135,14 @@ export default class LolQQ extends SourceProto {
               return result.concat(vals);
             }, []);
 
-          const byWinRate = _orderBy(pData, i => i.wincnt, [`desc`]);
-          const byPickRate = _orderBy(pData, i => i.igamecnt, [`desc`]);
-          return [...byWinRate.slice(0, 1), ...byPickRate.slice(0, 1)]
+          const sorted = _orderBy(pData, i => i.igamecnt, [`desc`]);
+          const pages = sorted
+            .slice(0, 2)
             .map(i => makePerkData(i, alias, position));
-        });
-      return perks;
+
+          return res.concat(pages)
+        }, []);
+      return _orderBy(perks, `pickCount`, [`desc`]);
     } catch (e) {
       throw new Error(e);
     }

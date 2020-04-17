@@ -6,14 +6,19 @@
 
   &:hover {
     background-color: #f6f6f6;
+  }
 
-    .name {
-      display: none;
+  .desc {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .detail {
+      font-size: 12px;
     }
   }
 
   .apply {
-    display: none;
     height: 48px;
     width: 48px;
     border-radius: 10px;
@@ -21,6 +26,8 @@
     justify-content: center;
     align-items: center;
     background: #ffffff;
+    -webkit-app-region: no-drag;
+    transition: all linear 0.2s;
 
     &:hover {
       cursor: pointer;
@@ -33,13 +40,13 @@
     }
   }
 
-  .info {
+  .preview {
     display: flex;
     align-items: center;
     width: max-content;
   }
 
-  .info > div {
+  .preview > div {
     height: 48px;
     width: 48px;
     border-radius: 50%;

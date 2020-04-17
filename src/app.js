@@ -82,8 +82,7 @@ const App = () => {
         }
 
         if (!championId) {
-          ipcRenderer.send(`hide-popup`);
-          return false;
+          throw new Error(`no active session.`)
         }
         
         console.log(`got champion id: `, championId);

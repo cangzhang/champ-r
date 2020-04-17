@@ -1,3 +1,8 @@
+body {
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+}
+
 .list {
   display: flex;
   flex-direction: column;

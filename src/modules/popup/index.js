@@ -51,7 +51,7 @@ export default function Popup() {
     lolqqInstance.getChampionPerks(champ.key, champ.id)
       .then(perks => {
         setPerkList(perks);
-        // console.log(`perks`, perks);
+        // console.log(perks)
       });
   }, [championId, championMap]);
 
@@ -71,14 +71,13 @@ export default function Popup() {
     }
 
     return perks
-      .map(i =>
-        i.map((p, idx) =>
-          <PerkShowcase
-            key={`${championId}-${idx}`}
-            perk={p}
-            onApply={() => apply(p)}
-          />,
-        ));
+      .map((p, idx) =>
+        <PerkShowcase
+          key={`${championId}-${idx}`}
+          perk={p}
+          onApply={() => apply(p)}
+        />,
+      );
   }, [championMap, perks, championId]);
 
   return <div className={s.list}>
