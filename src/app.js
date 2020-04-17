@@ -51,10 +51,12 @@ const App = () => {
         if (!lcuIns.active)
           return false;
 
-        const { actions, myTeam = []} = await lcuIns.getCurrentSession();
+        const { actions = [], myTeam = []} = await lcuIns.getCurrentSession();
         const { cellId } = _find(myTeam, i => i.summonerId > 0) || {};
         const { championId } = _find(actions[0] || [], i => i.actorCellId === cellId) || {};
+        
         console.log(`got champion id: `, championId)
+
         if (!championId) {
           ipcRenderer.send(`hide-popup`);
           return false;
@@ -65,7 +67,8 @@ const App = () => {
           position: null,
         });
         return true;
-      } catch (err) {
+      } catch (_err) {
+        ipcRenderer.send(`hide-popup`);
       }
     }, 2000);
 

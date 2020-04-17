@@ -170,7 +170,12 @@ function registerMainListeners() {
   });
 
   ipcMain.on(`hide-popup`, async () => {
-    popupWindow && popupWindow.hide();
+    if (popupWindow) {
+      const isVisible = popupWindow.isVisible();
+      if (isVisible) {
+        popupWindow.hide();
+      }
+    }
   });
 }
 
