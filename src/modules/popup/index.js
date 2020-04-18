@@ -3,6 +3,7 @@ import s from './style.module.scss';
 
 import { ipcRenderer } from 'electron';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 import config from 'src/native/config';
 import { getChampions, DDragonCDNUrl } from 'src/service/ddragon';
@@ -75,14 +76,24 @@ export default function Popup() {
       return <div className={s.loading}>loading...</div>;
     }
 
-    return perks
-      .map((p, idx) =>
-        <PerkShowcase
-          key={`${championId}-${idx}`}
-          perk={p}
-          onApply={() => apply(p)}
-        />,
-      );
+    return (
+      <Scrollbars
+        style={{
+          height: `calc(100vh - 100px)`,
+        }}
+      >
+        {
+          perks
+            .map((p, idx) =>
+              <PerkShowcase
+                key={`${championId}-${idx}`}
+                perk={p}
+                onApply={() => apply(p)}
+              />,
+            )
+        }
+      </Scrollbars>
+    );
   }, [championMap, perks, championId]);
 
   return <div className={s.list}>

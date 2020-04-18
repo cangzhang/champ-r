@@ -12,6 +12,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    flex-grow: 1;
+    padding-left: 2em;
 
     .detail {
       font-size: 12px;
@@ -23,6 +25,7 @@
     width: 48px;
     border-radius: 10px;
     //margin-right: 1em;
+    display: flex;
     justify-content: center;
     align-items: center;
     background: #ffffff;
@@ -31,12 +34,6 @@
 
     &:hover {
       cursor: pointer;
-    }
-  }
-
-  &:hover {
-    .apply {
-      display: flex;
     }
   }
 
