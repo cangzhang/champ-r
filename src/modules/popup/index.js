@@ -5,7 +5,7 @@ import { ipcRenderer } from 'electron';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 
 import config from 'src/native/config';
-import { getChampions } from 'src/service/ddragon';
+import { getChampions, DDragonCDNUrl } from 'src/service/ddragon';
 import LolQQ from 'src/service/data-source/lol-qq';
 import LCUService from 'src/service/lcu';
 import PerkShowcase from 'src/components/perk-showcase';
@@ -18,9 +18,10 @@ export default function Popup() {
   const lcu = useRef({});
 
   const [championMap, setChampionMap] = useState(null);
-  const [championId, setChampion] = useState('');
+  const [championId, setChampionId] = useState('');
   const [position, setPosition] = useState('');
   const [perks, setPerkList] = useState([]);
+  const [championDetail, setChampionDetail] = useState(null);
 
   useEffect(() => {
     getChampions(lolVer)
@@ -29,7 +30,7 @@ export default function Popup() {
 
         ipcRenderer.on('for-popup', (event, { championId: id, position: pos }) => {
           if (id) {
-            setChampion(id);
+            setChampionId(id);
           }
 
           if (pos !== position) {
@@ -44,9 +45,13 @@ export default function Popup() {
       return;
 
     const champ = getChampionInfo(championId, championMap);
-    if (!champ)
+    if (!champ) {
+      setChampionId(0);
+      setChampionDetail(null);
       return;
+    }
 
+    setChampionDetail(champ);
     const lolqqInstance = new LolQQ();
     lolqqInstance.getChampionPerks(champ.key, champ.id)
       .then(perks => {
@@ -81,6 +86,10 @@ export default function Popup() {
   }, [championMap, perks, championId]);
 
   return <div className={s.list}>
+    {
+      championDetail &&
+      <img className={s.avatar} src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`} alt="" />
+    }
     {renderList()}
   </div>;
 }

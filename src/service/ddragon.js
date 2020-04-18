@@ -79,4 +79,5 @@ module.exports = {
   getSpellImg,
   getItemIcon,
   getItemList,
+  DDragonCDNUrl,
 };
