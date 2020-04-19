@@ -50,7 +50,7 @@ export default class LCUService {
   };
 
   getCurrentSession = async () => {
-    const res = await http.get(this.urls.curSession + `?_t=${Date.now()}`, {
+    const res = await http.get(this.urls.curSession, {
       ...this.auth,
       validateStatus: status => status < 500,
     });
