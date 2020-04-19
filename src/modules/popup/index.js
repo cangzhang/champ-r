@@ -99,7 +99,9 @@ export default function Popup() {
   return <div className={s.list}>
     {
       championDetail &&
-      <img className={s.avatar} src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`} alt="" />
+        <div className={s.drag}>
+          <img className={s.avatar} src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`} alt="" />
+        </div>
     }
     {renderList()}
   </div>;
