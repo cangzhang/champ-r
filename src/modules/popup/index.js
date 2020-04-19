@@ -38,10 +38,6 @@ export default function Popup() {
 
   const [qqPerks, setQQPerkList] = useState([]);
   const [opggPerks, setOPggPerkList] = useState([]);
-  const [loading, setLoading] = useState({
-    [TabNames.qq]: false,
-    [TabNames.opgg]: false,
-  });
 
   useEffect(() => {
     getChampions(lolVer)
