@@ -15,12 +15,44 @@
     flex-grow: 1;
     padding-left: 2em;
 
+    > div {
+      display: flex;
+      //justify-content: center;
+    }
+
     .detail {
       font-size: 12px;
+
+      > span:not(:last-child) {
+        margin-right: 10px;
+      }
+
+      .value {
+        font-size: 13px;
+        font-weight: bold;
+      }
+
+      .pick {
+        .value {
+          color: #2764f1;
+        }
+      }
+      .win {
+        .value {
+          color: #21a453;
+        }
+      }
+    }
+  }
+
+  &:hover {
+    .apply {
+      visibility: visible;
     }
   }
 
   .apply {
+    visibility: hidden;
     height: 48px;
     width: 48px;
     border-radius: 10px;
@@ -30,7 +62,7 @@
     align-items: center;
     background: #ffffff;
     -webkit-app-region: no-drag;
-    transition: all linear 0.2s;
+    //transition: all linear 0.2s;
 
     &:hover {
       cursor: pointer;
@@ -148,5 +180,36 @@
     &.9923 {
       background-image: url('~src/assets/runes/9923.png');
     }
+  }
+}
+
+.lane {
+  $icon-size: 136px;
+
+  background: url('~src/assets/lanes.png') no-repeat;
+  overflow: hidden;
+  width: $icon-size;
+  height: $icon-size;
+  zoom: 0.2;
+  margin-left: 2ex;
+
+  &.bottom {
+    background-position: 0 0;
+  }
+
+  &.jungle {
+    background-position: -136px 0;
+  }
+
+  &.middle {
+    background-position: 0 -136px;
+  }
+
+  &.support {
+    background-position: -136px -136px;
+  }
+
+  &.top {
+    background-position: 0 -272px;
   }
 }

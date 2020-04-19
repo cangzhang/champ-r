@@ -22,6 +22,13 @@ const Toolbar = () => {
   return <div className={s.toolbar}>
     <StatefulTooltip
       accessibilityType={'tooltip'}
+      content={t(`minimize`)}
+    >
+      <span className={s.icon} onClick={onHide}><Minimize2 size={16} /></span>
+    </StatefulTooltip>
+
+    <StatefulTooltip
+      accessibilityType={'tooltip'}
       content={t(`settings`)}
     >
       <span
@@ -30,13 +37,6 @@ const Toolbar = () => {
       >
         <Settings size={16} />
       </span>
-    </StatefulTooltip>
-
-    <StatefulTooltip
-      accessibilityType={'tooltip'}
-      content={t(`minimize`)}
-    >
-      <span className={s.icon} onClick={onHide}><Minimize2 size={16} /></span>
     </StatefulTooltip>
 
     <StatefulTooltip

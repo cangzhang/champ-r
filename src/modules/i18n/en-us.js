@@ -23,5 +23,8 @@ export default {
     'removed outdated items': `Removed outdated items`,
     'completed': `Completed`,
     'cancelled': `Cancelled`,
+    'pick count': `Pick count`,
+    'win ratio': `Win ratio`,
+    'apply perk': `Apply`,
   },
 };

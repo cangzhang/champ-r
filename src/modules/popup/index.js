@@ -1,6 +1,8 @@
 /* eslint react-hooks/exhaustive-deps: 0 */
 import s from './style.module.scss';
 
+import 'src/modules/i18n';
+
 import { ipcRenderer } from 'electron';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
@@ -100,7 +102,12 @@ export default function Popup() {
     {
       championDetail &&
         <div className={s.drag}>
-          <img className={s.avatar} src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`} alt="" />
+          <img
+            key={championDetail.id}
+            className={s.avatar}
+            alt={championDetail.name}
+            src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`}
+          />
         </div>
     }
     {renderList()}
