@@ -25,6 +25,7 @@ import Settings from 'src/modules/settings';
 import LCUService from 'src/service/lcu';
 
 const engine = new Styletron();
+const GameTypes = [`pick`];
 
 const findUserChampion = (cellId, actions = []) => {
   let id = 0;
@@ -33,7 +34,7 @@ const findUserChampion = (cellId, actions = []) => {
 
   for(const action of actions) {
     for(const cell of action) {
-      if (cell.actorCellId === cellId && cell.type === 'pick') {
+      if (cell.actorCellId === cellId && GameTypes.includes(cell.type)) {
         id = cell.championId;
         break;
       }
@@ -70,11 +71,14 @@ const App = () => {
 
         const { actions = [], myTeam = []} = await lcuIns.getCurrentSession();
         const member = _find(myTeam, i => i.summonerId > 0) || {};
-        const { cellId } = member;
-        let championId = 0;
+        const { cellId, championId: mChampionId } = member;
+        let championId;
 
-        if (!actions.length && myTeam.length && member) {
-          // special mode
+        const isRandomMode = !actions.length && myTeam.length > 0 && mChampionId > 0;
+        const isVoteMode = mChampionId > 0 && myTeam.length > 0 && myTeam.every(i => i.championId === mChampionId);
+
+        console.log(`special mode: `, isRandomMode, isVoteMode)
+        if (isRandomMode || isVoteMode) { // special mode
           championId = member.championId;
         } else {
           // classic mode
