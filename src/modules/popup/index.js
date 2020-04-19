@@ -120,7 +120,7 @@ export default function Popup() {
       return <div className={s.loading}>loading...</div>;
     }
 
-    return <>
+    return <div className={s.main}>
       {
         championDetail &&
         <div className={s.drag}>
@@ -140,6 +140,7 @@ export default function Popup() {
           TabContent: {
             style: () => {
               return {
+                paddingTop: 0,
                 paddingLeft: 0,
                 paddingRight: 0,
                 paddingBottom: 0,
@@ -165,7 +166,7 @@ export default function Popup() {
           </div>
         </Tab>
       </Tabs>
-    </>;
+    </div>;
   };
 
   return <StyletronProvider value={engine}>
