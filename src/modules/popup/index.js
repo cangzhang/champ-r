@@ -4,16 +4,27 @@ import s from './style.module.scss';
 import 'src/modules/i18n';
 
 import { ipcRenderer } from 'electron';
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
+import { Client as Styletron } from 'styletron-engine-atomic';
+import { Provider as StyletronProvider } from 'styletron-react';
+import { LightTheme, BaseProvider } from 'baseui';
+import { Tabs, Tab } from 'baseui/tabs';
 
 import config from 'src/native/config';
 import { getChampions, DDragonCDNUrl } from 'src/service/ddragon';
 import LolQQ from 'src/service/data-source/lol-qq';
+import Opgg from 'src/service/data-source/op-gg';
 import LCUService from 'src/service/lcu';
 import PerkShowcase from 'src/components/perk-showcase';
 
 import { getChampionInfo } from './utils';
+
+const engine = new Styletron();
+const TabNames = {
+  qq: `lol.qq.com`,
+  opgg: `op.gg`,
+};
 
 export default function Popup() {
   const lolVer = config.get(`lolVer`);
@@ -22,22 +33,24 @@ export default function Popup() {
 
   const [championMap, setChampionMap] = useState(null);
   const [championId, setChampionId] = useState('');
-  const [position, setPosition] = useState('');
-  const [perks, setPerkList] = useState([]);
   const [championDetail, setChampionDetail] = useState(null);
+  const [activeTab, setActiveTab] = useState(TabNames.qq);
+
+  const [qqPerks, setQQPerkList] = useState([]);
+  const [opggPerks, setOPggPerkList] = useState([]);
+  const [loading, setLoading] = useState({
+    [TabNames.qq]: false,
+    [TabNames.opgg]: false,
+  });
 
   useEffect(() => {
     getChampions(lolVer)
       .then(championList => {
         setChampionMap(championList);
 
-        ipcRenderer.on('for-popup', (event, { championId: id, position: pos }) => {
+        ipcRenderer.on('for-popup', (event, { championId: id }) => {
           if (id) {
             setChampionId(id);
-          }
-
-          if (pos !== position) {
-            setPosition(pos);
           }
         });
       });
@@ -55,11 +68,17 @@ export default function Popup() {
     }
 
     setChampionDetail(champ);
+
     const lolqqInstance = new LolQQ();
     lolqqInstance.getChampionPerks(champ.key, champ.id)
-      .then(perks => {
-        setPerkList(perks);
-        // console.log(perks)
+      .then(result => {
+        setQQPerkList(result);
+      });
+
+    const opggInstance = new Opgg();
+    opggInstance.getChampionPerks(champ.id)
+      .then(result => {
+        setOPggPerkList(result);
       });
   }, [championId, championMap]);
 
@@ -68,39 +87,46 @@ export default function Popup() {
     await lcu.current.getAuthToken();
     const res = await lcu.current.applyPerk({
       ...perk,
-      name: `${perk.alias} @ ${perk.position}`,
     });
     console.info(`updated perk`, res);
   };
 
-  const renderList = useCallback(() => {
-    if (!championMap || !perks.length) {
+  const renderList = (perkList) => {
+    const shouldShowList = perkList.length
+      && championDetail
+      && perkList[0].alias === championDetail.id;
+
+    if (!shouldShowList) {
       return <div className={s.loading}>loading...</div>;
     }
 
     return (
       <Scrollbars
         style={{
-          height: `calc(100vh - 100px)`,
+          height: `calc(100vh - 180px)`,
         }}
       >
         {
-          perks
-            .map((p, idx) =>
-              <PerkShowcase
-                key={`${championId}-${idx}`}
-                perk={p}
-                onApply={() => apply(p)}
-              />,
-            )
+          perkList.map((p, idx) =>
+            <PerkShowcase
+              key={`${championId}-${idx}`}
+              perk={p}
+              onApply={() => apply(p)}
+            />,
+          )
         }
       </Scrollbars>
     );
-  }, [championMap, perks, championId]);
+  };
 
-  return <div className={s.list}>
-    {
-      championDetail &&
+  const renderContent = () => {
+    if (!championMap || !qqPerks.length) {
+      return <div className={s.loading}>loading...</div>;
+    }
+
+    return <>
+      {
+        championDetail &&
         <div className={s.drag}>
           <img
             key={championDetail.id}
@@ -109,7 +135,46 @@ export default function Popup() {
             src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`}
           />
         </div>
-    }
-    {renderList()}
-  </div>;
+      }
+
+      <Tabs
+        activeKey={activeTab}
+        onChange={({ activeKey }) => setActiveTab(activeKey)}
+        overrides={{
+          TabContent: {
+            style: () => {
+              return {
+                paddingLeft: 0,
+                paddingRight: 0,
+                paddingBottom: 0,
+              };
+            },
+          },
+        }}
+      >
+        <Tab
+          key={TabNames.qq}
+          title={TabNames.qq.toUpperCase()}
+        >
+          <div className={s.list}>
+            {renderList(qqPerks)}
+          </div>
+        </Tab>
+        <Tab
+          key={TabNames.opgg}
+          title={TabNames.opgg.toUpperCase()}
+        >
+          <div className={s.list}>
+            {renderList(opggPerks)}
+          </div>
+        </Tab>
+      </Tabs>
+    </>;
+  };
+
+  return <StyletronProvider value={engine}>
+    <BaseProvider theme={LightTheme}>
+      {renderContent()}
+    </BaseProvider>
+  </StyletronProvider>;
 }

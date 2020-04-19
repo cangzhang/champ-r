@@ -10,6 +10,9 @@ import { MainStyleIds } from 'src/share/constants/runes';
 export default function PerkShowcase({ perk, onApply }) {
   const [t] = useTranslation();
   const { primaryStyleId, subStyleId, selectedPerkIds } = perk;
+  if (!MainStyleIds[primaryStyleId]) {
+    debugger
+  }
   const pId = selectedPerkIds.find(i => MainStyleIds[primaryStyleId].includes(+i));
 
   return <div className={s.item}>
@@ -23,7 +26,7 @@ export default function PerkShowcase({ perk, onApply }) {
       <div>{perk.alias} @ {perk.position}</div>
       <div className={s.detail}>
         <span className={s.pick}>{t(`pick count`)} <span className={s.value}>{perk.pickCount}</span></span>
-        <span className={s.win}>{t(`win ratio`)} <span className={s.value}>{perk.wRate}%</span></span>
+        <span className={s.win}>{t(`win ratio`)} <span className={s.value}>{perk.winRate}%</span></span>
       </div>
     </div>
 

@@ -44,13 +44,13 @@ const makePerkData = (perk, champion, position) => {
     subStyleId: ``,
   });
 
-  const wRate = strToPercent(winrate, 1);
-  
-  data.name = `${champion}-${position}, pick ${igamecnt} win ${wRate}% [lol.qq.com]`;
+  const winRate = strToPercent(winrate, 1);
+
+  data.name = `${champion}-${position}, pick ${igamecnt} win ${winRate}% [${Sources.Lolqq}]`;
   data.selectedPerkIds = runes;
   data.alias = champion;
   data.position = position;
-  data.wRate = wRate;
+  data.winRate = winRate;
   data.pickCount = igamecnt;
   data.source = Sources.Lolqq;
 
@@ -140,7 +140,7 @@ export default class LolQQ extends SourceProto {
             .slice(0, 2)
             .map(i => makePerkData(i, alias, position));
 
-          return res.concat(pages)
+          return res.concat(pages);
         }, []);
       return _orderBy(perks, `pickCount`, [`desc`]);
     } catch (e) {
@@ -201,8 +201,8 @@ export default class LolQQ extends SourceProto {
       const rawItems = rawBlocks.map(i => ({
         id: i.itemid,
         count: 1,
-        pRate: i.showrate,
-        wRate: i.winrate,
+        pickRate: i.showrate,
+        winRate: i.winrate,
       }));
 
       const blocks = genFileBlocks(rawItems, itemMap, position);
@@ -242,7 +242,7 @@ export default class LolQQ extends SourceProto {
           version,
           hero: championList,
         },
-        positionMap,
+        positionMap = {},
       ] = await Promise.all([
         this.getChampionList(),
         this.getChampionPositions(),

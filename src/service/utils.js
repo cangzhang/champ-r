@@ -8,14 +8,14 @@ import http from './http';
 
 const RequestLocale = `en-US`;
 
-export const requestHtml = async (url, setCancel) => {
+export const requestHtml = async (url, setCancel, isAjax = true) => {
   try {
     const rawHtml = await http.get(
       url,
       // Get partial html
       {
         headers: {
-          'X-Requested-With': `XMLHttpRequest`,
+          'X-Requested-With': isAjax ? `XMLHttpRequest` : ``,
           'Content-Language': RequestLocale,
           'Accept-Language': RequestLocale,
         },
@@ -82,8 +82,8 @@ export const sortBlocksByRate = (items, itemMap, position) => {
     isCompletedItem && completedItems.push(i);
   }
 
-  const sortByPickRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, ['pRate']));
-  const sortByWinRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, ['wRate']));
+  const sortByPickRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, ['pickRate']));
+  const sortByWinRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, ['winRate']));
 
   return [sortByPickRate, sortByWinRate];
 };

@@ -1,4 +1,5 @@
 import { nanoid as uuid } from 'nanoid';
+import _noop from 'lodash/noop';
 
 import { requestHtml, genFileBlocks } from 'src/service/utils';
 
@@ -17,7 +18,7 @@ export const getSpellName = (imgSrc = '') => {
 export const stripNumber = src => +(src.match(/(\d+)\.png/)[1]);
 
 export default class OpGG extends SourceProto {
-  constructor(version, lolDir, itemMap, dispatch) {
+  constructor(version = ``, lolDir = ``, itemMap = {}, dispatch = _noop) {
     super();
     this.version = version;
     this.lolDir = lolDir;
@@ -49,6 +50,69 @@ export default class OpGG extends SourceProto {
     return result;
   };
 
+  getPerksFromHtml = (alias, position, $) => {
+    const perks = $('[class*=ChampionKeystoneRune] tr')
+      .toArray()
+      .reduce((arr, i) => {
+        const styleIds = $(i).find(`.perk-page__item--active img`).toArray().map(i => {
+          const src = $(i).attr(`src`);
+          return stripNumber(src);
+        });
+        const fragmentIds = $(i).find(`.fragment__detail img.active`).toArray().map(i => {
+          const src = $(i).attr(`src`);
+          return stripNumber(src);
+        });
+        const [primaryStyleId, subStyleId] = $(i).find(`.perk-page__item--mark img`).toArray().map(i => {
+          const src = $(i).attr(`src`);
+          return stripNumber(src);
+        });
+        const pickCount = +($(i).find(`.pick-ratio__text`).next().next().text().replace(`,`, ''));
+        const winRate = $(i).find(`.win-ratio__text`).next().text().replace(`%`, '');
+
+        const data = {
+          alias: alias,
+          pickCount: pickCount,
+          winRate: winRate,
+          position: position,
+          source: Sources.Opgg,
+          primaryStyleId: primaryStyleId,
+          subStyleId: subStyleId,
+          selectedPerkIds: styleIds.concat(fragmentIds),
+          name: `${alias}-${position}, pick ${pickCount} win ${winRate}% [${Sources.Opgg}]`,
+        };
+        return arr.concat(data);
+      }, []);
+
+    return perks;
+  };
+
+  getChampionPerks = async alias => {
+    try {
+      const $id = uuid();
+      const $ = await requestHtml(
+        `${OpggUrl}/champion/${alias}/statistics`,
+        this.setCancelHook($id),
+        false,
+      );
+
+      const positions = $(`.champion-stats-header__position a`).toArray().map(i => {
+        const href = $(i).attr(`href`);
+        return href.split(`/`).pop();
+      });
+      const firstPositionPerks = this.getPerksFromHtml(alias, positions[0], $);
+      const tasks = positions.slice(1)
+        .map(async p => {
+          const $ = await requestHtml(`${OpggUrl}/champion/${alias}/statistics/${p}`, this.setCancelHook(`${$id}-${p}`));
+          return this.getPerksFromHtml(alias, p, $);
+        });
+      const [allLeftPerks = []] = await Promise.all(tasks);
+
+      return firstPositionPerks.concat(allLeftPerks);
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
   genBlocks = async (champion, position, id) => {
     const { itemMap } = this;
     try {
@@ -60,14 +124,14 @@ export default class OpGG extends SourceProto {
         .map(tr => {
           const [itemTd, pRateTd, wRateTd] = $(tr).find('td').toArray();
           const itemId = $(itemTd).find('img').attr('src').match(/(.*)\/(.*)\.png/).pop();
-          const pRate = $(pRateTd).find('em').text().replace(',', '');
-          const wRate = $(wRateTd).text().replace('%', '');
+          const pickRate = $(pRateTd).find('em').text().replace(',', '');
+          const winRate = $(wRateTd).text().replace('%', '');
 
           return {
             id: itemId,
             count: 1,
-            pRate,
-            wRate,
+            pickRate,
+            winRate,
           };
         });
 
