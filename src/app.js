@@ -69,20 +69,18 @@ const App = () => {
         if (!lcuIns.active)
           return false;
 
-        const { actions = [], myTeam = []} = await lcuIns.getCurrentSession();
-        const member = _find(myTeam, i => i.summonerId > 0) || {};
-        const { cellId, championId: mChampionId } = member;
+        const { actions = [], myTeam = [], localPlayerCellId: cellId } = await lcuIns.getCurrentSession();
+        const member = _find(myTeam, i => i.summonerId > 0 && i.cellId === cellId) || {};
+        const { championId: mChampionId } = member;
         let championId;
 
         const isRandomMode = !actions.length && myTeam.length > 0 && mChampionId > 0;
         const isVoteMode = mChampionId > 0 && myTeam.length > 0 && myTeam.every(i => i.championId === mChampionId);
 
-        console.log(`special mode: `, isRandomMode, isVoteMode)
+        championId = findUserChampion(cellId, actions);
+        console.log(`isRandomMode ${isRandomMode}, isVoteMode ${isVoteMode}`)
         if (isRandomMode || isVoteMode) { // special mode
           championId = member.championId;
-        } else {
-          // classic mode
-          championId = findUserChampion(cellId, actions);
         }
 
         if (!championId) {
