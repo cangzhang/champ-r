@@ -6,6 +6,7 @@
 
   &:hover {
     background-color: #f6f6f6;
+    cursor: pointer;
   }
 
   .desc {
@@ -13,7 +14,7 @@
     flex-direction: column;
     justify-content: center;
     flex-grow: 1;
-    padding-left: 2em;
+    padding-left: 1em;
 
     > div {
       display: flex;
@@ -83,7 +84,7 @@
     background-repeat: no-repeat;
 
     &.big {
-      margin: 0 1ex;
+      margin: 0 0.6ex;
       background-color: #000000;
     }
 

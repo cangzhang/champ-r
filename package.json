@@ -1,6 +1,6 @@
 {
   "name": "champ-r",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "license": "MIT",
   "description": "Get champion items for lol, Windows only.",
   "productName": "ChampR",

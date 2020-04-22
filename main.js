@@ -92,7 +92,7 @@ const createPopupWindow = async () => {
     show: false,
     frame: false,
     // transparent: true,
-    width: isDev ? 900 : 460,
+    width: isDev ? 900 : 450,
     height: 600,
     x: isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140,
     y: curDisplay.bounds.height / 2,
