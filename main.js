@@ -6,7 +6,7 @@ try {
 const path = require('path');
 // const osLocale = require('os-locale');
 
-const { app, BrowserWindow, Menu, ipcMain, screen, Tray } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage } = require('electron');
 /// const { autoUpdater } = require('electron-updater');
 const { is, centerWindow } = require('electron-util');
 const contextMenu = require('electron-context-menu');
@@ -14,9 +14,6 @@ const contextMenu = require('electron-context-menu');
 const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
 const isDev = require('electron-is-dev');
-
-// const config = require('./src/native/config');
-// const { getLolVer, getItemList, getChampions } = require('./src/service/ddragon');
 
 unhandled();
 debug();
@@ -40,9 +37,9 @@ app.allowRendererProcessReuse = false;
 // }
 
 // Prevent window from being garbage collected
-let mainWindow;
-let popupWindow;
-let tray;
+let mainWindow = null;
+let popupWindow = null;
+let tray = null;
 
 const webPreferences = {
   nodeIntegration: true,
@@ -200,18 +197,19 @@ function toggleMainWindow() {
   }
 }
 
-function makeTray() {
-  tray = new Tray('./src/assets/app-icon.png');
+function makeTray(tray) {
+  const iconPath = path.join(app.isPackaged ? process.resourcesPath : __dirname, `resources/app-icon.png`);
+  const icon = nativeImage.createFromPath(iconPath);
+  // const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+  tray = new Tray(icon);
   // tray.setIgnoreDoubleClickEvents(true)
   tray.setToolTip('ChampR');
-
   tray.on(`click`, () => {
     toggleMainWindow();
   });
-
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: `toggle`,
+      label: `Toggle`,
       click() {
         toggleMainWindow();
       },
@@ -237,6 +235,6 @@ function makeTray() {
     window: mainWindow,
     animated: true,
   });
-
-  makeTray();
+  
+  makeTray(tray);
 })();

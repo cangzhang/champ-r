@@ -146,8 +146,11 @@
       "main.js",
       "package.json"
     ],
+    "extraResources": [
+      "./resources/**"
+    ],
     "win": {
-      "icon": "./src/assets/app-icon.png",
+      "icon": "./resources/app-icon.png",
       "requestedExecutionLevel": "highestAvailable"
     }
   },
