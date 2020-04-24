@@ -235,6 +235,6 @@ function makeTray(tray) {
     window: mainWindow,
     animated: true,
   });
-  
+
   makeTray(tray);
 })();
