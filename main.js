@@ -198,7 +198,7 @@ function toggleMainWindow() {
 }
 
 function makeTray(tray) {
-  const iconPath = path.join(app.isPackaged ? process.resourcesPath : __dirname, `resources/app-icon.png`);
+  const iconPath = path.join(isDev ? __dirname : process.resourcesPath, `resources/app-icon.png`);
   const icon = nativeImage.createFromPath(iconPath);
   // const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
   tray = new Tray(icon);

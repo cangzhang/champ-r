@@ -43,5 +43,5 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: champ-r-installer
+        name: ${{ steps.vars.outputs.fileName }}
         path: "./dist/artifacts"
