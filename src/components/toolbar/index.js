@@ -1,6 +1,6 @@
 import s from './style.module.scss';
 
-import { remote } from 'electron';
+import { remote, ipcRenderer } from 'electron';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,7 @@ const Toolbar = () => {
   const history = useHistory();
 
   const onHide = () => {
-    remote.BrowserWindow.getFocusedWindow().minimize();
+    ipcRenderer.send(`toggle-main-window`);
   };
   const onClose = () => {
     remote.app.quit();

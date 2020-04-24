@@ -6,7 +6,7 @@ try {
 const path = require('path');
 // const osLocale = require('os-locale');
 
-const { app, BrowserWindow, Menu, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, screen, Tray } = require('electron');
 /// const { autoUpdater } = require('electron-updater');
 const { is, centerWindow } = require('electron-util');
 const contextMenu = require('electron-context-menu');
@@ -42,6 +42,7 @@ app.allowRendererProcessReuse = false;
 // Prevent window from being garbage collected
 let mainWindow;
 let popupWindow;
+let tray;
 
 const webPreferences = {
   nodeIntegration: true,
@@ -91,6 +92,7 @@ const createPopupWindow = async () => {
   const popup = new BrowserWindow({
     show: false,
     frame: false,
+    skipTaskbar: true,
     // transparent: true,
     width: isDev ? 900 : 450,
     height: 600,
@@ -177,34 +179,52 @@ function registerMainListeners() {
       }
     }
   });
+
+  ipcMain.on(`toggle-main-window`, () => {
+    toggleMainWindow();
+  });
 }
 
-// async function prepareData() {
-//   const lolVer = config.get(`lolVer`);
-//   const itemMap = config.get(`itemMap`);
-//   const championMap = config.get(`championMap`);
-//   let appLang = config.get(`appLang`);
-//   if (!appLang) {
-//     appLang = osLocale.sync().replace(`-`, `_`);
-//   }
-//
-//   const version = await getLolVer();
-//   if (version === lolVer && itemMap && championMap) {
-//     return [lolVer, itemMap, championMap];
-//   }
-//
-//   const [items, champions] = await Promise.all([
-//     getItemList(version),
-//     getChampions(version),
-//   ]);
-//
-//   config.set(`appLang`, appLang);
-//   config.set(`itemMap`, items);
-//   config.set(`championMap`, champions);
-//   config.set(`lolVer`, version);
-//
-//   return [version, items, champions];
-// }
+function toggleMainWindow() {
+  if (!mainWindow) {
+    return;
+  }
+
+  const visible = mainWindow.isVisible();
+  if (!visible) {
+    mainWindow.show();
+    mainWindow.setSkipTaskbar(false);
+  } else {
+    mainWindow.hide();
+    mainWindow.setSkipTaskbar(true);
+  }
+}
+
+function makeTray() {
+  tray = new Tray('./src/assets/app-icon.png');
+  // tray.setIgnoreDoubleClickEvents(true)
+  tray.setToolTip('ChampR');
+
+  tray.on(`click`, () => {
+    toggleMainWindow();
+  });
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: `toggle`,
+      click() {
+        toggleMainWindow();
+      },
+    },
+    {
+      label: `Exit`,
+      click() {
+        app.quit();
+      },
+    },
+  ]);
+  tray.setContextMenu(contextMenu);
+}
 
 (async () => {
   await app.whenReady();
@@ -218,10 +238,5 @@ function registerMainListeners() {
     animated: true,
   });
 
-  // const [lolVer, itemMap, championMap] = await prepareData();
-  // mainWindow.webContents.send(`lol-data-loaded`, {
-  //   lolVer,
-  //   itemMap,
-  //   championMap,
-  // });
+  makeTray();
 })();
