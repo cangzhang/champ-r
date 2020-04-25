@@ -91,6 +91,7 @@ const createPopupWindow = async () => {
     frame: false,
     skipTaskbar: true,
     resizable: false,
+    fullscreenable: false,
     // transparent: true,
     width: isDev ? 900 : 400,
     height: 600,
