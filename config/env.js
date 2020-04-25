@@ -63,7 +63,15 @@ process.env.NODE_PATH = (process.env.NODE_PATH || '')
 // const REACT_APP = /^react_app_/i;
 
 function getClientEnvironment(publicUrl) {
-  const appVer = process.env.NODE_ENV === 'production' ? `${appPackageJson.version}${process.env.SHORT_SHA || ''}` : `dev`;
+  const isDev = (process.env.NODE_ENV || 'development') === `development`;
+  let appVer = `dev`;
+
+  if (!isDev) {
+    const commitHash = require('child_process')
+      .execSync('git rev-parse --short HEAD')
+      .toString();
+    appVer = `${appPackageJson.version}-${commitHash}`;
+  }
 
   const raw = Object.keys(process.env)
     // .filter(key => REACT_APP.test(key))
@@ -76,7 +84,7 @@ function getClientEnvironment(publicUrl) {
         // Useful for determining whether we’re running in production mode.
         // Most importantly, it switches React into the correct mode.
         NODE_ENV: process.env.NODE_ENV || 'development',
-        IS_DEV: (process.env.NODE_ENV || 'development') === `development`,
+        IS_DEV: isDev,
         // Useful for resolving the correct path to static assets in `public`.
         // For example, <img src={process.env.PUBLIC_URL + '/img/logo.png'} />.
         // This should only be used as an escape hatch. Normally you would put

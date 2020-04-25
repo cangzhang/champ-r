@@ -90,8 +90,9 @@ const createPopupWindow = async () => {
     show: false,
     frame: false,
     skipTaskbar: true,
+    resizable: false,
     // transparent: true,
-    width: isDev ? 900 : 450,
+    width: isDev ? 900 : 400,
     height: 600,
     x: isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140,
     y: curDisplay.bounds.height / 2,
@@ -160,6 +161,7 @@ function registerMainListeners() {
     if (!popupWindow.isVisible()) {
       // popupWindow.showInactive();
       popupWindow.show();
+      popupWindow.setAlwaysOnTop(true);
     }
 
     popupWindow.webContents.send(`for-popup`, {
@@ -197,8 +199,8 @@ function toggleMainWindow() {
   }
 }
 
-function makeTray(tray) {
-  const iconPath = path.join(isDev ? __dirname : process.resourcesPath, `resources/app-icon.png`);
+function makeTray() {
+  const iconPath = path.join(isDev ? __dirname : process.resourcesPath, 'resources/app-icon.png');
   const icon = nativeImage.createFromPath(iconPath);
   // const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
   tray = new Tray(icon);
@@ -236,5 +238,5 @@ function makeTray(tray) {
     animated: true,
   });
 
-  makeTray(tray);
+  await makeTray();
 })();
