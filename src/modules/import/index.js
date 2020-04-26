@@ -48,9 +48,10 @@ export default function Import() {
 
     let cleanFolderTask = () => Promise.resolve();
     if (!keepOld) {
-      cleanFolderTask = () => removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
-        toaster.positive(t(`removed outdated items`));
-      });
+      cleanFolderTask = () =>
+        removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
+          toaster.positive(t(`removed outdated items`));
+        });
     }
 
     const { itemMap } = store;
@@ -61,32 +62,36 @@ export default function Import() {
       const instance = new OpGGImporter(lolVer, lolDir, itemMap, dispatch);
       workers.current[Sources.Opgg] = instance;
 
-      opggTask = () => instance.import()
-        .then(() => {
-          toaster.positive(`[OP.GG] ${t(`completed`)}`);
-        })
-        .catch(err => {
-          if (err.message === `Error: Cancel`) {
-            setCancel(cancelled.concat(Sources.Opgg));
-            toaster.negative(`${t(`cancelled`)}: ${Sources.Opgg}`);
-          }
-        });
+      opggTask = () =>
+        instance
+          .import()
+          .then(() => {
+            toaster.positive(`[OP.GG] ${t(`completed`)}`);
+          })
+          .catch((err) => {
+            if (err.message === `Error: Cancel`) {
+              setCancel(cancelled.concat(Sources.Opgg));
+              toaster.negative(`${t(`cancelled`)}: ${Sources.Opgg}`);
+            }
+          });
     }
 
     if (selectedSources.includes(Sources.Lolqq)) {
       const instance = new LolQQImporter(lolDir, itemMap, dispatch);
       workers.current[Sources.Lolqq] = instance;
 
-      lolqqTask = () => instance.import()
-        .then(() => {
-          toaster.positive(`[101.QQ.COM] ${t(`completed`)}`);
-        })
-        .catch(err => {
-          if (err.message === `Error: Cancel`) {
-            setCancel(cancelled.concat(Sources.Lolqq));
-            toaster.negative(`${t(`cancelled`)}: ${Sources.Lolqq}`);
-          }
-        });
+      lolqqTask = () =>
+        instance
+          .import()
+          .then(() => {
+            toaster.positive(`[101.QQ.COM] ${t(`completed`)}`);
+          })
+          .catch((err) => {
+            if (err.message === `Error: Cancel`) {
+              setCancel(cancelled.concat(Sources.Lolqq));
+              toaster.negative(`${t(`cancelled`)}: ${Sources.Lolqq}`);
+            }
+          });
     }
 
     await cleanFolderTask();
@@ -111,7 +116,7 @@ export default function Import() {
     setCancel(Object.keys(workers.current));
 
     const ins = Object.values(workers.current);
-    ins.map(i => i.cancel());
+    ins.map((i) => i.cancel());
   };
 
   const restart = () => {
@@ -126,78 +131,73 @@ export default function Import() {
     }
 
     if (userCancelled) {
-      return <PauseCircle
-        size={128}
-        color={theme.colors.contentWarning}
-      />;
+      return <PauseCircle size={128} color={theme.colors.contentWarning} />;
     }
 
-    return <CheckCircle
-      size={128}
-      color={theme.colors.contentPositive}
-    />;
+    return <CheckCircle size={128} color={theme.colors.contentPositive} />;
   }, [userCancelled, loading]);
 
   const backToHome = useCallback(() => history.replace(`/`), []);
 
   const renderControl = useCallback(() => {
     if (loading) {
-      return <Button className={s.back} onClick={stop}>{t(`stop`)}</Button>;
+      return (
+        <Button className={s.back} onClick={stop}>
+          {t(`stop`)}
+        </Button>
+      );
     }
 
     if (userCancelled) {
-      return <>
-        <Button
-          className={s.back}
-          startEnhancer={<RefreshCw title={'Restart'} />}
-          onClick={restart}
-          overrides={{
-            BaseButton: {
-              style: ({ $theme }) => {
-                return {
-                  backgroundColor: $theme.colors.contentPositive,
-                };
+      return (
+        <>
+          <Button
+            className={s.back}
+            startEnhancer={<RefreshCw title={'Restart'} />}
+            onClick={restart}
+            overrides={{
+              BaseButton: {
+                style: ({ $theme }) => {
+                  return {
+                    backgroundColor: $theme.colors.contentPositive,
+                  };
+                },
               },
-            },
-          }}
-        >
-          {t(`restart`)}
-        </Button>
-        <Button
-          className={s.back}
-          startEnhancer={<XCircle title={'Homepage'} />}
-          onClick={backToHome}
-          overrides={{
-            BaseButton: {
-              style: ({ $theme }) => {
-                return {
-                  backgroundColor: $theme.colors.negative,
-                };
+            }}>
+            {t(`restart`)}
+          </Button>
+          <Button
+            className={s.back}
+            startEnhancer={<XCircle title={'Homepage'} />}
+            onClick={backToHome}
+            overrides={{
+              BaseButton: {
+                style: ({ $theme }) => {
+                  return {
+                    backgroundColor: $theme.colors.negative,
+                  };
+                },
               },
-            },
-          }}
-        >
-          {t(`cancel`)}
-        </Button>
-      </>;
+            }}>
+            {t(`cancel`)}
+          </Button>
+        </>
+      );
     }
 
-    return <Button
-      className={s.back}
-      onClick={backToHome}
-      startEnhancer={<Home title={`Home`} />}
-    >
-      {t(`back to home`)}
-    </Button>;
+    return (
+      <Button className={s.back} onClick={backToHome} startEnhancer={<Home title={`Home`} />}>
+        {t(`back to home`)}
+      </Button>
+    );
   }, [userCancelled, loading]);
 
-  return <div className={s.import}>
-    {renderStatus()}
-    {renderControl()}
+  return (
+    <div className={s.import}>
+      {renderStatus()}
+      {renderControl()}
 
-    <ToasterContainer
-      autoHideDuration={1500}
-      placement={PLACEMENT.bottom}
-    />
-  </div>;
-};
+      <ToasterContainer autoHideDuration={1500} placement={PLACEMENT.bottom} />
+    </div>
+  );
+}

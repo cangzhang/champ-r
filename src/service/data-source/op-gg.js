@@ -15,7 +15,7 @@ export const getSpellName = (imgSrc = '') => {
   return matched.pop();
 };
 
-export const stripNumber = src => +(src.match(/(\d+)\.png/)[1]);
+export const stripNumber = (src) => +src.match(/(\d+)\.png/)[1];
 
 export default class OpGG extends SourceProto {
   constructor(version = ``, lolDir = ``, itemMap = {}, dispatch = _noop) {
@@ -30,22 +30,20 @@ export default class OpGG extends SourceProto {
     const $ = await requestHtml(`${OpggUrl}/champion/statistics`, this.setCancelHook(`stats`));
 
     const items = $('.champion-index__champion-list').find('.champion-index__champion-item');
-    const result = items
-      .toArray()
-      .map(itm => {
-        const champ = $(itm);
-        const { championKey, championName } = champ.data();
-        const positions = champ
-          .find('.champion-index__champion-item__position')
-          .toArray()
-          .map(i => $(i).text().toLowerCase());
+    const result = items.toArray().map((itm) => {
+      const champ = $(itm);
+      const { championKey, championName } = champ.data();
+      const positions = champ
+        .find('.champion-index__champion-item__position')
+        .toArray()
+        .map((i) => $(i).text().toLowerCase());
 
-        return {
-          key: championKey,
-          name: championName,
-          positions: positions.slice(),
-        };
-      });
+      return {
+        key: championKey,
+        name: championName,
+        positions: positions.slice(),
+      };
+    });
 
     return result;
   };
@@ -54,19 +52,28 @@ export default class OpGG extends SourceProto {
     const perks = $('[class*=ChampionKeystoneRune] tr')
       .toArray()
       .reduce((arr, i) => {
-        const styleIds = $(i).find(`.perk-page__item--active img`).toArray().map(i => {
-          const src = $(i).attr(`src`);
-          return stripNumber(src);
-        });
-        const fragmentIds = $(i).find(`.fragment__detail img.active`).toArray().map(i => {
-          const src = $(i).attr(`src`);
-          return stripNumber(src);
-        });
-        const [primaryStyleId, subStyleId] = $(i).find(`.perk-page__item--mark img`).toArray().map(i => {
-          const src = $(i).attr(`src`);
-          return stripNumber(src);
-        });
-        const pickCount = +($(i).find(`.pick-ratio__text`).next().next().text().replace(`,`, ''));
+        const styleIds = $(i)
+          .find(`.perk-page__item--active img`)
+          .toArray()
+          .map((i) => {
+            const src = $(i).attr(`src`);
+            return stripNumber(src);
+          });
+        const fragmentIds = $(i)
+          .find(`.fragment__detail img.active`)
+          .toArray()
+          .map((i) => {
+            const src = $(i).attr(`src`);
+            return stripNumber(src);
+          });
+        const [primaryStyleId, subStyleId] = $(i)
+          .find(`.perk-page__item--mark img`)
+          .toArray()
+          .map((i) => {
+            const src = $(i).attr(`src`);
+            return stripNumber(src);
+          });
+        const pickCount = +$(i).find(`.pick-ratio__text`).next().next().text().replace(`,`, '');
         const winRate = $(i).find(`.win-ratio__text`).next().text().replace(`%`, '');
 
         const data = {
@@ -86,7 +93,7 @@ export default class OpGG extends SourceProto {
     return perks;
   };
 
-  getChampionPerks = async alias => {
+  getChampionPerks = async (alias) => {
     try {
       const $id = uuid();
       const $ = await requestHtml(
@@ -95,16 +102,20 @@ export default class OpGG extends SourceProto {
         false,
       );
 
-      const positions = $(`.champion-stats-header__position a`).toArray().map(i => {
-        const href = $(i).attr(`href`);
-        return href.split(`/`).pop();
-      });
-      const firstPositionPerks = this.getPerksFromHtml(alias, positions[0], $);
-      const tasks = positions.slice(1)
-        .map(async p => {
-          const $ = await requestHtml(`${OpggUrl}/champion/${alias}/statistics/${p}`, this.setCancelHook(`${$id}-${p}`));
-          return this.getPerksFromHtml(alias, p, $);
+      const positions = $(`.champion-stats-header__position a`)
+        .toArray()
+        .map((i) => {
+          const href = $(i).attr(`href`);
+          return href.split(`/`).pop();
         });
+      const firstPositionPerks = this.getPerksFromHtml(alias, positions[0], $);
+      const tasks = positions.slice(1).map(async (p) => {
+        const $ = await requestHtml(
+          `${OpggUrl}/champion/${alias}/statistics/${p}`,
+          this.setCancelHook(`${$id}-${p}`),
+        );
+        return this.getPerksFromHtml(alias, p, $);
+      });
       const [allLeftPerks = []] = await Promise.all(tasks);
 
       return firstPositionPerks.concat(allLeftPerks);
@@ -116,14 +127,21 @@ export default class OpGG extends SourceProto {
   genBlocks = async (champion, position, id) => {
     const { itemMap } = this;
     try {
-      const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}/item`, this.setCancelHook(id));
+      const $ = await requestHtml(
+        `${OpggUrl}/champion/${champion}/statistics/${position}/item`,
+        this.setCancelHook(id),
+      );
       const itemTable = $('.l-champion-statistics-content__side .champion-stats__table')[0];
       const rawItems = $(itemTable)
         .find('tbody tr')
         .toArray()
-        .map(tr => {
+        .map((tr) => {
           const [itemTd, pRateTd, wRateTd] = $(tr).find('td').toArray();
-          const itemId = $(itemTd).find('img').attr('src').match(/(.*)\/(.*)\.png/).pop();
+          const itemId = $(itemTd)
+            .find('img')
+            .attr('src')
+            .match(/(.*)\/(.*)\.png/)
+            .pop();
           const pickRate = $(pRateTd).find('em').text().replace(',', '');
           const winRate = $(wRateTd).text().replace('%', '');
 
@@ -144,14 +162,18 @@ export default class OpGG extends SourceProto {
 
   genSkills = async (champion, position, id) => {
     try {
-      const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}/skill`, this.setCancelHook(id));
+      const $ = await requestHtml(
+        `${OpggUrl}/champion/${champion}/statistics/${position}/skill`,
+        this.setCancelHook(id),
+      );
 
       const skills = $('.champion-stats__filter__item .champion-stats__list')
         .toArray()
-        .map(i =>
-          $(i).find('.champion-stats__list__item')
+        .map((i) =>
+          $(i)
+            .find('.champion-stats__list__item')
             .toArray()
-            .map(j => $(j).text().trim()),
+            .map((j) => $(j).text().trim()),
         );
 
       return skills;
@@ -161,16 +183,32 @@ export default class OpGG extends SourceProto {
   };
 
   genPerk = async (champion, position, id) => {
-    const $ = await requestHtml(`${OpggUrl}/champion/${champion}/statistics/${position}`, this.setCancelHook(id));
+    const $ = await requestHtml(
+      `${OpggUrl}/champion/${champion}/statistics/${position}`,
+      this.setCancelHook(id),
+    );
     return $(`.champion-overview__table--rune [class*="ChampionKeystoneRune-"]`)
       .toArray()
-      .map(i => {
+      .map((i) => {
         const rows = $(i).find(`tr`);
-        return rows.toArray().map(r => {
-          const name = $(r).find(`.champion-overview__stats--pick`).text().trim().replace(/\s+/g, ` `);
-          const mIds = $(r).find(`.perk-page__item--mark img.tip`).toArray().map(g => stripNumber($(g).attr(`src`)));
-          const nIds = $(r).find(`.perk-page__item--active img.tip`).toArray().map(g => stripNumber($(g).attr(`src`)));
-          const fIds = $(r).find(`.fragment img.tip.active`).toArray().map(g => stripNumber($(g).attr(`src`)));
+        return rows.toArray().map((r) => {
+          const name = $(r)
+            .find(`.champion-overview__stats--pick`)
+            .text()
+            .trim()
+            .replace(/\s+/g, ` `);
+          const mIds = $(r)
+            .find(`.perk-page__item--mark img.tip`)
+            .toArray()
+            .map((g) => stripNumber($(g).attr(`src`)));
+          const nIds = $(r)
+            .find(`.perk-page__item--active img.tip`)
+            .toArray()
+            .map((g) => stripNumber($(g).attr(`src`)));
+          const fIds = $(r)
+            .find(`.fragment img.tip.active`)
+            .toArray()
+            .map((g) => stripNumber($(g).attr(`src`)));
           const selectedPerkIds = nIds.concat(fIds);
           const [primaryStyleId, subStyleId] = mIds.sort((a, b) => a - b);
 
@@ -223,35 +261,37 @@ export default class OpGG extends SourceProto {
     try {
       const res = await this.getStat();
 
-      const tasks = res
-        .reduce((t, item) => {
-          const { positions, key: champion } = item;
-          const positionTasks = positions.map(position => {
-            const identity = uuid();
+      const tasks = res.reduce((t, item) => {
+        const { positions, key: champion } = item;
+        const positionTasks = positions.map((position) => {
+          const identity = uuid();
 
-            dispatch(addFetching({
+          dispatch(
+            addFetching({
               champion,
               position,
               $identity: identity,
               source: Sources.Opgg,
-            }));
+            }),
+          );
 
-            return this.genChampionData(champion, position, identity)
-              .then(data => {
-                dispatch(addFetched({
-                  ...data,
-                  $identity: identity,
-                }));
+          return this.genChampionData(champion, position, identity).then((data) => {
+            dispatch(
+              addFetched({
+                ...data,
+                $identity: identity,
+              }),
+            );
 
-                return data;
-              });
+            return data;
           });
+        });
 
-          return t.concat(positionTasks);
-        }, []);
+        return t.concat(positionTasks);
+      }, []);
 
       const fetched = await Promise.all(tasks);
-      const t = fetched.map(i => saveToFile(lolDir, i));
+      const t = fetched.map((i) => saveToFile(lolDir, i));
 
       const result = await Promise.all(t);
       dispatch(fetchSourceDone(Sources.Opgg));
@@ -262,4 +302,3 @@ export default class OpGG extends SourceProto {
     }
   };
 }
-

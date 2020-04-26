@@ -8,25 +8,32 @@ import AppContext from 'src/share/context';
 
 export default () => {
   const [t] = useTranslation();
-  const { store: { fetching, fetchingSources } } = useContext(AppContext);
+  const {
+    store: { fetching, fetchingSources },
+  } = useContext(AppContext);
 
-  return <div className={s.waitingList}>
-    <h3>{t(`fetching`)}:{fetchingSources.map(s => <b key={s}>{s}</b>)}</h3>
-    <ul>
-      {
-        fetching.map(i =>
+  return (
+    <div className={s.waitingList}>
+      <h3>
+        {t(`fetching`)}:
+        {fetchingSources.map((s) => (
+          <b key={s}>{s}</b>
+        ))}
+      </h3>
+      <ul>
+        {fetching.map((i) => (
           <li key={i.$identity}>
             <span className={s.source}>{i.source}</span>
             <span className={s.champion}>{i.champion}</span>
-            {
-              i.position &&
+            {i.position && (
               <>
                 <span className={s.at}>@</span>
                 <i className={cn(s.lane, s[i.position])} />
               </>
-            }
-          </li>)
-      }
-    </ul>
-  </div>;
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 };

@@ -4,15 +4,7 @@ const _pick = require('lodash/pick');
 
 export const saveToFile = async (desDir, data) => {
   try {
-    const content = _pick(data, [
-      'title',
-      'map',
-      'mode',
-      'type',
-      'priority',
-      'sortrank',
-      'blocks',
-    ]);
+    const content = _pick(data, ['title', 'map', 'mode', 'type', 'priority', 'sortrank', 'blocks']);
 
     const file = `${desDir}/Game/Config/Champions/${data.key}/Recommended/${data.fileName}.json`;
     await fse.outputFile(file, JSON.stringify(content, null, 4));
@@ -22,7 +14,7 @@ export const saveToFile = async (desDir, data) => {
   }
 };
 
-export const removeFolderContent = async dir => {
+export const removeFolderContent = async (dir) => {
   try {
     await fse.emptyDir(dir);
     return true;
@@ -31,13 +23,13 @@ export const removeFolderContent = async dir => {
   }
 };
 
-export const getLcuToken = async dirPath => {
+export const getLcuToken = async (dirPath) => {
   const dir = `${dirPath}/Game/Logs/LeagueClient Logs`;
 
   try {
     const files = await fs.readdir(dir);
     const latest = files
-      .filter(f => f.includes(`renderer.log`))
+      .filter((f) => f.includes(`renderer.log`))
       .sort((a, b) => a - b)
       .pop();
 

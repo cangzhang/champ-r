@@ -12,10 +12,7 @@ import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 
 import AppContext from 'src/share/context';
-import appReducer, {
-  initialState,
-  init,
-} from 'src/share/reducer';
+import appReducer, { initialState, init } from 'src/share/reducer';
 import config from 'src/native/config';
 
 import Toolbar from 'src/components/toolbar';
@@ -29,11 +26,10 @@ const GameTypes = [`pick`];
 
 const findUserChampion = (cellId, actions = []) => {
   let id = 0;
-  if (!actions || !actions.length)
-    return id;
+  if (!actions || !actions.length) return id;
 
-  for(const action of actions) {
-    for(const cell of action) {
+  for (const action of actions) {
+    for (const cell of action) {
       if (cell.actorCellId === cellId && GameTypes.includes(cell.type)) {
         id = cell.championId;
         break;
@@ -42,7 +38,7 @@ const findUserChampion = (cellId, actions = []) => {
   }
 
   return id;
-}
+};
 
 const App = () => {
   const [t] = useTranslation();
@@ -57,8 +53,7 @@ const App = () => {
       try {
         const lolVer = config.get(`lolVer`);
         const lolDir = config.get(`lolDir`);
-        if (!lolDir || !lolVer)
-          return false;
+        if (!lolDir || !lolVer) return false;
 
         if (!lcuInstance.current.getAuthToken) {
           lcuInstance.current = new LCUService(lolDir);
@@ -66,25 +61,30 @@ const App = () => {
         const lcuIns = lcuInstance.current;
         await lcuIns.getAuthToken();
 
-        if (!lcuIns.active)
-          return false;
+        if (!lcuIns.active) return false;
 
-        const { actions = [], myTeam = [], localPlayerCellId: cellId } = await lcuIns.getCurrentSession();
-        const member = _find(myTeam, i => i.summonerId > 0 && i.cellId === cellId) || {};
+        const {
+          actions = [],
+          myTeam = [],
+          localPlayerCellId: cellId,
+        } = await lcuIns.getCurrentSession();
+        const member = _find(myTeam, (i) => i.summonerId > 0 && i.cellId === cellId) || {};
         const { championId: mChampionId } = member;
         let championId;
 
         const isRandomMode = !actions.length && myTeam.length > 0 && mChampionId > 0;
-        const isVoteMode = mChampionId > 0 && myTeam.length > 0 && myTeam.every(i => i.championId === mChampionId);
+        const isVoteMode =
+          mChampionId > 0 && myTeam.length > 0 && myTeam.every((i) => i.championId === mChampionId);
 
         championId = findUserChampion(cellId, actions);
-        console.log(`isRandomMode ${isRandomMode}, isVoteMode ${isVoteMode}`)
-        if (isRandomMode || isVoteMode) { // special mode
+        console.log(`isRandomMode ${isRandomMode}, isVoteMode ${isVoteMode}`);
+        if (isRandomMode || isVoteMode) {
+          // special mode
           championId = member.championId;
         }
 
         if (!championId) {
-          throw new Error(`no active session.`)
+          throw new Error(`no active session.`);
         }
 
         console.log(`got champion id: `, championId);
@@ -94,8 +94,7 @@ const App = () => {
         });
         return true;
       } catch (_err) {
-        if (process.env.IS_DEV)
-          return;
+        if (process.env.IS_DEV) return;
 
         ipcRenderer.send(`hide-popup`);
       }
@@ -118,7 +117,9 @@ const App = () => {
               <Route path={`/settings`} component={Settings} />
             </Switch>
           </Router>
-          <div className={s.appVer}>{t('app version')}: {process.env.APP_VERSION}</div>
+          <div className={s.appVer}>
+            {t('app version')}: {process.env.APP_VERSION}
+          </div>
         </BaseProvider>
       </StyletronProvider>
     </AppContext.Provider>

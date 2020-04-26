@@ -19,33 +19,27 @@ const Toolbar = () => {
     remote.app.quit();
   };
 
-  return <div className={s.toolbar}>
-    <StatefulTooltip
-      accessibilityType={'tooltip'}
-      content={t(`minimize`)}
-    >
-      <span className={s.icon} onClick={onHide}><Minimize2 size={16} /></span>
-    </StatefulTooltip>
+  return (
+    <div className={s.toolbar}>
+      <StatefulTooltip accessibilityType={'tooltip'} content={t(`minimize`)}>
+        <span className={s.icon} onClick={onHide}>
+          <Minimize2 size={16} />
+        </span>
+      </StatefulTooltip>
 
-    <StatefulTooltip
-      accessibilityType={'tooltip'}
-      content={t(`settings`)}
-    >
-      <span
-        className={s.icon}
-        onClick={() => history.replace(`/settings`)}
-      >
-        <Settings size={16} />
-      </span>
-    </StatefulTooltip>
+      <StatefulTooltip accessibilityType={'tooltip'} content={t(`settings`)}>
+        <span className={s.icon} onClick={() => history.replace(`/settings`)}>
+          <Settings size={16} />
+        </span>
+      </StatefulTooltip>
 
-    <StatefulTooltip
-      accessibilityType={'tooltip'}
-      content={t(`close`)}
-    >
-      <span className={s.icon} onClick={onClose}><X size={16} /></span>
-    </StatefulTooltip>
-  </div>;
+      <StatefulTooltip accessibilityType={'tooltip'} content={t(`close`)}>
+        <span className={s.icon} onClick={onClose}>
+          <X size={16} />
+        </span>
+      </StatefulTooltip>
+    </div>
+  );
 };
 
 export default Toolbar;

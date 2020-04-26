@@ -20,22 +20,22 @@ export const Actions = {
   SET_IMPORTER_INSTANCE: `SET_IMPORTER_INSTANCE`,
 };
 
-export const setLolVersion = ver => ({
+export const setLolVersion = (ver) => ({
   type: Actions.UPDATE_LOL_VERSION,
   payload: ver,
 });
 
-export const addFetching = data => ({
+export const addFetching = (data) => ({
   type: Actions.ADD_FETCHING,
   payload: data,
 });
 
-export const addFetched = data => ({
+export const addFetched = (data) => ({
   type: Actions.ADD_FETCHED,
   payload: data,
 });
 
-export const updateItemMap = data => ({
+export const updateItemMap = (data) => ({
   type: Actions.UPDATE_ITEM_MAP,
   payload: data,
 });
@@ -44,12 +44,12 @@ export const prepareReimport = () => ({
   type: Actions.PREPARE_REIMPORT,
 });
 
-export const updateFetchingSource = source => ({
+export const updateFetchingSource = (source) => ({
   type: Actions.FETCHING_SOURCE,
   payload: source,
 });
 
-export const fetchSourceDone = source => ({
+export const fetchSourceDone = (source) => ({
   type: Actions.FETCH_SOURCE_DONE,
   payload: source,
 });

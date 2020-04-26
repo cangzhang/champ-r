@@ -7,7 +7,13 @@ import { CancelToken } from 'axios';
 
 import http from 'src/service/http';
 import { saveToFile } from 'src/share/file';
-import { genFileBlocks, parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
+import {
+  genFileBlocks,
+  parseJson,
+  isDifferentStyleId,
+  getStyleId,
+  strToPercent,
+} from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import Sources from 'src/share/constants/sources';
 
@@ -17,32 +23,35 @@ import SourceProto from './source-proto';
 const API = {
   List: 'https://game.gtimg.cn/images/lol/act/img/js/heroList/hero_list.js',
   Positions: 'https://lol.qq.com/act/lbp/common/guides/guideschampion_position.js',
-  detail: id => `https://lol.qq.com/act/lbp/common/guides/champDetail/champDetail_${id}.js`,
+  detail: (id) => `https://lol.qq.com/act/lbp/common/guides/champDetail/champDetail_${id}.js`,
   Items: 'https://ossweb-img.qq.com/images/lol/act/img/js/items/items.js',
 };
 
 const makePerkData = (perk, champion, position) => {
   const { runes, winrate, igamecnt } = perk;
-  const data = runes.reduce(({ primaryStyleId, subStyleId }, i) => {
-    if (!primaryStyleId) {
-      primaryStyleId = getStyleId(+i);
-    }
-
-    if (primaryStyleId && !subStyleId) {
-      const isStyleId = isDifferentStyleId(+primaryStyleId, +i);
-      if (isStyleId) {
-        subStyleId = getStyleId(+i);
+  const data = runes.reduce(
+    ({ primaryStyleId, subStyleId }, i) => {
+      if (!primaryStyleId) {
+        primaryStyleId = getStyleId(+i);
       }
-    }
 
-    return {
-      primaryStyleId,
-      subStyleId,
-    };
-  }, {
-    primaryStyleId: ``,
-    subStyleId: ``,
-  });
+      if (primaryStyleId && !subStyleId) {
+        const isStyleId = isDifferentStyleId(+primaryStyleId, +i);
+        if (isStyleId) {
+          subStyleId = getStyleId(+i);
+        }
+      }
+
+      return {
+        primaryStyleId,
+        subStyleId,
+      };
+    },
+    {
+      primaryStyleId: ``,
+      subStyleId: ``,
+    },
+  );
 
   const winRate = strToPercent(winrate, 1);
 
@@ -57,7 +66,7 @@ const makePerkData = (perk, champion, position) => {
   return data;
 };
 
-export const parseCode = string => {
+export const parseCode = (string) => {
   try {
     const [result] = string.match(/{"(.*)"}/);
     const data = parseJson(result);
@@ -87,7 +96,7 @@ export default class LolQQ extends SourceProto {
   getChampionList = async () => {
     try {
       const data = await http.get(API.List, {
-        cancelToken: new CancelToken(c => {
+        cancelToken: new CancelToken((c) => {
           this.setCancelHook(`qq-stats`)(c);
         }),
       });
@@ -100,7 +109,7 @@ export default class LolQQ extends SourceProto {
   getChampionPositions = async () => {
     try {
       const code = await http.get(API.Positions, {
-        cancelToken: new CancelToken(c => {
+        cancelToken: new CancelToken((c) => {
           this.setCancelHook(`qq-positions`)(c);
         }),
       });
@@ -116,59 +125,61 @@ export default class LolQQ extends SourceProto {
       const $identity = uuid();
       const apiUrl = API.detail(championId);
       const code = await http.get(apiUrl, {
-        cancelToken: new CancelToken(c => {
+        cancelToken: new CancelToken((c) => {
           this.setCancelHook($identity)(c);
         }),
       });
-      const { list: { championLane } } = parseCode(code);
+      const {
+        list: { championLane },
+      } = parseCode(code);
 
-      const perks = Object.values(championLane)
-        .reduce((res, l) => {
-          const perkDetail = parseJson(l.perkdetail);
-          const position = l.lane;
-          const pData = Object.values(perkDetail)
-            .reduce((result, i) => {
-              const vals = Object.values(i).map(({ perk, ...rest }) => ({
-                runes: perk.split(`&`),
-                ...rest,
-              }));
-              return result.concat(vals);
-            }, []);
-
-          const sorted = _orderBy(pData, i => i.igamecnt, [`desc`]);
-          const pages = sorted
-            .slice(0, 2)
-            .map(i => makePerkData(i, alias, position));
-
-          return res.concat(pages);
+      const perks = Object.values(championLane).reduce((res, l) => {
+        const perkDetail = parseJson(l.perkdetail);
+        const position = l.lane;
+        const pData = Object.values(perkDetail).reduce((result, i) => {
+          const vals = Object.values(i).map(({ perk, ...rest }) => ({
+            runes: perk.split(`&`),
+            ...rest,
+          }));
+          return result.concat(vals);
         }, []);
+
+        const sorted = _orderBy(pData, (i) => i.igamecnt, [`desc`]);
+        const pages = sorted.slice(0, 2).map((i) => makePerkData(i, alias, position));
+
+        return res.concat(pages);
+      }, []);
       return _orderBy(perks, `pickCount`, [`desc`]);
     } catch (e) {
       throw new Error(e);
     }
   };
 
-  getChampionDetail = (champions, dispatch) => async id => {
+  getChampionDetail = (champions, dispatch) => async (id) => {
     try {
       const { alias } = _find(champions, { heroId: id });
       const $identity = uuid();
 
-      dispatch(addFetching({
-        $identity,
-        champion: alias.toLowerCase(),
-        source: Sources.Lolqq,
-      }));
+      dispatch(
+        addFetching({
+          $identity,
+          champion: alias.toLowerCase(),
+          source: Sources.Lolqq,
+        }),
+      );
 
       const apiUrl = API.detail(id);
       const code = await http.get(apiUrl, {
-        cancelToken: new CancelToken(c => {
+        cancelToken: new CancelToken((c) => {
           this.setCancelHook($identity)(c);
         }),
       });
 
-      dispatch(addFetched({
-        $identity,
-      }));
+      dispatch(
+        addFetched({
+          $identity,
+        }),
+      );
 
       const data = parseCode(code);
       return data.list;
@@ -191,14 +202,15 @@ export default class LolQQ extends SourceProto {
         return result.concat(vals);
       }, []);
 
-      const byWinRate = _orderBy(perkData, i => i.winrate, [`desc`]);
-      const byPickRate = _orderBy(perkData, i => i.showrate, [`desc`]);
-      const perks = [...byWinRate.slice(0, 2), ...byPickRate.slice(0, 2)]
-        .map(i => makePerkData(i, alias, position));
+      const byWinRate = _orderBy(perkData, (i) => i.winrate, [`desc`]);
+      const byPickRate = _orderBy(perkData, (i) => i.showrate, [`desc`]);
+      const perks = [...byWinRate.slice(0, 2), ...byPickRate.slice(0, 2)].map((i) =>
+        makePerkData(i, alias, position),
+      );
 
       const laneItemsString = _get(championLane, `${position}.hold3`, []);
       const rawBlocks = parseJson(laneItemsString);
-      const rawItems = rawBlocks.map(i => ({
+      const rawItems = rawBlocks.map((i) => ({
         id: i.itemid,
         count: 1,
         pickRate: i.showrate,
@@ -230,20 +242,10 @@ export default class LolQQ extends SourceProto {
   };
 
   import = async () => {
-    const {
-      lolDir,
-      itemMap,
-      dispatch,
-    } = this;
+    const { lolDir, itemMap, dispatch } = this;
 
     try {
-      const [
-        {
-          version,
-          hero: championList,
-        },
-        positionMap = {},
-      ] = await Promise.all([
+      const [{ version, hero: championList }, positionMap = {}] = await Promise.all([
         this.getChampionList(),
         this.getChampionPositions(),
       ]);
@@ -267,7 +269,7 @@ export default class LolQQ extends SourceProto {
         return res.concat(block);
       }, []);
 
-      const fileTasks = items.map(i => saveToFile(lolDir, i));
+      const fileTasks = items.map((i) => saveToFile(lolDir, i));
       const result = await Promise.all(fileTasks);
 
       dispatch(fetchSourceDone(Sources.Lolqq));

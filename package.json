@@ -106,7 +106,7 @@
     "postcss-normalize": "8.0.1",
     "postcss-preset-env": "6.7.0",
     "postcss-safe-parser": "4.0.1",
-    "prettier": "1.19.1",
+    "prettier": "2.0.5",
     "react-app-polyfill": "^1.0.5",
     "react-dev-utils": "^10.0.0",
     "react-svg-loader": "^3.0.3",
@@ -164,11 +164,7 @@
     }
   },
   "lint-staged": {
-    "**/*.{md,css,scss}": [
-      "prettier --write"
-    ],
-    "src/*.{js}": [
-      "eslint",
+    "src/**/*.{js,json,css,scss,md}": [
       "prettier --write"
     ]
   }

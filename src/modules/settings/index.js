@@ -21,7 +21,7 @@ const LangList = [
     value: 'zh-CN',
   },
 ];
-const getLangItem = value => LangList.find(i => i.value === value) || {};
+const getLangItem = (value) => LangList.find((i) => i.value === value) || {};
 
 export default function Settings() {
   const [t, i18n] = useTranslation();
@@ -29,7 +29,7 @@ export default function Settings() {
   const sysLang = config.get(`appLang`);
   const [values, setLangValues] = useState([getLangItem(sysLang)]);
 
-  const onSelectLang = param => {
+  const onSelectLang = (param) => {
     setLangValues(param.value);
   };
 
@@ -41,48 +41,49 @@ export default function Settings() {
     }
   }, [values]);
 
-  return <div className={s.settings}>
-    <div className={s.lang}>
-      <label>{t(`display language`)}</label>
-      <Select
-        placeholder={t(`select language`)}
-        options={LangList}
-        labelKey={'label'}
-        valueKey={'value'}
-        value={values}
-        onChange={onSelectLang}
+  return (
+    <div className={s.settings}>
+      <div className={s.lang}>
+        <label>{t(`display language`)}</label>
+        <Select
+          placeholder={t(`select language`)}
+          options={LangList}
+          labelKey={'label'}
+          valueKey={'value'}
+          value={values}
+          onChange={onSelectLang}
+          overrides={{
+            Root: {
+              style: () => {
+                return {
+                  display: `flex`,
+                  alignSelf: `flex-end`,
+                  flexGrow: 1,
+                  flexShrink: 0,
+                  flexBasis: 0,
+                  marginLeft: `1em`,
+                };
+              },
+            },
+          }}
+        />
+      </div>
+
+      <Button
+        onClick={() => history.replace(`/`)}
         overrides={{
-          Root: {
+          BaseButton: {
             style: () => {
               return {
+                width: `14em`,
                 display: `flex`,
-                alignSelf: `flex-end`,
-                flexGrow: 1,
-                flexShrink: 0,
-                flexBasis: 0,
-                marginLeft: `1em`,
+                margin: `2em auto`,
               };
             },
           },
-        }}
-      />
+        }}>
+        {t(`back to home`)}
+      </Button>
     </div>
-
-    <Button
-      onClick={() => history.replace(`/`)}
-      overrides={{
-        BaseButton: {
-          style: () => {
-            return {
-              width: `14em`,
-              display: `flex`,
-              margin: `2em auto`,
-            };
-          },
-        },
-      }}
-    >
-      {t(`back to home`)}
-    </Button>
-  </div>;
+  );
 }

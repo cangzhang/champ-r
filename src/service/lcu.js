@@ -52,7 +52,7 @@ export default class LCUService {
   getCurrentSession = async () => {
     const res = await http.get(this.urls.curSession, {
       ...this.auth,
-      validateStatus: status => status < 500,
+      validateStatus: (status) => status < 500,
     });
     return res;
   };
@@ -67,19 +67,19 @@ export default class LCUService {
     return res;
   };
 
-  deletePerk = async id => {
+  deletePerk = async (id) => {
     const res = await http.delete(`${this.urls.perks}/${id}`, this.auth);
     return res;
   };
 
-  createPerk = async data => {
+  createPerk = async (data) => {
     const res = await http.post(this.urls.perks, data);
     return res;
   };
 
-  applyPerk = async data => {
+  applyPerk = async (data) => {
     const list = await this.getPerkList();
-    const current = list.find(i => i.current && i.isDeletable);
+    const current = list.find((i) => i.current && i.isDeletable);
 
     if (current) {
       await this.deletePerk(current.id);

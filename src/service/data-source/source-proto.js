@@ -5,7 +5,7 @@ export default class SourceProto {
 
   import = _noop;
 
-  setCancelHook = ns => cancel => {
+  setCancelHook = (ns) => (cancel) => {
     this.cancelHandlers[ns] = cancel;
   };
 

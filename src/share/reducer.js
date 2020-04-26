@@ -17,7 +17,7 @@ export const initialState = {
   importerInstances: {},
 };
 
-export const init = payload => payload;
+export const init = (payload) => payload;
 
 export default produce((draft, action) => {
   const { type, payload } = action;
@@ -34,7 +34,7 @@ export default produce((draft, action) => {
     }
 
     case Actions.ADD_FETCHED: {
-      draft.fetching = draft.fetching.filter(i => i.$identity !== payload.$identity);
+      draft.fetching = draft.fetching.filter((i) => i.$identity !== payload.$identity);
       draft.fetched.push(payload);
       break;
     }
@@ -45,7 +45,7 @@ export default produce((draft, action) => {
     }
 
     case Actions.FETCH_SOURCE_DONE: {
-      draft.fetchingSources = draft.fetchingSources.filter(i => i !== payload);
+      draft.fetchingSources = draft.fetchingSources.filter((i) => i !== payload);
       draft.fetchedSources.push(payload);
       break;
     }

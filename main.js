@@ -1,7 +1,6 @@
 try {
   require('electron-reloader')(module);
-} catch (_) {
-}
+} catch (_) {}
 
 const path = require('path');
 // const osLocale = require('os-locale');
@@ -71,9 +70,7 @@ const createMainWindow = async () => {
   });
 
   await win.loadURL(
-    isDev ?
-      'http://127.0.0.1:3000' :
-      `file://${path.join(__dirname, 'build/index.html')}`,
+    isDev ? 'http://127.0.0.1:3000' : `file://${path.join(__dirname, 'build/index.html')}`,
   );
 
   return win;

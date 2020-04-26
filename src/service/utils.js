@@ -19,7 +19,7 @@ export const requestHtml = async (url, setCancel, isAjax = true) => {
           'Content-Language': RequestLocale,
           'Accept-Language': RequestLocale,
         },
-        cancelToken: new CancelToken(c => {
+        cancelToken: new CancelToken((c) => {
           if (setCancel) {
             setCancel(c);
           }
@@ -35,10 +35,10 @@ export const requestHtml = async (url, setCancel, isAjax = true) => {
 
 export const getUpgradeableCompletedItems = ({ data }) => {
   const result = Object.values(data)
-    .filter(i => i.requiredAlly)
+    .filter((i) => i.requiredAlly)
     .reduce((dataSet, item) => {
       const { from } = item;
-      from.forEach(j => dataSet.add(j));
+      from.forEach((j) => dataSet.add(j));
       return dataSet;
     }, new Set());
 
@@ -49,7 +49,7 @@ const isItStartItem = (itemDetail, itemMap, isJungle) => {
   const { tags: StarterTags } = _find(itemMap.tree, { header: 'START' });
   const { tags, gold } = itemDetail;
 
-  const hasStartTag = tags.some(t => StarterTags.includes(t.toUpperCase()));
+  const hasStartTag = tags.some((t) => StarterTags.includes(t.toUpperCase()));
   const hasJungleTag = tags.join(`,`).toLowerCase().includes(`jungle`);
   const affordable = gold.total <= 500;
 
@@ -82,26 +82,20 @@ export const sortBlocksByRate = (items, itemMap, position) => {
     isCompletedItem && completedItems.push(i);
   }
 
-  const sortByPickRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, ['pickRate']));
-  const sortByWinRate = [startItems, incompleteItems, completedItems, boots].map(i => _sortBy(i, ['winRate']));
+  const sortByPickRate = [startItems, incompleteItems, completedItems, boots].map((i) =>
+    _sortBy(i, ['pickRate']),
+  );
+  const sortByWinRate = [startItems, incompleteItems, completedItems, boots].map((i) =>
+    _sortBy(i, ['winRate']),
+  );
 
   return [sortByPickRate, sortByWinRate];
 };
 
 export const genFileBlocks = (rawItems, itemMap, position, showIncomplete = false) => {
   const [
-    [
-      pStartItems,
-      pIncompleteItems,
-      pCompletedItems,
-      pBoots,
-    ],
-    [
-      wStartItems,
-      wIncompleteItems,
-      wCompletedItems,
-      wBoots,
-    ],
+    [pStartItems, pIncompleteItems, pCompletedItems, pBoots],
+    [wStartItems, wIncompleteItems, wCompletedItems, wBoots],
   ] = sortBlocksByRate(rawItems, itemMap, position);
 
   return [
@@ -140,7 +134,7 @@ export const genFileBlocks = (rawItems, itemMap, position, showIncomplete = fals
   ].filter(Boolean);
 };
 
-export const parseJson = str => {
+export const parseJson = (str) => {
   try {
     return JSON.parse(str);
   } catch {
@@ -148,7 +142,7 @@ export const parseJson = str => {
   }
 };
 
-export const getStyleId = i => {
+export const getStyleId = (i) => {
   let result = null;
   for (const [mId, ids] of flatRunes) {
     if (+i === +mId) {

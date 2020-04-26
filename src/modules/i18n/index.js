@@ -5,17 +5,15 @@ import config from 'src/native/config';
 import enUS, { lang as enLang } from './en-us';
 import zhCN, { lang as cnLang } from './zh-cn';
 
-i18n
-  .use(initReactI18next)
-  .init({
-    lng: config.get(`appLang`),
-    fallbackLng: enLang,
-    interpolation: {
-      escapeValue: false,
-    },
+i18n.use(initReactI18next).init({
+  lng: config.get(`appLang`),
+  fallbackLng: enLang,
+  interpolation: {
+    escapeValue: false,
+  },
 
-    resources: {
-      [enLang]: enUS,
-      [cnLang]: zhCN,
-    },
-  });
+  resources: {
+    [enLang]: enUS,
+    [cnLang]: zhCN,
+  },
+});
