@@ -1,25 +1,14 @@
 # ChampR
 
-Another League of Legends helper.
+![build-and-release](https://github.com/cangzhang/champ-r/workflows/build-and-release/badge.svg)
 
-<img
-    alt="app"
-    src="https://z11.coding.net/p/champ-r/d/champ-r/git/raw/master/app.webp"
-    width="50%"
-    height="50%"
-/>
-
-<img
-    alt="popup runes"
-    src="https://z11.coding.net/p/champ-r/d/champ-r/git/raw/master/popup.webp"
-    height="400px"
-/>
+Another League of Legends helper. [Screenshots here](./screenshots)
 
 ## Features
 
-- Auto generate recommend champion builds
-- Popup runes list & apply on the fly
-- i18n support
+- 📦 Auto generate recommend champion builds
+- 🎉 Popup runes list & apply on the fly
+- ✨ i18n support
 
 ## Development
 
