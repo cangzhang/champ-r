@@ -1,84 +1,47 @@
-# electron-boilerplate
+# ChampR
 
-> Boilerplate to kickstart creating an app with [Electron](https://github.com/electron/electron)
+Another League of Legends helper.
 
-See [awesome-electron](https://github.com/sindresorhus/awesome-electron) for more useful Electron resources.
+<img
+    alt="app"
+    src="https://z11.coding.net/p/champ-r/d/champ-r/git/raw/master/app.webp"
+    width="50%"
+    height="50%"
+/>
 
-See [Caprine](https://github.com/sindresorhus/caprine) for a production app based on this boilerplate.
+<img
+    alt="popup runes"
+    src="https://z11.coding.net/p/champ-r/d/champ-r/git/raw/master/popup.webp"
+    height="400px"
+/>
 
 ## Features
 
-- [`electron-builder`](https://www.electron.build) fully set up to create cross-platform builds
-- [Builds the app on Travis](https://www.electron.build/multi-platform-build.html)
-- [Silent auto-updates](https://www.electron.build/auto-update.html)
-- App menu that adheres to the system user interface guidelines
-- [Config handling](https://github.com/sindresorhus/electron-store)
-- [Context menu](https://github.com/sindresorhus/electron-context-menu)
-- [User-friendly handling of unhandled errors](https://github.com/sindresorhus/electron-unhandled)
-- Easily publish new versions to GitHub Releases
-- And much more!
+- Auto generate recommend champion builds
+- Popup runes list & apply on the fly
+- i18n support
 
-## Getting started
+## Development
 
-**Click the "Use this template" button.**
+### Prerequisite
 
-Alternatively, create a new directory and then run:
+- [Node.js](https://nodejs.org/en/) >= 10
+- [yarn](https://classic.yarnpkg.com/lang/en/)
 
-```
-$ curl -fsSL https://github.com/sindresorhus/electron-boilerplate/archive/master.tar.gz | tar -xz --strip-components 1
+### Install dependencies
+
+```bash
+yarn
 ```
 
-There's also a [Yeoman generator](https://github.com/sindresorhus/generator-electron).
+### Start
 
----
-
-**Remove everything from here and above**
-
----
-
-# App Name
-
-> The best app ever
-
-## Install
-
-_macOS 10.10+, Linux, and Windows 7+ are supported (64-bit only)._
-
-**macOS**
-
-[**Download**](https://github.com/user/repo/releases/latest) the `.dmg` file.
-
-**Linux**
-
-[**Download**](https://github.com/user/repo/releases/latest) the `.AppImage` or `.deb` file.
-
-_The AppImage needs to be [made executable](http://discourse.appimage.org/t/how-to-make-an-appimage-executable/80) after download._
-
-**Windows**
-
-[**Download**](https://github.com/user/repo/releases/latest) the `.exe` file.
-
----
-
-## Dev
-
-Built with [Electron](https://electronjs.org).
-
-### Run
-
-```
-$ npm install
-$ npm start
+```bash
+yarn start
 ```
 
-### Publish
+### Build
 
+```bash
+yarn build
 ```
-$ npm run release
-```
-
-After Travis finishes building your app, open the release draft it created and click "Publish".
-
-### App Icon
-
-From [here](https://iconscout.com/icon/league-3) by [@Icons8](https://iconscout.com/contributors/icons8), **thx**.
