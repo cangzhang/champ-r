@@ -89,7 +89,7 @@ const createPopupWindow = async () => {
     skipTaskbar: true,
     resizable: false,
     fullscreenable: false,
-    // transparent: true,
+    alwaysOnTop: true,
     width: isDev ? 900 : 400,
     height: 600,
     x: isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140,
@@ -159,7 +159,6 @@ function registerMainListeners() {
     if (!popupWindow.isVisible()) {
       // popupWindow.showInactive();
       popupWindow.show();
-      popupWindow.setAlwaysOnTop(true);
     }
 
     popupWindow.webContents.send(`for-popup`, {
