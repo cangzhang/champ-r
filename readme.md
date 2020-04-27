@@ -10,6 +10,10 @@ Another League of Legends helper. [Screenshots here](./screenshots)
 - 🎉 Popup runes list & apply on the fly
 - ✨ i18n support
 
+## Download
+
+https://github.com/cangzhang/champ-r/releases
+
 ## Development
 
 ### Prerequisite
