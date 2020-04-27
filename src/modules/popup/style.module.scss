@@ -1,7 +1,7 @@
 body {
   overflow-y: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-    'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   margin: unset;
 }
 
@@ -17,7 +17,7 @@ body {
 
 .drag {
   display: flex;
-  margin-bottom: 1ex;
+  margin-bottom: 2ex;
   -webkit-user-select: none;
   -webkit-app-region: drag;
 
