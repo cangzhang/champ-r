@@ -56,7 +56,7 @@ const makePerkData = (perk, champion, position) => {
   const winRate = strToPercent(winrate, 1);
 
   data.name = `${champion}-${position}, pick ${igamecnt} win ${winRate}% [${Sources.Lolqq}]`;
-  data.selectedPerkIds = runes;
+  data.selectedPerkIds = runes.map(Number);
   data.alias = champion;
   data.position = position;
   data.winRate = winRate;

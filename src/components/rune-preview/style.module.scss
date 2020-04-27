@@ -1,0 +1,410 @@
+$imgSize: 32px;
+$imgGap: 0.4ex;
+
+.main {
+  pointer-events: none;
+  position: absolute;
+  padding: 1ex;
+  left: var(--left);
+  top: var(--top);
+  transform: translateX(-50%);
+  border-radius: 4px;
+  transition: top 0.1s linear;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.28);
+  background-color: #ffffff;
+  display: flex;
+
+  .col {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+    &.fragment {
+      padding-bottom: 1ex;
+      justify-content: flex-end;
+
+      .rune-img {
+        height: $imgSize - 8px;
+        width: $imgSize - 8px;
+      }
+    }
+
+    &:not(:last-child) {
+      margin-right: 2ex;
+
+      &:after {
+        position: absolute;
+        display: inline-block;
+        right: -1ex;
+        top: 50%;
+        transform: translateY(-50%);
+        content: '';
+        width: 1px;
+        height: 96px;
+        background-color: #e2e2e2;
+      }
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+
+      &:not(:first-child) {
+        margin-top: $imgGap;
+      }
+    }
+  }
+
+  &.up {
+    transform: translateX(-50%) translateY(-100%);
+
+    .triangle {
+      transform: translateX(-50%);
+
+      $botOffset: -30px;
+
+      &.bot {
+        top: unset;
+        bottom: $botOffset - 2px;
+      }
+
+      &.top {
+        top: unset;
+        bottom: $botOffset;
+      }
+    }
+  }
+
+  .triangle {
+    width: 0;
+    height: 0;
+    font-size: 0;
+    overflow: hidden;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) rotateX(180deg);
+    border-width: 16px;
+    border-style: solid dashed dashed;
+
+    $topOffset: -28px;
+
+    &.bot {
+      border-color: #80808026 transparent transparent;
+      top: $topOffset - 2px;
+    }
+
+    &.top {
+      border-color: #f6f6f6 transparent transparent;
+      top: $topOffset;
+    }
+  }
+
+  .rune-img {
+    height: $imgSize;
+    width: $imgSize;
+    margin-right: $imgGap;
+    background-size: contain;
+    filter: grayscale(120%) brightness(80%);
+
+    &.selected {
+      filter: unset;
+    }
+  }
+
+  .rune-8000 {
+    background-image: url('~src/assets/runes/8000.png');
+  }
+
+  .rune-8005 {
+    background-image: url('~src/assets/runes/8005.png');
+  }
+
+  .rune-8008 {
+    background-image: url('~src/assets/runes/8008.png');
+  }
+
+  .rune-8009 {
+    background-image: url('~src/assets/runes/8009.png');
+  }
+
+  .rune-8010 {
+    background-image: url('~src/assets/runes/8010.png');
+  }
+
+  .rune-8014 {
+    background-image: url('~src/assets/runes/8014.png');
+  }
+
+  .rune-8017 {
+    background-image: url('~src/assets/runes/8017.png');
+  }
+
+  .rune-8021 {
+    background-image: url('~src/assets/runes/8021.png');
+  }
+
+  .rune-8100 {
+    background-image: url('~src/assets/runes/8100.png');
+  }
+
+  .rune-8105 {
+    background-image: url('~src/assets/runes/8105.png');
+  }
+
+  .rune-8106 {
+    background-image: url('~src/assets/runes/8106.png');
+  }
+
+  .rune-8112 {
+    background-image: url('~src/assets/runes/8112.png');
+  }
+
+  .rune-8120 {
+    background-image: url('~src/assets/runes/8120.png');
+  }
+
+  .rune-8124 {
+    background-image: url('~src/assets/runes/8124.png');
+  }
+
+  .rune-8126 {
+    background-image: url('~src/assets/runes/8126.png');
+  }
+
+  .rune-8128 {
+    background-image: url('~src/assets/runes/8128.png');
+  }
+
+  .rune-8134 {
+    background-image: url('~src/assets/runes/8134.png');
+  }
+
+  .rune-8135 {
+    background-image: url('~src/assets/runes/8135.png');
+  }
+
+  .rune-8136 {
+    background-image: url('~src/assets/runes/8136.png');
+  }
+
+  .rune-8138 {
+    background-image: url('~src/assets/runes/8138.png');
+  }
+
+  .rune-8139 {
+    background-image: url('~src/assets/runes/8139.png');
+  }
+
+  .rune-8143 {
+    background-image: url('~src/assets/runes/8143.png');
+  }
+
+  .rune-8200 {
+    background-image: url('~src/assets/runes/8200.png');
+  }
+
+  .rune-8210 {
+    background-image: url('~src/assets/runes/8210.png');
+  }
+
+  .rune-8214 {
+    background-image: url('~src/assets/runes/8214.png');
+  }
+
+  .rune-8224 {
+    background-image: url('~src/assets/runes/8224.png');
+  }
+
+  .rune-8226 {
+    background-image: url('~src/assets/runes/8226.png');
+  }
+
+  .rune-8229 {
+    background-image: url('~src/assets/runes/8229.png');
+  }
+
+  .rune-8230 {
+    background-image: url('~src/assets/runes/8230.png');
+  }
+
+  .rune-8232 {
+    background-image: url('~src/assets/runes/8232.png');
+  }
+
+  .rune-8233 {
+    background-image: url('~src/assets/runes/8233.png');
+  }
+
+  .rune-8234 {
+    background-image: url('~src/assets/runes/8234.png');
+  }
+
+  .rune-8236 {
+    background-image: url('~src/assets/runes/8236.png');
+  }
+
+  .rune-8237 {
+    background-image: url('~src/assets/runes/8237.png');
+  }
+
+  .rune-8275 {
+    background-image: url('~src/assets/runes/8275.png');
+  }
+
+  .rune-8299 {
+    background-image: url('~src/assets/runes/8299.png');
+  }
+
+  .rune-8300 {
+    background-image: url('~src/assets/runes/8300.png');
+  }
+
+  .rune-8304 {
+    background-image: url('~src/assets/runes/8304.png');
+  }
+
+  .rune-8306 {
+    background-image: url('~src/assets/runes/8306.png');
+  }
+
+  .rune-8313 {
+    background-image: url('~src/assets/runes/8313.png');
+  }
+
+  .rune-8316 {
+    background-image: url('~src/assets/runes/8316.png');
+  }
+
+  .rune-8321 {
+    background-image: url('~src/assets/runes/8321.png');
+  }
+
+  .rune-8345 {
+    background-image: url('~src/assets/runes/8345.png');
+  }
+
+  .rune-8347 {
+    background-image: url('~src/assets/runes/8347.png');
+  }
+
+  .rune-8351 {
+    background-image: url('~src/assets/runes/8351.png');
+  }
+
+  .rune-8358 {
+    background-image: url('~src/assets/runes/8358.png');
+  }
+
+  .rune-8360 {
+    background-image: url('~src/assets/runes/8360.png');
+  }
+
+  .rune-8400 {
+    background-image: url('~src/assets/runes/8400.png');
+  }
+
+  .rune-8401 {
+    background-image: url('~src/assets/runes/8401.png');
+  }
+
+  .rune-8410 {
+    background-image: url('~src/assets/runes/8410.png');
+  }
+
+  .rune-8352 {
+    background-image: url('~src/assets/runes/8352.png');
+  }
+
+  .rune-8429 {
+    background-image: url('~src/assets/runes/8429.png');
+  }
+
+  .rune-8437 {
+    background-image: url('~src/assets/runes/8437.png');
+  }
+
+  .rune-8439 {
+    background-image: url('~src/assets/runes/8439.png');
+  }
+
+  .rune-8444 {
+    background-image: url('~src/assets/runes/8444.png');
+  }
+
+  .rune-8446 {
+    background-image: url('~src/assets/runes/8446.png');
+  }
+
+  .rune-8451 {
+    background-image: url('~src/assets/runes/8451.png');
+  }
+
+  .rune-8453 {
+    background-image: url('~src/assets/runes/8453.png');
+  }
+
+  .rune-8242 {
+    background-image: url('~src/assets/runes/8242.png');
+  }
+
+  .rune-8463 {
+    background-image: url('~src/assets/runes/8463.png');
+  }
+
+  .rune-8465 {
+    background-image: url('~src/assets/runes/8465.png');
+  }
+
+  .rune-8473 {
+    background-image: url('~src/assets/runes/8473.png');
+  }
+
+  .rune-9101 {
+    background-image: url('~src/assets/runes/9101.png');
+  }
+
+  .rune-9103 {
+    background-image: url('~src/assets/runes/9103.png');
+  }
+
+  .rune-9104 {
+    background-image: url('~src/assets/runes/9104.png');
+  }
+
+  .rune-9105 {
+    background-image: url('~src/assets/runes/9105.png');
+  }
+
+  .rune-9111 {
+    background-image: url('~src/assets/runes/9111.png');
+  }
+
+  .rune-9923 {
+    background-image: url('~src/assets/runes/9923.png');
+  }
+
+  .rune-5001 {
+    background-image: url('~src/assets/runes/5001.png');
+  }
+
+  .rune-5002 {
+    background-image: url('~src/assets/runes/5002.png');
+  }
+
+  .rune-5003 {
+    background-image: url('~src/assets/runes/5003.png');
+  }
+
+  .rune-5005 {
+    background-image: url('~src/assets/runes/5005.png');
+  }
+
+  .rune-5007 {
+    background-image: url('~src/assets/runes/5007.png');
+  }
+
+  .rune-5008 {
+    background-image: url('~src/assets/runes/5008.png');
+  }
+}

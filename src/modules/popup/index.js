@@ -19,6 +19,7 @@ import LCUService from 'src/service/lcu';
 import PerkShowcase from 'src/components/perk-showcase';
 
 import { getChampionInfo } from './utils';
+import RunePreview from 'src/components/rune-preview';
 
 const engine = new Styletron();
 const TabNames = {
@@ -35,9 +36,10 @@ export default function Popup() {
   const [championId, setChampionId] = useState('');
   const [championDetail, setChampionDetail] = useState(null);
   const [activeTab, setActiveTab] = useState(TabNames.qq);
-
   const [qqPerks, setQQPerkList] = useState([]);
   const [opggPerks, setOPggPerkList] = useState([]);
+  const [curPerk, setCurPerk] = useState({});
+  const [coordinate, setCoordinate] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
   useEffect(() => {
     getChampions(lolVer).then((championList) => {
@@ -83,6 +85,18 @@ export default function Popup() {
     console.info(`updated perk`, res);
   };
 
+  const showPreview = (perk, el) => {
+    setCurPerk(perk);
+    if (!el) return;
+
+    const { x, y, width, height } = el.getBoundingClientRect();
+    setCoordinate({ x, y, width, height });
+  };
+
+  const hidePreview = () => {
+    setCurPerk({});
+  };
+
   const renderList = (perkList) => {
     const shouldShowList =
       perkList.length && championDetail && perkList[0].alias === championDetail.id;
@@ -97,8 +111,17 @@ export default function Popup() {
           height: `calc(100vh - 180px)`,
         }}>
         {perkList.map((p, idx) => (
-          <PerkShowcase key={`${championId}-${idx}`} perk={p} onApply={() => apply(p)} />
+          <PerkShowcase
+            key={`${championId}-${idx}`}
+            idx={idx}
+            perk={p}
+            onApply={() => apply(p)}
+            onMouseEnter={showPreview}
+            onMouseLeave={hidePreview}
+          />
         ))}
+
+        <RunePreview perk={curPerk} coordinate={coordinate} />
       </Scrollbars>
     );
   };

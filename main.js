@@ -54,7 +54,7 @@ const createMainWindow = async () => {
     frame: false,
     height: 800,
     width: isDev ? 1300 : 500,
-    resizable: false,
+    resizable: isDev,
     webPreferences,
   });
 
@@ -87,9 +87,9 @@ const createPopupWindow = async () => {
     show: false,
     frame: false,
     skipTaskbar: true,
-    resizable: false,
+    resizable: isDev,
     fullscreenable: false,
-    alwaysOnTop: true,
+    alwaysOnTop: !isDev,
     width: isDev ? 900 : 400,
     height: 600,
     x: isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140,

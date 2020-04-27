@@ -1,22 +1,31 @@
 import s from './style.module.scss';
 
-import React from 'react';
+import _noop from 'lodash/noop';
+
+import React, { useRef } from 'react';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Zap } from 'react-feather';
 
 import { MainStyleIds } from 'src/share/constants/runes';
 
-export default function PerkShowcase({ perk, onApply }) {
+export default function PerkShowcase({
+  perk,
+  onApply,
+  onMouseEnter = _noop,
+  onMouseLeave = _noop,
+}) {
   const [t] = useTranslation();
   const { primaryStyleId, subStyleId, selectedPerkIds } = perk;
-  if (!MainStyleIds[primaryStyleId]) {
-    debugger;
-  }
   const pId = selectedPerkIds.find((i) => MainStyleIds[primaryStyleId].includes(+i));
+  const el = useRef(null);
 
   return (
-    <div className={s.item}>
+    <div
+      className={s.item}
+      ref={el}
+      onMouseEnter={(ev) => onMouseEnter(perk, el.current, ev)}
+      onMouseLeave={onMouseLeave}>
       <div className={s.preview}>
         <div className={cn(s.primary, s[primaryStyleId])} />
         <div className={cn(s[pId], s.big)} />
@@ -24,7 +33,7 @@ export default function PerkShowcase({ perk, onApply }) {
       </div>
 
       <div className={s.desc}>
-        <div>
+        <div className={s.name}>
           {perk.alias} @ {perk.position}
         </div>
         <div className={s.detail}>
