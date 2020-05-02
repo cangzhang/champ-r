@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - build
-      - master
 
 jobs:
   # This workflow contains a single job called "build"
