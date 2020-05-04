@@ -96,7 +96,7 @@ const App = () => {
 
         ipcRenderer.send(`hide-popup`);
       }
-    }, 1000);
+    }, 1600);
 
     return () => {
       clearInterval(checkTask.current);
