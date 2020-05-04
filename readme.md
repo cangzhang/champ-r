@@ -1,6 +1,7 @@
 # ChampR
 
 ![build-and-release](https://github.com/cangzhang/champ-r/workflows/build-and-release/badge.svg)
+![](https://flat.badgen.net/github/release/cangzhang/champ-r)
 
 Another League of Legends helper. [Screenshots here](./screenshots)
 
