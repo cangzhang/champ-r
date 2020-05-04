@@ -10,6 +10,8 @@ Another League of Legends helper. [Screenshots here](./screenshots)
 - 📦 Auto generate recommend champion builds
 - 🎉 Popup runes list & apply on the fly
 - ✨ i18n support
+    - `Chinese`
+    - `English`
 
 ## Download
 
