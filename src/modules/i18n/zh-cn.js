@@ -26,5 +26,6 @@ export default {
     'pick count': `选用场次`,
     'win ratio': `胜率`,
     'apply perk': `应用符文页`,
+    'star it': `给 ChampR 🌟`,
   },
 };

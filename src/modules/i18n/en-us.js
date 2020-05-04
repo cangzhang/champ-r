@@ -26,5 +26,6 @@ export default {
     'pick count': `Pick count`,
     'win ratio': `Win ratio`,
     'apply perk': `Apply`,
+    'star it': `Star it!`,
   },
 };

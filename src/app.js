@@ -1,11 +1,8 @@
-import s from './app.module.scss';
-
 import { ipcRenderer } from 'electron';
 import _find from 'lodash/find';
 
 import React, { useReducer, useMemo, useRef, useEffect } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
@@ -15,6 +12,7 @@ import AppContext from 'src/share/context';
 import appReducer, { initialState, init } from 'src/share/reducer';
 import config from 'src/native/config';
 
+import Footer from 'src/components/footer';
 import Toolbar from 'src/components/toolbar';
 import Home from 'src/modules/home';
 import Import from 'src/modules/import';
@@ -41,7 +39,6 @@ const findUserChampion = (cellId, actions = []) => {
 };
 
 const App = () => {
-  const [t] = useTranslation();
   const [store, dispatch] = useReducer(appReducer, initialState, init);
   const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
 
@@ -118,9 +115,7 @@ const App = () => {
               <Route path={`/settings`} component={Settings} />
             </Switch>
           </Router>
-          <div className={s.appVer}>
-            {t('app version')}: {process.env.APP_VERSION}
-          </div>
+          <Footer />
         </BaseProvider>
       </StyletronProvider>
     </AppContext.Provider>
