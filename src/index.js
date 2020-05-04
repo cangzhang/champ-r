@@ -1,5 +1,7 @@
 import './index.scss';
 
+import 'src/native/logger';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 

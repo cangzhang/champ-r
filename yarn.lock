@@ -4592,6 +4592,11 @@ electron-localshortcut@^3.1.0:
     keyboardevent-from-electron-accelerator "^2.0.0"
     keyboardevents-areequal "^0.2.1"
 
+electron-log@^4.1.2:
+  version "4.1.2"
+  resolved "https://registry.npm.taobao.org/electron-log/download/electron-log-4.1.2.tgz#da1fdf1950965ec0cf3a04803054e4202083251d"
+  integrity sha1-2h/fGVCWXsDPOgSAMFTkICCDJR0=
+
 electron-publish@22.4.1:
   version "22.4.1"
   resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-22.4.1.tgz#a7fcf166786f7d5957f19a70ee8389f219769ba5"

@@ -68,8 +68,8 @@ const App = () => {
           myTeam = [],
           localPlayerCellId: cellId,
         } = await lcuIns.getCurrentSession();
-        const member = _find(myTeam, (i) => i.summonerId > 0 && i.cellId === cellId) || {};
-        const { championId: mChampionId } = member;
+        const me = _find(myTeam, (i) => i.summonerId > 0 && i.cellId === cellId) || {};
+        const { championId: mChampionId } = me;
         let championId;
 
         const isRandomMode = !actions.length && myTeam.length > 0 && mChampionId > 0;
@@ -77,13 +77,14 @@ const App = () => {
           mChampionId > 0 && myTeam.length > 0 && myTeam.every((i) => i.championId === mChampionId);
 
         championId = findUserChampion(cellId, actions);
-        console.log(`isRandomMode ${isRandomMode}, isVoteMode ${isVoteMode}`);
+        console.log(`isRandomMode ${isRandomMode}, isVoteMode ${isVoteMode}, My pick ${cellId}`);
         if (isRandomMode || isVoteMode) {
           // special mode
-          championId = member.championId;
+          championId = me.championId;
         }
 
         if (!championId) {
+          console.log(`no matched`);
           throw new Error(`no active session.`);
         }
 
@@ -98,7 +99,7 @@ const App = () => {
 
         ipcRenderer.send(`hide-popup`);
       }
-    }, 800);
+    }, 1000);
 
     return () => {
       clearInterval(checkTask.current);

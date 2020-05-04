@@ -1,6 +1,6 @@
 {
   "name": "champ-r",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "license": "MIT",
   "description": "Get champion items for lol, Windows only.",
   "productName": "ChampR",
@@ -76,6 +76,7 @@
     "dotenv-expand": "5.1.0",
     "electron": "8.2.3",
     "electron-builder": "22.4.1",
+    "electron-log": "^4.1.2",
     "electron-reloader": "^1.0.1",
     "eslint": "^6.6.0",
     "eslint-config-react-app": "^5.1.0",
