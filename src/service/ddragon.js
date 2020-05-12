@@ -56,7 +56,7 @@ const getLolVer = async () => {
 };
 
 const getChampions = async (ver, region = 'en_US') => {
-  const { data } = await http.get(`${DDragonCDNUrl}/cdn/${ver}/data/${region}/champion.json`);
+  const { data } = await http.get(`${DDragonCDNUrl}/${ver}/data/${region}/champion.json`);
   return data;
 };
 
