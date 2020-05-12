@@ -51,14 +51,12 @@ const ChampionNames = [
 const DDragonCDNUrl = 'https://ddragon.leagueoflegends.com/cdn';
 
 const getLolVer = async () => {
-  const resp = await http.get('https://ddragon.leagueoflegends.com/api/versions.json');
+  const resp = await http.get(`${DDragonCDNUrl}/api/versions.json`);
   return resp[0];
 };
 
 const getChampions = async (ver, region = 'en_US') => {
-  const { data } = await http.get(
-    `https://ddragon.leagueoflegends.com/cdn/${ver}/data/${region}/champion.json`,
-  );
+  const { data } = await http.get(`${DDragonCDNUrl}/cdn/${ver}/data/${region}/champion.json`);
   return data;
 };
 

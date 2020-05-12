@@ -12,14 +12,15 @@ import { LightTheme, BaseProvider } from 'baseui';
 import { Tabs, Tab } from 'baseui/tabs';
 
 import config from 'src/native/config';
-import { getChampions, DDragonCDNUrl } from 'src/service/ddragon';
+import { QQChampionAvatarPrefix, getChampions } from 'src/service/101-qq';
 import LolQQ from 'src/service/data-source/lol-qq';
 import Opgg from 'src/service/data-source/op-gg';
 import LCUService from 'src/service/lcu';
+
 import PerkShowcase from 'src/components/perk-showcase';
+import RunePreview from 'src/components/rune-preview';
 
 import { getChampionInfo } from './utils';
-import RunePreview from 'src/components/rune-preview';
 
 const engine = new Styletron();
 const TabNames = {
@@ -139,7 +140,8 @@ export default function Popup() {
               key={championDetail.id}
               className={s.avatar}
               alt={championDetail.name}
-              src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`}
+              // src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`}
+              src={`${QQChampionAvatarPrefix}/${championDetail.id}.png`}
             />
           </div>
         )}
