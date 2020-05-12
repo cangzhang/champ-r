@@ -33,12 +33,13 @@ export const requestHtml = async (url, setCancel, isAjax = true) => {
   }
 };
 
-export const getUpgradeableCompletedItems = ({ data }) => {
+export const getUpgradeableCompletedItems = (param) => {
+  const data = param.data || param;
   const result = Object.values(data)
     .filter((i) => i.requiredAlly)
     .reduce((dataSet, item) => {
       const { from } = item;
-      from.forEach((j) => dataSet.add(j));
+      (from || []).forEach((j) => dataSet.add(j));
       return dataSet;
     }, new Set());
 

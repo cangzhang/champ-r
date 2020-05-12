@@ -51,7 +51,7 @@ const ChampionNames = [
 const DDragonCDNUrl = 'https://ddragon.leagueoflegends.com/cdn';
 
 const getLolVer = async () => {
-  const resp = await http.get(`${DDragonCDNUrl}/api/versions.json`);
+  const resp = await http.get(`https://ddragon.leagueoflegends.com/api/versions.json`);
   return resp[0];
 };
 
