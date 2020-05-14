@@ -17,7 +17,7 @@ import Sources from 'src/share/constants/sources';
 import { prepareReimport, updateFetchingSource } from 'src/share/actions';
 import { removeFolderContent } from 'src/share/file';
 import OpGGImporter from 'src/service/data-source/op-gg';
-import LolQQImporter from 'src/service/data-source/lol-qq';
+import LolQQImporter from 'src/service/data-source/101-qq';
 
 import config from 'src/native/config';
 import AppContext from 'src/share/context';

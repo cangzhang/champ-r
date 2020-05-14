@@ -17,7 +17,7 @@ import { CornerDownRight } from 'react-feather';
 
 import config from 'src/native/config';
 import { setLolVersion, updateItemMap, updateConfig } from 'src/share/actions';
-import { getItemList, getLolVer } from 'src/service/ddragon';
+import { getLolVer, getItemList } from 'src/service/data-source/101-qq';
 import { getUpgradeableCompletedItems } from 'src/service/utils';
 
 import Sources from 'src/share/constants/sources';
@@ -96,22 +96,6 @@ export default function Home() {
     getVerAndItems();
   }, []);
 
-  // useEffect(() => {
-  //   ipcRenderer.on(`lol-data-loaded`, (ev, data) => {
-  //     console.log(`lol-data-loaded`, data);
-  //
-  //     dispatch(setLolVersion(data.lolVer));
-  //     setVersion(data.lolVer);
-  //
-  //     const upgradeableCompletedItems = getUpgradeableCompletedItems(data.itemMap);
-  //     console.log(upgradeableCompletedItems);
-  //     dispatch(updateItemMap({
-  //       ...data.itemMap,
-  //       upgradeableCompletedItems,
-  //     }));
-  //   });
-  // }, []);
-
   useEffect(() => {
     // persist user preference
     config.set('keepOldItems', store.keepOld);
@@ -120,7 +104,7 @@ export default function Home() {
     config.set(`selectedSources`, selectedSources);
   }, [store.keepOld, lolDir, version, selectedSources]);
 
-  const shouldDisableImport = !version || !lolDir || !selectedSources.length || !store.itemMap;
+  const shouldDisableImport = !version || !lolDir || !selectedSources.length;
 
   return (
     <div className={s.container}>

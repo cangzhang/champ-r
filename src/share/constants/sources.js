@@ -1,4 +1,4 @@
 export default {
   Opgg: 'op.gg',
-  Lolqq: 'lol.qq.com',
+  Lolqq: '101.qq.com',
 };
