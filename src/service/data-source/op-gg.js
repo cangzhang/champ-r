@@ -262,8 +262,6 @@ export default class OpGG extends SourceProto {
   };
 
   genChampionData = async (championName, position, id) => {
-    const { version } = this;
-
     if (!championName || !position) {
       return Promise.reject('Please specify champion & position.');
     }
@@ -284,8 +282,8 @@ export default class OpGG extends SourceProto {
         key: championName,
         champion: championName,
         position,
-        title: `[OP.GG] ${position} - ${version}`,
-        fileName: `[OP.GG]${championName}-${position}-${version}`,
+        title: `[OP.GG] ${position}`,
+        fileName: `[OP.GG] ${championName} - ${position}`,
         skills,
         blocks,
         perks,
