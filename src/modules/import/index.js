@@ -17,7 +17,7 @@ import Sources from 'src/share/constants/sources';
 import { prepareReimport, updateFetchingSource } from 'src/share/actions';
 import { removeFolderContent } from 'src/share/file';
 import OpGGImporter from 'src/service/data-source/op-gg';
-import LolQQImporter from 'src/service/data-source/101-qq';
+import LolQQImporter from 'src/service/data-source/lol-qq';
 
 import config from 'src/native/config';
 import AppContext from 'src/share/context';
@@ -84,7 +84,7 @@ export default function Import() {
         instance
           .import()
           .then(() => {
-            toaster.positive(`[101.QQ.COM] ${t(`completed`)}`);
+            toaster.positive(`[lol.QQ.COM] ${t(`completed`)}`);
           })
           .catch((err) => {
             if (err.message === `Error: Cancel`) {

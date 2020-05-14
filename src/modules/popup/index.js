@@ -13,7 +13,7 @@ import { Tabs, Tab } from 'baseui/tabs';
 
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix, getChampions } from 'src/service/qq';
-import LolQQ from 'src/service/data-source/101-qq';
+import LolQQ from 'src/service/data-source/lol-qq';
 import Opgg from 'src/service/data-source/op-gg';
 import LCUService from 'src/service/lcu';
 
@@ -24,7 +24,7 @@ import { getChampionInfo } from './utils';
 
 const engine = new Styletron();
 const TabNames = {
-  qq: `101.qq.com`,
+  qq: `lol.qq.com`,
   opgg: `op.gg`,
 };
 

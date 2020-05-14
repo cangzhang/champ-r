@@ -17,8 +17,7 @@ import { CornerDownRight } from 'react-feather';
 
 import config from 'src/native/config';
 import { setLolVersion, updateItemMap, updateConfig } from 'src/share/actions';
-import { getLolVer, getItemList } from 'src/service/data-source/101-qq';
-import { getUpgradeableCompletedItems } from 'src/service/utils';
+import { getLolVer, getItemList } from 'src/service/data-source/lol-qq';
 
 import Sources from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
@@ -83,12 +82,10 @@ export default function Home() {
       const appLang = config.get('appLang');
       const language = appLang.replace('-', '_');
       const data = await getItemList(v, language);
-      const upgradeableCompletedItems = getUpgradeableCompletedItems(data);
 
       dispatch(
         updateItemMap({
           ...data,
-          upgradeableCompletedItems,
         }),
       );
     };

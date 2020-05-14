@@ -234,7 +234,7 @@ export default class LolQQ extends SourceProto {
 
       const blocks = [
         {
-          type: `Start Items`,
+          type: `Starters`,
           items: starterItems,
         },
         {
