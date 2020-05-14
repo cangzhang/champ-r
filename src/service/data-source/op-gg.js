@@ -267,10 +267,10 @@ export default class OpGG extends SourceProto {
     }
 
     try {
-      const [blocks, skills, perks] = await Promise.all([
+      const [blocks, skills] = await Promise.all([
         this.genBlocks(championName, position, `${id}-block`),
         this.genSkills(championName, position, `${id}-skill`),
-        this.genPerk(championName, position, `${id}-perk`),
+        // this.genPerk(championName, position, `${id}-perk`),
       ]);
 
       return {
@@ -286,7 +286,6 @@ export default class OpGG extends SourceProto {
         fileName: `[OP.GG] ${championName} - ${position}`,
         skills,
         blocks,
-        perks,
       };
     } catch (error) {
       throw new Error(error);
