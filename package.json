@@ -143,6 +143,7 @@
     "appId": "com.al.champ-r",
     "files": [
       "build/**/*",
+      "src/native/**/*",
       "package.json",
       "main.js"
     ],
