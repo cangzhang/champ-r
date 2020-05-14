@@ -25,6 +25,7 @@ contextMenu();
 app.setAppUserModelId('com.al.champ-r');
 
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
+app.commandLine.appendSwitch('ignore-connections-limit', 'op.gg');
 app.allowRendererProcessReuse = false;
 
 // Uncomment this before publishing your first version.
