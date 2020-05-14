@@ -1,6 +1,6 @@
 {
   "name": "champ-r",
-  "version": "0.9.11",
+  "version": "0.9.12",
   "license": "MIT",
   "description": "Get champion items for lol, Windows only.",
   "productName": "ChampR",
@@ -142,10 +142,10 @@
   "build": {
     "appId": "com.al.champ-r",
     "files": [
-      "node_modules/",
-      "build/",
-      "main.js",
-      "package.json"
+      "build/**/*",
+      "src/native/**/*",
+      "package.json",
+      "main.js"
     ],
     "extraResources": [
       "./resources/**"

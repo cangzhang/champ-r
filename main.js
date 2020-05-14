@@ -3,7 +3,8 @@ try {
 } catch (_) {}
 
 const path = require('path');
-// const osLocale = require('os-locale');
+const osLocale = require('os-locale');
+const log = require('electron-log');
 
 const { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage } = require('electron');
 /// const { autoUpdater } = require('electron-updater');
@@ -13,6 +14,8 @@ const contextMenu = require('electron-context-menu');
 const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
 const isDev = require('electron-is-dev');
+
+const config = require('./src/native/config');
 
 unhandled();
 debug();
@@ -228,8 +231,20 @@ function makeTray() {
   Menu.setApplicationMenu(null);
   registerMainListeners();
 
+  const locale = (await osLocale()) || `en-US`;
+  const sysLang = config.get(`appLang`);
+  if (!sysLang || ![`en-US`, `zh-CN`].includes(locale)) {
+    config.set(`appLang`, `en-US`);
+  }
+  if (isDev) {
+    console.log(`locale: ${sysLang}, sys lang: ${sysLang}`);
+  } else {
+    log.info(`locale: ${sysLang}, sys lang: ${sysLang}`);
+  }
+
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();
+
   await centerWindow({
     window: mainWindow,
     animated: true,

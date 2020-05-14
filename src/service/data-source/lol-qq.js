@@ -7,24 +7,18 @@ import { CancelToken } from 'axios';
 
 import http from 'src/service/http';
 import { saveToFile } from 'src/share/file';
-import {
-  genFileBlocks,
-  parseJson,
-  isDifferentStyleId,
-  getStyleId,
-  strToPercent,
-} from 'src/service/utils';
+import { parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import Sources from 'src/share/constants/sources';
 
 import SourceProto from './source-proto';
-// Import { Actions } from 'src/share/actions';
 
 const API = {
   List: 'https://game.gtimg.cn/images/lol/act/img/js/heroList/hero_list.js',
   Positions: 'https://lol.qq.com/act/lbp/common/guides/guideschampion_position.js',
   detail: (id) => `https://lol.qq.com/act/lbp/common/guides/champDetail/champDetail_${id}.js`,
   Items: 'https://ossweb-img.qq.com/images/lol/act/img/js/items/items.js',
+  champInfo: (id) => `https://ossweb-img.qq.com/images/lol/act/img/js/hero/${id}.js`,
 };
 
 const makePerkData = (perk, champion, position) => {
@@ -75,6 +69,8 @@ export const parseCode = (string) => {
     throw new Error(error);
   }
 };
+
+export const getLolVer = () => http.get(API.champInfo(107)).then((res) => res.version);
 
 export const getItemList = async () => {
   try {
@@ -188,36 +184,68 @@ export default class LolQQ extends SourceProto {
     }
   };
 
-  makeItem = ({ data, positions, champion, version, itemMap }) => {
+  makeItem = ({ data, positions, champion, itemMap }) => {
     const { alias } = champion;
     const { championLane } = data;
 
     const result = positions.reduce((res, position) => {
-      const perkDetail = parseJson(championLane[position].perkdetail);
-      const perkData = Object.values(perkDetail).reduce((result, i) => {
-        const vals = Object.values(i).map(({ perk, ...rest }) => ({
-          runes: perk.split(`&`),
-          ...rest,
-        }));
-        return result.concat(vals);
-      }, []);
+      const coreItemsObj = _get(championLane, `${position}.core3itemjson`, []);
+      const rawBlocks = parseJson(coreItemsObj);
+      const shoeItemsObj = _get(championLane, `${position}.shoesjson`, []);
+      const rawShoes = parseJson(shoeItemsObj);
 
-      const byWinRate = _orderBy(perkData, (i) => i.winrate, [`desc`]);
-      const byPickRate = _orderBy(perkData, (i) => i.showrate, [`desc`]);
-      const perks = [...byWinRate.slice(0, 2), ...byPickRate.slice(0, 2)].map((i) =>
-        makePerkData(i, alias, position),
-      );
+      const coreItemSet = Object.values(rawBlocks).reduce((itemSet, i) => {
+        const ids = i.itemid.split(`&`).map((i) => +i);
+        ids.map((id) => itemSet.add(id));
+        return itemSet;
+      }, new Set());
+      const shoeItemSet = Object.values(rawShoes).reduce((shoes, i) => {
+        const shoeId = +i.itemid;
+        return shoes.add(shoeId);
+      }, new Set());
 
-      const laneItemsString = _get(championLane, `${position}.hold3`, []);
-      const rawBlocks = parseJson(laneItemsString);
-      const rawItems = rawBlocks.map((i) => ({
-        id: i.itemid,
+      const startItemsObj = _get(championLane, `${position}.itemoutjson`, []);
+      const rawStarters = parseJson(startItemsObj);
+      const starterItemSet = Object.values(rawStarters).reduce((obj, i) => {
+        const ids = i.itemid.split(`&`).map((i) => +i);
+        ids.forEach((id) => {
+          const price = (_find(itemMap, { itemId: `${id}` }) || { price: 0 }).price;
+          obj[id] = {
+            price: +price,
+            id,
+          };
+        });
+        return obj;
+      }, {});
+
+      const coreItems = [...coreItemSet].map((i) => ({
+        id: i,
         count: 1,
-        pickRate: i.showrate,
-        winRate: i.winrate,
+      }));
+      const bootItems = [...shoeItemSet].map((i) => ({
+        id: i,
+        count: 1,
+      }));
+      const sortedStarters = _orderBy(Object.values(starterItemSet), (i) => i.price, [`desc`]);
+      const starterItems = sortedStarters.map(({ id }) => ({
+        id,
+        count: 1,
       }));
 
-      const blocks = genFileBlocks(rawItems, itemMap, position);
+      const blocks = [
+        {
+          type: `Starters`,
+          items: starterItems,
+        },
+        {
+          type: `Boots`,
+          items: bootItems,
+        },
+        {
+          type: `Core items`,
+          items: coreItems,
+        },
+      ];
 
       const item = {
         sortrank: 1,
@@ -228,11 +256,10 @@ export default class LolQQ extends SourceProto {
         key: alias.toLowerCase(),
         champion: alias,
         position,
-        title: `[LOL.QQ.COM] ${position} - ${version}`,
-        fileName: `[LOL.QQ.COM]${alias}-${position}-${version}`,
+        title: `[${Sources.Lolqq}] ${position}`,
+        fileName: `[${Sources.Lolqq}] ${position} - ${alias}`,
         skills: [],
         blocks,
-        perks,
       };
 
       return res.concat(item);

@@ -84,7 +84,7 @@ export default function Import() {
         instance
           .import()
           .then(() => {
-            toaster.positive(`[101.QQ.COM] ${t(`completed`)}`);
+            toaster.positive(`[lol.QQ.COM] ${t(`completed`)}`);
           })
           .catch((err) => {
             if (err.message === `Error: Cancel`) {

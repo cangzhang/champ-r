@@ -1,12 +1,13 @@
 import { nanoid as uuid } from 'nanoid';
 import _noop from 'lodash/noop';
 
-import { requestHtml, genFileBlocks } from 'src/service/utils';
+import { requestHtml } from 'src/service/utils';
 
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
 import Sources from 'src/share/constants/sources';
 import SourceProto from './source-proto';
+import _find from 'lodash/find';
 
 const OpggUrl = 'https://www.op.gg';
 
@@ -16,6 +17,22 @@ export const getSpellName = (imgSrc = '') => {
 };
 
 export const stripNumber = (src) => +src.match(/(\d+)\.png/)[1];
+
+const getItems = (imgs, $) => {
+  const ids = imgs.map((img) => {
+    const itemId = $(img)
+      .attr('src')
+      .match(/(.*)\/(.*)\.png/)
+      .pop();
+
+    return +itemId;
+  });
+
+  return [...new Set(ids)].map((id) => ({
+    id,
+    count: 1,
+  }));
+};
 
 export default class OpGG extends SourceProto {
   constructor(version = ``, lolDir = ``, itemMap = {}, dispatch = _noop) {
@@ -131,30 +148,52 @@ export default class OpGG extends SourceProto {
         `${OpggUrl}/champion/${champion}/statistics/${position}/item`,
         this.setCancelHook(id),
       );
-      const itemTable = $('.l-champion-statistics-content__side .champion-stats__table')[0];
-      const rawItems = $(itemTable)
-        .find('tbody tr')
+
+      const tables = $(`.l-champion-statistics-content__main tbody`);
+      const coreItemImgs = $(tables[0]).find(`tr td li.champion-stats__list__item img`).toArray();
+      const coreItems = getItems(coreItemImgs, $);
+
+      const bootItemImgs = $(tables[1])
+        .find(`tbody tr td .champion-stats__single__item img`)
+        .toArray();
+      const bootItems = getItems(bootItemImgs, $);
+
+      const rawStarterItems = $(tables[2])
+        .find(`tbody tr td li.champion-stats__list__item img`)
         .toArray()
-        .map((tr) => {
-          const [itemTd, pRateTd, wRateTd] = $(tr).find('td').toArray();
-          const itemId = $(itemTd)
-            .find('img')
+        .map((img) => {
+          const itemId = $(img)
             .attr('src')
             .match(/(.*)\/(.*)\.png/)
             .pop();
-          const pickRate = $(pRateTd).find('em').text().replace(',', '');
-          const winRate = $(wRateTd).text().replace('%', '');
 
-          return {
-            id: itemId,
-            count: 1,
-            pickRate,
-            winRate,
-          };
+          return +itemId;
+        })
+        .sort((a, b) => {
+          const priceA = (_find(itemMap, { itemId: `${a}` }) || { price: 0 }).price;
+          const priceB = (_find(itemMap, { itemId: `${b}` }) || { price: 0 }).price;
+
+          return priceB - priceA;
         });
+      const starterItems = [...new Set(rawStarterItems)].map((id) => ({
+        id,
+        count: 1,
+      }));
 
-      const blocks = genFileBlocks(rawItems, itemMap, position);
-      return blocks;
+      return [
+        {
+          type: `Starters`,
+          items: starterItems,
+        },
+        {
+          type: `Boots`,
+          items: bootItems,
+        },
+        {
+          type: `Core Items`,
+          items: coreItems,
+        },
+      ];
     } catch (error) {
       throw new Error(error);
     }
@@ -223,8 +262,6 @@ export default class OpGG extends SourceProto {
   };
 
   genChampionData = async (championName, position, id) => {
-    const { version } = this;
-
     if (!championName || !position) {
       return Promise.reject('Please specify champion & position.');
     }
@@ -245,8 +282,8 @@ export default class OpGG extends SourceProto {
         key: championName,
         champion: championName,
         position,
-        title: `[OP.GG] ${position} - ${version}`,
-        fileName: `[OP.GG]${championName}-${position}-${version}`,
+        title: `[OP.GG] ${position}`,
+        fileName: `[OP.GG] ${championName} - ${position}`,
         skills,
         blocks,
         perks,
@@ -259,9 +296,9 @@ export default class OpGG extends SourceProto {
   import = async () => {
     const { dispatch, lolDir } = this;
     try {
-      const res = await this.getStat();
+      const allChampions = await this.getStat();
 
-      const tasks = res.reduce((t, item) => {
+      const tasks = allChampions.reduce((t, item) => {
         const { positions, key: champion } = item;
         const positionTasks = positions.map((position) => {
           const identity = uuid();
