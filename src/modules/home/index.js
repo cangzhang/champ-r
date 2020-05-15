@@ -14,6 +14,7 @@ import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Tag } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
 import { CornerDownRight } from 'react-feather';
+import ReactGA from 'react-ga';
 
 import config from 'src/native/config';
 import { updateConfig } from 'src/share/actions';
@@ -67,6 +68,11 @@ export default function Home() {
   };
 
   const startImport = () => {
+    ReactGA.event({
+      category: `User`,
+      action: `Import`,
+      value: selectedSources,
+    });
     history.push(`/import`);
   };
 

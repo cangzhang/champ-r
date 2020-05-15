@@ -10,6 +10,7 @@ import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { Tabs, Tab } from 'baseui/tabs';
+import ReactGA from 'react-ga';
 
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix, getChampions } from 'src/service/qq';
@@ -19,6 +20,7 @@ import LCUService from 'src/service/lcu';
 
 import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
+import useGA from 'src/components/use-ga';
 
 import { getChampionInfo } from './utils';
 
@@ -41,6 +43,8 @@ export default function Popup() {
   const [opggPerks, setOPggPerkList] = useState([]);
   const [curPerk, setCurPerk] = useState({});
   const [coordinate, setCoordinate] = useState({ x: 0, y: 0, width: 0, height: 0 });
+
+  useGA({ page: `/runes` });
 
   useEffect(() => {
     getChampions(lolVer).then((championList) => {
@@ -83,7 +87,14 @@ export default function Popup() {
     const res = await lcu.current.applyPerk({
       ...perk,
     });
+
     console.info(`updated perk`, res);
+
+    ReactGA.event({
+      category: `User`,
+      action: `Apply perk`,
+      value: championId.key,
+    });
   };
 
   const showPreview = (perk, el) => {

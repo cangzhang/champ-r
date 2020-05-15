@@ -1,21 +1,16 @@
 module.exports = {
-  extends: [
-    'react-app',
-  ],
-  plugins: [
-    'baseui',
-  ],
+  extends: ['react-app'],
+  plugins: ['baseui'],
   rules: {
     'baseui/deprecated-theme-api': 'warn',
     'baseui/deprecated-component-api': 'warn',
     'baseui/no-deep-imports': 'warn',
-
-    'indent': [
+    indent: [
       'error',
       2,
       {
-        'SwitchCase': 1,
-      }
+        SwitchCase: 1,
+      },
     ],
     'no-warning-comments': 0,
     'comma-dangle': ['error', 'always-multiline'],
@@ -23,8 +18,8 @@ module.exports = {
       'error',
       'always',
       {
-        'arraysInObjects': false,
-        'objectsInObjects': true,
+        arraysInObjects: false,
+        objectsInObjects: true,
       },
     ],
   },

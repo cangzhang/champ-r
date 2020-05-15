@@ -1,5 +1,4 @@
 /* eslint react-hooks/exhaustive-deps: 0 */
-
 import s from './style.module.scss';
 
 import _noop from 'lodash/noop';
@@ -22,6 +21,7 @@ import LolQQImporter from 'src/service/data-source/lol-qq';
 import config from 'src/native/config';
 import AppContext from 'src/share/context';
 import WaitingList from 'src/components/waiting-list';
+import useGA from 'src/components/use-ga';
 
 export default function Import() {
   const history = useHistory();
@@ -110,6 +110,8 @@ export default function Import() {
 
     importFromSources();
   }, []);
+
+  useGA({ page: `/import` });
 
   const stop = () => {
     setLoading(false);
