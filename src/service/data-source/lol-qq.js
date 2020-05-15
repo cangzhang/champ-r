@@ -218,17 +218,17 @@ export default class LolQQ extends SourceProto {
         return obj;
       }, {});
 
-      const coreItems = [...coreItemSet].map((i) => ({
-        id: i,
+      const coreItems = [...coreItemSet].map((id) => ({
+        id: `${id}`,
         count: 1,
       }));
-      const bootItems = [...shoeItemSet].map((i) => ({
-        id: i,
+      const bootItems = [...shoeItemSet].map((id) => ({
+        id: `${id}`,
         count: 1,
       }));
       const sortedStarters = _orderBy(Object.values(starterItemSet), (i) => i.price, [`desc`]);
       const starterItems = sortedStarters.map(({ id }) => ({
-        id,
+        id: `${id}`,
         count: 1,
       }));
 
@@ -236,30 +236,40 @@ export default class LolQQ extends SourceProto {
         {
           type: `Starters`,
           items: starterItems,
+          showIfSummonerSpell: '',
+          hideIfSummonerSpell: '',
         },
         {
           type: `Boots`,
           items: bootItems,
+          showIfSummonerSpell: '',
+          hideIfSummonerSpell: '',
         },
         {
           type: `Core items`,
           items: coreItems,
+          showIfSummonerSpell: '',
+          hideIfSummonerSpell: '',
         },
       ];
 
       const item = {
-        sortrank: 1,
-        priority: false,
-        map: 'any',
-        mode: 'any',
+        fileName: `[${Sources.Lolqq}] ${position} - ${alias}`,
+        title: `[${Sources.Lolqq}] ${position} - ${alias}`,
+        associatedMaps: [
+          11, // normal
+        ],
+        associatedChampions: [+champion.heroId],
         type: 'custom',
         key: alias.toLowerCase(),
         champion: alias,
         position,
-        title: `[${Sources.Lolqq}] ${position}`,
-        fileName: `[${Sources.Lolqq}] ${position} - ${alias}`,
-        skills: [],
         blocks,
+        map: 'SR',
+        mode: 'any',
+        preferredItemSlots: [],
+        sortrank: 1,
+        startedFrom: 'blank',
       };
 
       return res.concat(item);

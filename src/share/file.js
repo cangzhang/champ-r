@@ -1,13 +1,10 @@
 const fs = require('fs').promises;
 const fse = require('fs-extra');
-const _pick = require('lodash/pick');
 
 export const saveToFile = async (desDir, data) => {
   try {
-    const content = _pick(data, ['title', 'map', 'mode', 'type', 'priority', 'sortrank', 'blocks']);
-
-    const file = `${desDir}/Game/Config/Champions/${data.key}/Recommended/${data.fileName}.json`;
-    await fse.outputFile(file, JSON.stringify(content, null, 4));
+    const file = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
+    await fse.outputFile(file, JSON.stringify(data, null, 4));
     return true;
   } catch (error) {
     return error;

@@ -29,7 +29,7 @@ const getItems = (imgs, $) => {
   });
 
   return [...new Set(ids)].map((id) => ({
-    id,
+    id: `${id}`,
     count: 1,
   }));
 };
@@ -176,7 +176,7 @@ export default class OpGG extends SourceProto {
           return priceB - priceA;
         });
       const starterItems = [...new Set(rawStarterItems)].map((id) => ({
-        id,
+        id: `${id}`,
         count: 1,
       }));
 
@@ -184,14 +184,20 @@ export default class OpGG extends SourceProto {
         {
           type: `Starters`,
           items: starterItems,
+          showIfSummonerSpell: '',
+          hideIfSummonerSpell: '',
         },
         {
           type: `Boots`,
           items: bootItems,
+          showIfSummonerSpell: '',
+          hideIfSummonerSpell: '',
         },
         {
           type: `Core Items`,
           items: coreItems,
+          showIfSummonerSpell: '',
+          hideIfSummonerSpell: '',
         },
       ];
     } catch (error) {
@@ -267,25 +273,29 @@ export default class OpGG extends SourceProto {
     }
 
     try {
-      const [blocks, skills] = await Promise.all([
+      const [blocks] = await Promise.all([
         this.genBlocks(championName, position, `${id}-block`),
-        this.genSkills(championName, position, `${id}-skill`),
+        // this.genSkills(championName, position, `${id}-skill`),
         // this.genPerk(championName, position, `${id}-perk`),
       ]);
 
       return {
-        sortrank: 1,
-        priority: false,
-        map: 'any',
-        mode: 'any',
+        fileName: `[OP.GG] ${position} - ${championName}`,
+        title: `[OP.GG] ${position} - ${championName}`,
         type: 'custom',
+        associatedMaps: [
+          11, // normal mode
+        ],
+        associatedChampions: [],
         key: championName,
         champion: championName,
         position,
-        title: `[OP.GG] ${position}`,
-        fileName: `[OP.GG] ${championName} - ${position}`,
-        skills,
         blocks,
+        map: 'SR',
+        mode: 'any',
+        preferredItemSlots: [],
+        sortrank: 1,
+        startedFrom: 'blank',
       };
     } catch (error) {
       throw new Error(error);
