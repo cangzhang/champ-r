@@ -16,8 +16,7 @@ import { ArrowRight } from 'baseui/icon';
 import { CornerDownRight } from 'react-feather';
 
 import config from 'src/native/config';
-import { setLolVersion, updateItemMap, updateConfig } from 'src/share/actions';
-import { getLolVer, getItemList } from 'src/service/data-source/lol-qq';
+import { updateConfig } from 'src/share/actions';
 
 import Sources from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
@@ -30,8 +29,6 @@ export default function Home() {
   const { t } = useTranslation();
 
   const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
-
-  const [version, setVersion] = useState(config.get('lolVer'));
   const [lolDir, setLolDir] = useState(config.get('lolDir'));
 
   const toggleKeepOldItems = (ev) => {
@@ -74,34 +71,13 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const getVerAndItems = async () => {
-      const v = await getLolVer();
-      await setVersion(v);
-      dispatch(setLolVersion(v));
-
-      const appLang = config.get('appLang');
-      const language = appLang.replace('-', '_');
-      const data = await getItemList(v, language);
-
-      dispatch(
-        updateItemMap({
-          ...data,
-        }),
-      );
-    };
-
-    getVerAndItems();
-  }, []);
-
-  useEffect(() => {
     // persist user preference
     config.set('keepOldItems', store.keepOld);
     config.set('lolDir', lolDir);
-    config.set('lolVer', version);
     config.set(`selectedSources`, selectedSources);
-  }, [store.keepOld, lolDir, version, selectedSources]);
+  }, [store.keepOld, lolDir, selectedSources]);
 
-  const shouldDisableImport = !version || !lolDir || !selectedSources.length;
+  const shouldDisableImport = !store.version || !lolDir || !selectedSources.length;
 
   return (
     <div className={s.container}>
@@ -162,7 +138,7 @@ export default function Home() {
               }),
             },
           }}>
-          {version}
+          {store.version}
         </Tag>
       </div>
 

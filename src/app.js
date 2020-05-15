@@ -9,15 +9,16 @@ import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 
 import AppContext from 'src/share/context';
-import appReducer, { initialState, init } from 'src/share/reducer';
+import appReducer, { initialState, init, setLolVersion, updateItemMap } from 'src/share/reducer';
 import config from 'src/native/config';
+import { getItemList, getLolVer } from 'src/service/data-source/lol-qq';
+import LCUService from 'src/service/lcu';
 
 import Footer from 'src/components/footer';
 import Toolbar from 'src/components/toolbar';
 import Home from 'src/modules/home';
 import Import from 'src/modules/import';
 import Settings from 'src/modules/settings';
-import LCUService from 'src/service/lcu';
 
 const engine = new Styletron();
 const GameTypes = [`pick`];
@@ -108,6 +109,25 @@ const App = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const getVerAndItems = async () => {
+      const v = await getLolVer();
+      dispatch(setLolVersion(v));
+
+      const appLang = config.get('appLang');
+      const language = appLang.replace('-', '_');
+      const data = await getItemList(v, language);
+
+      dispatch(
+        updateItemMap({
+          ...data,
+        }),
+      );
+    };
+
+    getVerAndItems();
+  }, []);
+
   return (
     <AppContext.Provider value={contextValue}>
       <StyletronProvider value={engine}>
@@ -115,9 +135,15 @@ const App = () => {
           <Router>
             <Toolbar />
             <Switch>
-              <Route exact path={'/'} component={Home} />
-              <Route path={`/import`} component={Import} />
-              <Route path={`/settings`} component={Settings} />
+              <Route exact path={'/'}>
+                <Home />
+              </Route>
+              <Route path={`/import`}>
+                <Import />
+              </Route>
+              <Route path={`/settings`}>
+                <Settings />
+              </Route>
             </Switch>
           </Router>
           <Footer />
