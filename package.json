@@ -21,7 +21,7 @@
     "pack": "electron-builder --dir",
     "###release": "np",
     "start": "concurrently \"yarn start-react\" \"wait-on http://localhost:3000 && yarn start-electron\"",
-    "start-electron": "cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true run-electron .",
+    "start-electron": "cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true run-electron . --inspect=5858",
     "start-react": "cross-env BROWSER=none node scripts/start.js",
     "test": "npm run lint",
     "test-react": "node scripts/test.js"
@@ -43,6 +43,7 @@
     "immer": "6.0.3",
     "lodash": "^4.17.15",
     "nanoid": "3.0.2",
+    "node-machine-id": "^1.1.12",
     "normalize.css": "^8.0.1",
     "os-locale": "^5.0.0",
     "react": "16.13.1",

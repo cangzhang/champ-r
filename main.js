@@ -2,10 +2,11 @@ try {
   require('electron-reloader')(module);
 } catch (_) {}
 
+require('./src/native/logger');
+
 const path = require('path');
 const osLocale = require('os-locale');
-const log = require('electron-log');
-
+const { machineId } = require('node-machine-id');
 const { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage } = require('electron');
 /// const { autoUpdater } = require('electron-updater');
 const { is, centerWindow } = require('electron-util');
@@ -23,7 +24,6 @@ contextMenu();
 
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId('com.al.champ-r');
-
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 app.commandLine.appendSwitch('ignore-connections-limit', 'op.gg');
 app.allowRendererProcessReuse = false;
@@ -202,8 +202,8 @@ function toggleMainWindow() {
 
 function makeTray() {
   const iconPath = path.join(isDev ? __dirname : process.resourcesPath, 'resources/app-icon.png');
-  const icon = nativeImage.createFromPath(iconPath);
-  // const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+  const icon = nativeImage.createFromPath(iconPath).resize({ width: 24, height: 24 });
+
   tray = new Tray(icon);
   // tray.setIgnoreDoubleClickEvents(true)
   tray.setToolTip('ChampR');
@@ -227,6 +227,15 @@ function makeTray() {
   tray.setContextMenu(contextMenu);
 }
 
+async function getMachineId() {
+  const userId = config.get(`userId`);
+  if (userId) return userId;
+
+  const id = await machineId();
+  config.set(`userId`, id);
+  return id;
+}
+
 (async () => {
   await app.whenReady();
   Menu.setApplicationMenu(null);
@@ -237,11 +246,7 @@ function makeTray() {
   if (!sysLang || ![`en-US`, `zh-CN`].includes(locale)) {
     config.set(`appLang`, `en-US`);
   }
-  if (isDev) {
-    console.log(`locale: ${sysLang}, sys lang: ${sysLang}`);
-  } else {
-    log.info(`locale: ${sysLang}, sys lang: ${sysLang}`);
-  }
+  console.log(`locale: ${sysLang}, sys lang: ${sysLang}`);
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();
@@ -252,4 +257,6 @@ function makeTray() {
   });
 
   await makeTray();
+  const userId = await getMachineId();
+  console.log(`userId: ${userId}`);
 })();
