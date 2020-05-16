@@ -49,9 +49,11 @@ const App = () => {
   useEffect(() => {
     checkTask.current = setInterval(async () => {
       try {
-        const lolVer = config.get(`lolVer`);
         const lolDir = config.get(`lolDir`);
-        if (!lolDir || !lolVer) return false;
+        if (!lolDir) {
+          console.err(`lol folder not selected.`);
+          return false;
+        }
 
         if (!lcuInstance.current.getAuthToken) {
           lcuInstance.current = new LCUService(lolDir);
@@ -59,7 +61,10 @@ const App = () => {
         const lcuIns = lcuInstance.current;
         await lcuIns.getAuthToken();
 
-        if (!lcuIns.active) return false;
+        if (!lcuIns.active) {
+          console.err(`lcu not running.`);
+          return false;
+        }
 
         const {
           actions = [],
@@ -97,7 +102,7 @@ const App = () => {
         console.log(`show popup.`);
         return true;
       } catch (_err) {
-        console.log(_err);
+        console.error(`cannot show popup.`);
         if (process.env.IS_DEV) return;
 
         ipcRenderer.send(`hide-popup`);
@@ -113,6 +118,7 @@ const App = () => {
     const getVerAndItems = async () => {
       const v = await getLolVer();
       dispatch(setLolVersion(v));
+      config.set(`lolVer`, v);
 
       const appLang = config.get('appLang');
       const language = appLang.replace('-', '_');

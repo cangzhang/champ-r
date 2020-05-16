@@ -71,7 +71,6 @@ export default function Home() {
     ReactGA.event({
       category: `User`,
       action: `Import`,
-      value: selectedSources,
     });
     history.push(`/import`);
   };

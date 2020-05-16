@@ -93,7 +93,7 @@ export default function Popup() {
     ReactGA.event({
       category: `User`,
       action: `Apply perk`,
-      value: championId.key,
+      value: +championId.key,
     });
   };
 
