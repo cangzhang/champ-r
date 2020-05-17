@@ -8,7 +8,7 @@ const path = require('path');
 const osLocale = require('os-locale');
 const { machineId } = require('node-machine-id');
 const { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage } = require('electron');
-/// const { autoUpdater } = require('electron-updater');
+const { autoUpdater } = require('electron-updater');
 const { is, centerWindow } = require('electron-util');
 const contextMenu = require('electron-context-menu');
 
@@ -27,17 +27,6 @@ app.setAppUserModelId('com.al.champ-r');
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 app.commandLine.appendSwitch('ignore-connections-limit', 'op.gg');
 app.allowRendererProcessReuse = false;
-
-// Uncomment this before publishing your first version.
-// It's commented out as it throws an error if there are no published versions.
-// if (!is.development) {
-// 	const FOUR_HOURS = 1000 * 60 * 60 * 4;
-// 	setInterval(() => {
-// 		autoUpdater.checkForUpdates();
-// 	}, FOUR_HOURS);
-//
-// 	autoUpdater.checkForUpdates();
-// }
 
 // Prevent window from being garbage collected
 let mainWindow = null;
@@ -236,10 +225,63 @@ async function getMachineId() {
   return id;
 }
 
+async function checkUpdates() {
+  if (isDev) {
+    console.log(`Skipped updated check for dev mode.`);
+    return;
+  }
+
+  // every 1h
+  setInterval(async () => {
+    await autoUpdater.checkForUpdates();
+  }, 1000 * 60 * 60);
+
+  await autoUpdater.checkForUpdates();
+}
+
+function registerUpdater() {
+  autoUpdater.logger = require('electron-log');
+  autoUpdater.logger.transports.file.level = 'info';
+  autoUpdater.autoDownload = false;
+
+  autoUpdater.on('checking-for-update', () => {
+    console.log(`Checking update...`);
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    console.log(`Update available: ${info.version}`);
+    if (mainWindow && mainWindow.webContents) {
+      mainWindow.webContents.send(`update-available`, info);
+    }
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    console.error(`Update not available: ${info.version}`);
+  });
+
+  autoUpdater.on(`update-downloaded`, (info) => {
+    console.info(`Update downloaded: ${info.version}`);
+    if (mainWindow && mainWindow.webContents) {
+      mainWindow.webContents.send(`update-downloaded`, info);
+    }
+  });
+
+  autoUpdater.on('error', (err) => {
+    console.error('Error in auto-updater. ' + err);
+  });
+
+  ipcMain.on(`install-update`, () => {
+    autoUpdater.quitAndInstall(false);
+  });
+}
+
 (async () => {
+  console.log(`ChampR starting...`);
+
   await app.whenReady();
   Menu.setApplicationMenu(null);
   registerMainListeners();
+  registerUpdater();
 
   const locale = (await osLocale()) || `en-US`;
   const sysLang = config.get(`appLang`);
@@ -259,4 +301,6 @@ async function getMachineId() {
   await makeTray();
   const userId = await getMachineId();
   console.log(`userId: ${userId}`);
+
+  await checkUpdates();
 })();

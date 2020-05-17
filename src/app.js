@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, shell } from 'electron';
 import _find from 'lodash/find';
 
 import React, { useReducer, useMemo, useRef, useEffect } from 'react';
@@ -132,6 +132,16 @@ const App = () => {
     };
 
     getVerAndItems();
+
+    ipcRenderer.on(`update-available`, (ev, info) => {
+      const notify = new Notification(`New version available: ${info.version}`);
+
+      notify.onclick = () => {
+        shell.openItem(`https://github.com/cangzhang/champ-r/releases`);
+      };
+    });
+
+    // ipcRenderer.on(`update-downloaded`, () => {});
   }, []);
 
   return (
