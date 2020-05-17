@@ -154,7 +154,7 @@
     ],
     "win": {
       "icon": "./resources/app-icon.png",
-      "requestedExecutionLevel": "highestAvailable"
+      "requestedExecutionLevel": "requireAdministrator"
     }
   },
   "##np": {
