@@ -1,10 +1,13 @@
 {
   "name": "champ-r",
-  "version": "0.9.12",
+  "version": "0.9.13-pre2",
   "license": "MIT",
   "description": "Get champion builds & runes for lol.",
   "productName": "ChampR",
-  "repository": "cangzhang/champ-r",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cangzhang/champ-r.git"
+  },
   "homepage": "./",
   "author": {
     "name": "Al Cheung",
@@ -13,18 +16,18 @@
   },
   "main": "main.js",
   "scripts": {
-    "build": "yarn build-react && yarn dist",
-    "build-react": "node scripts/build.js",
-    "dist": "electron-builder --win --x64 -p never",
-    "postinstall": "electron-builder install-app-deps",
-    "lint": "eslint --fix",
-    "pack": "electron-builder --dir",
-    "###release": "np",
-    "start": "concurrently \"yarn start-react\" \"wait-on http://localhost:3000 && yarn start-electron\"",
+    "postinstall": "cross-env electron-builder install-app-deps",
     "start-electron": "cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true run-electron . --inspect=5858",
     "start-react": "cross-env BROWSER=none node scripts/start.js",
-    "test": "npm run lint",
-    "test-react": "node scripts/test.js"
+    "start": "concurrently \"yarn start-react\" \"wait-on http://localhost:3000 && yarn start-electron\"",
+    "build-react": "node scripts/build.js",
+    "dist:local": "cross-env electron-builder --win --x64 -p never",
+    "dist": "cross-env electron-builder --win --x64 -p always",
+    "build:local": "cross-env yarn build-react && yarn dist:local",
+    "build": "cross-env yarn build-react && yarn dist",
+    "release": "yarn build",
+    "pack": "electron-builder --dir",
+    "lint": "eslint --fix"
   },
   "dependencies": {
     "axios": "^0.19.2",
@@ -37,7 +40,7 @@
     "electron-log": "^4.1.2",
     "electron-store": "5.1.1",
     "electron-unhandled": "^3.0.0",
-    "electron-updater": "^4.0.6",
+    "electron-updater": "^4.3.1",
     "electron-util": "0.14.0",
     "i18next": "^19.3.4",
     "immer": "6.0.3",
@@ -68,7 +71,7 @@
     "babel-jest": "^24.9.0",
     "babel-loader": "8.0.6",
     "babel-plugin-named-asset-import": "^0.3.5",
-    "babel-preset-react-app": "^9.1.0",
+    "babel-preset-react-app": "^9.1.2",
     "camelcase": "^5.3.1",
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "compression-webpack-plugin": "^3.1.0",
@@ -81,7 +84,7 @@
     "electron-builder": "22.4.1",
     "electron-reloader": "^1.0.1",
     "eslint": "^6.6.0",
-    "eslint-config-react-app": "^5.1.0",
+    "eslint-config-react-app": "^5.2.1",
     "eslint-loader": "3.0.2",
     "eslint-plugin-baseui": "9.67.2",
     "eslint-plugin-flowtype": "3.13.0",
@@ -101,7 +104,6 @@
     "lint-staged": "^10.0.8",
     "mini-css-extract-plugin": "0.8.0",
     "node-sass": "^4.13.1",
-    "np": "^5.0.3",
     "optimize-css-assets-webpack-plugin": "5.0.3",
     "pnp-webpack-plugin": "1.5.0",
     "postcss-flexbugs-fixes": "4.1.0",
@@ -155,11 +157,11 @@
     "win": {
       "icon": "./resources/app-icon.png",
       "requestedExecutionLevel": "requireAdministrator"
+    },
+    "publish": {
+      "provider": "github",
+      "releaseType": "release"
     }
-  },
-  "##np": {
-    "publish": false,
-    "releaseDraft": false
   },
   "husky": {
     "hooks": {

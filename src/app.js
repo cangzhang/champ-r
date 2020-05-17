@@ -132,6 +132,12 @@ const App = () => {
     };
 
     getVerAndItems();
+
+    ipcRenderer.on(`update-available`, (info) => {
+      new Notification(`New version available: ${info.version}`);
+    });
+
+    // ipcRenderer.on(`update-downloaded`, () => {});
   }, []);
 
   return (

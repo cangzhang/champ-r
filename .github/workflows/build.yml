@@ -24,7 +24,7 @@ jobs:
       run: |
         $sha = (git rev-parse --short HEAD)
         yarn --silent
-        $env:SHORT_SHA=$sha; yarn build
+        $env:SHORT_SHA=$sha; yarn build:local
 
     - name: Move artifacts
       id: vars

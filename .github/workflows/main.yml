@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: publish
+name: release
 
 on:
   push:
@@ -20,11 +20,13 @@ jobs:
       with:
         node-version: '12.x'
 
-    - name: Build
+    - name: Build & release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         $sha = (git rev-parse --short HEAD)
         yarn --silent
-        $env:SHORT_SHA=$sha; yarn build
+        $env:SHORT_SHA=$sha; yarn release
 
     - name: Move artifacts
       id: vars
@@ -39,30 +41,30 @@ jobs:
         Rename-Item -Path $file.FullName -NewName $newName
         echo "::set-output name=fileName::$($newName)"
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Assets
-      id: upload_release_assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/artifacts/${{ steps.vars.outputs.fileName }}
-        asset_name: ${{ steps.vars.outputs.fileName }}
-        asset_content_type: application/vnd.microsoft.portable-executable
-
     - name: Upload artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: champ-r-installer
+        name: ChampR-installer
         path: "./dist/artifacts"
+
+#    - name: Create Release
+#      id: create_release
+#      uses: actions/create-release@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        tag_name: ${{ github.ref }}
+#        release_name: ${{ github.ref }}
+#        draft: false
+#        prerelease: false
+
+#    - name: Upload Release Assets
+#      id: upload_release_assets
+#      uses: actions/upload-release-asset@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        upload_url: ${{ steps.create_release.outputs.upload_url }}
+#        asset_path: ./dist/artifacts/${{ steps.vars.outputs.fileName }}
+#        asset_name: ${{ steps.vars.outputs.fileName }}
+#        asset_content_type: application/vnd.microsoft.portable-executable
