@@ -1,6 +1,6 @@
 # ChampR
 
-![publish](https://github.com/cangzhang/champ-r/workflows/publish/badge.svg)
+![release](https://github.com/cangzhang/champ-r/workflows/release/badge.svg)
 ![](https://flat.badgen.net/github/release/cangzhang/champ-r)
 
 Another League of Legends helper. [Screenshots here](./screenshots)
@@ -12,6 +12,7 @@ Another League of Legends helper. [Screenshots here](./screenshots)
 - ✨ i18n support
     - `Chinese`
     - `English`
+- ℹ️ Update notifier
 
 ## Download
 
