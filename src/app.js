@@ -102,9 +102,9 @@ const App = () => {
         console.log(`show popup.`);
         return true;
       } catch (_err) {
-        console.error(`cannot show popup.`);
         if (process.env.IS_DEV) return;
 
+        console.error(`cannot show popup.`);
         ipcRenderer.send(`hide-popup`);
       }
     }, 1600);

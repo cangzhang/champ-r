@@ -14,9 +14,10 @@ import ReactGA from 'react-ga';
 
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix, getChampions } from 'src/service/qq';
+import LCUService from 'src/service/lcu';
 import LolQQ from 'src/service/data-source/lol-qq';
 import Opgg from 'src/service/data-source/op-gg';
-import LCUService from 'src/service/lcu';
+// import MurderBridge from 'src/service/data-source/murderbridge';
 
 import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
@@ -47,6 +48,11 @@ export default function Popup() {
   useGA({ page: `/runes` });
 
   useEffect(() => {
+    // const mb = new MurderBridge();
+    // mb.import().then((v) => {
+    //   console.log(v);
+    // });
+
     getChampions(lolVer).then((championList) => {
       setChampionMap(championList);
 
