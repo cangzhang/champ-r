@@ -265,7 +265,7 @@ export default class LolQQ extends SourceProto {
         champion: alias,
         position,
         blocks,
-        map: 'SR',
+        map: 'any',
         mode: 'any',
         preferredItemSlots: [],
         sortrank: 1,

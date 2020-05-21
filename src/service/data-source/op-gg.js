@@ -291,7 +291,7 @@ export default class OpGG extends SourceProto {
         champion: championName,
         position,
         blocks,
-        map: 'SR',
+        map: 'any',
         mode: 'any',
         preferredItemSlots: [],
         sortrank: 1,
