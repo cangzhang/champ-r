@@ -24,6 +24,7 @@ import RunePreview from 'src/components/rune-preview';
 import useGA from 'src/components/use-ga';
 
 import { getChampionInfo } from './utils';
+import { useTranslation } from 'react-i18next';
 
 const engine = new Styletron();
 const TabNames = {
@@ -34,6 +35,7 @@ const TabNames = {
 export default function Popup() {
   const lolVer = config.get(`lolVer`);
   const lolDir = config.get(`lolDir`);
+  const [t] = useTranslation();
   const lcu = useRef({});
 
   const [championMap, setChampionMap] = useState(null);
@@ -88,19 +90,24 @@ export default function Popup() {
   }, [championId, championMap]);
 
   const apply = async (perk) => {
-    lcu.current = new LCUService(lolDir);
-    await lcu.current.getAuthToken();
-    const res = await lcu.current.applyPerk({
-      ...perk,
-    });
-
-    console.info(`updated perk`, res);
-
     ReactGA.event({
       category: `User`,
       action: `Apply perk`,
       value: +championId.key,
     });
+
+    try {
+      lcu.current = new LCUService(lolDir);
+      await lcu.current.getAuthToken();
+      const res = await lcu.current.applyPerk({
+        ...perk,
+      });
+      console.info(`Apply perk`, res);
+
+      new Notification(t(`applied`));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const showPreview = (perk, el) => {

@@ -27,5 +27,6 @@ export default {
     'win ratio': `胜率`,
     'apply perk': `应用符文页`,
     'star it': `给 ChampR 🌟`,
+    applied: `应用成功`,
   },
 };

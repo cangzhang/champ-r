@@ -225,18 +225,37 @@ async function getMachineId() {
   return id;
 }
 
+function isNetworkError(errorObject) {
+  return (
+    errorObject.message === 'net::ERR_INTERNET_DISCONNECTED' ||
+    errorObject.message === 'net::ERR_PROXY_CONNECTION_FAILED' ||
+    errorObject.message === 'net::ERR_CONNECTION_RESET' ||
+    errorObject.message === 'net::ERR_CONNECTION_CLOSE' ||
+    errorObject.message === 'net::ERR_NAME_NOT_RESOLVED' ||
+    errorObject.message === 'net::ERR_CONNECTION_TIMED_OUT'
+  );
+}
+
 async function checkUpdates() {
   if (isDev) {
     console.log(`Skipped updated check for dev mode.`);
     return;
   }
 
-  // every 1h
-  setInterval(async () => {
-    await autoUpdater.checkForUpdates();
-  }, 1000 * 60 * 60);
+  try {
+    setInterval(async () => {
+      await autoUpdater.checkForUpdates();
+    }, 1000 * 60 * 60 * 3);
 
-  await autoUpdater.checkForUpdates();
+    await autoUpdater.checkForUpdates();
+  } catch (err) {
+    if (isNetworkError(err)) {
+      console.error('Network Error');
+      return;
+    }
+
+    console.error(err == null ? 'unknown' : (err.stack || err).toString());
+  }
 }
 
 function registerUpdater() {

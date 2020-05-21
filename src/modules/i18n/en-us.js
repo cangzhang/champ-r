@@ -27,5 +27,6 @@ export default {
     'win ratio': `Win ratio`,
     'apply perk': `Apply`,
     'star it': `Star it!`,
+    applied: `Applied runes successfully`,
   },
 };
