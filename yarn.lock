@@ -4916,10 +4916,10 @@ electron-util@0.14.0:
     electron-is-dev "^1.1.0"
     new-github-issue-url "^0.2.1"
 
-electron@9.0.0:
-  version "9.0.0"
-  resolved "https://registry.npm.taobao.org/electron/download/electron-9.0.0.tgz#335cd426a8a542ad8d4c96c0c40a8668ab5527b8"
-  integrity sha1-M1zUJqilQq2NTJbAxAqGaKtVJ7g=
+electron@8.3.0:
+  version "8.3.0"
+  resolved "https://registry.npm.taobao.org/electron/download/electron-8.3.0.tgz?cache=0&sync_timestamp=1590112107063&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Felectron%2Fdownload%2Felectron-8.3.0.tgz#c2b565a4c10d6d287d20164bcd5a478468b940a9"
+  integrity sha1-wrVlpMENbSh9IBZLzVpHhGi5QKk=
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^12.0.12"
