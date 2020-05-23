@@ -226,14 +226,14 @@ async function getMachineId() {
 }
 
 function isNetworkError(errorObject) {
-  return (
-    errorObject.message === 'net::ERR_INTERNET_DISCONNECTED' ||
-    errorObject.message === 'net::ERR_PROXY_CONNECTION_FAILED' ||
-    errorObject.message === 'net::ERR_CONNECTION_RESET' ||
-    errorObject.message === 'net::ERR_CONNECTION_CLOSE' ||
-    errorObject.message === 'net::ERR_NAME_NOT_RESOLVED' ||
-    errorObject.message === 'net::ERR_CONNECTION_TIMED_OUT'
-  );
+  return errorObject.message.includes(`net::ERR_`);
+  // errorObject.message === 'net::ERR_INTERNET_DISCONNECTED' ||
+  // errorObject.message === 'net::ERR_PROXY_CONNECTION_FAILED' ||
+  // errorObject.message === 'net::ERR_CONNECTION_RESET' ||
+  // errorObject.message === 'net::ERR_CONNECTION_CLOSE' ||
+  // errorObject.message === 'net::ERR_NAME_NOT_RESOLVED' ||
+  // errorObject.message === 'net::ERR_CONNECTION_TIMED_OUT' ||
+  // errorObject.message === 'net::ERR_EMPTY_RESPONSE'
 }
 
 async function checkUpdates() {
