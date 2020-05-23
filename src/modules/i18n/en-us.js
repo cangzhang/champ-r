@@ -28,5 +28,6 @@ export default {
     'apply perk': `Apply`,
     'star it': `Star it!`,
     applied: `Applied runes successfully`,
+    'please specify lol dir': `Please specify lol directory first.`,
   },
 };

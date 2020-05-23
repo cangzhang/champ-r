@@ -28,5 +28,6 @@ export default {
     'apply perk': `应用符文页`,
     'star it': `给 ChampR 🌟`,
     applied: `应用成功`,
+    'please specify lol dir': `请先选择 LOL 安装目录`,
   },
 };

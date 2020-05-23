@@ -11,6 +11,7 @@ import { useStyletron } from 'baseui';
 import { Button } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
+import { Notification, KIND } from 'baseui/notification';
 import { Tag } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
 import { CornerDownRight } from 'react-feather';
@@ -180,6 +181,21 @@ export default function Home() {
           </Checkbox>
         ))}
       </div>
+
+      {!lolDir && (
+        <Notification
+          kind={KIND.negative}
+          overrides={{
+            Body: {
+              style: () => ({
+                marginTop: `4ex`,
+                width: `auto`,
+              }),
+            },
+          }}>
+          {() => t(`please specify lol dir`)}
+        </Notification>
+      )}
 
       <div className={s.control}>
         <Button
