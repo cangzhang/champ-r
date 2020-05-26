@@ -28,6 +28,12 @@ app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 app.commandLine.appendSwitch('ignore-connections-limit', 'op.gg');
 app.allowRendererProcessReuse = false;
 
+const ignoreSystemScale = config.get(`ignoreSystemScale`);
+if (ignoreSystemScale) {
+  app.commandLine.appendSwitch('high-dpi-support', 1);
+  app.commandLine.appendSwitch('force-device-scale-factor', 1);
+}
+
 // Prevent window from being garbage collected
 let mainWindow = null;
 let popupWindow = null;
@@ -47,7 +53,7 @@ const createMainWindow = async () => {
     frame: false,
     height: 800,
     width: isDev ? 1300 : 500,
-    resizable: isDev,
+    resizable: isDev || ignoreSystemScale,
     webPreferences,
   });
 
@@ -76,11 +82,12 @@ const createPopupWindow = async () => {
     y: mY,
   });
 
+  // TODO: remember window size & position
   const popup = new BrowserWindow({
     show: false,
     frame: false,
     skipTaskbar: true,
-    resizable: isDev,
+    resizable: isDev || ignoreSystemScale,
     fullscreenable: false,
     alwaysOnTop: !isDev,
     width: isDev ? 900 : 400,
@@ -150,7 +157,6 @@ function registerMainListeners() {
     }
 
     if (!popupWindow.isVisible()) {
-      // popupWindow.showInactive();
       popupWindow.show();
     }
 
@@ -171,6 +177,11 @@ function registerMainListeners() {
 
   ipcMain.on(`toggle-main-window`, () => {
     toggleMainWindow();
+  });
+
+  ipcMain.on(`restart-app`, () => {
+    app.relaunch();
+    app.exit();
   });
 }
 
@@ -201,7 +212,7 @@ function makeTray() {
   });
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: `Toggle`,
+      label: `Toggle window`,
       click() {
         toggleMainWindow();
       },

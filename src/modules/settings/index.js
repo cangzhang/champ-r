@@ -1,13 +1,16 @@
 /* eslint react-hooks/exhaustive-deps: 0 */
 import s from './style.module.scss';
 
+import { ipcRenderer } from 'electron';
+
 import _get from 'lodash/get';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import { Select } from 'baseui/select';
 import { Button } from 'baseui/button';
+import { Checkbox, STYLE_TYPE } from 'baseui/checkbox';
 
 import config from 'src/native/config';
 
@@ -28,9 +31,16 @@ export default function Settings() {
   const history = useHistory();
   const sysLang = config.get(`appLang`);
   const [values, setLangValues] = useState([getLangItem(sysLang)]);
+  const [ignoreSystemScale, setIgnoreSystemScale] = useState(config.get(`ignoreSystemScale`));
+
+  const recorder = useRef(false);
 
   const onSelectLang = (param) => {
     setLangValues(param.value);
+  };
+
+  const restartApp = () => {
+    ipcRenderer.send(`restart-app`);
   };
 
   useEffect(() => {
@@ -61,7 +71,7 @@ export default function Settings() {
                   flexGrow: 1,
                   flexShrink: 0,
                   flexBasis: 0,
-                  marginLeft: `1em`,
+                  marginLeft: `3em`,
                 };
               },
             },
@@ -69,21 +79,38 @@ export default function Settings() {
         />
       </div>
 
-      <Button
-        onClick={() => history.replace(`/`)}
+      <Checkbox
+        checked={ignoreSystemScale}
+        checkmarkType={STYLE_TYPE.toggle_round}
+        onChange={(e) => {
+          setIgnoreSystemScale(e.currentTarget.checked);
+          config.set(`ignoreSystemScale`, e.currentTarget.checked);
+          recorder.current = true;
+        }}
         overrides={{
-          BaseButton: {
-            style: () => {
+          Root: {
+            style: () => ({
+              height: `48px`,
+              display: `flex`,
+              alignItems: `center`,
+              marginTop: `1em`,
+            }),
+          },
+          Label: {
+            style: ({ $theme }) => {
               return {
-                width: `14em`,
-                display: `flex`,
-                margin: `2em auto`,
+                fontSize: $theme.typography.ParagraphMedium,
               };
             },
           },
         }}>
-        {t(`back to home`)}
-      </Button>
+        {t(`ignore system scale`)}
+      </Checkbox>
+
+      <div className={s.ctrlBtns}>
+        <Button onClick={() => history.replace(`/`)}>{t(`back to home`)}</Button>
+        {recorder.current && <Button onClick={restartApp}>{t(`restart app`)}</Button>}
+      </div>
     </div>
   );
 }

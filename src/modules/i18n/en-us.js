@@ -29,5 +29,7 @@ export default {
     'star it': `Star it!`,
     applied: `Applied runes successfully`,
     'please specify lol dir': `Please specify lol directory first.`,
+    'ignore system scale': `Ignore system scale (restart required)`,
+    'restart app': `Restart ChampR`,
   },
 };

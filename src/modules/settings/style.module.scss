@@ -9,3 +9,18 @@
   display: flex;
   align-items: center;
 }
+
+.ctrl-btns {
+  margin-top: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  button {
+    width: 12em;
+
+    &:not(:first-child) {
+      margin-left: 2em;
+    }
+  }
+}
