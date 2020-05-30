@@ -1519,7 +1519,7 @@ export const shardOptionOrder = [
   ['5001', '5002', '5003'],
 ];
 
-export const settings = {
+const settings = {
   champion: {
     disableSpinner: false,
     showSpecialItems: false,
@@ -1532,6 +1532,7 @@ export const settings = {
     ratio: 50,
   },
 };
+const generalSettings = settings.general;
 
 function scorer(winRate, frequency, mean, spread) {
   if (frequency === 0) {
@@ -1548,14 +1549,14 @@ function scorer(winRate, frequency, mean, spread) {
   return winRate * score;
 }
 
-function scoreGenerator(winRate, frequency, mean, settings) {
+function scoreGenerator(winRate, frequency, mean, general) {
   let adjustedMean = mean || 2.5;
-  adjustedMean = settings && settings.mean ? settings.mean : adjustedMean;
-  return scorer(winRate, frequency, adjustedMean, 100 - settings.ratio);
+  adjustedMean = general && general.mean ? general.mean : adjustedMean;
+  return scorer(winRate, frequency, adjustedMean, 100 - general.ratio);
 }
 
 function generateOptimalSubPerks(styleOverride, championRunes = {}) {
-  let optimalSubperk = [];
+  let optimalSubPerk = [];
 
   Object.keys(styles)
     .filter((style) => {
@@ -1563,7 +1564,7 @@ function generateOptimalSubPerks(styleOverride, championRunes = {}) {
     })
     .forEach((style) => {
       const runes = Object.values(runesLookUp).filter(
-        (rune) => rune.style == style && rune.slot !== '0',
+        (rune) => rune.style === style && rune.slot !== '0',
       );
       let bestScoreSoFar = -1;
       let bestRunesSoFar = [];
@@ -1575,13 +1576,13 @@ function generateOptimalSubPerks(styleOverride, championRunes = {}) {
                 championRunes[firstRune.id].winRate,
                 championRunes[firstRune.id].frequency,
                 2.5,
-                settings.general,
+                generalSettings,
               ) +
               scoreGenerator(
                 championRunes[secondRune.id].winRate,
                 championRunes[secondRune.id].frequency,
                 2.5,
-                settings.general,
+                generalSettings,
               );
 
             if (score > bestScoreSoFar) {
@@ -1591,16 +1592,23 @@ function generateOptimalSubPerks(styleOverride, championRunes = {}) {
           }
         });
       });
-      optimalSubperk.push([...bestRunesSoFar]);
+      optimalSubPerk.push([...bestRunesSoFar]);
     });
-  optimalSubperk.sort((a, b) => b[2] - a[2]);
-  return optimalSubperk;
+  optimalSubPerk.sort((a, b) => b[2] - a[2]);
+  return optimalSubPerk;
 }
 
-function generateOptimalPerks(primaryStyleOverride, secondaryStyleOverride, championRunes = {}) {
+export function generateOptimalPerks(
+  primaryStyleOverride,
+  secondaryStyleOverride,
+  championRunes = {},
+) {
   let bestScoreSoFar = -1;
   let bestRunesSoFar = [];
   let bestStyleSoFar = -1;
+
+  let perkStyles = [];
+
   Object.keys(styles)
     .filter((style) => {
       return primaryStyleOverride ? style === primaryStyleOverride : true;
@@ -1617,13 +1625,13 @@ function generateOptimalPerks(primaryStyleOverride, secondaryStyleOverride, cham
               championRunes[b.id].winRate,
               championRunes[b.id].frequency,
               2.5,
-              settings.general,
+              generalSettings,
             ) -
             scoreGenerator(
               championRunes[a.id].winRate,
               championRunes[a.id].frequency,
               2.5,
-              settings.general,
+              generalSettings,
             ),
         );
         runesSet.push(runes[0]);
@@ -1634,14 +1642,14 @@ function generateOptimalPerks(primaryStyleOverride, secondaryStyleOverride, cham
               championRunes[runes[0].id].winRate,
               championRunes[runes[0].id].frequency,
               2.5,
-              settings.general,
+              generalSettings,
             );
         } else {
           totalScore += scoreGenerator(
             championRunes[runes[0].id].winRate,
             championRunes[runes[0].id].frequency,
             2.5,
-            settings.general,
+            generalSettings,
           );
         }
       }
@@ -1650,7 +1658,14 @@ function generateOptimalPerks(primaryStyleOverride, secondaryStyleOverride, cham
         bestRunesSoFar = runesSet;
         bestScoreSoFar = totalScore;
       }
+
+      perkStyles.push({
+        style,
+        mainScore: totalScore,
+        runes: runesSet.map((p) => p.id),
+      });
     });
+
   const runesObj = {
     primaryStyle: bestStyleSoFar,
   };
@@ -1659,29 +1674,33 @@ function generateOptimalPerks(primaryStyleOverride, secondaryStyleOverride, cham
   }
   const subPerks = generateOptimalSubPerks(secondaryStyleOverride);
 
-  for (let i = 0; i < subPerks.length; i += 1) {
-    if (subPerks[i][3] != bestStyleSoFar) {
-      runesObj.subStyle = subPerks[i][3];
-      runesObj.perk4 = String(subPerks[i][0].id);
-      runesObj.perk5 = String(subPerks[i][1].id);
-      break;
-    }
-  }
-  let counter = 0;
-  shardOptionOrder.forEach((row) => {
-    const clone = [...row];
-    clone.sort((a, b) => {
-      return (
-        scoreGenerator(
-          championRunes[b].winRate,
-          championRunes[b].frequency,
-          2.5,
-          settings.general,
-        ) -
-        scoreGenerator(championRunes[a].winRate, championRunes[a].frequency, 2.5, settings.general)
-      );
-    });
-    runesObj['statShard' + counter++] = clone[0];
+  perkStyles = perkStyles.map((s) => {
+    const topSubPerks = subPerks
+      .filter((ss) => ss[3] !== s.style)
+      .slice(0, 2)
+      .map((j) => ({
+        runes: [j[0].id, j[1].id],
+        subScore: j[2],
+        style: j[3],
+      }));
+
+    return {
+      ...s,
+      subPerks: topSubPerks,
+    };
   });
-  return runesObj;
+
+  const sortedPerks = perkStyles.sort((a, b) => b.score - a.score);
+
+  const fragments = shardOptionOrder.map((row) => {
+    const clone = [...row];
+    clone.sort(
+      (a, b) =>
+        scoreGenerator(championRunes[b].winRate, championRunes[b].frequency, 2.5, generalSettings) -
+        scoreGenerator(championRunes[a].winRate, championRunes[a].frequency, 2.5, generalSettings),
+    );
+    return clone[0];
+  });
+
+  return [sortedPerks, fragments];
 }

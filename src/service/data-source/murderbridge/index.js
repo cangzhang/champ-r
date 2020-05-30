@@ -3,7 +3,7 @@ import SourceProto from 'src/service/data-source/source-proto';
 
 const ApiPrefix = `https://d23wati96d2ixg.cloudfront.net`;
 
-export default class MurderBridge extends SourceProto {
+export default class Index extends SourceProto {
   constructor() {
     super();
   }
