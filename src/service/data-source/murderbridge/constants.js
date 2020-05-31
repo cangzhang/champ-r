@@ -1532,7 +1532,7 @@ const settings = {
     ratio: 50,
   },
 };
-const generalSettings = settings.general;
+export const generalSettings = settings.general;
 
 function scorer(winRate, frequency, mean, spread) {
   if (frequency === 0) {
@@ -1549,10 +1549,8 @@ function scorer(winRate, frequency, mean, spread) {
   return winRate * score;
 }
 
-function scoreGenerator(winRate, frequency, mean, general) {
-  let adjustedMean = mean || 2.5;
-  adjustedMean = general && general.mean ? general.mean : adjustedMean;
-  return scorer(winRate, frequency, adjustedMean, 100 - general.ratio);
+export function scoreGenerator(winRate, frequency, mean = generalSettings.mean, general) {
+  return scorer(winRate, frequency, mean, 100 - general.ratio);
 }
 
 function generateOptimalSubPerks(styleOverride, championRunes = {}) {
@@ -1575,13 +1573,13 @@ function generateOptimalSubPerks(styleOverride, championRunes = {}) {
               scoreGenerator(
                 championRunes[firstRune.id].winRate,
                 championRunes[firstRune.id].frequency,
-                2.5,
+                generalSettings.mean,
                 generalSettings,
               ) +
               scoreGenerator(
                 championRunes[secondRune.id].winRate,
                 championRunes[secondRune.id].frequency,
-                2.5,
+                generalSettings.mean,
                 generalSettings,
               );
 
@@ -1624,13 +1622,13 @@ export function generateOptimalPerks(
             scoreGenerator(
               championRunes[b.id].winRate,
               championRunes[b.id].frequency,
-              2.5,
+              generalSettings.mean,
               generalSettings,
             ) -
             scoreGenerator(
               championRunes[a.id].winRate,
               championRunes[a.id].frequency,
-              2.5,
+              generalSettings.mean,
               generalSettings,
             ),
         );
@@ -1641,14 +1639,14 @@ export function generateOptimalPerks(
             scoreGenerator(
               championRunes[runes[0].id].winRate,
               championRunes[runes[0].id].frequency,
-              2.5,
+              generalSettings.mean,
               generalSettings,
             );
         } else {
           totalScore += scoreGenerator(
             championRunes[runes[0].id].winRate,
             championRunes[runes[0].id].frequency,
-            2.5,
+            generalSettings.mean,
             generalSettings,
           );
         }
@@ -1696,8 +1694,18 @@ export function generateOptimalPerks(
     const clone = [...row];
     clone.sort(
       (a, b) =>
-        scoreGenerator(championRunes[b].winRate, championRunes[b].frequency, 2.5, generalSettings) -
-        scoreGenerator(championRunes[a].winRate, championRunes[a].frequency, 2.5, generalSettings),
+        scoreGenerator(
+          championRunes[b].winRate,
+          championRunes[b].frequency,
+          generalSettings.mean,
+          generalSettings,
+        ) -
+        scoreGenerator(
+          championRunes[a].winRate,
+          championRunes[a].frequency,
+          generalSettings.mean,
+          generalSettings,
+        ),
     );
     return clone[0];
   });
