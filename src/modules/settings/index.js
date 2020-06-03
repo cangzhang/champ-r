@@ -100,6 +100,7 @@ export default function Settings() {
             style: ({ $theme }) => {
               return {
                 fontSize: $theme.typography.ParagraphMedium,
+                fontWeight: 600,
               };
             },
           },

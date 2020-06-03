@@ -51,8 +51,8 @@ const createMainWindow = async () => {
     title: app.name,
     show: false,
     frame: false,
-    height: 800,
-    width: isDev ? 1300 : 500,
+    height: 650,
+    width: isDev ? 1300 : 460,
     resizable: isDev || ignoreSystemScale,
     webPreferences,
   });
