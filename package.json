@@ -1,6 +1,6 @@
 {
   "name": "champ-r",
-  "version": "0.9.15-beta.1",
+  "version": "0.9.15-beta.2",
   "license": "MIT",
   "description": "Get champion builds & runes for lol.",
   "productName": "ChampR",
@@ -97,6 +97,7 @@
     "html-webpack-plugin": "4.0.0-beta.5",
     "husky": "^4.2.3",
     "identity-obj-proxy": "3.0.0",
+    "imagemin-webp-webpack-plugin": "^3.3.1",
     "jest": "24.9.0",
     "jest-environment-jsdom-fourteen": "0.1.0",
     "jest-resolve": "24.9.0",
@@ -147,6 +148,9 @@
     "appId": "com.al.champ-r",
     "files": [
       "build/**/*",
+      "!build/**/*.png",
+      "!build/**/*.jpg",
+      "!build/**/*.jpeg",
       "src/native/**/*",
       "package.json",
       "main.js"

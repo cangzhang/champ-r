@@ -40,5 +40,5 @@ yarn start
 ### Build
 
 ```bash
-yarn build
+yarn build:local
 ```
