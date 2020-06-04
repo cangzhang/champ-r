@@ -52,7 +52,7 @@ const createMainWindow = async () => {
     show: false,
     frame: false,
     height: 650,
-    width: isDev ? 1300 : 460,
+    width: isDev ? 1300 : 400,
     resizable: isDev || ignoreSystemScale,
     webPreferences,
   });

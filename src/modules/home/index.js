@@ -174,6 +174,7 @@ export default function Home() {
               Label: {
                 style: ({ $theme }) => ({
                   fontSize: $theme.sizing.scale600,
+                  textTransform: `uppercase`,
                 }),
               },
             }}>
