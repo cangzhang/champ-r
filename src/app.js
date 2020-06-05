@@ -51,8 +51,7 @@ const App = () => {
       try {
         const lolDir = config.get(`lolDir`);
         if (!lolDir) {
-          console.err(`lol folder not selected.`);
-          return false;
+          throw new Error(`lol folder not selected.`);
         }
 
         if (!lcuInstance.current.getAuthToken) {
@@ -60,10 +59,8 @@ const App = () => {
         }
         const lcuIns = lcuInstance.current;
         await lcuIns.getAuthToken();
-
         if (!lcuIns.active) {
-          console.err(`lcu not running.`);
-          return false;
+          throw new Error(`lcu not running.`);
         }
 
         const {
@@ -89,8 +86,7 @@ const App = () => {
         }
 
         if (!championId) {
-          console.log(`no matched.`);
-          throw new Error(`no active session.`);
+          throw new Error(`no matched champion.`);
         }
 
         console.log(`got champion id: `, championId);
@@ -104,7 +100,7 @@ const App = () => {
       } catch (_err) {
         if (process.env.IS_DEV) return;
 
-        console.error(`cannot show popup.`);
+        console.error(_err.message);
         ipcRenderer.send(`hide-popup`);
       }
     }, 1600);

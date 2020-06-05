@@ -19,7 +19,7 @@ export default function Footer() {
 
   return (
     <div className={s.footer}>
-      {t('app version')}: {process.env.APP_VERSION}
+      {process.env.IS_DEV ? `dev` : `v${process.env.APP_VERSION}`}
       <StatefulTooltip accessibilityType={'tooltip'} content={t(`star it`)}>
         <a className={s.star} href='#champ-r' onClick={star}>
           <Star size={16} color={theme.colors.warning} />
