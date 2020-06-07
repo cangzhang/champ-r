@@ -4,6 +4,8 @@
   justify-content: space-between;
   padding: 1ex 1em 1ex 2ex;
 
+  user-select: none;
+
   &:hover {
     background-color: #f6f6f6;
     cursor: pointer;

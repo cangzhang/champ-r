@@ -36,6 +36,9 @@ body {
 .loading {
   position: fixed;
   top: 40vh;
-  left: 50vw;
-  transform: translate(-50%);
+  left: calc(50vw - 18px);
+}
+
+.list-loading {
+  margin: 8em auto;
 }

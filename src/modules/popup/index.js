@@ -24,6 +24,7 @@ import Sources from 'src/share/constants/sources';
 // import MurderBridge from 'src/service/data-source/murderbridge';
 import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
+import Loading from 'src/components/loading-spinner';
 
 import useGA from 'src/components/use-ga';
 import { getChampionInfo } from './utils';
@@ -102,13 +103,13 @@ export default function Popup() {
       await lcu.current.getAuthToken();
 
       if (!lcu.current.active) {
-        throw new Error(`LCU not active`);
+        throw new Error(`LCU not active.`);
       }
 
       const res = await lcu.current.applyPerk({
         ...perk,
       });
-      console.info(`Apply perk`, res);
+      console.info(`Applied perk`, res);
 
       new Notification(t(`applied`));
     } catch (e) {
@@ -133,7 +134,7 @@ export default function Popup() {
       perkList.length && championDetail && perkList[0].alias === championDetail.id;
 
     if (!shouldShowList) {
-      return <div className={s.loading}>loading...</div>;
+      return <Loading className={s.listLoading} />;
     }
 
     return (
@@ -159,7 +160,7 @@ export default function Popup() {
 
   const renderContent = () => {
     if (!championMap || !qqPerks.length) {
-      return <div className={s.loading}>loading...</div>;
+      return <Loading className={s.loading} />;
     }
 
     return (
