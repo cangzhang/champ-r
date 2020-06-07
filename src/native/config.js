@@ -7,7 +7,8 @@ module.exports = new Store({
     lolVer: '',
     appLang: '',
     keepOldItems: true,
-    selectedSources: [],
     ignoreSystemScale: false,
+    selectedSources: [],
+    perkTab: ``,
   },
 });

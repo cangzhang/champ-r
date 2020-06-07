@@ -6,31 +6,29 @@ import 'src/modules/i18n';
 import { ipcRenderer } from 'electron';
 import React, { useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
+import { useTranslation } from 'react-i18next';
+import ReactGA from 'react-ga';
+
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { Tabs, Tab } from 'baseui/tabs';
-import ReactGA from 'react-ga';
 
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix, getChampions } from 'src/service/qq';
 import LCUService from 'src/service/lcu';
 import LolQQ from 'src/service/data-source/lol-qq';
 import Opgg from 'src/service/data-source/op-gg';
-// import MurderBridge from 'src/service/data-source/murderbridge';
+import Sources from 'src/share/constants/sources';
 
+// import MurderBridge from 'src/service/data-source/murderbridge';
 import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
-import useGA from 'src/components/use-ga';
 
+import useGA from 'src/components/use-ga';
 import { getChampionInfo } from './utils';
-import { useTranslation } from 'react-i18next';
 
 const engine = new Styletron();
-const TabNames = {
-  qq: `lol.qq.com`,
-  opgg: `op.gg`,
-};
 
 export default function Popup() {
   const lolVer = config.get(`lolVer`);
@@ -41,7 +39,7 @@ export default function Popup() {
   const [championMap, setChampionMap] = useState(null);
   const [championId, setChampionId] = useState('');
   const [championDetail, setChampionDetail] = useState(null);
-  const [activeTab, setActiveTab] = useState(TabNames.qq);
+  const [activeTab, setActiveTab] = useState(config.get(`perkTab`) || Sources.Lolqq);
   const [qqPerks, setQQPerkList] = useState([]);
   const [opggPerks, setOPggPerkList] = useState([]);
   const [curPerk, setCurPerk] = useState({});
@@ -89,16 +87,24 @@ export default function Popup() {
     });
   }, [championId, championMap]);
 
+  useEffect(() => {
+    config.set(`perkTab`, activeTab);
+  }, [activeTab]);
+
   const apply = async (perk) => {
     ReactGA.event({
       category: `User`,
       action: `Apply perk`,
-      value: +championId.key,
     });
 
     try {
       lcu.current = new LCUService(lolDir);
       await lcu.current.getAuthToken();
+
+      if (!lcu.current.active) {
+        throw new Error(`LCU not active`);
+      }
+
       const res = await lcu.current.applyPerk({
         ...perk,
       });
@@ -106,7 +112,7 @@ export default function Popup() {
 
       new Notification(t(`applied`));
     } catch (e) {
-      console.error(e);
+      console.error(e.message);
     }
   };
 
@@ -185,10 +191,10 @@ export default function Popup() {
               },
             },
           }}>
-          <Tab key={TabNames.qq} title={TabNames.qq.toUpperCase()}>
+          <Tab key={Sources.Lolqq} title={Sources.Lolqq.toUpperCase()}>
             <div className={s.list}>{renderList(qqPerks)}</div>
           </Tab>
-          <Tab key={TabNames.opgg} title={TabNames.opgg.toUpperCase()}>
+          <Tab key={Sources.Opgg} title={Sources.Opgg.toUpperCase()}>
             <div className={s.list}>{renderList(opggPerks)}</div>
           </Tab>
         </Tabs>
