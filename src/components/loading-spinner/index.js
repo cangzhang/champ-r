@@ -4,6 +4,7 @@ import React from 'react';
 import cn from 'classnames';
 import { Loader } from 'react-feather';
 
-export default function LoadingSpinner({ className, size = 36 }) {
-  return <Loader size={size} color={`#1E54B7`} className={cn(s.loading, className)} />;
+// colors: #1E54B7, #3D68EC
+export default function LoadingSpinner({ className, size = 36, color = `#3D68EC` }) {
+  return <Loader size={size} color={color} className={cn(s.loading, className)} />;
 }
