@@ -7,7 +7,6 @@ import { ipcRenderer } from 'electron';
 import React, { useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useTranslation } from 'react-i18next';
-import ReactGA from 'react-ga';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
@@ -21,7 +20,7 @@ import LolQQ from 'src/service/data-source/lol-qq';
 import Opgg from 'src/service/data-source/op-gg';
 import Sources from 'src/share/constants/sources';
 
-// import MurderBridge from 'src/service/data-source/murderbridge';
+import MurderBridge from 'src/service/data-source/murderbridge';
 import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
 import Loading from 'src/components/loading-spinner';
@@ -37,12 +36,14 @@ export default function Popup() {
   const [t] = useTranslation();
   const lcu = useRef({});
 
+  const [qqPerks, setQQPerkList] = useState([]);
+  const [opggPerks, setOPggPerkList] = useState([]);
+  const [mbPerks, setMBPerks] = useState([]);
+
   const [championMap, setChampionMap] = useState(null);
   const [championId, setChampionId] = useState('');
   const [championDetail, setChampionDetail] = useState(null);
   const [activeTab, setActiveTab] = useState(config.get(`perkTab`) || Sources.Lolqq);
-  const [qqPerks, setQQPerkList] = useState([]);
-  const [opggPerks, setOPggPerkList] = useState([]);
   const [curPerk, setCurPerk] = useState({});
   const [coordinate, setCoordinate] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
@@ -86,6 +87,11 @@ export default function Popup() {
     opggInstance.getChampionPerks(champ.id).then((result) => {
       setOPggPerkList(result);
     });
+
+    const mbInstance = new MurderBridge();
+    mbInstance.getChampionPerks(champ.id).then((result) => {
+      setMBPerks(result);
+    });
   }, [championId, championMap]);
 
   useEffect(() => {
@@ -93,11 +99,6 @@ export default function Popup() {
   }, [activeTab]);
 
   const apply = async (perk) => {
-    ReactGA.event({
-      category: `User`,
-      action: `Apply perk`,
-    });
-
     try {
       lcu.current = new LCUService(lolDir);
       await lcu.current.getAuthToken();
@@ -129,7 +130,7 @@ export default function Popup() {
     setCurPerk({});
   };
 
-  const renderList = (perkList) => {
+  const renderList = (perkList = []) => {
     const shouldShowList =
       perkList.length && championDetail && perkList[0].alias === championDetail.id;
 
@@ -197,6 +198,9 @@ export default function Popup() {
           </Tab>
           <Tab key={Sources.Opgg} title={Sources.Opgg.toUpperCase()}>
             <div className={s.list}>{renderList(opggPerks)}</div>
+          </Tab>
+          <Tab key={Sources.MurderBridge} title={Sources.MurderBridge.toUpperCase()}>
+            <div className={s.list}>{renderList(mbPerks)}</div>
           </Tab>
         </Tabs>
       </div>

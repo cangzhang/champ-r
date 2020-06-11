@@ -74,6 +74,9 @@ const getItemIcon = (id, ver) => `${DDragonCDNUrl}/${ver}/img/item/${id}.png`;
 const getItemList = (version, language = 'en_US') =>
   http.get(`${DDragonCDNUrl}/${version}/data/${language}/item.json`);
 
+const getRunesReforged = (version, language = `en_US`) =>
+  http.get(`${DDragonCDNUrl}/${version}/data/${language}/runesReforged.json`);
+
 module.exports = {
   getLolVer,
   getChampions,
@@ -82,4 +85,5 @@ module.exports = {
   getItemIcon,
   getItemList,
   DDragonCDNUrl,
+  getRunesReforged,
 };
