@@ -43,26 +43,46 @@ export default class OpGG extends SourceProto {
     this.dispatch = dispatch;
   }
 
+  getLolVersion = async () => {
+    try {
+      const $ = await requestHtml(
+        `${OpggUrl}/champion/rengar/statistics/jungle`,
+        this.setCancelHook(`lol-version`),
+        false,
+      );
+      const versionText = $(`.champion-stats-header-version`).text().trim();
+      const match = versionText.match(/\d|\./g) || [];
+      const version = match.join(``);
+      this.version = version;
+      return version;
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
   getStat = async () => {
-    const $ = await requestHtml(`${OpggUrl}/champion/statistics`, this.setCancelHook(`stats`));
+    try {
+      const $ = await requestHtml(`${OpggUrl}/champion/statistics`, this.setCancelHook(`stats`));
+      const items = $('.champion-index__champion-list').find('.champion-index__champion-item');
+      const result = items.toArray().map((itm) => {
+        const champ = $(itm);
+        const { championKey, championName } = champ.data();
+        const positions = champ
+          .find('.champion-index__champion-item__position')
+          .toArray()
+          .map((i) => $(i).text().toLowerCase());
 
-    const items = $('.champion-index__champion-list').find('.champion-index__champion-item');
-    const result = items.toArray().map((itm) => {
-      const champ = $(itm);
-      const { championKey, championName } = champ.data();
-      const positions = champ
-        .find('.champion-index__champion-item__position')
-        .toArray()
-        .map((i) => $(i).text().toLowerCase());
+        return {
+          key: championKey,
+          name: championName,
+          positions: positions.slice(),
+        };
+      });
 
-      return {
-        key: championKey,
-        name: championName,
-        positions: positions.slice(),
-      };
-    });
-
-    return result;
+      return result;
+    } catch (error) {
+      throw new Error(error);
+    }
   };
 
   getPerksFromHtml = (alias, position, $) => {

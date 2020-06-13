@@ -31,5 +31,6 @@ export default {
     'please specify lol dir': `Please specify lol directory first.`,
     'ignore system scale': `Ignore system scale (restart required)`,
     'restart app': `Restart ChampR`,
+    aram: `ARAM`,
   },
 };

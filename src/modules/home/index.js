@@ -3,7 +3,7 @@ import s from 'src/app.module.scss';
 
 import { ipcRenderer, remote } from 'electron';
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
 
@@ -12,7 +12,7 @@ import { Button } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Notification, KIND } from 'baseui/notification';
-import { Tag } from 'baseui/tag';
+import { Tag, VARIANT } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
 import { CornerDownRight } from 'react-feather';
 import ReactGA from 'react-ga';
@@ -20,15 +20,23 @@ import ReactGA from 'react-ga';
 import config from 'src/native/config';
 import { updateConfig } from 'src/share/actions';
 
-import Sources from 'src/share/constants/sources';
+import Sources, { isAram } from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
 import { useTranslation } from 'react-i18next';
+import OpGG from 'src/service/data-source/op-gg';
+import LolQQ from 'src/service/data-source/lol-qq';
+import MurderBridge from 'src/service/data-source/murderbridge';
 
 export default function Home() {
   const [css, theme] = useStyletron();
   const { store, dispatch } = useContext(AppContext);
   const history = useHistory();
   const { t } = useTranslation();
+  const instances = useRef({
+    [Sources.Opgg]: null,
+    [Sources.Lolqq]: null,
+    [Sources.MurderBridge]: null,
+  });
 
   const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
   const [lolDir, setLolDir] = useState(config.get('lolDir'));
@@ -75,6 +83,16 @@ export default function Home() {
     });
     history.push(`/import`);
   };
+
+  useEffect(() => {
+    instances.current[Sources.Opgg] = new OpGG();
+    instances.current[Sources.Lolqq] = new LolQQ();
+    instances.current[Sources.MurderBridge] = new MurderBridge();
+
+    instances.current[Sources.Opgg].getLolVersion();
+    instances.current[Sources.Lolqq].getLolVersion();
+    instances.current[Sources.MurderBridge].getLolVersion();
+  }, []);
 
   useEffect(() => {
     // persist user preference
@@ -132,55 +150,52 @@ export default function Home() {
         <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }} />
       </code>
 
-      <div className={s.info}>
-        {t(`lol version is`)}
-        <Tag
-          kind='accent'
-          closeable={false}
-          overrides={{
-            Text: {
-              style: ({ $theme }) => ({
-                fontSize: $theme.sizing.scale550,
-              }),
-            },
-          }}>
-          {store.version}
-        </Tag>
-      </div>
-
       <div className={s.sources}>
-        {Object.values(Sources).map((v) => (
-          <Checkbox
-            key={v}
-            checked={selectedSources.includes(v)}
-            onChange={onCheck(v)}
-            overrides={{
-              Root: {
-                style: ({ $theme }) => ({
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: '3em',
-                  boxShadow: `0px 1px 0 ${$theme.colors.borderTransparent}`,
-                }),
-              },
-              Checkmark: {
-                style: ({ $checked, $theme }) => ({
-                  borderColor: $checked ? $theme.colors.positive : $theme.colors.backgroundNegative,
-                  backgroundColor: $checked
-                    ? $theme.colors.positive
-                    : $theme.colors.backgroundAlwaysLight,
-                }),
-              },
-              Label: {
-                style: ({ $theme }) => ({
-                  fontSize: $theme.sizing.scale600,
-                  textTransform: `uppercase`,
-                }),
-              },
-            }}>
-            {v}
-          </Checkbox>
-        ))}
+        {Object.values(Sources).map((v) => {
+          const aram = isAram(v);
+          const sourceVer = instances.current[v] && instances.current[v].version;
+
+          return (
+            <Checkbox
+              key={v}
+              checked={selectedSources.includes(v)}
+              onChange={onCheck(v)}
+              overrides={{
+                Root: {
+                  style: ({ $theme }) => ({
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: '3em',
+                    boxShadow: `0px 1px 0 ${$theme.colors.borderTransparent}`,
+                  }),
+                },
+                Checkmark: {
+                  style: ({ $checked, $theme }) => ({
+                    borderColor: $checked
+                      ? $theme.colors.positive
+                      : $theme.colors.backgroundNegative,
+                    backgroundColor: $checked
+                      ? $theme.colors.positive
+                      : $theme.colors.backgroundAlwaysLight,
+                  }),
+                },
+                Label: {
+                  style: ({ $theme }) => ({
+                    fontSize: $theme.sizing.scale600,
+                    textTransform: `uppercase`,
+                  }),
+                },
+              }}>
+              {v}
+              {aram && `(${t(`aram`)})`}
+              {sourceVer && (
+                <Tag closeable={false} variant={VARIANT.outlined} kind='warning'>
+                  {sourceVer}
+                </Tag>
+              )}
+            </Checkbox>
+          );
+        })}
       </div>
 
       {!lolDir && (

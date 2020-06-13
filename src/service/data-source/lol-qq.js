@@ -89,6 +89,16 @@ export default class LolQQ extends SourceProto {
     this.dispatch = dispatch;
   }
 
+  getLolVersion = async () => {
+    try {
+      const { version } = await http.get(API.champInfo(107));
+      this.version = version;
+      return version;
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
   getChampionList = async () => {
     try {
       const data = await http.get(API.List, {

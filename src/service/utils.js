@@ -8,7 +8,7 @@ import http from './http';
 
 const RequestLocale = `en-US`;
 
-export const requestHtml = async (url, setCancel, isAjax = true) => {
+export const requestHtml = async (url, setCancel, isAjax = true, showHtml = false) => {
   try {
     const rawHtml = await http.get(
       url,
@@ -27,6 +27,7 @@ export const requestHtml = async (url, setCancel, isAjax = true) => {
       },
     );
     const $ = cheerio.load(rawHtml);
+    showHtml && console.log(rawHtml);
     return $;
   } catch (error) {
     return error;

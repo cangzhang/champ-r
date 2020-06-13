@@ -16,7 +16,7 @@ export default class MurderBridge extends SourceProto {
     this.version = null;
   }
 
-  getLatestVersion = async () => {
+  getLolVersion = async () => {
     try {
       const { upToDateVersion } = await http.get(`${ApiPrefix}/save/general.json`);
       this.version = upToDateVersion;
@@ -37,7 +37,7 @@ export default class MurderBridge extends SourceProto {
 
   getChampionPerks = async (champion) => {
     try {
-      const version = await this.getLatestVersion();
+      const version = await this.getLolVersion();
       const [{ runes }, reforgedRunes] = await Promise.all([
         this.getChampData(champion, version),
         Ddragon.getRunesReforged(version),
@@ -49,7 +49,7 @@ export default class MurderBridge extends SourceProto {
         alias: champion,
       }));
     } catch (err) {
-      // throw new Error(err);
+      throw new Error(err);
     }
   };
 
@@ -95,7 +95,7 @@ export default class MurderBridge extends SourceProto {
 
   import = async () => {
     try {
-      const version = await this.getLatestVersion();
+      const version = await this.getLolVersion();
       this.version = version;
 
       return version;

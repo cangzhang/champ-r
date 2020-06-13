@@ -31,5 +31,6 @@ export default {
     'please specify lol dir': `请先选择 LOL 安装目录`,
     'ignore system scale': `忽略系统缩放 (需要重启应用)`,
     'restart app': `重新打开 ChampR`,
+    aram: `大乱斗`,
   },
 };
