@@ -130,7 +130,7 @@ export default function Popup() {
     setCurPerk({});
   };
 
-  const renderList = (perkList = []) => {
+  const renderList = (perkList = [], isAramMode = false) => {
     const shouldShowList =
       perkList.length && championDetail && perkList[0].alias === championDetail.id;
 
@@ -147,6 +147,7 @@ export default function Popup() {
           <PerkShowcase
             key={`${championId}-${idx}`}
             idx={idx}
+            isAramMode={isAramMode}
             perk={p}
             onApply={() => apply(p)}
             onMouseEnter={showPreview}
@@ -200,7 +201,7 @@ export default function Popup() {
             <div className={s.list}>{renderList(opggPerks)}</div>
           </Tab>
           <Tab key={Sources.MurderBridge} title={Sources.MurderBridge.toUpperCase()}>
-            <div className={s.list}>{renderList(mbPerks)}</div>
+            <div className={s.list}>{renderList(mbPerks, true)}</div>
           </Tab>
         </Tabs>
       </div>

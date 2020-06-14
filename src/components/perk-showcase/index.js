@@ -11,6 +11,7 @@ import { MainStyleIds } from 'src/share/constants/runes';
 
 export default function PerkShowcase({
   perk,
+  isAramMode = false,
   onApply,
   onMouseEnter = _noop,
   onMouseLeave = _noop,
@@ -34,16 +35,18 @@ export default function PerkShowcase({
 
       <div className={s.desc}>
         <div className={s.name}>
-          {perk.alias} @ {perk.position}
+          {perk.alias} {isAramMode ? `@ ${t(`aram`)}` : `@ ${perk.position}`}
         </div>
-        <div className={s.detail}>
-          <span className={s.pick}>
-            {t(`pick count`)} <span className={s.value}>{perk.pickCount}</span>
-          </span>
-          <span className={s.win}>
-            {t(`win ratio`)} <span className={s.value}>{perk.winRate}%</span>
-          </span>
-        </div>
+        {!isAramMode && (
+          <div className={s.detail}>
+            <span className={s.pick}>
+              {t(`pick count`)} <span className={s.value}>{perk.pickCount}</span>
+            </span>
+            <span className={s.win}>
+              {t(`win ratio`)} <span className={s.value}>{perk.winRate}%</span>
+            </span>
+          </div>
+        )}
       </div>
 
       <div className={s.apply} title={t(`apply perk`)} onClick={onApply}>
