@@ -75,7 +75,6 @@ export default class MurderBridge extends SourceProto {
       }));
 
     // TODO
-    // eslint-disable-next-line no-unused-vars
     const startBlocks = {
       type: `Starters`,
       items: startItems,
@@ -96,9 +95,8 @@ export default class MurderBridge extends SourceProto {
   import = async () => {
     try {
       const version = await this.getLolVersion();
-      this.version = version;
-
-      return version;
+      const championList = await Ddragon.getChampions(version);
+      // TODO
     } catch (err) {
       throw new Error(err);
     }
