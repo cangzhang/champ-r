@@ -172,7 +172,9 @@ export default function Home() {
       </code>
 
       <div className={s.sources}>
-        <H6 margin={`0 0 1ex 0`}>{t(`data sources`)}:</H6>
+        <H6 margin={`0 0 1ex 0`} color={theme.colors.borderInverseOpaque}>
+          {t(`data sources`)}:
+        </H6>
 
         {Object.values(Sources).map((v) => {
           const aram = isAram(v);
@@ -206,6 +208,8 @@ export default function Home() {
                   style: ({ $theme }) => ({
                     fontSize: $theme.sizing.scale600,
                     textTransform: `uppercase`,
+                    display: `flex`,
+                    alignItems: `center`,
                   }),
                 },
               }}>
@@ -216,7 +220,7 @@ export default function Home() {
                 </Tag>
               )}
               {aram && (
-                <Tag closeable={false} variant={VARIANT.outlined} kind='positive'>
+                <Tag closeable={false} variant={VARIANT.light} kind='positive'>
                   {t(`aram`)}
                 </Tag>
               )}
