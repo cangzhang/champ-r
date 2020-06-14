@@ -32,5 +32,6 @@ export default {
     'ignore system scale': `忽略系统缩放 (需要重启应用)`,
     'restart app': `重新打开 ChampR`,
     aram: `大乱斗`,
+    'data sources': `数据源`,
   },
 };

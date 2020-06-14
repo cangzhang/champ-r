@@ -32,5 +32,6 @@ export default {
     'ignore system scale': `Ignore system scale (restart required)`,
     'restart app': `Restart ChampR`,
     aram: `ARAM`,
+    'data sources': `Data Sources`,
   },
 };

@@ -6,7 +6,9 @@ import { ipcRenderer, remote } from 'electron';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
+import ReactGA from 'react-ga';
 
+import { CornerDownRight } from 'react-feather';
 import { useStyletron } from 'baseui';
 import { Button } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
@@ -14,8 +16,7 @@ import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Notification, KIND } from 'baseui/notification';
 import { Tag, VARIANT } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
-import { CornerDownRight } from 'react-feather';
-import ReactGA from 'react-ga';
+import { H6 } from 'baseui/typography';
 
 import config from 'src/native/config';
 import { updateConfig } from 'src/share/actions';
@@ -40,6 +41,11 @@ export default function Home() {
 
   const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
   const [lolDir, setLolDir] = useState(config.get('lolDir'));
+  const [versions, setVersions] = useState({
+    [Sources.Opgg]: null,
+    [Sources.Lolqq]: null,
+    [Sources.MurderBridge]: null,
+  });
 
   const toggleKeepOldItems = (ev) => {
     const { checked } = ev.target;
@@ -89,9 +95,24 @@ export default function Home() {
     instances.current[Sources.Lolqq] = new LolQQ();
     instances.current[Sources.MurderBridge] = new MurderBridge();
 
-    instances.current[Sources.Opgg].getLolVersion();
-    instances.current[Sources.Lolqq].getLolVersion();
-    instances.current[Sources.MurderBridge].getLolVersion();
+    instances.current[Sources.Opgg].getLolVersion().then((v) => {
+      setVersions((p) => ({
+        ...p,
+        [Sources.Opgg]: v,
+      }));
+    });
+    instances.current[Sources.Lolqq].getLolVersion().then((v) => {
+      setVersions((p) => ({
+        ...p,
+        [Sources.Lolqq]: v,
+      }));
+    });
+    instances.current[Sources.MurderBridge].getLolVersion().then((v) => {
+      setVersions((p) => ({
+        ...p,
+        [Sources.MurderBridge]: v,
+      }));
+    });
   }, []);
 
   useEffect(() => {
@@ -106,7 +127,7 @@ export default function Home() {
   return (
     <div className={s.container}>
       <h1 className={s.title}>
-        <span>Champ Remix</span>
+        <span>ChampR</span>
       </h1>
 
       <div className={s.info}>
@@ -151,9 +172,11 @@ export default function Home() {
       </code>
 
       <div className={s.sources}>
+        <H6 margin={`0 0 1ex 0`}>{t(`data sources`)}:</H6>
+
         {Object.values(Sources).map((v) => {
           const aram = isAram(v);
-          const sourceVer = instances.current[v] && instances.current[v].version;
+          const sourceVer = versions[v];
 
           return (
             <Checkbox
@@ -187,10 +210,14 @@ export default function Home() {
                 },
               }}>
               {v}
-              {aram && `(${t(`aram`)})`}
               {sourceVer && (
                 <Tag closeable={false} variant={VARIANT.outlined} kind='warning'>
                   {sourceVer}
+                </Tag>
+              )}
+              {aram && (
+                <Tag closeable={false} variant={VARIANT.outlined} kind='positive'>
+                  {t(`aram`)}
                 </Tag>
               )}
             </Checkbox>
