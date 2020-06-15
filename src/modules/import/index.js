@@ -17,6 +17,7 @@ import { prepareReimport, updateFetchingSource } from 'src/share/actions';
 import { removeFolderContent } from 'src/share/file';
 import OpGGImporter from 'src/service/data-source/op-gg';
 import LolQQImporter from 'src/service/data-source/lol-qq';
+import MbImporter from 'src/service/data-source/murderbridge';
 
 import config from 'src/native/config';
 import AppContext from 'src/share/context';
@@ -57,6 +58,7 @@ export default function Import() {
     const { itemMap } = store;
     let opggTask = _noop;
     let lolqqTask = _noop;
+    let mbTask = _noop;
 
     if (selectedSources.includes(Sources.Opgg)) {
       const instance = new OpGGImporter(lolVer, lolDir, itemMap, dispatch);
@@ -94,10 +96,15 @@ export default function Import() {
           });
     }
 
+    if (selectedSources.includes(Sources.MurderBridge)) {
+      const instance = new MbImporter(lolDir, itemMap, dispatch);
+      mbTask = () => instance.import();
+    }
+
     await cleanFolderTask();
 
     try {
-      await Promise.all([opggTask(), lolqqTask()]);
+      await Promise.all([opggTask(), lolqqTask(), mbTask()]);
     } finally {
       setLoading(false);
     }
