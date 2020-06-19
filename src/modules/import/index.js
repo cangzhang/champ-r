@@ -22,7 +22,6 @@ import MbImporter from 'src/service/data-source/murderbridge';
 import config from 'src/native/config';
 import AppContext from 'src/share/context';
 import WaitingList from 'src/components/waiting-list';
-import useGA from 'src/components/use-ga';
 
 export default function Import() {
   const history = useHistory();
@@ -117,8 +116,6 @@ export default function Import() {
 
     importFromSources();
   }, []);
-
-  useGA({ page: `/import` });
 
   const stop = () => {
     setLoading(false);

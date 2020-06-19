@@ -6,7 +6,6 @@ import { ipcRenderer, remote } from 'electron';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
-import ReactGA from 'react-ga';
 
 import { CornerDownRight } from 'react-feather';
 import { useStyletron } from 'baseui';
@@ -83,10 +82,6 @@ export default function Home() {
   };
 
   const startImport = () => {
-    ReactGA.event({
-      category: `User`,
-      action: `Import`,
-    });
     history.push(`/import`);
   };
 

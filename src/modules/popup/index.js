@@ -25,7 +25,6 @@ import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
 import Loading from 'src/components/loading-spinner';
 
-import useGA from 'src/components/use-ga';
 import { getChampionInfo } from './utils';
 
 const engine = new Styletron();
@@ -46,8 +45,6 @@ export default function Popup() {
   const [activeTab, setActiveTab] = useState(config.get(`perkTab`) || Sources.Lolqq);
   const [curPerk, setCurPerk] = useState({});
   const [coordinate, setCoordinate] = useState({ x: 0, y: 0, width: 0, height: 0 });
-
-  useGA({ page: `/runes` });
 
   useEffect(() => {
     // const mb = new MurderBridge();

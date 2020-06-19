@@ -524,6 +524,7 @@ module.exports = function (webpackEnv) {
           },
           isEnvProduction
             ? {
+              enableGA: true,
               minify: {
                 removeComments: true,
                 collapseWhitespace: true,
@@ -553,6 +554,7 @@ module.exports = function (webpackEnv) {
           },
           isEnvProduction
             ? {
+              enableGA: true,
               minify: {
                 removeComments: true,
                 collapseWhitespace: true,
