@@ -1,5 +1,6 @@
 import { nanoid as uuid } from 'nanoid';
 import _noop from 'lodash/noop';
+import _find from 'lodash/find';
 
 import { requestHtml } from 'src/service/utils';
 
@@ -7,7 +8,6 @@ import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
 import Sources from 'src/share/constants/sources';
 import SourceProto from './source-proto';
-import _find from 'lodash/find';
 
 const OpggUrl = 'https://www.op.gg';
 
@@ -294,15 +294,16 @@ export default class OpGG extends SourceProto {
         // this.genSkills(championName, position, `${id}-skill`),
         // this.genPerk(championName, position, `${id}-perk`),
       ]);
+      const { alias } = _find(this.championList, (i) => i.alias.toLowerCase() === championName);
 
       return {
-        fileName: `[OP.GG] ${position} - ${championName}`,
-        title: `[OP.GG] ${position} - ${championName}`,
+        fileName: `[OP.GG] ${position} - ${alias}`,
+        title: `[OP.GG] ${position} - ${alias}`,
         type: 'custom',
         associatedMaps: [],
         associatedChampions: [],
-        key: championName,
-        champion: championName,
+        key: alias,
+        champion: alias,
         position,
         blocks,
         map: 'any',
@@ -319,7 +320,11 @@ export default class OpGG extends SourceProto {
   import = async () => {
     const { dispatch, lolDir } = this;
     try {
-      const allChampions = await this.getStat();
+      const [allChampions, { hero: championList }] = await Promise.all([
+        this.getStat(),
+        this.getChampionList(),
+      ]);
+      this.championList = championList;
 
       const tasks = allChampions.reduce((t, item) => {
         const { positions, key: champion } = item;
