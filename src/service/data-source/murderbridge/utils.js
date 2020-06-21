@@ -1,4 +1,6 @@
 // https://github.com/aramlol/aramlol/blob/master/react/src/components/champion/datapanel/runes/runes.js
+import _find from 'lodash/find';
+
 export const styles = {
   '8000': [
     {
@@ -928,3 +930,9 @@ export function generateOptimalPerks(
 
   return sortedPerks;
 }
+
+export const isBoot = (id, itemMap) => {
+  // eslint-disable-next-line
+  const { from = [] } = _find(itemMap, { itemId: `${id}` }) || {};
+  return from.includes(`1001`);
+};

@@ -43,17 +43,13 @@ export default class OpGG extends SourceProto {
     this.dispatch = dispatch;
   }
 
-  getLolVersion = async () => {
+  static getLolVersion = async () => {
     try {
-      const $ = await requestHtml(
-        `${OpggUrl}/champion/rengar/statistics/jungle`,
-        this.setCancelHook(`lol-version`),
-        false,
-      );
+      const $ = await requestHtml(`${OpggUrl}/champion/rengar/statistics/jungle`, null, false);
       const versionText = $(`.champion-stats-header-version`).text().trim();
       const match = versionText.match(/\d|\./g) || [];
       const version = match.join(``);
-      this.version = version;
+      // this.version = version;
       return version;
     } catch (error) {
       throw new Error(error);
@@ -303,9 +299,7 @@ export default class OpGG extends SourceProto {
         fileName: `[OP.GG] ${position} - ${championName}`,
         title: `[OP.GG] ${position} - ${championName}`,
         type: 'custom',
-        associatedMaps: [
-          11, // normal mode
-        ],
+        associatedMaps: [],
         associatedChampions: [],
         key: championName,
         champion: championName,

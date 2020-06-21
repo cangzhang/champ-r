@@ -1,7 +1,5 @@
 try {
-  require('electron-reloader')(module, {
-    watchRenderer: false,
-  });
+  require('electron-reloader')(module);
 } catch (_) {}
 
 require('./src/native/logger');

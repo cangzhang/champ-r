@@ -3,7 +3,7 @@ import s from 'src/app.module.scss';
 
 import { ipcRenderer, remote } from 'electron';
 
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
 
@@ -18,7 +18,7 @@ import { ArrowRight } from 'baseui/icon';
 import { H6 } from 'baseui/typography';
 
 import config from 'src/native/config';
-import { updateConfig } from 'src/share/actions';
+import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
 
 import Sources, { isAram } from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
@@ -32,19 +32,9 @@ export default function Home() {
   const { store, dispatch } = useContext(AppContext);
   const history = useHistory();
   const { t } = useTranslation();
-  const instances = useRef({
-    [Sources.Opgg]: null,
-    [Sources.Lolqq]: null,
-    [Sources.MurderBridge]: null,
-  });
 
   const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
   const [lolDir, setLolDir] = useState(config.get('lolDir'));
-  const [versions, setVersions] = useState({
-    [Sources.Opgg]: null,
-    [Sources.Lolqq]: null,
-    [Sources.MurderBridge]: null,
-  });
 
   const toggleKeepOldItems = (ev) => {
     const { checked } = ev.target;
@@ -86,27 +76,14 @@ export default function Home() {
   };
 
   useEffect(() => {
-    instances.current[Sources.Opgg] = new OpGG();
-    instances.current[Sources.Lolqq] = new LolQQ();
-    instances.current[Sources.MurderBridge] = new MurderBridge();
-
-    instances.current[Sources.Opgg].getLolVersion().then((v) => {
-      setVersions((p) => ({
-        ...p,
-        [Sources.Opgg]: v,
-      }));
+    OpGG.getLolVersion().then((v) => {
+      dispatch(updateDataSourceVersion(Sources.Opgg, v));
     });
-    instances.current[Sources.Lolqq].getLolVersion().then((v) => {
-      setVersions((p) => ({
-        ...p,
-        [Sources.Lolqq]: v,
-      }));
+    LolQQ.getLolVersion().then((v) => {
+      dispatch(updateDataSourceVersion(Sources.Lolqq, v));
     });
-    instances.current[Sources.MurderBridge].getLolVersion().then((v) => {
-      setVersions((p) => ({
-        ...p,
-        [Sources.MurderBridge]: v,
-      }));
+    MurderBridge.getLolVersion().then((v) => {
+      dispatch(updateDataSourceVersion(Sources.MurderBridge, v));
     });
   }, []);
 
@@ -173,7 +150,7 @@ export default function Home() {
 
         {Object.values(Sources).map((v) => {
           const aram = isAram(v);
-          const sourceVer = versions[v];
+          const sourceVer = store.dataSourceVersions[v];
 
           return (
             <Checkbox

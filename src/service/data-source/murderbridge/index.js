@@ -1,11 +1,19 @@
+import { nanoid as uuid } from 'nanoid';
+import { CancelToken } from 'axios';
+
 import http from 'src/service/http';
 import SourceProto from 'src/service/data-source/source-proto';
 import * as Ddragon from 'src/service/ddragon';
+import Sources from 'src/share/constants/sources';
+import { saveToFile } from 'src/share/file';
+import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
+
 import {
   scoreGenerator,
   generalSettings,
   generateOptimalPerks,
   runeLookUpGenerator,
+  isBoot,
 } from './utils';
 
 const ApiPrefix = `https://d23wati96d2ixg.cloudfront.net`;
@@ -35,15 +43,18 @@ const getItems = (items, limit = 3) => {
 };
 
 export default class MurderBridge extends SourceProto {
-  constructor() {
+  constructor(lolDir, itemMap, dispatch) {
     super();
+    this.lolDir = lolDir;
+    this.itemMap = itemMap;
+    this.dispatch = dispatch;
     this.version = null;
   }
 
-  getLolVersion = async () => {
+  static getLolVersion = async () => {
     try {
       const { upToDateVersion } = await http.get(`${ApiPrefix}/save/general.json`);
-      this.version = upToDateVersion;
+      // this.version = upToDateVersion;
       return upToDateVersion;
     } catch (err) {
       throw new Error(err);
@@ -61,7 +72,8 @@ export default class MurderBridge extends SourceProto {
 
   getChampionPerks = async (champion) => {
     try {
-      const version = await this.getLolVersion();
+      const version = await MurderBridge.getLolVersion();
+      this.version = version;
       const [{ runes }, reforgedRunes] = await Promise.all([
         this.getChampData(champion, version),
         this.getRunesReforged(version),
@@ -77,8 +89,7 @@ export default class MurderBridge extends SourceProto {
     }
   };
 
-  // TODO
-  makeItemBuilds = ({ starting, build, order, counter }) => {
+  makeItemBuilds = ({ starting, build }, { id: alias, key }) => {
     const startItems = getItems(starting, 3);
     const startBlocks = {
       type: `Starters`,
@@ -87,36 +98,64 @@ export default class MurderBridge extends SourceProto {
       items: startItems,
     };
 
-    const buildItems = getItems(build, 10);
+    const buildItems = getItems(build, 13);
+    const itemsWithoutBoots = buildItems.filter((i) => !isBoot(i.id, this.itemMap));
+    const boots = buildItems.filter((i) => isBoot(i.id, this.itemMap));
+
+    const bootBlocks = boots.length > 0 && {
+      type: `Boots`,
+      showIfSummonerSpell: '',
+      hideIfSummonerSpell: '',
+      items: boots,
+    };
     const buildBlocks = {
-      type: `Build`,
+      type: `Core Items`,
       showIfSummonerSpell: '',
       hideIfSummonerSpell: '',
-      items: buildItems,
+      items: itemsWithoutBoots,
     };
 
-    const counterItems = getItems(counter, 10);
-    const counterBlocks = {
-      type: `Build`,
-      showIfSummonerSpell: '',
-      hideIfSummonerSpell: '',
-      items: counterItems,
+    const item = {
+      fileName: `[${Sources.MurderBridge}] ${alias}`,
+      title: `[${Sources.MurderBridge}] ${alias}`,
+      type: 'custom',
+      associatedMaps: [12],
+      associatedChampions: key,
+      key: alias.toLowerCase(),
+      champion: alias,
+      blocks: [startBlocks, bootBlocks, buildBlocks].filter(Boolean),
+      map: 'any',
+      mode: 'any',
+      preferredItemSlots: [],
+      sortrank: 1,
+      startedFrom: 'blank',
     };
 
-    const orderItems = getItems(order, 10);
-    const orderBlocks = {
-      type: `Build`,
-      showIfSummonerSpell: '',
-      hideIfSummonerSpell: '',
-      items: orderItems,
-    };
-
-    console.log(startBlocks, buildBlocks, counterBlocks, orderBlocks);
+    return item;
   };
 
   getChampData = async (champion, version) => {
     try {
-      const res = await http.get(`${ApiPrefix}/save/${version}/ARAM/${champion}.json`);
+      const $identity = uuid();
+      this.dispatch(
+        addFetching({
+          $identity,
+          champion,
+          source: Sources.MurderBridge,
+        }),
+      );
+
+      const res = await http.get(`${ApiPrefix}/save/${version}/ARAM/${champion}.json`, {
+        cancelToken: new CancelToken((c) => {
+          this.setCancelHook(`mr-${champion}`)(c);
+        }),
+      });
+
+      this.dispatch(
+        addFetched({
+          $identity,
+        }),
+      );
       return res;
     } catch (err) {
       throw new Error(err);
@@ -125,15 +164,19 @@ export default class MurderBridge extends SourceProto {
 
   import = async () => {
     try {
-      const version = await this.getLolVersion();
+      const version = await MurderBridge.getLolVersion();
+      this.version = version;
       const championList = await Ddragon.getChampions(version);
-      const tasks = Object.values(championList).map(({ id }) =>
-        this.getChampData(id, version).then((data) => {
+      const tasks = Object.values(championList).map((champion) =>
+        this.getChampData(champion.id, version).then((data) => {
           const { items } = data;
-          this.makeItemBuilds(items);
+          const item = this.makeItemBuilds(items, champion);
+          return saveToFile(this.lolDir, item);
         }),
       );
-      await Promise.all(tasks);
+      const result = await Promise.all(tasks);
+      this.dispatch(fetchSourceDone(Sources.MurderBridge));
+      return result;
     } catch (err) {
       throw new Error(err);
     }

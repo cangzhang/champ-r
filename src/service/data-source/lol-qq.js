@@ -89,10 +89,9 @@ export default class LolQQ extends SourceProto {
     this.dispatch = dispatch;
   }
 
-  getLolVersion = async () => {
+  static getLolVersion = async () => {
     try {
       const { version } = await http.get(API.champInfo(107));
-      this.version = version;
       return version;
     } catch (error) {
       throw new Error(error);
@@ -266,9 +265,7 @@ export default class LolQQ extends SourceProto {
       const item = {
         fileName: `[${Sources.Lolqq}] ${position} - ${alias}`,
         title: `[${Sources.Lolqq}] ${position} - ${alias}`,
-        associatedMaps: [
-          11, // normal
-        ],
+        associatedMaps: [],
         associatedChampions: [+champion.heroId],
         type: 'custom',
         key: alias.toLowerCase(),

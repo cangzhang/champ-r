@@ -19,6 +19,7 @@ export const initialState = {
     success: [],
     fail: [],
   },
+  dataSourceVersions: {},
 };
 
 export const init = (payload) => payload;
@@ -98,6 +99,12 @@ export default produce((draft, action) => {
       if (!draft.importPage.fail.includes(source)) {
         draft.importPage.fail.push(source);
       }
+      break;
+    }
+
+    case Actions.SET_DATA_SOURCE_VERSION: {
+      const [k, v] = payload;
+      draft.dataSourceVersions[k] = v;
       break;
     }
 

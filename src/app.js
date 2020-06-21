@@ -103,7 +103,7 @@ const App = () => {
         console.error(_err.message);
         ipcRenderer.send(`hide-popup`);
       }
-    }, 1600);
+    }, 2000);
 
     return () => {
       clearInterval(checkTask.current);

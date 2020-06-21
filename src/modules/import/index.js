@@ -68,15 +68,15 @@ export default function Import() {
         instance
           .import()
           .then(() => {
-            toaster.positive(`[OP.GG] ${t(`completed`)}`);
+            toaster.positive(`[${Sources.Opgg}] ${t(`completed`)}`, null);
           })
           .catch((err) => {
             if (err.message.includes(`Error: Cancel`)) {
               setCancel(cancelled.concat(Sources.Opgg));
-              toaster.warning(`${t(`cancelled`)}: ${Sources.Opgg}`);
+              toaster.warning(`${t(`cancelled`)}: ${Sources.Opgg}`, null);
             } else {
               dispatch(importBuildFailed(Sources.Opgg));
-              toaster.negative(`${t(`import failed`)}: ${Sources.Opgg}`);
+              toaster.negative(`${t(`import failed`)}: ${Sources.Opgg}`, null);
               console.error(err);
             }
           });
@@ -90,15 +90,15 @@ export default function Import() {
         instance
           .import()
           .then(() => {
-            toaster.positive(`[lol.QQ.COM] ${t(`completed`)}`);
+            toaster.positive(`[${Sources.Lolqq}] ${t(`completed`)}`, null);
           })
           .catch((err) => {
             if (err.message.includes(`Error: Cancel`)) {
               setCancel(cancelled.concat(Sources.Lolqq));
-              toaster.warning(`${t(`cancelled`)}: ${Sources.Lolqq}`);
+              toaster.warning(`${t(`cancelled`)}: ${Sources.Lolqq}`, null);
             } else {
               dispatch(importBuildFailed(Sources.Lolqq));
-              toaster.negative(`${t(`import failed`)}: ${Sources.Lolqq}`);
+              toaster.negative(`${t(`import failed`)}: ${Sources.Lolqq}`, null);
               console.error(err);
             }
           });
@@ -106,7 +106,22 @@ export default function Import() {
 
     if (selectedSources.includes(Sources.MurderBridge)) {
       const instance = new MbImporter(lolDir, itemMap, dispatch);
-      mbTask = () => instance.import();
+      mbTask = () =>
+        instance
+          .import()
+          .then(() => {
+            toaster.positive(`[${Sources.MurderBridge}] ${t(`completed`)}`, null);
+          })
+          .catch((err) => {
+            if (err.message.includes(`Error: Cancel`)) {
+              setCancel(cancelled.concat(Sources.MurderBridge));
+              toaster.warning(`${t(`cancelled`)}: ${Sources.Lolqq}`, null);
+            } else {
+              dispatch(importBuildFailed(Sources.MurderBridge));
+              toaster.negative(`${t(`import failed`)}: ${Sources.Lolqq}`, null);
+              console.error(err);
+            }
+          });
     }
 
     await cleanFolderTask();

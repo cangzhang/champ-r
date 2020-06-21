@@ -20,6 +20,7 @@ export const Actions = {
   SET_IMPORTER_INSTANCE: `SET_IMPORTER_INSTANCE`,
   IMPORT_BUILD_FAILED: `IMPORT_PAGE.FAILED`,
   IMPORT_BUILD_SUCCEED: `IMPORT_PAGE.SUCCEED`,
+  SET_DATA_SOURCE_VERSION: `HOME.SET_DATA_SOURCE_VERSION`,
 };
 
 export const setLolVersion = (ver) => ({
@@ -74,4 +75,9 @@ export const importBuildSucceed = (v) => ({
 export const importBuildFailed = (v) => ({
   type: Actions.IMPORT_BUILD_FAILED,
   payload: v,
+});
+
+export const updateDataSourceVersion = (k, v) => ({
+  type: Actions.SET_DATA_SOURCE_VERSION,
+  payload: [k, v],
 });
