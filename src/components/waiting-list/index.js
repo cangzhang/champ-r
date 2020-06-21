@@ -3,6 +3,7 @@ import s from './style.module.scss';
 import React, { useContext } from 'react';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { H6 } from 'baseui/typography';
 
 import AppContext from 'src/share/context';
 
@@ -14,12 +15,9 @@ export default () => {
 
   return (
     <div className={s.waitingList}>
-      <h3>
-        {t(`fetching`)}:
-        {fetchingSources.map((s) => (
-          <b key={s}>{s}</b>
-        ))}
-      </h3>
+      <H6 className={s.title}>
+        {t(`fetching`)}: {fetchingSources.join(`, `)}
+      </H6>
       <ul>
         {fetching.map((i) => (
           <li key={i.$identity}>

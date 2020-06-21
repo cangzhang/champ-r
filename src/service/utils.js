@@ -14,6 +14,7 @@ export const requestHtml = async (url, setCancel, isAjax = true, showHtml = fals
       url,
       // Get partial html
       {
+        timeout: Infinity,
         headers: {
           'X-Requested-With': isAjax ? `XMLHttpRequest` : ``,
           'Content-Language': RequestLocale,
@@ -30,7 +31,8 @@ export const requestHtml = async (url, setCancel, isAjax = true, showHtml = fals
     showHtml && console.log(rawHtml);
     return $;
   } catch (error) {
-    return error;
+    console.error(`request failed: `, url, error.toJSON());
+    throw new Error(error);
   }
 };
 

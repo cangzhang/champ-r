@@ -25,7 +25,6 @@ contextMenu();
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId('com.al.champ-r');
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
-// app.commandLine.appendSwitch('ignore-connections-limit', 'op.gg');
 app.allowRendererProcessReuse = false;
 
 const ignoreSystemScale = config.get(`ignoreSystemScale`);

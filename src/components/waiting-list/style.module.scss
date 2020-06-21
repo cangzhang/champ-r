@@ -4,9 +4,10 @@
   margin-top: 3em;
   padding-right: 1em;
 
-  h3 {
-    padding-left: 8vw;
-    font-weight: 500;
+  .title {
+    margin: 1ex 1em;
+    word-break: break-all;
+    text-transform: uppercase;
 
     b {
       font-style: italic;
