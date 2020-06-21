@@ -1,3 +1,4 @@
+import _noop from 'lodash/noop';
 import { nanoid as uuid } from 'nanoid';
 import { CancelToken } from 'axios';
 
@@ -43,7 +44,7 @@ const getItems = (items, limit = 3) => {
 };
 
 export default class MurderBridge extends SourceProto {
-  constructor(lolDir, itemMap, dispatch) {
+  constructor(lolDir, itemMap, dispatch = _noop) {
     super();
     this.lolDir = lolDir;
     this.itemMap = itemMap;
