@@ -1,5 +1,3 @@
-
-
 const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
@@ -14,7 +12,6 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const safePostCssParser = require('postcss-safe-parser');
 const ManifestPlugin = require('webpack-manifest-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
-const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
@@ -25,7 +22,7 @@ const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin');
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
 const CompressionPlugin = require('compression-webpack-plugin');
-const ImageminWebpWebpackPlugin= require("imagemin-webp-webpack-plugin");
+const ImageminWebpWebpackPlugin = require('imagemin-webp-webpack-plugin');
 
 const postcssNormalize = require('postcss-normalize');
 
@@ -184,7 +181,7 @@ module.exports = function (webpackEnv) {
       devtoolModuleFilenameTemplate: isEnvProduction
         ? (info) => path.relative(paths.appSrc, info.absoluteResourcePath).replace(/\\/g, '/')
         : isEnvDevelopment &&
-          ((info) => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
+        ((info) => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
       // Prevents conflicts when multiple Webpack runtimes (from different apps)
       // are used on the same page.
       jsonpFunction: `webpackJsonp${appPackageJson.name}`,
@@ -197,46 +194,46 @@ module.exports = function (webpackEnv) {
       minimizer: [
         // This is only used in production mode
         shouldUglify &&
-          new TerserPlugin({
-            terserOptions: {
-              parse: {
-                // We want terser to parse ecma 8 code. However, we don't want it
-                // to apply any minification steps that turns valid ecma 5 code
-                // into invalid ecma 5 code. This is why the 'compress' and 'output'
-                // sections only apply transformations that are ecma 5 safe
-                // https://github.com/facebook/create-react-app/pull/4234
-                ecma: 8,
-              },
-              compress: {
-                ecma: 5,
-                warnings: false,
-                // Disabled because of an issue with Uglify breaking seemingly valid code:
-                // https://github.com/facebook/create-react-app/issues/2376
-                // Pending further investigation:
-                // https://github.com/mishoo/UglifyJS2/issues/2011
-                comparisons: false,
-                // Disabled because of an issue with Terser breaking valid code:
-                // https://github.com/facebook/create-react-app/issues/5250
-                // Pending further investigation:
-                // https://github.com/terser-js/terser/issues/120
-                inline: 2,
-              },
-              mangle: {
-                safari10: true,
-              },
-              // Added for profiling in devtools
-              keep_classnames: isEnvProductionProfile,
-              keep_fnames: isEnvProductionProfile,
-              output: {
-                ecma: 5,
-                comments: false,
-                // Turned on because emoji and regex is not minified properly using default
-                // https://github.com/facebook/create-react-app/issues/2488
-                ascii_only: true,
-              },
+        new TerserPlugin({
+          terserOptions: {
+            parse: {
+              // We want terser to parse ecma 8 code. However, we don't want it
+              // to apply any minification steps that turns valid ecma 5 code
+              // into invalid ecma 5 code. This is why the 'compress' and 'output'
+              // sections only apply transformations that are ecma 5 safe
+              // https://github.com/facebook/create-react-app/pull/4234
+              ecma: 8,
             },
-            sourceMap: shouldUseSourceMap,
-          }),
+            compress: {
+              ecma: 5,
+              warnings: false,
+              // Disabled because of an issue with Uglify breaking seemingly valid code:
+              // https://github.com/facebook/create-react-app/issues/2376
+              // Pending further investigation:
+              // https://github.com/mishoo/UglifyJS2/issues/2011
+              comparisons: false,
+              // Disabled because of an issue with Terser breaking valid code:
+              // https://github.com/facebook/create-react-app/issues/5250
+              // Pending further investigation:
+              // https://github.com/terser-js/terser/issues/120
+              inline: 2,
+            },
+            mangle: {
+              safari10: true,
+            },
+            // Added for profiling in devtools
+            keep_classnames: isEnvProductionProfile,
+            keep_fnames: isEnvProductionProfile,
+            output: {
+              ecma: 5,
+              comments: false,
+              // Turned on because emoji and regex is not minified properly using default
+              // https://github.com/facebook/create-react-app/issues/2488
+              ascii_only: true,
+            },
+          },
+          sourceMap: shouldUseSourceMap,
+        }),
         // This is only used in production mode
         new OptimizeCSSAssetsPlugin({
           cssProcessorOptions: {
@@ -500,17 +497,17 @@ module.exports = function (webpackEnv) {
     },
     plugins: [
       enableGzip &&
-        new CompressionPlugin({
-          filename: '[path].br[query]',
-          algorithm: 'brotliCompress',
-          test: /\.(js|css|html|svg)$/,
-          compressionOptions: {
-            level: 11,
-          },
-          threshold: 10240,
-          minRatio: 0.8,
-          deleteOriginalAssets: true,
-        }),
+      new CompressionPlugin({
+        filename: '[path].br[query]',
+        algorithm: 'brotliCompress',
+        test: /\.(js|css|html|svg)$/,
+        compressionOptions: {
+          level: 11,
+        },
+        threshold: 10240,
+        minRatio: 0.8,
+        deleteOriginalAssets: true,
+      }),
 
       new HtmlWebpackPlugin(
         Object.assign(
@@ -575,8 +572,8 @@ module.exports = function (webpackEnv) {
       // a network request.
       // https://github.com/facebook/create-react-app/issues/5358
       isEnvProduction &&
-        shouldInlineRuntimeChunk &&
-        new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+\.js/]),
+      shouldInlineRuntimeChunk &&
+      new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+\.js/]),
       // Makes some environment variables available in index.html.
       // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
       // <link rel="icon" href="%PUBLIC_URL%/favicon.ico">
@@ -605,12 +602,12 @@ module.exports = function (webpackEnv) {
       // See https://github.com/facebook/create-react-app/issues/186
       isEnvDevelopment && new WatchMissingNodeModulesPlugin(paths.appNodeModules),
       isEnvProduction &&
-        new MiniCssExtractPlugin({
-          // Options similar to the same options in webpackOptions.output
-          // both options are optional
-          filename: 'static/css/[name].[contenthash:8].css',
-          chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
-        }),
+      new MiniCssExtractPlugin({
+        // Options similar to the same options in webpackOptions.output
+        // both options are optional
+        filename: 'static/css/[name].[contenthash:8].css',
+        chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+      }),
       // Generate an asset manifest file with the following content:
       // - "files" key: Mapping of all asset filenames to their corresponding
       //   output file so that tools can pick it up without having to parse
@@ -639,49 +636,32 @@ module.exports = function (webpackEnv) {
       // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
       // You can remove this if you don't use Moment.js:
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-      // Generate a service worker script that will precache, and keep up to date,
-      // the HTML & assets that are part of the Webpack build.
-      isEnvProduction &&
-        new WorkboxWebpackPlugin.GenerateSW({
-          clientsClaim: true,
-          exclude: [/\.map$/, /asset-manifest\.json$/],
-          importWorkboxFrom: 'cdn',
-          navigateFallback: publicUrl + '/index.html',
-          navigateFallbackBlacklist: [
-            // Exclude URLs starting with /_, as they're likely an API call
-            new RegExp('^/_'),
-            // Exclude any URLs whose last part seems to be a file extension
-            // as they're likely a resource and not a SPA route.
-            // URLs containing a "?" character won't be blacklisted as they're likely
-            // a route with query params (e.g. auth callbacks).
-            new RegExp('/[^/?]+\\.[^/]+$'),
-          ],
-        }),
+
       // TypeScript type checking
       useTypeScript &&
-        new ForkTsCheckerWebpackPlugin({
-          typescript: resolve.sync('typescript', {
-            basedir: paths.appNodeModules,
-          }),
-          async: isEnvDevelopment,
-          useTypescriptIncrementalApi: true,
-          checkSyntacticErrors: true,
-          resolveModuleNameModule: process.versions.pnp ? `${__dirname}/pnpTs.js` : undefined,
-          resolveTypeReferenceDirectiveModule: process.versions.pnp
-            ? `${__dirname}/pnpTs.js`
-            : undefined,
-          tsconfig: paths.appTsConfig,
-          reportFiles: [
-            '**',
-            '!**/__tests__/**',
-            '!**/?(*.)(spec|test).*',
-            '!**/src/setupProxy.*',
-            '!**/src/setupTests.*',
-          ],
-          silent: true,
-          // The formatter is invoked directly in WebpackDevServerUtils during development
-          formatter: isEnvProduction ? typescriptFormatter : undefined,
+      new ForkTsCheckerWebpackPlugin({
+        typescript: resolve.sync('typescript', {
+          basedir: paths.appNodeModules,
         }),
+        async: isEnvDevelopment,
+        useTypescriptIncrementalApi: true,
+        checkSyntacticErrors: true,
+        resolveModuleNameModule: process.versions.pnp ? `${__dirname}/pnpTs.js` : undefined,
+        resolveTypeReferenceDirectiveModule: process.versions.pnp
+          ? `${__dirname}/pnpTs.js`
+          : undefined,
+        tsconfig: paths.appTsConfig,
+        reportFiles: [
+          '**',
+          '!**/__tests__/**',
+          '!**/?(*.)(spec|test).*',
+          '!**/src/setupProxy.*',
+          '!**/src/setupTests.*',
+        ],
+        silent: true,
+        // The formatter is invoked directly in WebpackDevServerUtils during development
+        formatter: isEnvProduction ? typescriptFormatter : undefined,
+      }),
 
       isEnvProduction && new ImageminWebpWebpackPlugin(),
     ].filter(Boolean),

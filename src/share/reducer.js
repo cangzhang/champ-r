@@ -15,6 +15,10 @@ export const initialState = {
   selectedSources: config.get(`selectedSources`),
   keepOld: config.get('keepOldItems'),
   importerInstances: {},
+  importPage: {
+    success: [],
+    fail: [],
+  },
 };
 
 export const init = (payload) => payload;
@@ -78,6 +82,22 @@ export default produce((draft, action) => {
     case Actions.SET_IMPORTER_INSTANCE: {
       const [k, v] = payload;
       draft.importerInstances[k] = v;
+      break;
+    }
+
+    case Actions.IMPORT_BUILD_SUCCEED: {
+      const source = payload;
+      if (!draft.importPage.success.includes(source)) {
+        draft.importPage.success.push(source);
+      }
+      break;
+    }
+
+    case Actions.IMPORT_BUILD_FAILED: {
+      const source = payload;
+      if (!draft.importPage.fail.includes(source)) {
+        draft.importPage.fail.push(source);
+      }
       break;
     }
 

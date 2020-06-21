@@ -33,5 +33,7 @@ export default {
     'restart app': `Restart ChampR`,
     aram: `ARAM`,
     'data sources': `Data Sources`,
+    'import failed': `Import Failed`,
+    'import failed list': `Failed`,
   },
 };

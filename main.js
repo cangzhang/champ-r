@@ -1,5 +1,7 @@
 try {
-  require('electron-reloader')(module);
+  require('electron-reloader')(module, {
+    watchRenderer: false,
+  });
 } catch (_) {}
 
 require('./src/native/logger');
@@ -25,7 +27,7 @@ contextMenu();
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId('com.al.champ-r');
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
-app.commandLine.appendSwitch('ignore-connections-limit', 'op.gg');
+// app.commandLine.appendSwitch('ignore-connections-limit', 'op.gg');
 app.allowRendererProcessReuse = false;
 
 const ignoreSystemScale = config.get(`ignoreSystemScale`);

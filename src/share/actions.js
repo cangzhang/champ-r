@@ -18,6 +18,8 @@ export const Actions = {
   UPDATE_APP_CONFIG: `UPDATE_APP_CONFIG`,
 
   SET_IMPORTER_INSTANCE: `SET_IMPORTER_INSTANCE`,
+  IMPORT_BUILD_FAILED: `IMPORT_PAGE.FAILED`,
+  IMPORT_BUILD_SUCCEED: `IMPORT_PAGE.SUCCEED`,
 };
 
 export const setLolVersion = (ver) => ({
@@ -62,4 +64,14 @@ export const updateConfig = (k, v) => ({
 export const setImporterInstance = (k, v) => ({
   type: Actions.SET_IMPORTER_INSTANCE,
   payload: [k, v],
+});
+
+export const importBuildSucceed = (v) => ({
+  type: Actions.IMPORT_BUILD_SUCCEED,
+  payload: v,
+});
+
+export const importBuildFailed = (v) => ({
+  type: Actions.IMPORT_BUILD_FAILED,
+  payload: v,
 });

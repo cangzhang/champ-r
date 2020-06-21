@@ -10,10 +10,11 @@ import { useTranslation } from 'react-i18next';
 import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
+import { H6 } from 'baseui/typography';
 import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home } from 'react-feather';
 
 import Sources from 'src/share/constants/sources';
-import { prepareReimport, updateFetchingSource } from 'src/share/actions';
+import { prepareReimport, updateFetchingSource, importBuildFailed } from 'src/share/actions';
 import { removeFolderContent } from 'src/share/file';
 import OpGGImporter from 'src/service/data-source/op-gg';
 import LolQQImporter from 'src/service/data-source/lol-qq';
@@ -70,9 +71,13 @@ export default function Import() {
             toaster.positive(`[OP.GG] ${t(`completed`)}`);
           })
           .catch((err) => {
-            if (err.message === `Error: Cancel`) {
+            if (err.message.includes(`Error: Cancel`)) {
               setCancel(cancelled.concat(Sources.Opgg));
-              toaster.negative(`${t(`cancelled`)}: ${Sources.Opgg}`);
+              toaster.warning(`${t(`cancelled`)}: ${Sources.Opgg}`);
+            } else {
+              dispatch(importBuildFailed(Sources.Opgg));
+              toaster.negative(`${t(`import failed`)}: ${Sources.Opgg}`);
+              console.error(err);
             }
           });
     }
@@ -88,9 +93,13 @@ export default function Import() {
             toaster.positive(`[lol.QQ.COM] ${t(`completed`)}`);
           })
           .catch((err) => {
-            if (err.message === `Error: Cancel`) {
+            if (err.message.includes(`Error: Cancel`)) {
               setCancel(cancelled.concat(Sources.Lolqq));
-              toaster.negative(`${t(`cancelled`)}: ${Sources.Lolqq}`);
+              toaster.warning(`${t(`cancelled`)}: ${Sources.Lolqq}`);
+            } else {
+              dispatch(importBuildFailed(Sources.Lolqq));
+              toaster.negative(`${t(`import failed`)}: ${Sources.Lolqq}`);
+              console.error(err);
             }
           });
     }
@@ -130,6 +139,7 @@ export default function Import() {
   };
 
   const userCancelled = useMemo(() => cancelled.length > 0, [cancelled]);
+  const hasFailed = store.importPage.fail.length > 0;
 
   const renderStatus = useCallback(() => {
     if (loading) {
@@ -140,8 +150,17 @@ export default function Import() {
       return <PauseCircle size={128} color={theme.colors.contentWarning} />;
     }
 
-    return <CheckCircle size={128} color={theme.colors.contentPositive} />;
-  }, [userCancelled, loading]);
+    return (
+      <>
+        <CheckCircle size={128} color={theme.colors.contentPositive} />
+        {hasFailed && (
+          <H6 className={s.failed}>
+            {t(`import failed list`)}: {store.importPage.fail.join(`, `)}
+          </H6>
+        )}
+      </>
+    );
+  }, [userCancelled, loading, hasFailed]);
 
   const backToHome = useCallback(() => history.replace(`/`), []);
 
