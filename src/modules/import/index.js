@@ -67,8 +67,12 @@ export default function Import() {
       opggTask = () =>
         instance
           .import()
-          .then(() => {
-            toaster.positive(`[${Sources.Opgg}] ${t(`completed`)}`, null);
+          .then((result) => {
+            const { fulfilled, rejected } = result;
+            if (!rejected.length) {
+              toaster.positive(`[${Sources.Opgg}] ${t(`completed`)}`, null);
+            }
+            console.log(fulfilled, rejected);
           })
           .catch((err) => {
             if (err.message.includes(`Error: Cancel`)) {

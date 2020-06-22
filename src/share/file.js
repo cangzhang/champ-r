@@ -5,7 +5,9 @@ export const saveToFile = async (desDir, data) => {
   try {
     const file = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
     await fse.outputFile(file, JSON.stringify(data, null, 4));
-    return true;
+    return {
+      champion: data.champion,
+    };
   } catch (error) {
     return error;
   }

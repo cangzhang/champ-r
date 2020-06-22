@@ -34,6 +34,11 @@ const getItems = (imgs, $) => {
   }));
 };
 
+const Stages = {
+  FETCH_CHAMPION_LIST: `FETCH_CHAMPION_LIST`,
+  FETCH_CHAMPION_DATA: `FETCH_CHAMPION_DATA`,
+};
+
 export default class OpGG extends SourceProto {
   constructor(version = ``, lolDir = ``, itemMap = {}, dispatch = _noop) {
     super();
@@ -53,7 +58,8 @@ export default class OpGG extends SourceProto {
       return version;
     } catch (error) {
       console.error(error);
-      throw new Error(error);
+      return Promise.reject(error);
+      // throw new Error(error);
     }
   };
 
@@ -79,7 +85,10 @@ export default class OpGG extends SourceProto {
       return result;
     } catch (error) {
       console.error(error);
-      throw new Error(error);
+      // throw new Error(error);
+      return Promise.reject({
+        stage: Stages.FETCH_CHAMPION_LIST,
+      });
     }
   };
 
@@ -156,7 +165,11 @@ export default class OpGG extends SourceProto {
       return firstPositionPerks.concat(allLeftPerks);
     } catch (err) {
       console.error(err);
-      throw new Error(err);
+      // throw new Error(err);
+      return Promise.reject({
+        champion: alias,
+        stage: Stages.FETCH_CHAMPION_DATA,
+      });
     }
   };
 
@@ -221,7 +234,11 @@ export default class OpGG extends SourceProto {
       ];
     } catch (error) {
       console.error(error);
-      throw new Error(error);
+      // throw new Error(error);
+      return Promise.reject({
+        champion,
+        stage: Stages.FETCH_CHAMPION_DATA,
+      });
     }
   };
 
@@ -230,13 +247,14 @@ export default class OpGG extends SourceProto {
       return Promise.reject('Please specify champion & position.');
     }
 
+    const { alias } = _find(this.championList, (i) => i.alias.toLowerCase() === championName);
+
     try {
       const [blocks] = await Promise.all([
         this.genBlocks(championName, position, `${id}-block`),
         // this.genSkills(championName, position, `${id}-skill`),
         // this.genPerk(championName, position, `${id}-perk`),
       ]);
-      const { alias } = _find(this.championList, (i) => i.alias.toLowerCase() === championName);
 
       return {
         fileName: `[OP.GG] ${position} - ${alias}`,
@@ -255,7 +273,12 @@ export default class OpGG extends SourceProto {
         startedFrom: 'blank',
       };
     } catch (error) {
-      throw new Error(error);
+      console.error(error);
+      // throw new Error(error);
+      return Promise.reject({
+        champion: alias,
+        stage: Stages.FETCH_CHAMPION_DATA,
+      });
     }
   };
 
@@ -297,10 +320,31 @@ export default class OpGG extends SourceProto {
         return t.concat(positionTasks);
       }, []);
 
-      const result = await Promise.all(tasks);
-      dispatch(fetchSourceDone(Sources.Opgg));
+      const result = await Promise.allSettled(tasks);
 
-      return result;
+      const fulfilled = [];
+      const rejected = [];
+      for (const { status, value, reason } of result) {
+        switch (status) {
+          case 'fulfilled':
+            fulfilled.push(value.champion);
+            break;
+          case 'rejected':
+            rejected.push(reason.champion);
+            break;
+          default:
+            break;
+        }
+      }
+
+      if (!rejected.length) {
+        dispatch(fetchSourceDone(Sources.Opgg));
+      }
+
+      return {
+        fulfilled,
+        rejected,
+      };
     } catch (error) {
       console.error(error);
       throw new Error(error);
