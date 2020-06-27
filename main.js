@@ -255,7 +255,7 @@ async function checkUpdates() {
   try {
     setInterval(async () => {
       await autoUpdater.checkForUpdates();
-    }, 1000 * 60 * 60 * 3);
+    }, 1000 * 60 * 60 * 4);
 
     await autoUpdater.checkForUpdates();
   } catch (err) {

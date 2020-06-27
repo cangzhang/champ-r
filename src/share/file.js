@@ -7,6 +7,7 @@ export const saveToFile = async (desDir, data) => {
     await fse.outputFile(file, JSON.stringify(data, null, 4));
     return {
       champion: data.champion,
+      position: data.position,
     };
   } catch (error) {
     return error;

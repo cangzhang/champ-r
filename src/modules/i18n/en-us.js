@@ -35,5 +35,7 @@ export default {
     'data sources': `Data Sources`,
     'import failed': `Import Failed`,
     'import failed list': `Failed`,
+    fulfilled: `Fulfilled`,
+    rejected: `Rejected`,
   },
 };

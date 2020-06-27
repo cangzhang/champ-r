@@ -7,11 +7,12 @@ import React, { useCallback, useContext, useEffect, useState, useRef, useMemo } 
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home } from 'react-feather';
 import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
-import { H6 } from 'baseui/typography';
-import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home } from 'react-feather';
+import { Label1, Paragraph3 } from 'baseui/typography';
+import { StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 
 import Sources from 'src/share/constants/sources';
 import { prepareReimport, updateFetchingSource, importBuildFailed } from 'src/share/actions';
@@ -35,6 +36,10 @@ export default function Import() {
   const { store, dispatch } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
   const [cancelled, setCancel] = useState([]);
+  const [opggResult, setOpggResult] = useState({
+    fulfilled: [],
+    rejected: [],
+  });
 
   const workers = useRef({});
 
@@ -51,7 +56,7 @@ export default function Import() {
     if (!keepOld) {
       cleanFolderTask = () =>
         removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
-          toaster.positive(t(`removed outdated items`));
+          toaster.positive(t(`removed outdated items`), null);
         });
     }
 
@@ -72,7 +77,10 @@ export default function Import() {
             if (!rejected.length) {
               toaster.positive(`[${Sources.Opgg}] ${t(`completed`)}`, null);
             }
-            console.log(fulfilled, rejected);
+            setOpggResult({
+              fulfilled,
+              rejected,
+            });
           })
           .catch((err) => {
             if (err.message.includes(`Error: Cancel`)) {
@@ -172,10 +180,23 @@ export default function Import() {
     return (
       <>
         <CheckCircle size={128} color={theme.colors.contentPositive} />
-        {hasFailed && (
-          <H6 className={s.failed}>
-            {t(`import failed list`)}: {store.importPage.fail.join(`, `)}
-          </H6>
+        {opggResult.rejected.length > 0 && (
+          <>
+            <StatefulPopover
+              content={
+                <Paragraph3 accessibilityType={'tooltip'} triggerType={TRIGGER_TYPE.hover}>
+                  {opggResult.rejected.map(([champion, position], idx) => (
+                    <span key={idx}>
+                      {champion}@{position}
+                    </span>
+                  ))}
+                </Paragraph3>
+              }>
+              <Label1>
+                {t(`rejected`)}: {opggResult.rejected.length}
+              </Label1>
+            </StatefulPopover>
+          </>
         )}
       </>
     );

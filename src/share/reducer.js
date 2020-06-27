@@ -44,6 +44,12 @@ export default produce((draft, action) => {
       break;
     }
 
+    case Actions.CLEAR_FETCH: {
+      draft.fetched = [];
+      draft.fetching = [];
+      break;
+    }
+
     case Actions.FETCHING_SOURCE: {
       draft.fetchingSources = payload;
       break;

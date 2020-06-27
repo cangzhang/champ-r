@@ -21,6 +21,7 @@ export const Actions = {
   IMPORT_BUILD_FAILED: `IMPORT_PAGE.FAILED`,
   IMPORT_BUILD_SUCCEED: `IMPORT_PAGE.SUCCEED`,
   SET_DATA_SOURCE_VERSION: `HOME.SET_DATA_SOURCE_VERSION`,
+  CLEAR_FETCH: `IMPORT.CLEAR_FETCH`,
 };
 
 export const setLolVersion = (ver) => ({
@@ -36,6 +37,10 @@ export const addFetching = (data) => ({
 export const addFetched = (data) => ({
   type: Actions.ADD_FETCHED,
   payload: data,
+});
+
+export const clearFetch = () => ({
+  type: Actions.CLEAR_FETCH,
 });
 
 export const updateItemMap = (data) => ({

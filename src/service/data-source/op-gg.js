@@ -4,7 +4,7 @@ import _find from 'lodash/find';
 
 import { requestHtml } from 'src/service/utils';
 
-import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
+import { addFetched, addFetching, fetchSourceDone, clearFetch } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
 import Sources from 'src/share/constants/sources';
 import SourceProto from './source-proto';
@@ -237,6 +237,7 @@ export default class OpGG extends SourceProto {
       // throw new Error(error);
       return Promise.reject({
         champion,
+        position,
         stage: Stages.FETCH_CHAMPION_DATA,
       });
     }
@@ -277,8 +278,70 @@ export default class OpGG extends SourceProto {
       // throw new Error(error);
       return Promise.reject({
         champion: alias,
+        position,
         stage: Stages.FETCH_CHAMPION_DATA,
       });
+    }
+  };
+
+  makeResult = (result) => {
+    const fulfilled = [];
+    const rejected = [];
+    for (const { status, value, reason } of result) {
+      switch (status) {
+        case 'fulfilled':
+          fulfilled.push([value.champion, value.position]);
+          break;
+        case 'rejected':
+          rejected.push([reason.champion, reason.position]);
+          break;
+        default:
+          break;
+      }
+    }
+
+    return [fulfilled, rejected];
+  };
+
+  importSpecified = async (data) => {
+    const { dispatch, lolDir } = this;
+
+    try {
+      dispatch(clearFetch());
+
+      const tasks = data.map(([champion, position]) => {
+        const identity = uuid();
+        dispatch(
+          addFetching({
+            champion,
+            position,
+            $identity: identity,
+            source: Sources.Opgg,
+          }),
+        );
+
+        return this.genChampionData(champion, position, identity).then((data) => {
+          dispatch(
+            addFetched({
+              ...data,
+              $identity: identity,
+            }),
+          );
+
+          return saveToFile(lolDir, data);
+        });
+      });
+
+      const result = await Promise.allSettled(tasks);
+      const [fulfilled, rejected] = this.makeResult(result);
+
+      return {
+        fulfilled,
+        rejected,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new Error(error);
     }
   };
 
@@ -321,21 +384,7 @@ export default class OpGG extends SourceProto {
       }, []);
 
       const result = await Promise.allSettled(tasks);
-
-      const fulfilled = [];
-      const rejected = [];
-      for (const { status, value, reason } of result) {
-        switch (status) {
-          case 'fulfilled':
-            fulfilled.push(value.champion);
-            break;
-          case 'rejected':
-            rejected.push(reason.champion);
-            break;
-          default:
-            break;
-        }
-      }
+      const [fulfilled, rejected] = this.makeResult(result);
 
       if (!rejected.length) {
         dispatch(fetchSourceDone(Sources.Opgg));
