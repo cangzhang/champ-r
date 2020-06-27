@@ -84,6 +84,7 @@ export default class MurderBridge extends SourceProto {
       return perks.map((i) => ({
         ...i,
         alias: champion,
+        name: `${[Sources.MurderBridge]} ${champion}`,
       }));
     } catch (err) {
       throw new Error(err);
