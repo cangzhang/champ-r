@@ -8,6 +8,9 @@
     margin: 1ex 1em;
     word-break: break-all;
     text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     b {
       font-style: italic;

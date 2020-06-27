@@ -1,16 +1,21 @@
 .import {
-  height: 100%;
   position: relative;
+  height: 100%;
+  padding-top: 6em;
+
+  &.ing {
+    padding-top: 0;
+  }
 
   .back {
     display: flex;
-    margin: 1em auto 0;
+    margin: 1.4em auto 0;
     width: 12em;
   }
 
   > svg {
     display: flex;
-    margin: 8em auto 10em;
+    margin: 0 auto 2em;
     animation: pop 2s cubic-bezier(0.4, 0, 0.2, 1) 3;
   }
 
@@ -22,6 +27,20 @@
     color: #ab1300;
     text-transform: uppercase;
     text-align: center;
+  }
+
+  .rejected {
+    text-align: center;
+
+    ul {
+      max-height: 7em;
+      overflow: hidden auto;
+      padding: unset;
+      margin: 1ex 0 2em;
+      line-height: 3ex;
+      list-style: none;
+      font-weight: normal;
+    }
   }
 }
 

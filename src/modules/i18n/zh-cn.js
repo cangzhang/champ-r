@@ -36,6 +36,7 @@ export default {
     'import failed': `导入失败`,
     'import failed list': `未成功导入`,
     fulfilled: `成功`,
-    rejected: `失败`,
+    rejected: `未成功`,
+    'try import rejected': `尝试导入未完成`,
   },
 };

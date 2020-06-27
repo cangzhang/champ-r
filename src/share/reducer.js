@@ -97,6 +97,9 @@ export default produce((draft, action) => {
       if (!draft.importPage.success.includes(source)) {
         draft.importPage.success.push(source);
       }
+      if (draft.importPage.fail.includes(source)) {
+        draft.importPage.fail = draft.importPage.fail.filter((i) => i !== source);
+      }
       break;
     }
 
@@ -104,6 +107,9 @@ export default produce((draft, action) => {
       const source = payload;
       if (!draft.importPage.fail.includes(source)) {
         draft.importPage.fail.push(source);
+      }
+      if (draft.importPage.success.includes(source)) {
+        draft.importPage.success = draft.importPage.success.filter((i) => i !== source);
       }
       break;
     }

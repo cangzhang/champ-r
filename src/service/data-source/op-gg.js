@@ -248,7 +248,10 @@ export default class OpGG extends SourceProto {
       return Promise.reject('Please specify champion & position.');
     }
 
-    const { alias } = _find(this.championList, (i) => i.alias.toLowerCase() === championName);
+    const { alias, heroId } = _find(
+      this.championList,
+      (i) => i.alias.toLowerCase() === championName.toLowerCase(),
+    );
 
     try {
       const [blocks] = await Promise.all([
@@ -261,13 +264,13 @@ export default class OpGG extends SourceProto {
         fileName: `[OP.GG] ${position} - ${alias}`,
         title: `[OP.GG] ${position} - ${alias}`,
         type: 'custom',
-        associatedMaps: [],
-        associatedChampions: [],
+        associatedMaps: [11, 12],
+        associatedChampions: [+heroId],
         key: alias,
         champion: alias,
         position,
         blocks,
-        map: 'any',
+        map: 'SR',
         mode: 'any',
         preferredItemSlots: [],
         sortrank: 1,

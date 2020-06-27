@@ -37,5 +37,6 @@ export default {
     'import failed list': `Failed`,
     fulfilled: `Fulfilled`,
     rejected: `Rejected`,
+    'try import rejected': `Retry`,
   },
 };

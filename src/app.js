@@ -78,7 +78,11 @@ const App = () => {
           mChampionId > 0 && myTeam.length > 0 && myTeam.every((i) => i.championId === mChampionId);
 
         championId = findUserChampion(cellId, actions);
-        console.log(`isRandomMode: ${isRandomMode}, isVoteMode: ${isVoteMode}, My pick: ${cellId}`);
+        if (!process.env.IS_DEV) {
+          console.log(
+            `isRandomMode: ${isRandomMode}, isVoteMode: ${isVoteMode}, My pick: ${cellId}`,
+          );
+        }
 
         if (isRandomMode || isVoteMode) {
           // special mode
