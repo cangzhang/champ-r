@@ -118,18 +118,18 @@ export default class MurderBridge extends SourceProto {
     };
 
     const item = {
-      fileName: `[${Sources.MurderBridge}] ${alias}`,
-      title: `[${Sources.MurderBridge}] ${alias}`,
+      fileName: `[ARAM] [${Sources.MurderBridge}] ${alias}`,
+      title: `[ARAM] [${Sources.MurderBridge}] ${alias}`,
       type: 'custom',
-      associatedMaps: [12],
-      associatedChampions: [key],
+      associatedMaps: [],
+      associatedChampions: [+key],
       key: alias.toLowerCase(),
       champion: alias,
       blocks: [startBlocks, bootBlocks, buildBlocks].filter(Boolean),
-      map: 'SR',
+      map: 'HA',
       mode: 'any',
       preferredItemSlots: [],
-      sortrank: 1,
+      sortrank: 9999,
       startedFrom: 'blank',
     };
 
