@@ -36,7 +36,7 @@ const getItems = (items, limit = 3) => {
       return ids;
     }, new Set());
   const result = Array.from(itemSet).map((i) => ({
-    id: i,
+    id: `${i}`,
     count: 1,
   }));
 
@@ -120,7 +120,7 @@ export default class MurderBridge extends SourceProto {
     const item = makeBuildFile(
       {
         fileName: `[ARAM] [${Sources.MurderBridge.toUpperCase()}] ${alias}`,
-        title: `[ARAM] [${Sources.MurderBridge.toUpperCase()}] ${alias}`,
+        title: `[${Sources.MurderBridge.toUpperCase()}] ${alias}`,
         championId: +championId,
         champion: alias,
         blocks: [startBlocks, bootBlocks, buildBlocks],

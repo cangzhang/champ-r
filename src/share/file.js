@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const fse = require('fs-extra');
 
 const ItemSetProps = [
+  'title',
   'type',
   'associatedMaps',
   'associatedChampions',
@@ -15,7 +16,7 @@ const ItemSetProps = [
 ];
 
 export const makeBuildFile = (
-  { source, fileName, title, championId, champion, blocks, position = `` },
+  { fileName, title, championId, champion, blocks, position = `` },
   aramOnly = false,
 ) => ({
   fileName,
@@ -30,7 +31,7 @@ export const makeBuildFile = (
   map: 'any',
   mode: 'any',
   preferredItemSlots: [],
-  sortrank: 9999,
+  sortrank: 1,
   startedFrom: 'blank',
 
   blocks: blocks.filter(Boolean),
