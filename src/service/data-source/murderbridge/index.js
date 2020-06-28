@@ -6,7 +6,7 @@ import http from 'src/service/http';
 import SourceProto from 'src/service/data-source/source-proto';
 import * as Ddragon from 'src/service/ddragon';
 import Sources from 'src/share/constants/sources';
-import { saveToFile } from 'src/share/file';
+import { makeBuildFile, saveToFile } from 'src/share/file';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 
 import {
@@ -91,7 +91,7 @@ export default class MurderBridge extends SourceProto {
     }
   };
 
-  makeItemBuilds = ({ starting, build }, { id: alias, key }) => {
+  makeItemBuilds = ({ starting, build }, { id: alias, key: championId }) => {
     const startItems = getItems(starting, 3);
     const startBlocks = {
       type: `Starters`,
@@ -117,21 +117,18 @@ export default class MurderBridge extends SourceProto {
       items: itemsWithoutBoots,
     };
 
-    return {
-      fileName: `[ARAM] [${Sources.MurderBridge}] ${alias}`,
-      title: `[ARAM] [${Sources.MurderBridge}] ${alias}`,
-      type: 'custom',
-      associatedMaps: [12], // aram
-      associatedChampions: [+key],
-      key: alias.toLowerCase(),
-      champion: alias,
-      map: 'any',
-      mode: 'any',
-      preferredItemSlots: [],
-      sortrank: 9999,
-      startedFrom: 'blank',
-      blocks: [startBlocks, bootBlocks, buildBlocks].filter(Boolean),
-    };
+    const item = makeBuildFile(
+      {
+        fileName: `[ARAM] [${Sources.MurderBridge.toUpperCase()}] ${alias}`,
+        title: `[ARAM] [${Sources.MurderBridge.toUpperCase()}] ${alias}`,
+        championId: +championId,
+        champion: alias,
+        blocks: [startBlocks, bootBlocks, buildBlocks],
+      },
+      true,
+    );
+
+    return item;
   };
 
   getChampData = async (champion, version) => {

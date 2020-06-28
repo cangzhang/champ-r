@@ -6,7 +6,7 @@ import _noop from 'lodash/noop';
 import { CancelToken } from 'axios';
 
 import http from 'src/service/http';
-import { saveToFile } from 'src/share/file';
+import { makeBuildFile, saveToFile } from 'src/share/file';
 import { parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import Sources from 'src/share/constants/sources';
@@ -262,22 +262,14 @@ export default class LolQQ extends SourceProto {
         },
       ];
 
-      const item = {
-        fileName: `[${Sources.Lolqq}] ${position} - ${alias}`,
-        title: `[${Sources.Lolqq}] ${position} - ${alias}`,
-        associatedMaps: [11, 12],
-        associatedChampions: [+champion.heroId],
-        type: 'custom',
-        key: alias.toLowerCase(),
+      const item = makeBuildFile({
+        fileName: `[${Sources.Lolqq.toUpperCase()}] ${position} - ${alias}`,
+        title: `[${Sources.Lolqq.toUpperCase()}] ${position} - ${alias}`,
+        championId: +champion.heroId,
         champion: alias,
-        position,
         blocks,
-        map: 'any',
-        mode: 'any',
-        preferredItemSlots: [],
-        sortrank: 1,
-        startedFrom: 'blank',
-      };
+        position,
+      });
 
       return res.concat(item);
     }, []);

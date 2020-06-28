@@ -5,7 +5,7 @@ import _find from 'lodash/find';
 import { requestHtml } from 'src/service/utils';
 
 import { addFetched, addFetching, fetchSourceDone, clearFetch } from 'src/share/actions';
-import { saveToFile } from 'src/share/file';
+import { makeBuildFile, saveToFile } from 'src/share/file';
 import Sources from 'src/share/constants/sources';
 import SourceProto from './source-proto';
 
@@ -260,22 +260,16 @@ export default class OpGG extends SourceProto {
         // this.genPerk(championName, position, `${id}-perk`),
       ]);
 
-      return {
-        fileName: `[OP.GG] ${position} - ${alias}`,
-        title: `[OP.GG] ${position} - ${alias}`,
-        type: 'custom',
-        associatedMaps: [11, 12],
-        associatedChampions: [+heroId],
-        key: alias,
+      const item = makeBuildFile({
+        fileName: `[${Sources.Opgg.toUpperCase()}] ${position} - ${alias}`,
+        title: `[${Sources.Opgg.toUpperCase()}] ${position} - ${alias}`,
+        championId: +heroId,
         champion: alias,
         position,
         blocks,
-        map: 'any',
-        mode: 'any',
-        preferredItemSlots: [],
-        sortrank: 1,
-        startedFrom: 'blank',
-      };
+      });
+
+      return item;
     } catch (error) {
       console.error(error);
       // throw new Error(error);

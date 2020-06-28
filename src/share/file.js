@@ -14,6 +14,28 @@ const ItemSetProps = [
   'blocks',
 ];
 
+export const makeBuildFile = (
+  { source, fileName, title, championId, champion, blocks, position = `` },
+  aramOnly = false,
+) => ({
+  fileName,
+  title,
+  key: champion.toLowerCase(),
+  champion: champion,
+  position,
+
+  type: 'custom',
+  associatedMaps: aramOnly ? [12] : [11, 12],
+  associatedChampions: [+championId],
+  map: 'any',
+  mode: 'any',
+  preferredItemSlots: [],
+  sortrank: 9999,
+  startedFrom: 'blank',
+
+  blocks: blocks.filter(Boolean),
+});
+
 export const saveToFile = async (desDir, data, stripProps = true) => {
   try {
     const file = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
