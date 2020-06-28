@@ -148,9 +148,6 @@
     "appId": "com.al.champ-r",
     "files": [
       "build/**/*",
-      "!build/**/*.png",
-      "!build/**/*.jpg",
-      "!build/**/*.jpeg",
       "src/native/**/*",
       "package.json",
       "main.js"
