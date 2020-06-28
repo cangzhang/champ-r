@@ -10,11 +10,11 @@ import { saveToFile } from 'src/share/file';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 
 import {
-  scoreGenerator,
   generalSettings,
   generateOptimalPerks,
-  runeLookUpGenerator,
   isBoot,
+  runeLookUpGenerator,
+  scoreGenerator,
 } from './utils';
 
 const ApiPrefix = `https://d23wati96d2ixg.cloudfront.net`;
@@ -117,23 +117,21 @@ export default class MurderBridge extends SourceProto {
       items: itemsWithoutBoots,
     };
 
-    const item = {
+    return {
       fileName: `[ARAM] [${Sources.MurderBridge}] ${alias}`,
       title: `[ARAM] [${Sources.MurderBridge}] ${alias}`,
       type: 'custom',
-      associatedMaps: [],
+      associatedMaps: [12], // aram
       associatedChampions: [+key],
       key: alias.toLowerCase(),
       champion: alias,
-      blocks: [startBlocks, bootBlocks, buildBlocks].filter(Boolean),
-      map: 'HA',
+      map: 'any',
       mode: 'any',
       preferredItemSlots: [],
       sortrank: 9999,
       startedFrom: 'blank',
+      blocks: [startBlocks, bootBlocks, buildBlocks].filter(Boolean),
     };
-
-    return item;
   };
 
   getChampData = async (champion, version) => {

@@ -1,10 +1,25 @@
+const _pick = require('lodash/pick');
 const fs = require('fs').promises;
 const fse = require('fs-extra');
 
-export const saveToFile = async (desDir, data) => {
+const ItemSetProps = [
+  'type',
+  'associatedMaps',
+  'associatedChampions',
+  'map',
+  'mode',
+  'preferredItemSlots',
+  'sortrank',
+  'startedFrom',
+  'blocks',
+];
+
+export const saveToFile = async (desDir, data, stripProps = true) => {
   try {
     const file = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
-    await fse.outputFile(file, JSON.stringify(data, null, 4));
+    const content = stripProps ? _pick(data, ItemSetProps) : data;
+    await fse.outputFile(file, JSON.stringify(content, null, 4));
+
     return {
       champion: data.champion,
       position: data.position,
