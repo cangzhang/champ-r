@@ -237,7 +237,7 @@ export default function Home() {
           disabled={shouldDisableImport}
           startEnhancer={() => <ArrowRight size={24} />}
           onClick={startImport}>
-          {t(`import now`)}!
+          {t(`import now`)}
         </Button>
 
         <Checkbox

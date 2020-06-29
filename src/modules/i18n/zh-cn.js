@@ -4,7 +4,7 @@ export default {
   translation: {
     'lol folder is': `LOL 文件夹`,
     'lol version is': `LOL 版本`,
-    'import now': `应用`,
+    'import now': `一键导入出装!`,
     'keep old items': `保留旧出装文件`,
     'click here to select': '点击此处选择文件夹',
     'click here to re-select': '点击此处重新选择',
