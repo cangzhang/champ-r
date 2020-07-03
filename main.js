@@ -309,8 +309,6 @@ function registerUpdater() {
 
   await app.whenReady();
   Menu.setApplicationMenu(null);
-  registerMainListeners();
-  registerUpdater();
 
   const locale = (await osLocale()) || `en-US`;
   const sysLang = config.get(`appLang`);
@@ -321,6 +319,9 @@ function registerUpdater() {
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();
+
+  registerMainListeners();
+  registerUpdater();
 
   await centerWindow({
     window: mainWindow,
