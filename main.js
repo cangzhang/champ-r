@@ -25,6 +25,7 @@ contextMenu();
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId('com.al.champ-r');
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
+app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 app.allowRendererProcessReuse = false;
 
 const ignoreSystemScale = config.get(`ignoreSystemScale`);
