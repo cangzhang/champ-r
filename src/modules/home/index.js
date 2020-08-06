@@ -76,7 +76,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    OpGG.getLolVersion().then((v) => {
+    OpGG.getSourceVersion().then((v) => {
       dispatch(updateDataSourceVersion(Sources.Opgg, v));
     });
     LolQQ.getLolVersion().then((v) => {

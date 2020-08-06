@@ -3,13 +3,15 @@ import _noop from 'lodash/noop';
 import _find from 'lodash/find';
 
 import { requestHtml } from 'src/service/utils';
+import http from 'src/service/http';
 
 import { addFetched, addFetching, fetchSourceDone, clearFetch } from 'src/share/actions';
 import { makeBuildFile, saveToFile } from 'src/share/file';
 import Sources from 'src/share/constants/sources';
 import SourceProto from './source-proto';
 
-const OpggUrl = 'https://www.op.gg';
+const OpggUrl = `https://www.op.gg`;
+const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/op.gg`;
 
 export const getSpellName = (imgSrc = '') => {
   const matched = imgSrc.match(/(.*)\/Summoner(.*)\.png/) || [''];
@@ -60,6 +62,16 @@ export default class OpGG extends SourceProto {
       console.error(error);
       return Promise.reject(error);
       // throw new Error(error);
+    }
+  };
+
+  static getSourceVersion = async () => {
+    try {
+      const { sourceVersion } = await http.get(`${CDN_URL}/package.json?${Date.now()}`);
+      return sourceVersion;
+    } catch (err) {
+      console.error(err);
+      return Promise.reject(err);
     }
   };
 
