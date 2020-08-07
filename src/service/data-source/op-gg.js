@@ -12,7 +12,7 @@ import SourceProto from './source-proto';
 import { CancelToken } from 'axios';
 
 const OpggUrl = `https://www.op.gg`;
-const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/op.gg`;
+const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/op.gg@latest`;
 
 export const getSpellName = (imgSrc = '') => {
   const matched = imgSrc.match(/(.*)\/Summoner(.*)\.png/) || [''];
