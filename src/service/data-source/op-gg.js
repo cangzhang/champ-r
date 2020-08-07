@@ -9,6 +9,7 @@ import { addFetched, addFetching, fetchSourceDone, clearFetch } from 'src/share/
 import { makeBuildFile, saveToFile } from 'src/share/file';
 import Sources from 'src/share/constants/sources';
 import SourceProto from './source-proto';
+import { CancelToken } from 'axios';
 
 const OpggUrl = `https://www.op.gg`;
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/op.gg`;
@@ -39,6 +40,7 @@ const getItems = (imgs, $) => {
 const Stages = {
   FETCH_CHAMPION_LIST: `FETCH_CHAMPION_LIST`,
   FETCH_CHAMPION_DATA: `FETCH_CHAMPION_DATA`,
+  GEN_DATA_FILE: `GEN_DATA_FILE`,
 };
 
 export default class OpGG extends SourceProto {
@@ -72,6 +74,111 @@ export default class OpGG extends SourceProto {
     } catch (err) {
       console.error(err);
       return Promise.reject(err);
+    }
+  };
+
+  getChampionList = async () => {
+    try {
+      const data = await http.get(`${CDN_URL}/index.json?${Date.now()}}`, {
+        cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
+      });
+      return data;
+    } catch (err) {
+      console.error(err);
+      return Promise.reject({
+        stage: Stages.FETCH_CHAMPION_LIST,
+      });
+    }
+  };
+
+  getItemBuilds = async (champion, $identity) => {
+    try {
+      const data = await http.get(`${CDN_URL}/${champion}.json?${Date.now()}`, {
+        cancelToken: new CancelToken(this.setCancelHook($identity)),
+      });
+      return data;
+    } catch (err) {
+      console.error(err);
+      throw new Error(err);
+    }
+  };
+
+  genItemBuilds = async (champion, lolDir) => {
+    try {
+      const $identity = uuid();
+      this.dispatch(
+        addFetching({
+          champion,
+          $identity,
+          source: Sources.Opgg,
+        }),
+      );
+
+      const data = await this.getItemBuilds(champion);
+      const tasks = data.reduce((t, i) => {
+        const { position, itemBuilds } = i;
+        itemBuilds.forEach((k) => {
+          const file = {
+            ...k,
+            champion,
+            position,
+            fileName: `[${Sources.Opgg.toUpperCase()}] ${position} - ${champion}`,
+          };
+          t = t.concat(saveToFile(lolDir, file));
+        });
+
+        return t;
+      }, []);
+
+      const r = await Promise.allSettled(tasks);
+
+      this.dispatch(
+        addFetched({
+          champion,
+          $identity,
+          source: Sources.Opgg,
+        }),
+      );
+
+      return r;
+    } catch (err) {
+      console.error(err);
+      return Promise.reject({
+        champion: champion,
+        stage: Stages.GEN_DATA_FILE,
+      });
+    }
+  };
+
+  importFromCDN = async (lolDir) => {
+    try {
+      const championMap = await this.getChampionList();
+      const tasks = Object.keys(championMap).map((champion) =>
+        this.genItemBuilds(champion, lolDir),
+      );
+      const r = await Promise.allSettled(tasks);
+      const result = r.reduce(
+        (arr, cur) =>
+          arr.concat(
+            cur.status === `rejected`
+              ? {
+                  status: `rejected`,
+                  value: cur.reason,
+                  reason: cur.reason,
+                }
+              : cur.value,
+          ),
+        [],
+      );
+
+      const [fulfilled, rejected] = this.makeResult(result);
+      return {
+        fulfilled,
+        rejected,
+      };
+    } catch (err) {
+      console.error(err);
+      throw new Error(err);
     }
   };
 
@@ -296,7 +403,8 @@ export default class OpGG extends SourceProto {
   makeResult = (result) => {
     const fulfilled = [];
     const rejected = [];
-    for (const { status, value, reason } of result) {
+    for (const v of result) {
+      const { status, value, reason } = v || {};
       switch (status) {
         case 'fulfilled':
           fulfilled.push([value.champion, value.position]);

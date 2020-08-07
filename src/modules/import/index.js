@@ -120,7 +120,7 @@ export default function Import() {
 
       opggTask = () =>
         instance
-          .import()
+          .importFromCDN(lolDir)
           .then((result) => {
             const { fulfilled, rejected } = result;
             if (!rejected.length) {
@@ -257,7 +257,8 @@ export default function Import() {
             <ul>
               {opggResult.rejected.map(([champion, position], idx) => (
                 <li key={idx}>
-                  {champion}@{position}
+                  {champion}
+                  {position && `@${position}`}
                 </li>
               ))}
             </ul>
