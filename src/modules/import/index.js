@@ -60,7 +60,7 @@ export default function Import() {
     let cleanFolderTask = () => Promise.resolve();
     if (!keepOld) {
       cleanFolderTask = () =>
-        removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
+        removeFolderContent(`${lolDir}/Config/Champions`).then(() => {
           toaster.positive(t(`removed outdated items`), null);
         });
     }

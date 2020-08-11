@@ -39,7 +39,7 @@ export const makeBuildFile = (
 
 export const saveToFile = async (desDir, data, stripProps = true) => {
   try {
-    const file = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
+    const file = `${desDir}/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
     const content = stripProps ? _pick(data, ItemSetProps) : data;
     await fse.outputFile(file, JSON.stringify(content, null, 4));
 
@@ -62,7 +62,7 @@ export const removeFolderContent = async (dir) => {
 };
 
 export const getLcuToken = async (dirPath) => {
-  const dir = `${dirPath}/Game/Logs/LeagueClient Logs`;
+  const dir = `${dirPath}/Logs/LeagueClient Logs`;
 
   try {
     const files = await fs.readdir(dir);
