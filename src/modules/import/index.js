@@ -120,7 +120,7 @@ export default function Import() {
 
       opggTask = () =>
         instance
-          .importFromCDN(lolDir)
+          .importFromCdn(lolDir)
           .then((result) => {
             const { fulfilled, rejected } = result;
             if (!rejected.length) {

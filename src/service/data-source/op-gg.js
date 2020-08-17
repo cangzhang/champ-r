@@ -11,8 +11,9 @@ import Sources from 'src/share/constants/sources';
 import SourceProto from './source-proto';
 import { CancelToken } from 'axios';
 
-const OpggUrl = `https://www.op.gg`;
-const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/op.gg@latest`;
+const OP_GG_URL = `https://www.op.gg`;
+const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/op.gg`;
+const T_NPM_URL = `https://registry.npm.taobao.org/@champ-r/op.gg`;
 
 export const getSpellName = (imgSrc = '') => {
   const matched = imgSrc.match(/(.*)\/Summoner(.*)\.png/) || [''];
@@ -54,7 +55,7 @@ export default class OpGG extends SourceProto {
 
   static getLolVersion = async () => {
     try {
-      const $ = await requestHtml(`${OpggUrl}/champion/rengar/statistics/jungle`, null, false);
+      const $ = await requestHtml(`${OP_GG_URL}/champion/rengar/statistics/jungle`, null, false);
       const versionText = $(`.champion-stats-header-version`).text().trim();
       const match = versionText.match(/\d|\./g) || [];
       const version = match.join(``);
@@ -67,10 +68,20 @@ export default class OpGG extends SourceProto {
     }
   };
 
-  static getSourceVersion = async () => {
+  static getPkgInfo = async () => {
     try {
-      const { sourceVersion } = await http.get(`${CDN_URL}/package.json?${Date.now()}`);
-      return sourceVersion;
+      const data = await http.get(`${CDN_URL}/package.json?${Date.now()}`);
+      return data;
+    } catch (err) {
+      console.error(err);
+      return Promise.reject(err);
+    }
+  };
+
+  static getLatestVersionFromCdn = async () => {
+    try {
+      const data = await http.get(`${T_NPM_URL}?t=${Date.now()}`);
+      return data[`dist-tags`].latest;
     } catch (err) {
       console.error(err);
       return Promise.reject(err);
@@ -79,7 +90,8 @@ export default class OpGG extends SourceProto {
 
   getChampionList = async () => {
     try {
-      const data = await http.get(`${CDN_URL}/index.json?${Date.now()}}`, {
+      const version = await OpGG.getLatestVersionFromCdn();
+      const data = await http.get(`${CDN_URL}@${version}/index.json?${Date.now()}}`, {
         cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
       });
       return data;
@@ -91,9 +103,10 @@ export default class OpGG extends SourceProto {
     }
   };
 
-  getChampionData = async (champion, $identity) => {
+  getChampionDataFromCdn = async (champion, $identity) => {
     try {
-      const data = await http.get(`${CDN_URL}/${champion}.json?${Date.now()}`, {
+      const version = await OpGG.getLatestVersionFromCdn();
+      const data = await http.get(`${CDN_URL}@${version}/${champion}.json?${Date.now()}`, {
         cancelToken: new CancelToken(this.setCancelHook($identity)),
       });
       return data;
@@ -114,7 +127,7 @@ export default class OpGG extends SourceProto {
         }),
       );
 
-      const data = await this.getChampionData(champion);
+      const data = await this.getChampionDataFromCdn(champion);
       const tasks = data.reduce((t, i) => {
         const { position, itemBuilds } = i;
         itemBuilds.forEach((k) => {
@@ -153,7 +166,7 @@ export default class OpGG extends SourceProto {
   getRunesFromCdn = async (alias) => {
     try {
       const $id = uuid();
-      const data = await this.getChampionData(alias, $id);
+      const data = await this.getChampionDataFromCdn(alias, $id);
       return data.reduce((arr, i) => arr.concat(i.runes), []);
     } catch (err) {
       console.error(err);
@@ -161,7 +174,7 @@ export default class OpGG extends SourceProto {
     }
   };
 
-  importFromCDN = async (lolDir) => {
+  importFromCdn = async (lolDir) => {
     try {
       const championMap = await this.getChampionList();
       const tasks = Object.keys(championMap).map((champion) =>
@@ -195,7 +208,7 @@ export default class OpGG extends SourceProto {
 
   getStat = async () => {
     try {
-      const $ = await requestHtml(`${OpggUrl}/champion/statistics`, this.setCancelHook(`stats`));
+      const $ = await requestHtml(`${OP_GG_URL}/champion/statistics`, this.setCancelHook(`stats`));
       const items = $('.champion-index__champion-list').find('.champion-index__champion-item');
       const result = items.toArray().map((itm) => {
         const champ = $(itm);
@@ -271,7 +284,7 @@ export default class OpGG extends SourceProto {
     try {
       const $id = uuid();
       const $ = await requestHtml(
-        `${OpggUrl}/champion/${alias}/statistics`,
+        `${OP_GG_URL}/champion/${alias}/statistics`,
         this.setCancelHook($id),
         false,
       );
@@ -285,7 +298,7 @@ export default class OpGG extends SourceProto {
       const firstPositionPerks = this.getPerksFromHtml(alias, positions[0], $);
       const tasks = positions.slice(1).map(async (p) => {
         const $ = await requestHtml(
-          `${OpggUrl}/champion/${alias}/statistics/${p}`,
+          `${OP_GG_URL}/champion/${alias}/statistics/${p}`,
           this.setCancelHook(`${$id}-${p}`),
         );
         return this.getPerksFromHtml(alias, p, $);
@@ -307,7 +320,7 @@ export default class OpGG extends SourceProto {
     const { itemMap } = this;
     try {
       const $ = await requestHtml(
-        `${OpggUrl}/champion/${champion}/statistics/${position}/item`,
+        `${OP_GG_URL}/champion/${champion}/statistics/${position}/item`,
         this.setCancelHook(id),
       );
 
