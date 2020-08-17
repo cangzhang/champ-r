@@ -81,7 +81,7 @@ export default function Popup() {
     });
 
     const opggInstance = new Opgg();
-    opggInstance.getChampionPerks(champ.id).then((result) => {
+    opggInstance.getRunesFromCdn(champ.alias).then((result) => {
       setOPggPerkList(result);
     });
 

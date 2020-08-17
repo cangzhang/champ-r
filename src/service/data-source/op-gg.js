@@ -91,7 +91,7 @@ export default class OpGG extends SourceProto {
     }
   };
 
-  getItemBuilds = async (champion, $identity) => {
+  getChampionData = async (champion, $identity) => {
     try {
       const data = await http.get(`${CDN_URL}/${champion}.json?${Date.now()}`, {
         cancelToken: new CancelToken(this.setCancelHook($identity)),
@@ -114,7 +114,7 @@ export default class OpGG extends SourceProto {
         }),
       );
 
-      const data = await this.getItemBuilds(champion);
+      const data = await this.getChampionData(champion);
       const tasks = data.reduce((t, i) => {
         const { position, itemBuilds } = i;
         itemBuilds.forEach((k) => {
@@ -147,6 +147,17 @@ export default class OpGG extends SourceProto {
         champion: champion,
         stage: Stages.GEN_DATA_FILE,
       });
+    }
+  };
+
+  getRunesFromCdn = async (alias) => {
+    try {
+      const $id = uuid();
+      const data = await this.getChampionData(alias, $id);
+      return data.reduce((arr, i) => arr.concat(i.runes), []);
+    } catch (err) {
+      console.error(err);
+      return Promise.reject(err);
     }
   };
 
