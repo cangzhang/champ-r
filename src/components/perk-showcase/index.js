@@ -43,7 +43,7 @@ export default function PerkShowcase({
               {t(`pick count`)} <span className={s.value}>{perk.pickCount}</span>
             </span>
             <span className={s.win}>
-              {t(`win ratio`)} <span className={s.value}>{perk.winRate}%</span>
+              {t(`win ratio`)} <span className={s.value}>{perk.winRate.replace(`%`, ``)}%</span>
             </span>
           </div>
         )}
