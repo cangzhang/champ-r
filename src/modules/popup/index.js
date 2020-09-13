@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
-import { Tabs, Tab } from 'baseui/tabs';
+import { Tabs, Tab, FILL } from 'baseui/tabs-motion';
 
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix, getChampions } from 'src/service/qq';
@@ -178,6 +178,7 @@ export default function Popup() {
 
         <Tabs
           activeKey={activeTab}
+          fill={FILL.fixed}
           onChange={({ activeKey }) => setActiveTab(activeKey)}
           overrides={{
             TabContent: {

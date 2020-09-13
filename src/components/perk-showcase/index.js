@@ -28,9 +28,9 @@ export default function PerkShowcase({
       onMouseEnter={(ev) => onMouseEnter(perk, el.current, ev)}
       onMouseLeave={onMouseLeave}>
       <div className={s.preview}>
-        <div className={cn(s.primary, s[primaryStyleId])} />
-        <div className={cn(s[pId], s.big)} />
-        <div className={cn(s.sub, s[subStyleId])} />
+        <div className={cn(s.primary, s[`r-${primaryStyleId}`])} />
+        <div className={cn(s[`r-${pId}`], s.big)} />
+        <div className={cn(s.sub, s[`r-${subStyleId}`])} />
       </div>
 
       <div className={s.desc}>
