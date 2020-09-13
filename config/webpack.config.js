@@ -23,9 +23,9 @@ const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpack
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
 const CompressionPlugin = require('compression-webpack-plugin');
 const ImageminWebpWebpackPlugin = require('imagemin-webp-webpack-plugin');
-
 const postcssNormalize = require('postcss-normalize');
 
+const ReplaceCssUrlExtPlugin = require('./plugins/replace-css-url-ext');
 const appPackageJson = require(paths.appPackageJson);
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.
@@ -34,7 +34,6 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP === 'true';
 // makes for a smoother build process.
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false';
 const shouldUglify = process.env.UGLIFY !== 'false';
-
 const imageInlineSizeLimit = parseInt(process.env.IMAGE_INLINE_SIZE_LIMIT || '10000');
 
 // Check if TypeScript is setup
@@ -120,8 +119,7 @@ module.exports = function (webpackEnv) {
           options: {
             sourceMap: isEnvProduction && shouldUseSourceMap,
           },
-        },
-        {
+        },        {
           loader: require.resolve(preProcessor),
           options: {
             sourceMap: true,
@@ -664,7 +662,9 @@ module.exports = function (webpackEnv) {
         formatter: isEnvProduction ? typescriptFormatter : undefined,
       }),
 
-      new ImageminWebpWebpackPlugin(),
+      isEnvProduction && new ImageminWebpWebpackPlugin(),
+      isEnvProduction && new ReplaceCssUrlExtPlugin(),
+
     ].filter(Boolean),
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.
