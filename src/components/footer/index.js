@@ -14,7 +14,7 @@ export default function Footer() {
 
   const star = (ev) => {
     ev.preventDefault();
-    shell.openItem(`https://github.com/cangzhang/champ-r`);
+    shell.openExternal(`https://github.com/cangzhang/champ-r`);
   };
 
   return (

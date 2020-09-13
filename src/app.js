@@ -137,7 +137,7 @@ const App = () => {
       const notify = new Notification(`New version available: ${info.version}`);
 
       notify.onclick = () => {
-        shell.openItem(`https://github.com/cangzhang/champ-r/releases`);
+        shell.openExternal(`https://github.com/cangzhang/champ-r/releases`);
       };
     });
 
