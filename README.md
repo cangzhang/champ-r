@@ -5,7 +5,7 @@
 
 Another League of Legends helper. [Screenshots here](./screenshots).
 
-Icon from [here](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
+App icon from [here](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
 
 ## Features
 

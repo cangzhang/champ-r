@@ -115,7 +115,7 @@ export default function Home() {
               style: () => ({
                 minWidth: 0,
                 maxWidth: `calc(100vw - 14em)`,
-                paddingTop: `4px`,
+                paddingTop: `2px`,
               }),
             },
             Text: {
