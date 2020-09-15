@@ -3,7 +3,9 @@
 ![release](https://github.com/cangzhang/champ-r/workflows/release/badge.svg)
 ![](https://flat.badgen.net/github/release/cangzhang/champ-r)
 
-Another League of Legends helper. [Screenshots here](./screenshots)
+Another League of Legends helper. [Screenshots here](./screenshots).
+
+Icon from [here](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
 
 ## Features
 
@@ -27,18 +29,18 @@ https://github.com/cangzhang/champ-r/releases
 
 ### Install dependencies
 
-```bash
+```console
 yarn
 ```
 
 ### Start
 
-```bash
+```console
 yarn start
 ```
 
 ### Build
 
-```bash
+```console
 yarn build:local
 ```
