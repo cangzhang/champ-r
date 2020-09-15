@@ -82,7 +82,6 @@ const createPopupWindow = async () => {
     y: mY,
   });
 
-  // TODO: remember window size & position
   const popup = new BrowserWindow({
     show: false,
     frame: false,
@@ -92,14 +91,24 @@ const createPopupWindow = async () => {
     alwaysOnTop: !isDev,
     width: isDev ? 900 : 400,
     height: 600,
-    x: isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140,
-    y: curDisplay.bounds.height / 2,
+    x:
+      config.get(`popup.x`) ||
+      (isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140),
+    y: config.get(`popup.y`) || curDisplay.bounds.height / 2,
     webPreferences,
   });
 
   // popup.on(`ready-to-show`, () => {
   //   popup.show();
   // });
+
+  popup.on(`move`, () => {
+    persistPopUpBounds(popup);
+  });
+
+  popup.on(`resize`, () => {
+    persistPopUpBounds(popup);
+  });
 
   popup.on('closed', () => {
     popupWindow = undefined;
@@ -145,6 +154,18 @@ app.on('activate', async () => {
     mainWindow = await createMainWindow();
   }
 });
+
+function persistPopUpBounds(w) {
+  if (!w) {
+    return;
+  }
+
+  const { x, y, width, height } = w.getBounds();
+  config.set(`popup.x`, x);
+  config.set(`popup.y`, y);
+  config.set(`popup.width`, width);
+  config.set(`popup.height`, height);
+}
 
 function registerMainListeners() {
   ipcMain.on(`broadcast`, (ev, data) => {

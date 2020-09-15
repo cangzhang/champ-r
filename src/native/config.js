@@ -10,5 +10,11 @@ module.exports = new Store({
     ignoreSystemScale: false,
     selectedSources: [],
     perkTab: ``,
+    popup: {
+      width: null,
+      height: null,
+      x: null,
+      y: null,
+    },
   },
 });
