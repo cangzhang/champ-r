@@ -70,7 +70,8 @@ export default class OpGG extends SourceProto {
 
   static getPkgInfo = async () => {
     try {
-      const data = await http.get(`${CDN_URL}/package.json?${Date.now()}`);
+      const version = await OpGG.getLatestVersionFromCdn();
+      const data = await http.get(`${CDN_URL}@${version}/package.json?${Date.now()}`);
       return data;
     } catch (err) {
       console.error(err);
