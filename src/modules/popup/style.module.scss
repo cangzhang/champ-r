@@ -16,15 +16,17 @@ body {
 }
 
 .drag {
-  display: flex;
-  margin-bottom: 2ex;
   -webkit-user-select: none;
   -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 4rem;
 
   .avatar {
-    height: 64px;
-    width: 64px;
-    margin: 1em auto 0;
+    margin-right: 1ex;
+    height: 2rem;
+    width: 2rem;
     border-radius: 50%;
   }
 }

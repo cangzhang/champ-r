@@ -12,6 +12,8 @@ import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { Tabs, Tab, FILL } from 'baseui/tabs-motion';
+import { ButtonGroup, SIZE } from 'baseui/button-group';
+import { Button } from 'baseui/button';
 
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix, getChampions } from 'src/service/qq';
@@ -173,6 +175,12 @@ export default function Popup() {
               // src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`}
               src={`${QQChampionAvatarPrefix}/${championDetail.id}.png`}
             />
+
+            <ButtonGroup size={SIZE.compact}>
+              <Button>QQ</Button>
+              <Button>OP.GG</Button>
+              <Button>MB</Button>
+            </ButtonGroup>
           </div>
         )}
 

@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import OpGG from 'src/service/data-source/op-gg';
 import LolQQ from 'src/service/data-source/lol-qq';
 import MurderBridge from 'src/service/data-source/murderbridge';
+import logo from 'src/assets/app-icon.webp';
 
 export default function Home() {
   const [css, theme] = useStyletron();
@@ -100,6 +101,7 @@ export default function Home() {
   return (
     <div className={s.container}>
       <h1 className={s.title}>
+        <img src={logo} alt='' />
         <span>ChampR</span>
       </h1>
 

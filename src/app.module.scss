@@ -6,6 +6,14 @@
   .title {
     margin-bottom: 2ex;
     user-select: none;
+    display: flex;
+    align-items: center;
+
+    img {
+      height: 2rem;
+      width: 2rem;
+      margin-right: 1rem;
+    }
 
     span {
       box-shadow: 0 4px 0px 0px #276ef1;
