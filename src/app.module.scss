@@ -1,13 +1,19 @@
+@font-face {
+  font-family: 'Cinzel Decorative';
+  src: url('~src/assets/fonts/CinzelDecorative-Regular.ttf');
+}
+
 .container {
   display: flex;
   flex-direction: column;
   padding: 1em;
 
   .title {
-    margin-bottom: 2ex;
+    margin-bottom: 1.6rem;
     user-select: none;
     display: flex;
     align-items: center;
+    font-family: 'Cinzel Decorative';
 
     img {
       height: 2rem;
@@ -16,7 +22,7 @@
     }
 
     span {
-      box-shadow: 0 4px 0px 0px #276ef1;
+      box-shadow: 0 4px 0 0 #276ef1;
     }
   }
 

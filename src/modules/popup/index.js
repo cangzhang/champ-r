@@ -156,7 +156,7 @@ export default function Popup() {
     return (
       <Scrollbars
         style={{
-          height: `calc(100vh - 180px)`,
+          height: `calc(100vh - 6rem)`,
         }}>
         {list.map((p, idx) => (
           <PerkShowcase
