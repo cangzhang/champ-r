@@ -7,11 +7,11 @@ import { ipcRenderer } from 'electron';
 import React, { useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useTranslation } from 'react-i18next';
+import { useImmer } from 'use-immer';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
-import { Tabs, Tab, FILL } from 'baseui/tabs-motion';
 import { ButtonGroup, SIZE } from 'baseui/button-group';
 import { Button } from 'baseui/button';
 
@@ -30,6 +30,21 @@ import Loading from 'src/components/loading-spinner';
 import { getChampionInfo } from './utils';
 
 const engine = new Styletron();
+const SourceList = [
+  {
+    name: `QQ`,
+    value: Sources.Lolqq,
+  },
+  {
+    name: `OP.GG`,
+    value: Sources.Opgg,
+  },
+  {
+    name: `MB`,
+    value: Sources.MurderBridge,
+    aram: true,
+  },
+];
 
 export default function Popup() {
   const lolVer = config.get(`lolVer`);
@@ -37,23 +52,15 @@ export default function Popup() {
   const [t] = useTranslation();
   const lcu = useRef({});
 
-  const [qqPerks, setQQPerkList] = useState([]);
-  const [opggPerks, setOPggPerkList] = useState([]);
-  const [mbPerks, setMBPerks] = useState([]);
-
+  const [activeTab, setActiveTab] = useState(config.get(`perkTab`) || Sources.Lolqq);
+  const [perkList, setPerkList] = useImmer([[], [], []]);
   const [championMap, setChampionMap] = useState(null);
   const [championId, setChampionId] = useState('');
   const [championDetail, setChampionDetail] = useState(null);
-  const [activeTab, setActiveTab] = useState(config.get(`perkTab`) || Sources.Lolqq);
   const [curPerk, setCurPerk] = useState({});
   const [coordinate, setCoordinate] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
   useEffect(() => {
-    // const mb = new MurderBridge();
-    // mb.import().then((v) => {
-    //   console.log(v);
-    // });
-
     getChampions(lolVer).then((championList) => {
       setChampionMap(championList);
 
@@ -79,17 +86,23 @@ export default function Popup() {
 
     const lolqqInstance = new LolQQ();
     lolqqInstance.getChampionPerks(champ.key, champ.id).then((result) => {
-      setQQPerkList(result);
+      setPerkList((draft) => {
+        draft[0] = result;
+      });
     });
 
     const opggInstance = new Opgg();
     opggInstance.getRunesFromCdn(champ.alias).then((result) => {
-      setOPggPerkList(result);
+      setPerkList((draft) => {
+        draft[1] = result;
+      });
     });
 
     const mbInstance = new MurderBridge();
     mbInstance.getChampionPerks(champ.id).then((result) => {
-      setMBPerks(result);
+      setPerkList((draft) => {
+        draft[2] = result;
+      });
     });
   }, [championId, championMap]);
 
@@ -129,9 +142,12 @@ export default function Popup() {
     setCurPerk({});
   };
 
-  const renderList = (perkList = [], isAramMode = false) => {
-    const shouldShowList =
-      perkList.length && championDetail && perkList[0].alias === championDetail.id;
+  const onSelectSource = (_, idx) => {
+    setActiveTab(SourceList[idx].value);
+  };
+
+  const renderList = (list = [], isAramMode = false) => {
+    const shouldShowList = list.length && championDetail && list[0].alias === championDetail.id;
 
     if (!shouldShowList) {
       return <Loading className={s.listLoading} />;
@@ -142,7 +158,7 @@ export default function Popup() {
         style={{
           height: `calc(100vh - 180px)`,
         }}>
-        {perkList.map((p, idx) => (
+        {list.map((p, idx) => (
           <PerkShowcase
             key={`${championId}-${idx}`}
             idx={idx}
@@ -160,10 +176,11 @@ export default function Popup() {
   };
 
   const renderContent = () => {
-    if (!championMap || !qqPerks.length) {
+    if (!championMap || !perkList[0].length) {
       return <Loading className={s.loading} />;
     }
 
+    const tabIdx = SourceList.findIndex((i) => i.value === activeTab);
     return (
       <div className={s.main}>
         {championDetail && (
@@ -172,44 +189,20 @@ export default function Popup() {
               key={championDetail.id}
               className={s.avatar}
               alt={championDetail.name}
-              // src={`${DDragonCDNUrl}/${lolVer}/img/champion/${championDetail.id}.png`}
               src={`${QQChampionAvatarPrefix}/${championDetail.id}.png`}
             />
 
-            <ButtonGroup size={SIZE.compact}>
-              <Button>QQ</Button>
-              <Button>OP.GG</Button>
-              <Button>MB</Button>
+            <ButtonGroup size={SIZE.compact} onClick={onSelectSource} selected={[tabIdx]}>
+              {SourceList.map((item) => (
+                <Button key={item.value}>{item.name}</Button>
+              ))}
             </ButtonGroup>
           </div>
         )}
 
-        <Tabs
-          activeKey={activeTab}
-          fill={FILL.fixed}
-          onChange={({ activeKey }) => setActiveTab(activeKey)}
-          overrides={{
-            TabContent: {
-              style: () => {
-                return {
-                  paddingTop: 0,
-                  paddingLeft: 0,
-                  paddingRight: 0,
-                  paddingBottom: 0,
-                };
-              },
-            },
-          }}>
-          <Tab key={Sources.Lolqq} title={Sources.Lolqq.toUpperCase()}>
-            <div className={s.list}>{renderList(qqPerks)}</div>
-          </Tab>
-          <Tab key={Sources.Opgg} title={Sources.Opgg.toUpperCase()}>
-            <div className={s.list}>{renderList(opggPerks)}</div>
-          </Tab>
-          <Tab key={Sources.MurderBridge} title={Sources.MurderBridge.toUpperCase()}>
-            <div className={s.list}>{renderList(mbPerks, true)}</div>
-          </Tab>
-        </Tabs>
+        {perkList[tabIdx] && (
+          <div className={s.list}>{renderList(perkList[tabIdx], SourceList[tabIdx].aram)}</div>
+        )}
       </div>
     );
   };
