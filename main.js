@@ -89,8 +89,8 @@ const createPopupWindow = async () => {
     resizable: isDev || ignoreSystemScale,
     fullscreenable: false,
     alwaysOnTop: !isDev,
-    width: isDev ? 900 : 400,
-    height: 600,
+    width: config.get(`popup.width`) || 300,
+    height: config.get(`popup.height`) || 350,
     x:
       config.get(`popup.x`) ||
       (isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140),
