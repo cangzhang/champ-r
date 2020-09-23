@@ -38,5 +38,12 @@ export default {
     fulfilled: `Fulfilled`,
     rejected: `Rejected`,
     'try import rejected': `Retry`,
+    top: `Top`,
+    jungle: `Jungle`,
+    middle: `Middle`,
+    mid: `Middle`,
+    bottom: `Bottom`,
+    bot: `Bottom`,
+    support: `Support`,
   },
 };

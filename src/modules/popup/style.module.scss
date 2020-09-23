@@ -16,14 +16,14 @@ body {
 }
 
 .drag {
-  -webkit-user-select: none;
-  -webkit-app-region: drag;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 4rem;
 
   .avatar {
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
     margin-right: 3ex;
     height: 2rem;
     width: 2rem;

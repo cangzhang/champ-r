@@ -35,7 +35,7 @@ export default function PerkShowcase({
 
       <div className={s.desc}>
         <div className={s.name}>
-          {perk.alias} {isAramMode ? `@ ${t(`aram`)}` : `@ ${perk.position}`}
+          {isAramMode ? `${t(`aram`)}` : `${t(perk.position.toLowerCase())}`}
         </div>
         {!isAramMode && (
           <div className={s.detail}>
