@@ -13,6 +13,7 @@ export default function RunePreview({ perk = {}, coordinate = {} }) {
 
   const renderRow = (isFragment = false) => {
     const selectedFIds = selectedPerkIds.slice(-3);
+    const showAllRunes = window.innerWidth >= 380;
 
     return (ids, idx) => {
       return (
@@ -24,6 +25,10 @@ export default function RunePreview({ perk = {}, coordinate = {} }) {
               selected = ids.includes(selectedFId) && id === selectedFId;
             }
 
+            if (!selected && !showAllRunes) {
+              return null;
+            }
+
             return (
               <div key={id} className={cn(s.runeImg, s[`rune-${id}`], selected && s.selected)} />
             );
@@ -33,14 +38,14 @@ export default function RunePreview({ perk = {}, coordinate = {} }) {
     };
   };
 
-  if (!primaryStyleId || !coordinate.height) {
-    return null;
-  }
-
   const left = coordinate.width / 2;
   const total = coordinate.y + coordinate.height;
   const up = total > window.innerHeight - 160;
   const top = up ? coordinate.y : total;
+
+  if (!primaryStyleId || !coordinate.height) {
+    return null;
+  }
 
   return ReactDOM.createPortal(
     <div
