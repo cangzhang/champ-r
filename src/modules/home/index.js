@@ -148,7 +148,7 @@ export default function Home() {
 
       <div className={s.sources}>
         <H6 margin={`0 0 1ex 0`} color={theme.colors.borderInverseOpaque}>
-          {t(`data sources`)}:
+          <div className={s.sourceTitle}>{t(`data sources`)}:</div>
         </H6>
 
         {Object.values(Sources).map((v) => {
