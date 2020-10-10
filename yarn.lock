@@ -5150,10 +5150,10 @@ electron-util@0.14.0:
     electron-is-dev "^1.1.0"
     new-github-issue-url "^0.2.1"
 
-electron@8.5.1:
-  version "8.5.1"
-  resolved "https://registry.npm.taobao.org/electron/download/electron-8.5.1.tgz?cache=0&sync_timestamp=1599766197825&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Felectron%2Fdownload%2Felectron-8.5.1.tgz#db1c0c1dab16bfa3ac87bfc4c0ad86d43c3cfff4"
-  integrity sha1-2xwMHasWv6Osh7/EwK2G1Dw8//Q=
+electron@8.5.2:
+  version "8.5.2"
+  resolved "https://registry.npm.taobao.org/electron/download/electron-8.5.2.tgz#7b0246c6676a39df0e5e384b11cfe854fe5917f0"
+  integrity sha1-ewJGxmdqOd8OXjhLEc/oVP5ZF/A=
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^12.0.12"
