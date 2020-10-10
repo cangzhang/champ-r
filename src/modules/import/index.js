@@ -95,23 +95,7 @@ export default function Import() {
 
     if (selectedSources.includes(Sources.MurderBridge)) {
       const instance = new MbImporter(lolDir, itemMap, dispatch);
-      mbTask = () =>
-        instance
-          .import()
-          .then(() => {
-            toaster.positive(`[${Sources.MurderBridge.toUpperCase()}] ${t(`completed`)}`, null);
-            dispatch(importBuildSucceed(Sources.MurderBridge));
-          })
-          .catch((err) => {
-            if (err.message.includes(`Error: Cancel`)) {
-              setCancel(cancelled.concat(Sources.MurderBridge));
-              toaster.warning(`${t(`cancelled`)}: ${Sources.Lolqq}`, null);
-            } else {
-              dispatch(importBuildFailed(Sources.MurderBridge));
-              toaster.negative(`${t(`import failed`)}: ${Sources.Lolqq}`, null);
-              console.error(err);
-            }
-          });
+      mbTask = () => instance.importFromCDN();
     }
 
     if (selectedSources.includes(Sources.Opgg)) {

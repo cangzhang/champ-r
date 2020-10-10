@@ -53,45 +53,11 @@ export default class OpGG extends SourceProto {
     this.dispatch = dispatch;
   }
 
-  static getLolVersion = async () => {
-    try {
-      const $ = await requestHtml(`${OP_GG_URL}/champion/rengar/statistics/jungle`, null, false);
-      const versionText = $(`.champion-stats-header-version`).text().trim();
-      const match = versionText.match(/\d|\./g) || [];
-      const version = match.join(``);
-      // this.version = version;
-      return version;
-    } catch (error) {
-      console.error(error);
-      return Promise.reject(error);
-      // throw new Error(error);
-    }
-  };
-
-  static getPkgInfo = async () => {
-    try {
-      const version = await OpGG.getLatestVersionFromCdn();
-      const data = await http.get(`${CDN_URL}@${version}/package.json?${Date.now()}`);
-      return data;
-    } catch (err) {
-      console.error(err);
-      return Promise.reject(err);
-    }
-  };
-
-  static getLatestVersionFromCdn = async () => {
-    try {
-      const data = await http.get(`${T_NPM_URL}?t=${Date.now()}`);
-      return data[`dist-tags`].latest;
-    } catch (err) {
-      console.error(err);
-      return Promise.reject(err);
-    }
-  };
+  static getPkgInfo = () => SourceProto.getPkgInfo(T_NPM_URL, CDN_URL);
 
   getChampionList = async () => {
     try {
-      const version = await OpGG.getLatestVersionFromCdn();
+      const version = await SourceProto.getLatestVersionFromCdn(T_NPM_URL);
       const data = await http.get(`${CDN_URL}@${version}/index.json?${Date.now()}}`, {
         cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
       });
@@ -106,7 +72,7 @@ export default class OpGG extends SourceProto {
 
   getChampionDataFromCdn = async (champion, $identity) => {
     try {
-      const version = await OpGG.getLatestVersionFromCdn();
+      const version = await SourceProto.getLatestVersionFromCdn(T_NPM_URL);
       const data = await http.get(`${CDN_URL}@${version}/${champion}.json?${Date.now()}`, {
         cancelToken: new CancelToken(this.setCancelHook($identity)),
       });

@@ -84,8 +84,8 @@ export default function Home() {
     LolQQ.getLolVersion().then((v) => {
       dispatch(updateDataSourceVersion(Sources.Lolqq, v));
     });
-    MurderBridge.getLolVersion().then((v) => {
-      dispatch(updateDataSourceVersion(Sources.MurderBridge, v));
+    MurderBridge.getPkgInfo().then(({ sourceVersion }) => {
+      dispatch(updateDataSourceVersion(Sources.MurderBridge, sourceVersion));
     });
   }, []);
 

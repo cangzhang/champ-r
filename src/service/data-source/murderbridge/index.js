@@ -18,6 +18,8 @@ import {
 } from './utils';
 
 const ApiPrefix = `https://d23wati96d2ixg.cloudfront.net`;
+const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/murderbridge`;
+const T_NPM_URL = `https://registry.npm.taobao.org/@champ-r/murderbridge`;
 
 const sortByScore = (a, b) =>
   scoreGenerator(b[1].winRate, b[1].frequency, 2.5, generalSettings) -
@@ -61,6 +63,8 @@ export default class MurderBridge extends SourceProto {
       throw new Error(err);
     }
   };
+
+  static getPkgInfo = () => SourceProto.getPkgInfo(T_NPM_URL, CDN_URL);
 
   getRunesReforged = async (version) => {
     try {
@@ -174,6 +178,88 @@ export default class MurderBridge extends SourceProto {
       const result = await Promise.all(tasks);
       this.dispatch(fetchSourceDone(Sources.MurderBridge));
       return result;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  getChampionDataFromCDN = async (champion, version, $id) => {
+    try {
+      const data = await http.get(`${CDN_URL}@${version}/${champion}.json`, {
+        cancelToken: new CancelToken(this.setCancelHook($id)),
+      });
+      return data;
+    } catch (err) {
+      console.error(err);
+      throw new Error(err);
+    }
+  };
+
+  genBuildsFromCDN = async (champion, version, lolDir) => {
+    try {
+      const $identity = uuid();
+      this.dispatch(
+        addFetching({
+          champion,
+          $identity,
+          source: Sources.MurderBridge,
+        }),
+      );
+
+      const data = await this.getChampionDataFromCDN(champion, version, $identity);
+      const tasks = data.reduce((t, i) => {
+        const { position, itemBuilds } = i;
+        itemBuilds.forEach((k) => {
+          const file = {
+            ...k,
+            champion,
+            position,
+            fileName: `[${Sources.MurderBridge.toUpperCase()}] ${champion}`,
+          };
+          t = t.concat(saveToFile(lolDir, file));
+        });
+
+        return t;
+      }, []);
+
+      const r = await Promise.allSettled(tasks);
+      this.dispatch(
+        addFetched({
+          champion,
+          $identity,
+          source: Sources.MurderBridge,
+        }),
+      );
+      return r;
+    } catch (err) {
+      console.error(err);
+      throw new Error(err);
+    }
+  };
+
+  importFromCDN = async () => {
+    try {
+      const { version, sourceVersion } = await MurderBridge.getPkgInfo();
+      const championList = await Ddragon.getChampions(sourceVersion);
+
+      const tasks = Object.values(championList).map((champion) =>
+        this.genBuildsFromCDN(champion.id, version, this.lolDir),
+      );
+      const r = await Promise.allSettled(tasks);
+      const result = r.reduce(
+        (arr, cur) =>
+          arr.concat(
+            cur.status === `rejected`
+              ? {
+                  status: `rejected`,
+                  value: cur.reason,
+                  reason: cur.reason,
+                }
+              : cur.value,
+          ),
+        [],
+      );
+      console.info(result);
     } catch (err) {
       throw new Error(err);
     }
