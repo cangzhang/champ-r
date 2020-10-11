@@ -130,7 +130,7 @@ export default class OpGG extends SourceProto {
     }
   };
 
-  getRunesFromCdn = async (alias) => {
+  getRunesFromCDN = async (alias) => {
     try {
       const $id = uuid();
       const data = await this.getChampionDataFromCdn(alias, $id);

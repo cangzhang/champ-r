@@ -92,14 +92,14 @@ export default function Popup() {
     });
 
     const opggInstance = new Opgg();
-    opggInstance.getRunesFromCdn(champ.alias).then((result) => {
+    opggInstance.getRunesFromCDN(champ.alias).then((result) => {
       setPerkList((draft) => {
         draft[1] = result;
       });
     });
 
     const mbInstance = new MurderBridge();
-    mbInstance.getChampionPerks(champ.id).then((result) => {
+    mbInstance.getRunesFromCDN(champ.alias).then((result) => {
       setPerkList((draft) => {
         draft[2] = result;
       });
