@@ -286,7 +286,7 @@ export default function Home() {
         </Checkbox>
       </div>
 
-      {(process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER) && (
+      {(process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER === `true`) && (
         <button
           style={{ width: `6em` }}
           onClick={() => {
