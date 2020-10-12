@@ -45,5 +45,6 @@ export default {
     bottom: `Bottom`,
     bot: `Bottom`,
     support: `Support`,
+    'drag avatar to move window': `Drag avatar to move window.`,
   },
 };

@@ -1,6 +1,7 @@
 try {
   require('electron-reloader')(module);
-} catch (_) {}
+} catch (_) {
+}
 
 require('./src/native/logger');
 
@@ -87,7 +88,7 @@ const createPopupWindow = async () => {
     show: false,
     frame: false,
     skipTaskbar: true,
-    resizable: isDev || ignoreSystemScale,
+    resizable: true,
     fullscreenable: false,
     alwaysOnTop: !isDev,
     width: config.get(`popup.width`) || 300,
@@ -164,25 +165,45 @@ function persistPopUpBounds(w) {
   config.set(`popup.height`, height);
 }
 
+function onShowPopup() {
+  let lastChampion = null;
+
+  return async (ev, data) => {
+    if (!data.championId || lastChampion === data.championId) {
+      return;
+    }
+
+    lastChampion = data.championId;
+    if (!popupWindow) {
+      popupWindow = await createPopupWindow();
+    }
+
+    popupWindow.setAlwaysOnTop(true);
+    popupWindow.show();
+    popupWindow.setAlwaysOnTop(false);
+    // app.focus();
+    popupWindow.focus();
+
+    const task = setInterval(() => {
+      if (!popupWindow.isVisible()) {
+        return;
+      }
+
+      popupWindow.webContents.send(`for-popup`, {
+        championId: data.championId,
+        position: data.position,
+      });
+      clearInterval(task);
+    }, 300);
+  }
+}
+
 function registerMainListeners() {
   ipcMain.on(`broadcast`, (ev, data) => {
     ev.sender.send(data.channel, data);
   });
 
-  ipcMain.on(`show-popup`, async (ev, data) => {
-    if (!popupWindow) {
-      popupWindow = await createPopupWindow();
-    }
-
-    if (!popupWindow.isVisible()) {
-      popupWindow.show();
-    }
-
-    popupWindow.webContents.send(`for-popup`, {
-      championId: data.championId,
-      position: data.position,
-    });
-  });
+  ipcMain.on(`show-popup`, onShowPopup());
 
   ipcMain.on(`hide-popup`, async () => {
     if (popupWindow) {

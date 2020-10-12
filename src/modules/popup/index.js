@@ -14,6 +14,7 @@ import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { ButtonGroup, SIZE } from 'baseui/button-group';
 import { Button } from 'baseui/button';
+import { Popover } from 'baseui/popover';
 
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix } from 'src/service/qq';
@@ -58,6 +59,7 @@ export default function Popup() {
   const [championDetail, setChampionDetail] = useState(null);
   const [curPerk, setCurPerk] = useState({});
   const [coordinate, setCoordinate] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [showTips, toggleTips] = useState(true);
   const instances = useRef({
     opgg: new Opgg(),
     mb: new MurderBridge(),
@@ -157,7 +159,7 @@ export default function Popup() {
     return (
       <Scrollbars
         style={{
-          height: `calc(100vh - 6rem)`,
+          height: `calc(100vh - 5em)`,
         }}>
         {list.map((p, idx) => (
           <PerkShowcase
@@ -183,19 +185,33 @@ export default function Popup() {
 
     const tabIdx = SourceList.findIndex((i) => i.value === activeTab);
     return (
-      <div className={s.main}>
+      <div className={s.main} onClick={() => toggleTips(false)}>
         {championDetail && (
           <div className={s.drag}>
-            <img
-              key={championDetail.id}
-              className={s.avatar}
-              alt={championDetail.name}
-              src={`${QQChampionAvatarPrefix}/${championDetail.id}.png`}
-            />
+            <Popover isOpen={showTips} content={t(`drag avatar to move window`)}>
+              <img
+                key={championDetail.id}
+                className={s.avatar}
+                alt={championDetail.name}
+                src={`${QQChampionAvatarPrefix}/${championDetail.id}.png`}
+              />
+            </Popover>
 
             <ButtonGroup size={SIZE.compact} onClick={onSelectSource} selected={[tabIdx]}>
               {SourceList.map((item) => (
-                <Button key={item.value}>{item.name}</Button>
+                <Button
+                  key={item.value}
+                  overrides={{
+                    BaseButton: {
+                      style: () => {
+                        return {
+                          userSelect: `none`,
+                        };
+                      },
+                    },
+                  }}>
+                  {item.name}
+                </Button>
               ))}
             </ButtonGroup>
           </div>
