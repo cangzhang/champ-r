@@ -295,7 +295,7 @@ export default function Home() {
               position: null,
             });
           }}>
-          apply
+          show popup
         </button>
       )}
     </div>

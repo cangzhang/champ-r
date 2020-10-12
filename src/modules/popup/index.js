@@ -16,7 +16,7 @@ import { ButtonGroup, SIZE } from 'baseui/button-group';
 import { Button } from 'baseui/button';
 
 import config from 'src/native/config';
-import { QQChampionAvatarPrefix, getChampions } from 'src/service/qq';
+import { QQChampionAvatarPrefix } from 'src/service/qq';
 import LCUService from 'src/service/lcu';
 import LolQQ from 'src/service/data-source/lol-qq';
 import Opgg from 'src/service/data-source/op-gg';
@@ -27,7 +27,7 @@ import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
 import Loading from 'src/components/loading-spinner';
 
-import { getChampionInfo } from './utils';
+import { makeChampMap } from './utils';
 
 const engine = new Styletron();
 const SourceList = [
@@ -47,7 +47,6 @@ const SourceList = [
 ];
 
 export default function Popup() {
-  const lolVer = config.get(`lolVer`);
   const lolDir = config.get(`lolDir`);
   const [t] = useTranslation();
   const lcu = useRef({});
@@ -59,10 +58,16 @@ export default function Popup() {
   const [championDetail, setChampionDetail] = useState(null);
   const [curPerk, setCurPerk] = useState({});
   const [coordinate, setCoordinate] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const instances = useRef({
+    opgg: new Opgg(),
+    mb: new MurderBridge(),
+    qq: new LolQQ(),
+  });
 
   useEffect(() => {
-    getChampions(lolVer).then((championList) => {
-      setChampionMap(championList);
+    instances.current.opgg.getChampionList().then((data) => {
+      const champMap = makeChampMap(data);
+      setChampionMap(champMap);
 
       ipcRenderer.on('for-popup', (event, { championId: id }) => {
         if (id) {
@@ -75,31 +80,27 @@ export default function Popup() {
   useEffect(() => {
     if (!championId || !championMap) return;
 
-    const champ = getChampionInfo(championId, championMap);
+    const champ = championMap[championId];
     if (!champ) {
       setChampionId(0);
       setChampionDetail(null);
       return;
     }
-
     setChampionDetail(champ);
 
-    const lolqqInstance = new LolQQ();
-    lolqqInstance.getChampionPerks(champ.key, champ.id).then((result) => {
+    instances.current.qq.getChampionPerks(champ.key, champ.id).then((result) => {
       setPerkList((draft) => {
         draft[0] = result;
       });
     });
 
-    const opggInstance = new Opgg();
-    opggInstance.getRunesFromCDN(champ.alias).then((result) => {
+    instances.current.opgg.getRunesFromCDN(champ.id).then((result) => {
       setPerkList((draft) => {
         draft[1] = result;
       });
     });
 
-    const mbInstance = new MurderBridge();
-    mbInstance.getRunesFromCDN(champ.alias).then((result) => {
+    instances.current.mb.getRunesFromCDN(champ.id).then((result) => {
       setPerkList((draft) => {
         draft[2] = result;
       });

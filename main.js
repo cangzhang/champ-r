@@ -15,6 +15,7 @@ const contextMenu = require('electron-context-menu');
 const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
 const isDev = require('electron-is-dev');
+const _debounce = require('lodash/debounce');
 
 const config = require('./src/native/config');
 
@@ -102,13 +103,9 @@ const createPopupWindow = async () => {
   //   popup.show();
   // });
 
-  popup.on(`move`, () => {
-    persistPopUpBounds(popup);
-  });
+  popup.on(`move`, _debounce(() => persistPopUpBounds(popup), 1000));
 
-  popup.on(`resize`, () => {
-    persistPopUpBounds(popup);
-  });
+  popup.on(`resize`, _debounce(() => persistPopUpBounds(popup), 1000));
 
   popup.on('closed', () => {
     popupWindow = undefined;

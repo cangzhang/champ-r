@@ -1,6 +1,6 @@
 {
   "name": "champ-r",
-  "version": "0.10.0",
+  "version": "1.0.0",
   "license": "MIT",
   "description": "Get champion builds & runes for lol.",
   "productName": "ChampR",

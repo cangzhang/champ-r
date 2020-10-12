@@ -4,3 +4,10 @@ export const getChampionInfo = (id, championMap) => {
   const champion = Object.values(championMap).find((i) => i.key * 1 === id * 1);
   return champion || {};
 };
+
+export const makeChampMap = (list) => {
+  return Object.values(list).reduce((result, cur) => {
+    result[cur.key] = cur;
+    return result;
+  }, {});
+};
