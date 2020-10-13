@@ -165,10 +165,9 @@ function persistPopUpBounds(w) {
   config.set(`popup.height`, height);
 }
 
+let lastChampion = null;
 function onShowPopup() {
-  let lastChampion = null;
-
-  return async (ev, data) => {
+    return async (ev, data) => {
     if (!data.championId || lastChampion === data.championId) {
       return;
     }
@@ -207,6 +206,7 @@ function registerMainListeners() {
 
   ipcMain.on(`hide-popup`, async () => {
     if (popupWindow) {
+      lastChampion = null;
       const isVisible = popupWindow.isVisible();
       if (isVisible) {
         popupWindow.hide();
