@@ -95,7 +95,11 @@ export default function Import() {
 
     if (selectedSources.includes(Sources.MurderBridge)) {
       const instance = new MbImporter(lolDir, itemMap, dispatch);
-      mbTask = () => instance.importFromCDN();
+      mbTask = () =>
+        instance.importFromCDN().then(() => {
+          toaster.positive(`[${Sources.MurderBridge.toUpperCase()}] ${t(`completed`)}`, null);
+          dispatch(importBuildSucceed(Sources.MurderBridge));
+        });
     }
 
     if (selectedSources.includes(Sources.Opgg)) {
