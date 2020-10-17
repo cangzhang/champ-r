@@ -99,7 +99,8 @@ export default class MurderBridge extends SourceProto {
           ),
         [],
       );
-      console.info(result);
+      console.info(`[MB]: all done.`);
+      return result;
     } catch (err) {
       throw new Error(err);
     }
