@@ -20,7 +20,9 @@ const _debounce = require('lodash/debounce');
 
 const config = require('./src/native/config');
 
-unhandled();
+unhandled({
+  showDialog: false,
+});
 debug();
 contextMenu();
 
