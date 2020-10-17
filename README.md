@@ -1,7 +1,7 @@
 # ChampR
 
 ![](https://img.shields.io/github/v/release/cangzhang/champ-r?label=LATEST%20VERSION&style=for-the-badge)
-![](https://img.shields.io/github/downloads/cangzhang/champ-r/latest/total?style=for-the-badge)
+![](https://img.shields.io/github/downloads/cangzhang/champ-r/total?style=for-the-badge)
 ![](https://img.shields.io/github/workflow/status/cangzhang/champ-r/release?style=for-the-badge&color=65C0A3)
 
 Another League of Legends helper. [Screenshots here](./screenshots).
