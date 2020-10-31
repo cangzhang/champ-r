@@ -169,7 +169,7 @@ function persistPopUpBounds(w) {
 
 let lastChampion = null;
 function onShowPopup() {
-    return async (ev, data) => {
+  return async (ev, data) => {
     if (!data.championId || lastChampion === data.championId) {
       return;
     }
