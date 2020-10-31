@@ -1,5 +1,10 @@
 try {
-  require('electron-reloader')(module);
+  require('electron-reloader')(module, {
+    watchRenderer: false,
+    ignore: [
+      './src/**/*',
+    ],
+  });
 } catch (_) {
 }
 

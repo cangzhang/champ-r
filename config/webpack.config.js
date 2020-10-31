@@ -24,6 +24,7 @@ const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
 const CompressionPlugin = require('compression-webpack-plugin');
 const ImageminWebpWebpackPlugin = require('imagemin-webp-webpack-plugin');
 const postcssNormalize = require('postcss-normalize');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
 const ReplaceCssUrlExtPlugin = require('./plugins/replace-css-url-ext');
 const appPackageJson = require(paths.appPackageJson);
@@ -369,7 +370,8 @@ module.exports = function (webpackEnv) {
                         },
                       },
                     },
-                  ],
+                    isEnvDevelopment && require.resolve('react-refresh/babel'),
+                  ].filter(Boolean),
                 ],
                 // This is a feature of `babel-loader` for webpack (not Babel itself).
                 // It enables caching results in ./node_modules/.cache/babel-loader/
@@ -591,6 +593,9 @@ module.exports = function (webpackEnv) {
       new webpack.DefinePlugin(env.stringified),
       // This is necessary to emit hot updates (currently CSS only):
       isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),
+
+      isEnvDevelopment && new ReactRefreshWebpackPlugin(),
+
       // Watcher doesn't work well if you mistype casing in a path so we use
       // a plugin that prints an error when you attempt to do this.
       // See https://github.com/facebook/create-react-app/issues/240
