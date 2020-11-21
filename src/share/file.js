@@ -1,6 +1,7 @@
 const _pick = require('lodash/pick');
 const fs = require('fs').promises;
 const fse = require('fs-extra');
+const config = require('../native/config');
 
 const ItemSetProps = [
   'title',
@@ -39,7 +40,10 @@ export const makeBuildFile = (
 
 export const saveToFile = async (desDir, data, stripProps = true) => {
   try {
-    const file = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
+    const appendGameToDir = config.get(`appendGameToDir`);
+    const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${
+      data.champion
+    }/Recommended/${data.fileName}.json`;
     const content = stripProps ? _pick(data, ItemSetProps) : data;
     await fse.outputFile(file, JSON.stringify(content, null, 4));
 
@@ -61,8 +65,23 @@ export const removeFolderContent = async (dir) => {
   }
 };
 
+export const getLatestLogFile = async (dir) => {
+  try {
+    const files = await fs.readdir(dir);
+    const latest = files
+      .filter((f) => f.includes(`renderer.log`))
+      .sort((a, b) => a - b)
+      .pop();
+    const info = await fs.stat(`${dir}/${latest}`);
+    return info;
+  } catch (err) {
+    return null;
+  }
+};
+
 export const getLcuToken = async (dirPath) => {
-  const dir = `${dirPath}/Game/Logs/LeagueClient Logs`;
+  const appendGameToDir = config.get(`appendGameToDir`);
+  const dir = `${appendGameToDir ? `${dirPath}/Game` : dirPath}/Logs/LeagueClient Logs`;
 
   try {
     const files = await fs.readdir(dir);

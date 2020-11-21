@@ -6,6 +6,7 @@ import { ipcRenderer, remote } from 'electron';
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
+import { useTranslation } from 'react-i18next';
 
 import { CornerDownRight } from 'react-feather';
 import { useStyletron } from 'baseui';
@@ -15,18 +16,18 @@ import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Notification, KIND } from 'baseui/notification';
 import { Tag, VARIANT } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
-import { H6 } from 'baseui/typography';
 
+import { H6 } from 'baseui/typography';
 import config from 'src/native/config';
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
 import { ChampionKeys } from 'src/share/constants/champions';
-
 import Sources, { isAram } from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
-import { useTranslation } from 'react-i18next';
 import OpGG from 'src/service/data-source/op-gg';
 import LolQQ from 'src/service/data-source/lol-qq';
 import MurderBridge from 'src/service/data-source/murderbridge';
+import { getLatestLogFile } from 'src/share/file';
+
 import logo from 'src/assets/app-icon.webp';
 
 export default function Home() {
@@ -36,7 +37,7 @@ export default function Home() {
   const { t } = useTranslation();
 
   const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
-  const [lolDir, setLolDir] = useState(config.get('lolDir'));
+  const [lolDir, setLolDir] = useState(``);
 
   const toggleKeepOldItems = (ev) => {
     const { checked } = ev.target;
@@ -92,9 +93,31 @@ export default function Home() {
   useEffect(() => {
     // persist user preference
     config.set('keepOldItems', store.keepOld);
-    config.set('lolDir', lolDir);
     config.set(`selectedSources`, selectedSources);
   }, [store.keepOld, lolDir, selectedSources]);
+
+  useEffect(() => {
+    setLolDir(config.get('lolDir'));
+  }, []);
+
+  useEffect(() => {
+    config.set('lolDir', lolDir);
+    if (!lolDir) {
+      return;
+    }
+
+    Promise.all([
+      getLatestLogFile(`${lolDir}/Logs/LeagueClient Logs`),
+      getLatestLogFile(`${lolDir}/Game/Logs/LeagueClient Logs`),
+    ]).then(([log, glog]) => {
+      if (!log && !glog) {
+        return;
+      }
+      const shouldAppendGameToDir = glog?.mtimeMs > (log?.mtimeMs || 0);
+      config.set(`appendGameToDir`, shouldAppendGameToDir);
+      console.log(`shouldAppendGameToDir`, shouldAppendGameToDir);
+    });
+  }, [lolDir]);
 
   const shouldDisableImport = !store.version || !lolDir || !selectedSources.length;
 

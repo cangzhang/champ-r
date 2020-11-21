@@ -4,6 +4,7 @@ module.exports = new Store({
   defaults: {
     userId: '',
     lolDir: '',
+    appendGameToDir: false,
     lolVer: '',
     appLang: '',
     keepOldItems: true,
