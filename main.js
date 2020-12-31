@@ -13,7 +13,7 @@ require('./src/native/logger');
 const path = require('path');
 const osLocale = require('os-locale');
 const { machineId } = require('node-machine-id');
-const { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage, nativeTheme } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const { is, centerWindow } = require('electron-util');
 const contextMenu = require('electron-context-menu');
@@ -31,6 +31,7 @@ unhandled({
 debug();
 contextMenu();
 
+nativeTheme.themeSource = `light`;
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId('com.al.champ-r');
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
@@ -91,19 +92,21 @@ const createPopupWindow = async () => {
     y: mY,
   });
 
+  const popupConfig = config.get(`popup`);
   const popup = new BrowserWindow({
     show: false,
     frame: false,
-    skipTaskbar: true,
     resizable: true,
     fullscreenable: false,
-    alwaysOnTop: !isDev,
-    width: config.get(`popup.width`) || 300,
-    height: config.get(`popup.height`) || 350,
+
+    skipTaskbar: popupConfig.alwaysOnTop,
+    alwaysOnTop: popupConfig.alwaysOnTop,
+    width: popupConfig.width || 300,
+    height: popupConfig.height || 350,
     x:
-      config.get(`popup.x`) ||
+      popupConfig.x ||
       (isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140),
-    y: config.get(`popup.y`) || curDisplay.bounds.height / 2,
+    y: popupConfig.y || curDisplay.bounds.height / 2,
     webPreferences,
   });
 
@@ -173,6 +176,7 @@ function persistPopUpBounds(w) {
 }
 
 let lastChampion = null;
+
 function onShowPopup() {
   return async (ev, data) => {
     if (!data.championId || lastChampion === data.championId) {
@@ -184,9 +188,9 @@ function onShowPopup() {
       popupWindow = await createPopupWindow();
     }
 
-    popupWindow.setAlwaysOnTop(true);
+    // popupWindow.setAlwaysOnTop(true);
     popupWindow.show();
-    popupWindow.setAlwaysOnTop(false);
+    // popupWindow.setAlwaysOnTop(false);
     // app.focus();
     popupWindow.focus();
 
@@ -201,7 +205,7 @@ function onShowPopup() {
       });
       clearInterval(task);
     }, 300);
-  }
+  };
 }
 
 function registerMainListeners() {
@@ -228,6 +232,16 @@ function registerMainListeners() {
   ipcMain.on(`restart-app`, () => {
     app.relaunch();
     app.exit();
+  });
+
+  ipcMain.on(`popup:toggle-always-on-top`, () => {
+    if (!popupWindow) return;
+
+    const next = !popupWindow.isAlwaysOnTop();
+    popupWindow.setAlwaysOnTop(next);
+    popupWindow.setSkipTaskbar(next);
+
+    config.set(`popup.alwaysOnTop`, next);
   });
 }
 

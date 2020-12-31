@@ -2,12 +2,12 @@
 import s from './style.module.scss';
 
 import 'src/modules/i18n';
-
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 import React, { useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useTranslation } from 'react-i18next';
 import { useImmer } from 'use-immer';
+import { styled } from 'styletron-react';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
@@ -27,6 +27,7 @@ import MurderBridge from 'src/service/data-source/murderbridge';
 import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
 import Loading from 'src/components/loading-spinner';
+import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
 
 import { makeChampMap } from './utils';
 
@@ -47,6 +48,26 @@ const SourceList = [
   },
 ];
 
+const Pin = styled(`button`, () => ({
+  margin: `0 2ex`,
+  height: `2em`,
+  width: `2em`,
+  ':hover': {
+    cursor: `pointer`,
+  },
+  background: `transparent`,
+  border: `unset`,
+  padding: `unset`,
+  outline: `unset`,
+}));
+const PinBtn = styled(PinIcon, (props) => ({
+  transition: `all linear 0.2s`,
+  transform: props.$pinned ? `rotate(-45deg)` : `unset`,
+  fill: props.$pinned ? `#276EF1` : `currentColor`,
+  height: `1.4em`,
+  width: `1.4em`,
+}));
+
 export default function Popup() {
   const lolDir = config.get(`lolDir`);
   const [t] = useTranslation();
@@ -65,6 +86,7 @@ export default function Popup() {
     mb: new MurderBridge(),
     qq: new LolQQ(),
   });
+  const [pinned, togglePinned] = useState(remote.getCurrentWindow().isAlwaysOnTop());
 
   useEffect(() => {
     instances.current.opgg.getChampionList().then((data) => {
@@ -149,6 +171,11 @@ export default function Popup() {
     setActiveTab(SourceList[idx].value);
   };
 
+  const toggleAlwaysOnTop = () => {
+    ipcRenderer.send(`popup:toggle-always-on-top`);
+    togglePinned((p) => !p);
+  };
+
   const renderList = (list = [], isAramMode = false) => {
     const shouldShowList = list.length && championDetail && list[0].alias === championDetail.id;
 
@@ -187,7 +214,11 @@ export default function Popup() {
     return (
       <div className={s.main} onClick={() => toggleTips(false)}>
         {championDetail && (
-          <div className={s.drag}>
+          <div className={s.drag} onClick={toggleAlwaysOnTop}>
+            <Pin>
+              <PinBtn $pinned={pinned} />
+            </Pin>
+
             <Popover isOpen={showTips} content={t(`drag avatar to move window`)}>
               <img
                 key={championDetail.id}
@@ -197,7 +228,17 @@ export default function Popup() {
               />
             </Popover>
 
-            <ButtonGroup size={SIZE.compact} onClick={onSelectSource} selected={[tabIdx]}>
+            <ButtonGroup
+              size={SIZE.compact}
+              onClick={onSelectSource}
+              selected={[tabIdx]}
+              overrides={{
+                Root: {
+                  style: () => ({
+                    flex: 1,
+                  }),
+                },
+              }}>
               {SourceList.map((item) => (
                 <Button
                   key={item.value}

@@ -16,6 +16,7 @@ module.exports = new Store({
       height: null,
       x: null,
       y: null,
+      alwaysOnTop: true,
     },
   },
 });
