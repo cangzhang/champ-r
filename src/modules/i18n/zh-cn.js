@@ -46,5 +46,6 @@ export default {
     bot: `下路`,
     support: `辅助`,
     'drag avatar to move window': `点击头像拖拽即可移动窗口`,
+    'pin/unpin': `置顶/取消置顶`,
   },
 };

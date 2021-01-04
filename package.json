@@ -65,7 +65,7 @@
   "devDependencies": {
     "@babel/core": "7.7.4",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.2",
-    "@svgr/webpack": "4.3.3",
+    "@svgr/webpack": "^5.5.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",

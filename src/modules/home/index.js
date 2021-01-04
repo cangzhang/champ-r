@@ -194,9 +194,9 @@ export default function Home() {
                 },
                 Checkmark: {
                   style: ({ $checked, $theme }) => ({
-                    borderColor: $checked
-                      ? $theme.colors.positive
-                      : $theme.colors.backgroundNegative,
+                    // borderColor: $checked
+                    //   ? $theme.colors.positive
+                    //   : $theme.colors.backgroundNegative,
                     backgroundColor: $checked
                       ? $theme.colors.positive
                       : $theme.colors.backgroundAlwaysLight,
