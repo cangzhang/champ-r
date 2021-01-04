@@ -14,7 +14,7 @@ import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { ButtonGroup, SIZE } from 'baseui/button-group';
 import { Button } from 'baseui/button';
-import { Popover } from 'baseui/popover';
+import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix } from 'src/service/qq';
@@ -215,9 +215,11 @@ export default function Popup() {
       <div className={s.main} onClick={() => toggleTips(false)}>
         {championDetail && (
           <div className={s.drag} onClick={toggleAlwaysOnTop}>
-            <Pin>
-              <PinBtn $pinned={pinned} />
-            </Pin>
+            <StatefulPopover content={t(`pin/unpin`)} triggerType={TRIGGER_TYPE.hover}>
+              <Pin>
+                <PinBtn $pinned={pinned} />
+              </Pin>
+            </StatefulPopover>
 
             <Popover isOpen={showTips} content={t(`drag avatar to move window`)}>
               <img

@@ -46,5 +46,6 @@ export default {
     bot: `Bottom`,
     support: `Support`,
     'drag avatar to move window': `Drag avatar to move window.`,
+    'pin/unpin': `Pin/Unpin`,
   },
 };
