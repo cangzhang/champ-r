@@ -1,9 +1,8 @@
-/* eslint react-hooks/exhaustive-deps: 0 */
 import s from 'src/app.module.scss';
 
 import { ipcRenderer, remote } from 'electron';
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +34,7 @@ export default function Home() {
   const { store, dispatch } = useContext(AppContext);
   const history = useHistory();
   const { t } = useTranslation();
+  const versionTasker = useRef(null);
 
   const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
   const [lolDir, setLolDir] = useState(``);
@@ -78,17 +78,33 @@ export default function Home() {
     history.push(`/import`);
   };
 
+  const fetchVersion = useCallback(
+    () =>
+      Promise.allSettled([
+        OpGG.getPkgInfo().then(({ sourceVersion }) => {
+          dispatch(updateDataSourceVersion(Sources.Opgg, sourceVersion));
+        }),
+        LolQQ.getLolVersion().then((v) => {
+          dispatch(updateDataSourceVersion(Sources.Lolqq, v));
+        }),
+        MurderBridge.getPkgInfo().then(({ sourceVersion }) => {
+          dispatch(updateDataSourceVersion(Sources.MurderBridge, sourceVersion));
+        }),
+      ]),
+    [dispatch],
+  );
+
   useEffect(() => {
-    OpGG.getPkgInfo().then(({ sourceVersion }) => {
-      dispatch(updateDataSourceVersion(Sources.Opgg, sourceVersion));
+    fetchVersion().then(() => {
+      versionTasker.current = setInterval(() => {
+        fetchVersion();
+      }, 10 * 60 * 1000);
     });
-    LolQQ.getLolVersion().then((v) => {
-      dispatch(updateDataSourceVersion(Sources.Lolqq, v));
-    });
-    MurderBridge.getPkgInfo().then(({ sourceVersion }) => {
-      dispatch(updateDataSourceVersion(Sources.MurderBridge, sourceVersion));
-    });
-  }, []);
+
+    return () => {
+      clearInterval(versionTasker.current);
+    };
+  }, [fetchVersion]);
 
   useEffect(() => {
     // persist user preference
