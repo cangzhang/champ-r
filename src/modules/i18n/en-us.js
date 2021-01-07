@@ -47,5 +47,7 @@ export default {
     support: `Support`,
     'drag avatar to move window': `Drag avatar to move window.`,
     'pin/unpin': `Pin/Unpin`,
+    'reset popup position': `Reset popup window position`,
+    done: `Done`,
   },
 };

@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 import { CornerDownRight } from 'react-feather';
 import { useStyletron } from 'baseui';
-import { Button } from 'baseui/button';
+import { Button, KIND as BtnKind, SIZE as BtnSize } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Notification, KIND } from 'baseui/notification';
@@ -76,6 +76,11 @@ export default function Home() {
 
   const startImport = () => {
     history.push(`/import`);
+  };
+
+  const resetPopupPosition = () => {
+    ipcRenderer.send(`popup:reset-position`);
+    new Notification(t(`done`));
   };
 
   const fetchVersion = useCallback(
@@ -324,6 +329,21 @@ export default function Home() {
           {t('keep old items')}
         </Checkbox>
       </div>
+
+      <Button
+        kind={BtnKind.secondary}
+        size={BtnSize.compact}
+        onClick={resetPopupPosition}
+        overrides={{
+          BaseButton: {
+            style: () => ({
+              alignSelf: `flex-start`,
+              marginBottom: `2ex`,
+            }),
+          },
+        }}>
+        {t(`reset popup position`)}
+      </Button>
 
       {(process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER === `true`) && (
         <button

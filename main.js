@@ -110,10 +110,6 @@ const createPopupWindow = async () => {
     webPreferences,
   });
 
-  // popup.on(`ready-to-show`, () => {
-  //   popup.show();
-  // });
-
   popup.on(`move`, _debounce(() => persistPopUpBounds(popup), 1000));
 
   popup.on(`resize`, _debounce(() => persistPopUpBounds(popup), 1000));
@@ -242,6 +238,20 @@ function registerMainListeners() {
     popupWindow.setSkipTaskbar(next);
 
     config.set(`popup.alwaysOnTop`, next);
+  });
+
+  ipcMain.on(`popup:reset-position`, () => {
+    const [mx, my] = mainWindow.getPosition();
+    const { bounds } = screen.getDisplayNearestPoint({ x: mx, y: my });
+    config.set(`popup.alwaysOnTop`, true);
+    config.set(`popup.x`, true);
+
+    if (!popupWindow) {
+      return;
+    }
+
+    popupWindow.setAlwaysOnTop(true);
+    popupWindow.setPosition(bounds.width / 2, bounds.height / 2);
   });
 }
 
