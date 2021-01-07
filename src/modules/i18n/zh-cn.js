@@ -47,5 +47,7 @@ export default {
     support: `辅助`,
     'drag avatar to move window': `点击头像拖拽即可移动窗口`,
     'pin/unpin': `置顶/取消置顶`,
+    'reset popup position': `重置天赋弹窗位置`,
+    done: `已完成`,
   },
 };
