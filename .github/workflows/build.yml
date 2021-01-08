@@ -18,13 +18,14 @@ jobs:
 
     - uses: actions/setup-node@v1
       with:
-        node-version: '12.x'
+        node-version: '15.x'
 
     - name: Build
       run: |
         $sha = (git rev-parse --short HEAD)
-        yarn --silent
-        $env:SHORT_SHA=$sha; yarn build:local
+        Remove-Item .yarnrc
+        yarn install --silent
+        $env:SHORT_SHA=$sha; yarn build:ci
 
     - name: Move artifacts
       id: vars
