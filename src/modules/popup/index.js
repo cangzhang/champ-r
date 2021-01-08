@@ -214,9 +214,9 @@ export default function Popup() {
     return (
       <div className={s.main} onClick={() => toggleTips(false)}>
         {championDetail && (
-          <div className={s.drag} onClick={toggleAlwaysOnTop}>
+          <div className={s.drag}>
             <StatefulPopover content={t(`pin/unpin`)} triggerType={TRIGGER_TYPE.hover}>
-              <Pin>
+              <Pin onClick={toggleAlwaysOnTop}>
                 <PinBtn $pinned={pinned} />
               </Pin>
             </StatefulPopover>
