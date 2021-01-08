@@ -80,7 +80,7 @@ export default function Home() {
 
   const resetPopupPosition = () => {
     ipcRenderer.send(`popup:reset-position`);
-    new Notification(t(`done`));
+    new window.Notification(t(`done`));
   };
 
   const fetchVersion = useCallback(
