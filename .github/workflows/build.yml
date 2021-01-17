@@ -5,7 +5,10 @@ name: build
 on:
   push:
     branches:
+      - master
       - build
+    pull_request:
+      - master
 
 jobs:
   # This workflow contains a single job called "build"
