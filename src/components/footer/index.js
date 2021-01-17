@@ -12,16 +12,20 @@ export default function Footer() {
   const [t] = useTranslation();
   const [, theme] = useStyletron();
 
-  const star = (ev) => {
+  const onStar = (ev) => {
     ev.preventDefault();
     shell.openExternal(`https://github.com/cangzhang/champ-r`);
   };
 
   return (
     <div className={s.footer}>
-      {process.env.IS_DEV ? `dev` : `v${process.env.APP_VERSION}`}
+      {process.env.IS_DEV
+        ? `dev`
+        : process.env.BUILD_IN_CI
+        ? `test-${process.env.HEAD}`
+        : `v${process.env.APP_VERSION}`}
       <StatefulTooltip accessibilityType={'tooltip'} content={t(`star it`)}>
-        <a className={s.star} href='#champ-r' onClick={star}>
+        <a className={s.star} href='#champ-r' onClick={onStar}>
           <Star size={16} color={theme.colors.warning} />
         </a>
       </StatefulTooltip>
