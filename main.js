@@ -243,15 +243,18 @@ function registerMainListeners() {
   ipcMain.on(`popup:reset-position`, () => {
     const [mx, my] = mainWindow.getPosition();
     const { bounds } = screen.getDisplayNearestPoint({ x: mx, y: my });
+    const [x, y] = [bounds.width / 2, bounds.height / 2];
+
     config.set(`popup.alwaysOnTop`, true);
-    config.set(`popup.x`, true);
+    config.set(`popup.x`, x);
+    config.set(`popup.y`, y);
 
     if (!popupWindow) {
       return;
     }
 
     popupWindow.setAlwaysOnTop(true);
-    popupWindow.setPosition(bounds.width / 2, bounds.height / 2);
+    popupWindow.setPosition(x, y);
   });
 }
 
