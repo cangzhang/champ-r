@@ -64,13 +64,15 @@ process.env.NODE_PATH = (process.env.NODE_PATH || '')
 
 function getClientEnvironment(publicUrl) {
   const isDev = (process.env.NODE_ENV || 'development') === `development`;
+  const isCI = process.env.BUILD_IN_CI === `true`;
   let appVer = `dev`;
+  let commitSha = `0000000`;
 
   if (!isDev) {
-    const commitHash = require('child_process')
+    commitSha = require('child_process')
       .execSync('git rev-parse --short HEAD')
       .toString();
-    appVer = `${appPackageJson.version}-${commitHash}`;
+    appVer = `${appPackageJson.version}-${commitSha}`;
   }
 
   const raw = Object.keys(process.env)
@@ -92,6 +94,8 @@ function getClientEnvironment(publicUrl) {
         PUBLIC_URL: publicUrl,
         NODE_TLS_REJECT_UNAUTHORIZED: 0,
         APP_VERSION: appVer,
+        BUILD_IN_CI: isCI,
+        HEAD: commitSha,
       },
     );
   // Stringify all values so we can feed into Webpack DefinePlugin

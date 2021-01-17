@@ -43,6 +43,13 @@ export default function Settings() {
     ipcRenderer.send(`restart-app`);
   };
 
+  const onIgnoreScale = (e) => {
+    setIgnoreSystemScale(e.currentTarget.checked);
+    config.set(`ignoreSystemScale`, e.currentTarget.checked);
+    ipcRenderer.send(`popup:reset-position`);
+    recorder.current = true;
+  };
+
   useEffect(() => {
     const lang = _get(values, `0.value`, sysLang);
     if (lang !== sysLang) {
@@ -82,11 +89,7 @@ export default function Settings() {
       <Checkbox
         checked={ignoreSystemScale}
         checkmarkType={STYLE_TYPE.toggle_round}
-        onChange={(e) => {
-          setIgnoreSystemScale(e.currentTarget.checked);
-          config.set(`ignoreSystemScale`, e.currentTarget.checked);
-          recorder.current = true;
-        }}
+        onChange={onIgnoreScale}
         overrides={{
           Root: {
             style: () => ({
