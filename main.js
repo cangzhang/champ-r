@@ -20,9 +20,9 @@ const contextMenu = require('electron-context-menu');
 
 const unhandled = require('electron-unhandled');
 const debug = require('electron-debug');
-const isDev = require('electron-is-dev');
 const _debounce = require('lodash/debounce');
 
+const isDev = is.development;
 const config = require('./src/native/config');
 
 unhandled({
@@ -54,6 +54,7 @@ const webPreferences = {
   webSecurity: false,
   allowRunningInsecureContent: true,
   zoomFactor: 1,
+  enableRemoteModule: true,
 };
 
 const createMainWindow = async () => {
