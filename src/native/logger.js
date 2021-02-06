@@ -1,6 +1,6 @@
 const log = require('electron-log');
-const isDev = require('electron-is-dev');
+const { is } = require('electron-util');
 
-if (!isDev) {
+if (!is.development) {
   Object.assign(console, log.functions);
 }

@@ -4,9 +4,9 @@
 [![](https://img.shields.io/github/downloads/cangzhang/champ-r/total?style=for-the-badge)](https://github.com/cangzhang/champ-r/releases)
 [![](https://img.shields.io/github/workflow/status/cangzhang/champ-r/release?style=for-the-badge&color=65C0A3)](https://github.com/cangzhang/champ-r/actions)
 
-Another League of Legends helper. [Screenshots here](./screenshots).
+Another League of Legends helper.
 
-App icon from [here](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
+[Screenshots here](./screenshots). [App icon](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
 
 ## Features
 
