@@ -2014,6 +2014,11 @@
     global-agent "^2.0.2"
     global-tunnel-ng "^2.7.1"
 
+"@glennsl/bs-json@^5.0.2":
+  version "5.0.2"
+  resolved "https://registry.npm.taobao.org/@glennsl/bs-json/download/@glennsl/bs-json-5.0.2.tgz#cfb85d94d370ec6dc17849e0ddb1a51eee08cfcc"
+  integrity sha1-z7hdlNNw7G3BeEng3bGlHu4Iz8w=
+
 "@hapi/address@2.x.x", "@hapi/address@^2.1.2":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@hapi/address/-/address-2.1.4.tgz#5d67ed43f3fd41a69d4b9ff7b56e7c0d1d0a81e5"
@@ -2240,10 +2245,20 @@
     schema-utils "^2.6.5"
     source-map "^0.7.3"
 
+"@rescript/react@^0.10.1":
+  version "0.10.1"
+  resolved "https://registry.npm.taobao.org/@rescript/react/download/@rescript/react-0.10.1.tgz#ddce66ba664a104354d559c350ca4ebf17ab5a26"
+  integrity sha1-3c5mumZKEENU1VnDUMpOvxerWiY=
+
 "@rtsao/csstype@2.6.5-forked.0":
   version "2.6.5-forked.0"
   resolved "https://registry.yarnpkg.com/@rtsao/csstype/-/csstype-2.6.5-forked.0.tgz#b5b4e2a07ad83a91874ebf5fabdb73dc8c1632f6"
   integrity sha512-0HwnY8uPWcCloTgdbbaJG3MbDUfNf6yKWZfCKxFv9yj2Sbp4mSKaIjC7Cr/5L4hMxvrrk85CU3wlAg7EtBBJ1Q==
+
+"@ryyppy/rescript-promise@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.npm.taobao.org/@ryyppy/rescript-promise/download/@ryyppy/rescript-promise-2.0.0.tgz#e0f31e8d5d85a822485113d34d3e5ee77c7e8523"
+  integrity sha1-4PMejV2FqCJIURPTTT5e53x+hSM=
 
 "@samverschueren/stream-to-observable@^0.3.0":
   version "0.3.0"
@@ -3828,6 +3843,16 @@ browserslist@^4.14.5, browserslist@^4.15.0:
     electron-to-chromium "^1.3.621"
     escalade "^3.1.1"
     node-releases "^1.1.67"
+
+bs-fetch@^0.6.2:
+  version "0.6.2"
+  resolved "https://registry.npm.taobao.org/bs-fetch/download/bs-fetch-0.6.2.tgz#37d982e9f79b9bc44c23e87ae78ccbee1f869adf"
+  integrity sha1-N9mC6febm8RMI+h654zL7h+Gmt8=
+
+bs-platform@^9.0.1:
+  version "9.0.1"
+  resolved "https://registry.npm.taobao.org/bs-platform/download/bs-platform-9.0.1.tgz#069dae007aadb400963cec25c8349ea1f3f6cae0"
+  integrity sha1-Bp2uAHqttACWPOwlyDSeofP2yuA=
 
 bser@2.1.1:
   version "2.1.1"
@@ -6969,6 +6994,11 @@ gensync@^1.0.0-beta.1:
   version "1.0.0-beta.1"
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.1.tgz#58f4361ff987e5ff6e1e7a210827aa371eaac269"
   integrity sha512-r8EC6NO1sngH/zdD9fiRDLdcgnbayXah+mLgManTaIZJqEC1MZstmnox8KpnI2/fxQwrp5OpCOYWLp4rBl4Jcg==
+
+gentype@^3.44.0:
+  version "3.44.0"
+  resolved "https://registry.npm.taobao.org/gentype/download/gentype-3.44.0.tgz#38f182d94bd3bef904da69122548182dcb27773d"
+  integrity sha1-OPGC2UvTvvkE2mkSJUgYLcsndz0=
 
 get-caller-file@^1.0.1:
   version "1.0.3"
