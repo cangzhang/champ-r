@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/rescript-lang/rescript-compiler/master/docs/docson/build-schema.json",
   "name": "champ-r",
   "namespace": false,
   "reason": {
