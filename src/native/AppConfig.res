@@ -44,4 +44,7 @@ let defaultConfig: storeProp = {
   }
 }
 
-let store = ElectronStore.store(defaultConfig)
+module AppConfig = {
+  let config = ElectronStore.store(defaultConfig)
+}
+

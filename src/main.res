@@ -1,6 +1,8 @@
 open ElectronReloader
-// open ElectronUtil
 open ElectronContextMenu
+open Electron
+open AppConfig
+// open ElectronUtil
 
 type unhandledOption = {showDialog: bool}
 
@@ -30,6 +32,14 @@ try {
   }
 }
 
-debug()
 unhandled({showDialog: false})
+debug()
 ElectronContextMenu.contextMenu()
+
+Electron.nativeTheme.themeSource = "light"
+Electron.app.setAppUserModelId("com.al.champ-r")
+Electron.app.commandLine.appendSwitch("ignore-certificate-errors", "true")
+Electron.app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors")
+Electron.app.allowRendererProcessReuse = false
+
+let ignoreSystemScale: bool = AppConfig.config.getBool(`ignoreSystemScale`);
