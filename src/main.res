@@ -2,9 +2,11 @@ open ElectronReloader
 open ElectronContextMenu
 open Electron
 open AppConfig
-// open ElectronUtil
+open ElectronUtil
+open ElectronStore
 
 type unhandledOption = {showDialog: bool}
+type localWindow = ref<Js.Nullable.t<Electron.iWindow>>
 
 @val external nodeModule: 'a = "module"
 @module("path") external join: (string, string) => string = "join"
@@ -37,9 +39,43 @@ debug()
 ElectronContextMenu.contextMenu()
 
 Electron.nativeTheme.themeSource = "light"
-Electron.app.setAppUserModelId("com.al.champ-r")
-Electron.app.commandLine.appendSwitch("ignore-certificate-errors", "true")
-Electron.app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors")
-Electron.app.allowRendererProcessReuse = false
+Electron.app->Electron.setAppUserModelId("com.al.champ-r")
+Electron.app->Electron.allowRendererProcessReuse(false)
+Electron.app
+->Electron.getCommandLine
+->Electron.appendSwitchString("ignore-certificate-errors", "true")
+Electron.app
+->Electron.getCommandLine
+->Electron.appendSwitchString("disable-features", "OutOfBlinkCors")
 
-let ignoreSystemScale: bool = AppConfig.config.getBool(`ignoreSystemScale`);
+let ignoreSystemScale = AppConfig.config->ElectronStore.getBool(`ignoreSystemScale`)
+if ignoreSystemScale {
+  Electron.app->Electron.getCommandLine->Electron.appendSwitchInt("high-dpi-support", 1)
+  Electron.app->Electron.getCommandLine->Electron.appendSwitchInt("force-device-scale-factor", 1)
+}
+
+let mainWindow: localWindow = ref(Js.Nullable.null)
+let popupWindow: localWindow = ref(Js.Nullable.null)
+// let tray = ref(Js.null)
+
+let webPreference: Electron.iWebPreferences = {
+  nodeIntegration: true,
+  webSecurity: false,
+  allowRunningInsecureContent: true,
+  zoomFactor: 1,
+  enableRemoteModule: true,
+}
+
+let createMainWindow = () => {
+  let win = Js.Nullable.return(
+    Electron.browserWindow({
+      title: Electron.app->Electron.getName,
+      show: false,
+      frame: false,
+      height: 650,
+      width: ElectronUtil.is.development ? 1300 : 400,
+      resizable: ElectronUtil.is.development,
+      webPreferences: webPreference,
+    }),
+  )
+}
