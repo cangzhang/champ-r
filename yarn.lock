@@ -3849,10 +3849,10 @@ bs-fetch@^0.6.2:
   resolved "https://registry.npm.taobao.org/bs-fetch/download/bs-fetch-0.6.2.tgz#37d982e9f79b9bc44c23e87ae78ccbee1f869adf"
   integrity sha1-N9mC6febm8RMI+h654zL7h+Gmt8=
 
-bs-platform@^9.0.1:
-  version "9.0.1"
-  resolved "https://registry.npm.taobao.org/bs-platform/download/bs-platform-9.0.1.tgz#069dae007aadb400963cec25c8349ea1f3f6cae0"
-  integrity sha1-Bp2uAHqttACWPOwlyDSeofP2yuA=
+bs-platform@^9.0.2:
+  version "9.0.2"
+  resolved "https://registry.npm.taobao.org/bs-platform/download/bs-platform-9.0.2.tgz#a6eac70eb8924a322556dacaccbfbc9b2a0d3a37"
+  integrity sha1-purHDriSSjIlVtrKzL+8myoNOjc=
 
 bser@2.1.1:
   version "2.1.1"

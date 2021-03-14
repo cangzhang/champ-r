@@ -25,7 +25,7 @@
     }
   ],
   "package-specs": {
-    "module": "es6",
+    "module": "commonjs",
     "in-source": true
   },
   "warnings": {

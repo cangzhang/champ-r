@@ -1,8 +1,8 @@
 module Electron = {
-  type iWindow = {
-    on: (string, unit) => unit,
-    show: unit => unit,
-  }
+  type iWindow
+  @send external onWindowEvent: (iWindow, string, () => unit) => unit = "on"
+  @send external showWindow: (iWindow) => unit = "show"
+  @send external loadURL: (iWindow, string) => unit = "loadURL"
 
   type iNativeTheme = {mutable themeSource: string}
 

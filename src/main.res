@@ -1,15 +1,13 @@
+open Node
+open Electron
 open ElectronReloader
 open ElectronContextMenu
-open Electron
-open AppConfig
 open ElectronUtil
 open ElectronStore
+open AppConfig
 
 type unhandledOption = {showDialog: bool}
-type localWindow = ref<Js.Nullable.t<Electron.iWindow>>
-
-@val external nodeModule: 'a = "module"
-@module("path") external join: (string, string) => string = "join"
+type localWindow = ref<option<Electron.iWindow>>
 
 @module external osLocale: unit => Js.Promise.t<string> = "os-locale"
 @module("node-machine-id") external machineId: unit => Js.Promise.t<string> = "machineId"
@@ -20,7 +18,7 @@ type localWindow = ref<Js.Nullable.t<Electron.iWindow>>
 
 try {
   ElectronReloader.reloader(
-    nodeModule,
+    Node.module_,
     {
       watchRenderer: false,
       ignore: ["./src/**/*"],
@@ -54,8 +52,8 @@ if ignoreSystemScale {
   Electron.app->Electron.getCommandLine->Electron.appendSwitchInt("force-device-scale-factor", 1)
 }
 
-let mainWindow: localWindow = ref(Js.Nullable.null)
-let popupWindow: localWindow = ref(Js.Nullable.null)
+let mainWindow: localWindow = ref(None)
+let popupWindow: localWindow = ref(None)
 // let tray = ref(Js.null)
 
 let webPreference: Electron.iWebPreferences = {
@@ -67,15 +65,28 @@ let webPreference: Electron.iWebPreferences = {
 }
 
 let createMainWindow = () => {
-  let win = Js.Nullable.return(
-    Electron.browserWindow({
-      title: Electron.app->Electron.getName,
-      show: false,
-      frame: false,
-      height: 650,
-      width: ElectronUtil.is.development ? 1300 : 400,
-      resizable: ElectronUtil.is.development,
-      webPreferences: webPreference,
-    }),
+  let win = Electron.browserWindow({
+    title: Electron.app->Electron.getName,
+    show: false,
+    frame: false,
+    height: 650,
+    width: ElectronUtil.is.development ? 1300 : 400,
+    resizable: ElectronUtil.is.development,
+    webPreferences: webPreference,
+  })
+
+  win->Electron.onWindowEvent("ready-to-show", () => {
+    win->Electron.showWindow
+  })
+
+  win->Electron.onWindowEvent("closed", () => {
+    mainWindow := None
+    mainWindow := None
+  })
+
+  win->Electron.loadURL(
+    ElectronUtil.is.development
+      ? "http://0.0.0.0:3000"
+      : "file://" ++ Node.join(Node.__dirname, "build/index.html")
   )
 }
