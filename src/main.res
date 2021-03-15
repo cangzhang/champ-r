@@ -7,7 +7,7 @@ open ElectronStore
 open AppConfig
 
 type unhandledOption = {showDialog: bool}
-type localWindow = ref<option<Electron.iWindow>>
+type localWindow = ref<option<Electron.iBrowserWindow>>
 
 @module external osLocale: unit => Js.Promise.t<string> = "os-locale"
 @module("node-machine-id") external machineId: unit => Js.Promise.t<string> = "machineId"
@@ -84,9 +84,36 @@ let createMainWindow = () => {
     mainWindow := None
   })
 
-  win->Electron.loadURL(
+  win
+  ->Electron.loadURL(
     ElectronUtil.is.development
       ? "http://0.0.0.0:3000"
-      : "file://" ++ Node.join(Node.__dirname, "build/index.html")
+      : "file://" ++ Node.join(Node.__dirname, "build/index.html"),
   )
+  ->Js.Promise.then_(() => Js.Promise.resolve(win), _)
+}
+
+let createPopupWindow = () => {
+  switch mainWindow.contents {
+  | None => ()
+  | Some(mainWin) => {
+      let (mX, mY) = mainWin->Electron.getPosition
+      let curDisplay = Electron.screen->Electron.getDisplayNearestPoint({x: mX, y: mY})
+      let popupConfig = AppConfig.config->ElectronStore.getJson("popup")
+      let popupWin = Electron.browserWindow({
+        show: false,
+        frame: false,
+        resizable: true,
+        webPreferences: webPreference,
+        // skipTaskbar: popupConfig.alwaysOnTop,
+        // alwaysOnTop: popupConfig.alwaysOnTop,
+        // width: popupConfig.width || 300,
+        // height: popupConfig.height || 350,
+        // x: popupConfig.x || (
+        //   isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140
+        // ),
+        // y: popupConfig.y || curDisplay.bounds.height / 2,
+      })
+    }
+  }
 }

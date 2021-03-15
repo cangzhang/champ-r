@@ -1,8 +1,9 @@
 module Electron = {
-  type iWindow
-  @send external onWindowEvent: (iWindow, string, () => unit) => unit = "on"
-  @send external showWindow: (iWindow) => unit = "show"
-  @send external loadURL: (iWindow, string) => unit = "loadURL"
+  type iBrowserWindow
+  @send external onWindowEvent: (iBrowserWindow, string, () => unit) => unit = "on"
+  @send external showWindow: (iBrowserWindow) => unit = "show"
+  @send external loadURL: (iBrowserWindow, string) => Js.Promise.t<'a> = "loadURL"
+  @send external getPosition: (iBrowserWindow) => (int, int) = "getPosition"
 
   type iNativeTheme = {mutable themeSource: string}
 
@@ -34,11 +35,22 @@ module Electron = {
     webPreferences: iWebPreferences,
   }
 
+  type iDisplay
+
+  type point = {
+    x: int,
+    y: int
+  }
+
+  type iScreen
+  @send external getDisplayNearestPoint: (iScreen, point) => iDisplay = "getDisplayNearestPoint"
+
   @module("electron") external app: iApp = "app"
-  @new @module("electron") external browserWindow: iBrowserWindowOption => iWindow = "BrowserWindow"
+  @new @module("electron") external browserWindow: iBrowserWindowOption => iBrowserWindow = "BrowserWindow"
+  @module("electron") external screen: iScreen = "screen"
+
   @module("electron") external menu: 'a = "menu"
   @module("electron") external ipcMain: 'a = "ipcMain"
-  @module("electron") external screen: 'a = "screen"
   @module("electron") external tray: 'a = "Tray"
   @module("electron") external nativeImage: 'a = "nativeImage"
   @module("electron") external nativeTheme: iNativeTheme = "nativeTheme"
