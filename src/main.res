@@ -55,25 +55,29 @@ if ignoreSystemScale {
 let mainWindow: localWindow = ref(None)
 let popupWindow: localWindow = ref(None)
 // let tray = ref(Js.null)
+// let lastChampion = ref(None)
 
-let webPreference: Electron.iWebPreferences = {
-  nodeIntegration: true,
-  webSecurity: false,
-  allowRunningInsecureContent: true,
-  zoomFactor: 1,
-  enableRemoteModule: true,
-}
+let webPreference = Electron.iWebPreferences(
+  ~nodeIntegration=true,
+  ~webSecurity=false,
+  ~allowRunningInsecureContent=true,
+  ~zoomFactor=1,
+  ~enableRemoteModule=true,
+)
 
 let createMainWindow = () => {
-  let win = Electron.browserWindow({
-    title: Electron.app->Electron.getName,
-    show: false,
-    frame: false,
-    height: 650,
-    width: ElectronUtil.is.development ? 1300 : 400,
-    resizable: ElectronUtil.is.development,
-    webPreferences: webPreference,
-  })
+  let mWinOption = Electron.iBrowserWindowOption(
+    ~title=Electron.app->Electron.getName,
+    ~show=false,
+    ~frame=false,
+    ~height=650,
+    ~width=ElectronUtil.is.development ? 1300 : 400,
+    ~resizable=ElectronUtil.is.development,
+    ~webPreferences=webPreference,
+    (),
+  )
+
+  let win = Electron.browserWindow(mWinOption)
 
   win->Electron.onWindowEvent("ready-to-show", () => {
     win->Electron.showWindow
@@ -84,36 +88,113 @@ let createMainWindow = () => {
     mainWindow := None
   })
 
-  win
-  ->Electron.loadURL(
+  win->Electron.loadURL(
     ElectronUtil.is.development
       ? "http://0.0.0.0:3000"
       : "file://" ++ Node.join(Node.__dirname, "build/index.html"),
-  )
-  ->Js.Promise.then_(() => Js.Promise.resolve(win), _)
+  )->Js.Promise.then_(() => {
+    win->Js.Promise.resolve
+  }, _)
+}
+
+let persistPopupConfig = (win: Electron.iBrowserWindow) => {
+  let bounds = win->Electron.getWindowBounds
+  AppConfig.config->ElectronStore.setInt("popup.x", bounds.x)
+  AppConfig.config->ElectronStore.setInt("popup.y", bounds.y)
+  AppConfig.config->ElectronStore.setInt("popup.width", bounds.width)
+  AppConfig.config->ElectronStore.setInt("popup.height", bounds.height)
 }
 
 let createPopupWindow = () => {
   switch mainWindow.contents {
-  | None => ()
+  | None => Js.Promise.resolve(Js.Nullable.null)
   | Some(mainWin) => {
       let (mX, mY) = mainWin->Electron.getPosition
       let curDisplay = Electron.screen->Electron.getDisplayNearestPoint({x: mX, y: mY})
-      let popupConfig = AppConfig.config->ElectronStore.getJson("popup")
-      let popupWin = Electron.browserWindow({
-        show: false,
-        frame: false,
-        resizable: true,
-        webPreferences: webPreference,
-        // skipTaskbar: popupConfig.alwaysOnTop,
-        // alwaysOnTop: popupConfig.alwaysOnTop,
-        // width: popupConfig.width || 300,
-        // height: popupConfig.height || 350,
-        // x: popupConfig.x || (
-        //   isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140
-        // ),
-        // y: popupConfig.y || curDisplay.bounds.height / 2,
+
+      let popupW = AppConfig.config->ElectronStore.getInt("popup.width")
+      let popupH = AppConfig.config->ElectronStore.getInt("popup.height")
+      let keepTop = AppConfig.config->ElectronStore.getBool("popup.alwaysOnTop")
+      let popupX = AppConfig.config->ElectronStore.getInt("popup.x")
+      let popupY = AppConfig.config->ElectronStore.getInt("popup.y")
+      let bounds = curDisplay->Electron.getDisplayBounds
+
+      let popupWinOption = Electron.iBrowserWindowOption(
+        ~show=false,
+        ~frame=false,
+        ~resizable=true,
+        ~webPreferences=webPreference,
+        ~skipTaskbar=keepTop,
+        ~alwaysOnTop=keepTop,
+        ~width=popupW > 0 ? popupW : 300,
+        ~height=popupH > 0 ? popupH : 350,
+        ~x=popupX > 0
+          ? popupX
+          : ElectronUtil.is.development
+          ? bounds.width / 2
+          : bounds.width - 500 - 140,
+        ~y=popupY > 0 ? popupY : bounds.height / 2,
+        (),
+      )
+
+      let win = Electron.browserWindow(popupWinOption)
+
+      win->Electron.onWindowEvent("move", () => {
+        persistPopupConfig(win)
       })
+      win->Electron.onWindowEvent("resize", () => {
+        persistPopupConfig(win)
+      })
+      win->Electron.onWindowEvent("closed", () => {
+        popupWindow := None
+      })
+
+      win
+      ->Electron.loadURL(
+        ElectronUtil.is.development
+          ? "http://0.0.0.0:3000/popup.html"
+          : "file://" ++ Node.join(Node.__dirname, "build/popup.html"),
+      )
+      ->Js.Promise.then_(() => Js.Promise.resolve(Js.Nullable.return(win)), _)
     }
   }
+}
+
+if !(Electron.app->Electron.requestSingleInstanceLock) {
+  Electron.app->Electron.quit
+}
+
+Electron.app->Electron.onAppEventPromise("second-instance", () => {
+  switch mainWindow.contents {
+  | None => Js.Promise.resolve()
+  | Some(win) => {
+      if win->Electron.isMinimized {
+        win->Electron.restoreWindow
+      }
+
+      win->Electron.showWindow->Js.Promise.resolve
+    }
+  }
+})
+
+Electron.app->Electron.onAppEvent("quit", () => {
+  mainWindow := None
+  popupWindow := None
+})
+
+Electron.app->Electron.onAppEvent("window-all-closed", () => {
+  if !ElectronUtil.is.macos {
+    Electron.app->Electron.quit
+  }
+})
+
+Electron.app->Electron.onAppEventPromise("activate", () => {
+  createMainWindow()->Js.Promise.then_(w => {
+    mainWindow := Js.Option.some(w)
+    Js.Promise.resolve()
+  }, _)
+})
+
+let onShowPopup = () => {
+  ()
 }
