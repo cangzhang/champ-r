@@ -88,11 +88,13 @@ let createMainWindow = () => {
     mainWindow := None
   })
 
-  win->Electron.loadURL(
+  win
+  ->Electron.loadURL(
     ElectronUtil.is.development
       ? "http://0.0.0.0:3000"
       : "file://" ++ Node.join(Node.__dirname, "build/index.html"),
-  )->Js.Promise.then_(() => {
+  )
+  ->Js.Promise.then_(() => {
     win->Js.Promise.resolve
   }, _)
 }
@@ -107,7 +109,7 @@ let persistPopupConfig = (win: Electron.iBrowserWindow) => {
 
 let createPopupWindow = () => {
   switch mainWindow.contents {
-  | None => Js.Promise.resolve(Js.Nullable.null)
+  | None => Js.Promise.resolve(None)
   | Some(mainWin) => {
       let (mX, mY) = mainWin->Electron.getPosition
       let curDisplay = Electron.screen->Electron.getDisplayNearestPoint({x: mX, y: mY})
@@ -155,7 +157,7 @@ let createPopupWindow = () => {
           ? "http://0.0.0.0:3000/popup.html"
           : "file://" ++ Node.join(Node.__dirname, "build/popup.html"),
       )
-      ->Js.Promise.then_(() => Js.Promise.resolve(Js.Nullable.return(win)), _)
+      ->Js.Promise.then_(() => Js.Promise.resolve(Js.Option.some(win)), _)
     }
   }
 }
@@ -195,6 +197,37 @@ Electron.app->Electron.onAppEventPromise("activate", () => {
   }, _)
 })
 
-let onShowPopup = () => {
-  ()
+type iPopupData = {
+  @optional championId: int,
+  position: string,
+}
+let lastChampion = ref(0)
+let onShowPopup: ('a, iPopupData) => Js.Promise.t<'b> = (_, data) => {
+  if data.championId <= 0 || lastChampion.contents == data.championId {
+    // Js.Promise.resolve()
+    ()
+  }
+
+  lastChampion := data.championId
+  if popupWindow.contents == None {
+    createPopupWindow()->Js.Promise.then_(win => {
+      popupWindow := win
+
+      switch win {
+      | None => {
+        ()
+        }
+      | Some(popup) => {
+          popup->Electron.showWindow
+          popup->Electron.focusWindow
+          // ()
+        }
+      }
+      // Js.Promise.resolve()
+      // ()
+    }, _)
+  }
+
+  Js.Promise.resolve()
+  // ()
 }

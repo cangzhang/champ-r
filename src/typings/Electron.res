@@ -14,6 +14,7 @@ module Electron = {
   @get external getWindowBounds: iBrowserWindow => iRectangle = "getBounds"
   @send external isMinimized: iBrowserWindow => bool = "isMinimized"
   @send external restoreWindow: iBrowserWindow => unit = "restore"
+  @send external focusWindow: iBrowserWindow => unit = "focus"
 
   type iNativeTheme = {mutable themeSource: string}
 
