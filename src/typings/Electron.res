@@ -38,8 +38,8 @@ module Electron = {
   @get external getName: iApp => string = "name"
   @send external requestSingleInstanceLock: iApp => bool = "requestSingleInstanceLock"
   @send external quit: iApp => unit = "quit"
-  @send external onAppEvent: (iApp, string, () => 'a) => unit = "on"
-  @send external onAppEventPromise: (iApp, string, () => Js.Promise.t<'a>) => unit = "on"
+  @send external onAppEvent: (iApp, string, unit => 'a) => unit = "on"
+  @send external onAppEventPromise: (iApp, string, unit => Js.Promise.t<'a>) => unit = "on"
   @send external relaunch: iApp => unit = "relaunch"
   @send external exit: iApp => unit = "exit"
 
@@ -84,16 +84,39 @@ module Electron = {
 
   type iIpcMain
   @send external onIpcMainEvent: (iIpcMain, string, (iIpcEvent, 'b) => unit) => unit = "on"
-  @send external onIpcMainEventPromise: (iIpcMain, string, (iIpcEvent, 'b) => Js.Promise.t<'c>) => unit = "on"
+  @send
+  external onIpcMainEventPromise: (iIpcMain, string, (iIpcEvent, 'b) => Js.Promise.t<'c>) => unit =
+    "on"
+
+  type iImageSize = {
+    width: int,
+    height: int,
+  }
+  type iNativeImage
+  @send external createImageFromPath: (iNativeImage, string) => iNativeImage = "createFromPath"
+  @send external resizeImage: (iNativeImage, iImageSize) => iNativeImage = "resize"
+
+  type iMenuItem = {
+    label: string,
+    click: unit => unit,
+  }
+
+  type iMenu
+  @send external buildMenuFromTemplate: (iMenu, array<iMenuItem>) => iMenu = "buildFromTemplate"
+
+  type iTray
+  @send external setTooltip: (iTray, string) => unit = "setToolTip"
+  @send external onTrayEvent: (iTray, string, unit => 'a) => unit = "on"
+  @send external setContextMenu: (iTray, iMenu) => unit = "setContextMenu"
 
   @module("electron") external app: iApp = "app"
   @new @module("electron")
-  external browserWindow: iBrowserWindowOption => iBrowserWindow = "BrowserWindow"
+  external makeBrowserWindow: iBrowserWindowOption => iBrowserWindow = "BrowserWindow"
+  @module("electron") external nativeTheme: iNativeTheme = "nativeTheme"
   @module("electron") external screen: iScreen = "screen"
   @module("electron") external ipcMain: iIpcMain = "ipcMain"
-
-  @module("electron") external menu: 'a = "menu"
-  @module("electron") external tray: 'a = "Tray"
-  @module("electron") external nativeImage: 'a = "nativeImage"
-  @module("electron") external nativeTheme: iNativeTheme = "nativeTheme"
+  @module("electron") external nativeImage: iNativeImage = "nativeImage"
+  @new @module("electron")
+  external makeTray: iNativeImage => iTray = "Tray"
+  @module("electron") external menu: iMenu = "menu"
 }

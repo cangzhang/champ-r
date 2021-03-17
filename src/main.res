@@ -5,12 +5,12 @@ open ElectronContextMenu
 open ElectronUtil
 open ElectronStore
 open AppConfig
+open NodeMachineId
 
 type unhandledOption = {showDialog: bool}
 type localWindow = ref<option<Electron.iBrowserWindow>>
 
 @module external osLocale: unit => Js.Promise.t<string> = "os-locale"
-@module("node-machine-id") external machineId: unit => Js.Promise.t<string> = "machineId"
 @module external debug: unit => unit = "debug"
 @module external unhandled: unhandledOption => unit = "electron-unhandled"
 
@@ -58,8 +58,6 @@ if ignoreSystemScale {
 
 let mainWindow: localWindow = ref(None)
 let popupWindow: localWindow = ref(None)
-// let tray = ref(Js.null)
-// let lastChampion = ref(None)
 
 let webPreference = Electron.iWebPreferences(
   ~nodeIntegration=true,
@@ -81,7 +79,7 @@ let createMainWindow = () => {
     (),
   )
 
-  let win = Electron.browserWindow(mWinOption)
+  let win = Electron.makeBrowserWindow(mWinOption)
 
   win->Electron.onWindowEvent("ready-to-show", () => {
     win->Electron.showWindow
@@ -157,7 +155,7 @@ let createPopupWindow = () => {
         (),
       )
 
-      let win = Electron.browserWindow(popupWinOption)
+      let win = Electron.makeBrowserWindow(popupWinOption)
 
       win->Electron.onWindowEvent("move", () => {
         persistPopupConfig(win)
@@ -338,5 +336,55 @@ let registerMainListeners = () => {
 }
 
 let makeTray = () => {
-  let iconPath = Node.join(ElectronUtil.is.development ? Node.__dirname : Node.resourcesPath, "resources/app-icon.png")
+  let iconPath = Node.join(
+    ElectronUtil.is.development ? Node.__dirname : Node.resourcesPath,
+    "resources/app-icon.png",
+  )
+  let icon =
+    Electron.nativeImage
+    ->Electron.createImageFromPath(iconPath)
+    ->Electron.resizeImage({width: 24, height: 24})
+
+  let tray = Electron.makeTray(icon)
+  tray->Electron.setTooltip("ChampR")
+
+  tray->Electron.onTrayEvent("clock", () => {
+    toggleMainWindow()
+  })
+
+  let items: array<Electron.iMenuItem> = [
+    {
+      label: "Toggle window",
+      click: () => toggleMainWindow(),
+    },
+    {
+      label: "Exit",
+      click: () => Electron.app->Electron.quit,
+    },
+  ]
+  let trayMenu = Electron.menu->Electron.buildMenuFromTemplate(items)
+  tray->Electron.setContextMenu(trayMenu)
+}
+
+let getMachineId = () => {
+  let userId = AppConfig.config->ElectronStore.getString("userId")
+
+  switch userId->Js.String.length {
+  | 0 => userId->Js.Promise.resolve
+  | _ => NodeMachineId.machineId()->Js.Promise.then_(id => {
+      AppConfig.config->ElectronStore.setString("userId", id)
+      Js.Promise.resolve(id)
+    }, _)
+  }
+}
+
+let isNetworkError = (msg: string) => {
+  "net::ERR_"->Js.String.includes(msg)
+}
+
+let checkForUpdates = () => {
+  switch ElectronUtil.is.development {
+  | true => Js.log("Skipped updated check for dev mode")
+  | false => Js.log("prod mode")
+  }
 }
