@@ -14,6 +14,10 @@ type localWindow = ref<option<Electron.iBrowserWindow>>
 @module external debug: unit => unit = "debug"
 @module external unhandled: unhandledOption => unit = "electron-unhandled"
 
+type intervalID
+@val external setInterval: (unit => unit, int) => intervalID = "setInterval"
+@val external clearInterval: intervalID => unit = "clearInterval"
+
 @module external logger: 'a = "./native/logger"
 
 try {
@@ -157,7 +161,9 @@ let createPopupWindow = () => {
           ? "http://0.0.0.0:3000/popup.html"
           : "file://" ++ Node.join(Node.__dirname, "build/popup.html"),
       )
-      ->Js.Promise.then_(() => Js.Promise.resolve(Js.Option.some(win)), _)
+      ->Js.Promise.then_(() => {
+        win->Js.Option.some->Js.Promise.resolve
+      }, _)
     }
   }
 }
@@ -201,33 +207,51 @@ type iPopupData = {
   @optional championId: int,
   position: string,
 }
+
+let requestPopupChange = (popup: Electron.iBrowserWindow, data: iPopupData) => {
+  let id = ref(Js.Nullable.null)
+
+  id := Js.Nullable.return(Js.Global.setInterval(() => {
+        let isPopupVisible = popup->Electron.isWindowVisible
+        if !isPopupVisible {
+          ()
+        }
+
+        popup->Electron.getWebContents->Electron.sendToWebContents("for-popup", data)
+        Js.Nullable.iter(id.contents, (. id) => Js.Global.clearInterval(id))
+      }, 300))
+  ()
+}
+
 let lastChampion = ref(0)
-let onShowPopup: ('a, iPopupData) => Js.Promise.t<'b> = (_, data) => {
-  if data.championId <= 0 || lastChampion.contents == data.championId {
-    // Js.Promise.resolve()
-    ()
-  }
+let onShowPopup = (_, data: iPopupData) => {
+  let championChanged = data.championId <= 0 || lastChampion.contents == data.championId
+  switch championChanged {
+  | false => Js.Promise.resolve()
+  | true => {
+      lastChampion := data.championId
 
-  lastChampion := data.championId
-  if popupWindow.contents == None {
-    createPopupWindow()->Js.Promise.then_(win => {
-      popupWindow := win
-
-      switch win {
-      | None => {
-        ()
-        }
+      switch popupWindow.contents {
       | Some(popup) => {
-          popup->Electron.showWindow
-          popup->Electron.focusWindow
-          // ()
+          requestPopupChange(popup, data)
+          Js.Promise.resolve()
         }
-      }
-      // Js.Promise.resolve()
-      // ()
-    }, _)
-  }
+      | None => createPopupWindow()->Js.Promise.then_(w => {
+          popupWindow := w
 
-  Js.Promise.resolve()
-  // ()
+          switch w {
+          | None => ()
+          | Some(popup) => {
+              popup->Electron.showWindow
+              popup->Electron.focusWindow
+
+              requestPopupChange(popup, data)
+            }
+          }
+
+          Js.Promise.resolve()
+        }, _)
+      }
+    }
+  }
 }

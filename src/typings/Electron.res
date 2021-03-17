@@ -7,6 +7,7 @@ module Electron = {
   }
 
   type iBrowserWindow
+  type iBrowserWindowWebContents
   @send external onWindowEvent: (iBrowserWindow, string, unit => unit) => unit = "on"
   @send external showWindow: iBrowserWindow => unit = "show"
   @send external loadURL: (iBrowserWindow, string) => Js.Promise.t<unit> = "loadURL"
@@ -15,6 +16,9 @@ module Electron = {
   @send external isMinimized: iBrowserWindow => bool = "isMinimized"
   @send external restoreWindow: iBrowserWindow => unit = "restore"
   @send external focusWindow: iBrowserWindow => unit = "focus"
+  @send external isWindowVisible: iBrowserWindow => bool = "isVisible"
+  @get external getWebContents: iBrowserWindow => iBrowserWindowWebContents = "webContents"
+  @send external sendToWebContents: (iBrowserWindowWebContents, string, 'a) => unit = "send"
 
   type iNativeTheme = {mutable themeSource: string}
 
