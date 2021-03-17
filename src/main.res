@@ -103,6 +103,20 @@ let createMainWindow = () => {
   }, _)
 }
 
+let toggleMainWindow = () => {
+  switch mainWindow.contents {
+  | None => ()
+  | Some(main) =>
+    if main->Electron.isWindowVisible {
+      main->Electron.hideWindow
+      main->Electron.setSkipTaskbar(true)
+    } else {
+      main->Electron.showWindow
+      main->Electron.setSkipTaskbar(false)
+    }
+  }
+}
+
 let persistPopupConfig = (win: Electron.iBrowserWindow) => {
   let bounds = win->Electron.getWindowBounds
   AppConfig.config->ElectronStore.setInt("popup.x", bounds.x)
@@ -208,17 +222,15 @@ type iPopupData = {
   position: string,
 }
 
-let requestPopupChange = (popup: Electron.iBrowserWindow, data: iPopupData) => {
+let onChampionChange = (popup: Electron.iBrowserWindow, data: iPopupData) => {
   let id = ref(Js.Nullable.null)
 
   id := Js.Nullable.return(Js.Global.setInterval(() => {
         let isPopupVisible = popup->Electron.isWindowVisible
-        if !isPopupVisible {
-          ()
+        if isPopupVisible {
+          popup->Electron.getWebContents->Electron.sendToWebContents("for-popup", data)
+          Js.Nullable.iter(id.contents, (. id) => Js.Global.clearInterval(id))
         }
-
-        popup->Electron.getWebContents->Electron.sendToWebContents("for-popup", data)
-        Js.Nullable.iter(id.contents, (. id) => Js.Global.clearInterval(id))
       }, 300))
   ()
 }
@@ -233,7 +245,7 @@ let onShowPopup = (_, data: iPopupData) => {
 
       switch popupWindow.contents {
       | Some(popup) => {
-          requestPopupChange(popup, data)
+          onChampionChange(popup, data)
           Js.Promise.resolve()
         }
       | None => createPopupWindow()->Js.Promise.then_(w => {
@@ -245,7 +257,7 @@ let onShowPopup = (_, data: iPopupData) => {
               popup->Electron.showWindow
               popup->Electron.focusWindow
 
-              requestPopupChange(popup, data)
+              onChampionChange(popup, data)
             }
           }
 
@@ -254,4 +266,77 @@ let onShowPopup = (_, data: iPopupData) => {
       }
     }
   }
+}
+
+let registerMainListeners = () => {
+  Electron.ipcMain->Electron.onIpcMainEvent("broadcast", (ev, data) => {
+    ev->Electron.ipcEventSend(data["channel"], data)
+  })
+
+  Electron.ipcMain->Electron.onIpcMainEventPromise("show-popup", onShowPopup)
+
+  Electron.ipcMain->Electron.onIpcMainEvent("hide-popup", (_, _) => {
+    switch popupWindow.contents {
+    | None => ()
+    | Some(popup) => {
+        lastChampion := 0
+        if popup->Electron.isWindowVisible {
+          popup->Electron.hideWindow
+        }
+      }
+    }
+  })
+
+  Electron.ipcMain->Electron.onIpcMainEvent("toggle-main-window", (_, _) => {
+    toggleMainWindow()
+  })
+
+  Electron.ipcMain->Electron.onIpcMainEvent("restart-app", (_, _) => {
+    Electron.app->Electron.relaunch
+    Electron.app->Electron.exit
+  })
+
+  Electron.ipcMain->Electron.onIpcMainEvent("popup:toggle-always-on-top", (_, _) => {
+    switch popupWindow.contents {
+    | None => ()
+    | Some(popup) => {
+        let next = !(popup->Electron.isAlwaysOnTop)
+        popup->Electron.setAlwaysOnTop(next)
+        popup->Electron.setSkipTaskbar(next)
+
+        AppConfig.config->ElectronStore.setBool("popup.alwaysOnTop", next)
+      }
+    }
+  })
+
+  Electron.ipcMain->Electron.onIpcMainEvent("popup:reset-position", (_, _) => {
+    switch mainWindow.contents {
+    | None => ()
+    | Some(main) => {
+        let (mx, my) = main->Electron.getPosition
+        let bounds =
+          Electron.screen
+          ->Electron.getDisplayNearestPoint({x: mx, y: my})
+          ->Electron.getDisplayBounds
+        let x = bounds.width / 2
+        let y = bounds.height / 2
+
+        AppConfig.config->ElectronStore.setBool("popup.alwaysOnTop", true)
+        AppConfig.config->ElectronStore.setInt("popup.x", x)
+        AppConfig.config->ElectronStore.setInt("popup.y", y)
+
+        switch popupWindow.contents {
+        | None => ()
+        | Some(popup) => {
+            popup->Electron.setAlwaysOnTop(true)
+            popup->Electron.setPosition(x, y)
+          }
+        }
+      }
+    }
+  })
+}
+
+let makeTray = () => {
+  let iconPath = Node.join(ElectronUtil.is.development ? Node.__dirname : Node.resourcesPath, "resources/app-icon.png")
 }

@@ -19,6 +19,11 @@ module Electron = {
   @send external isWindowVisible: iBrowserWindow => bool = "isVisible"
   @get external getWebContents: iBrowserWindow => iBrowserWindowWebContents = "webContents"
   @send external sendToWebContents: (iBrowserWindowWebContents, string, 'a) => unit = "send"
+  @send external hideWindow: iBrowserWindow => unit = "hide"
+  @send external setSkipTaskbar: (iBrowserWindow, bool) => unit = "setSkipTaskbar"
+  @send external isAlwaysOnTop: iBrowserWindow => bool = "isAlwaysOnTop"
+  @send external setAlwaysOnTop: (iBrowserWindow, bool) => unit = "setAlwaysOnTop"
+  @send external setPosition: (iBrowserWindow, int, int) => unit = "setPosition"
 
   type iNativeTheme = {mutable themeSource: string}
 
@@ -35,6 +40,8 @@ module Electron = {
   @send external quit: iApp => unit = "quit"
   @send external onAppEvent: (iApp, string, () => 'a) => unit = "on"
   @send external onAppEventPromise: (iApp, string, () => Js.Promise.t<'a>) => unit = "on"
+  @send external relaunch: iApp => unit = "relaunch"
+  @send external exit: iApp => unit = "exit"
 
   @deriving(abstract)
   type iWebPreferences = {
@@ -72,13 +79,20 @@ module Electron = {
   type iScreen
   @send external getDisplayNearestPoint: (iScreen, point) => iDisplay = "getDisplayNearestPoint"
 
+  type iIpcEvent
+  @send external ipcEventSend: (iIpcEvent, string, 'a) => unit = "sender.send"
+
+  type iIpcMain
+  @send external onIpcMainEvent: (iIpcMain, string, (iIpcEvent, 'b) => unit) => unit = "on"
+  @send external onIpcMainEventPromise: (iIpcMain, string, (iIpcEvent, 'b) => Js.Promise.t<'c>) => unit = "on"
+
   @module("electron") external app: iApp = "app"
   @new @module("electron")
   external browserWindow: iBrowserWindowOption => iBrowserWindow = "BrowserWindow"
   @module("electron") external screen: iScreen = "screen"
+  @module("electron") external ipcMain: iIpcMain = "ipcMain"
 
   @module("electron") external menu: 'a = "menu"
-  @module("electron") external ipcMain: 'a = "ipcMain"
   @module("electron") external tray: 'a = "Tray"
   @module("electron") external nativeImage: 'a = "nativeImage"
   @module("electron") external nativeTheme: iNativeTheme = "nativeTheme"
