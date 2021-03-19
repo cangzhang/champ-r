@@ -370,7 +370,7 @@ let makeTray = () => {
 }
 
 let getMachineId = () => {
-  let userId = AppConfig.config->ElectronStore.getString("userId")
+  let userId = AppConfig.config->ElectronStore.getString("userId", "")
 
   switch userId->Js.String.length {
   | 0 => userId->Js.Promise.resolve
@@ -450,7 +450,7 @@ let _ = Electron.app->Electron.whenAppReady->Js.Promise.then_(() => {
     Js.Promise.resolve()
   }, _)->Js.Promise.then_(() => {
     osLocale()->Js.Promise.then_(locale => {
-      let appLang = AppConfig.config->ElectronStore.getString("appLang")
+      let appLang = AppConfig.config->ElectronStore.getString("appLang", "")
       if appLang != "en-US" && appLang != "zh-CN" {
         AppConfig.config->ElectronStore.setString("appLang", "en-US")
       }
