@@ -4,8 +4,10 @@ open ElectronReloader
 open ElectronContextMenu
 open ElectronUtil
 open ElectronStore
-open AppConfig
 open NodeMachineId
+open ElectronUpdater
+open ElectronLog
+open AppConfig
 
 type unhandledOption = {showDialog: bool}
 type localWindow = ref<option<Electron.iBrowserWindow>>
@@ -97,7 +99,9 @@ let createMainWindow = () => {
       : "file://" ++ Node.join(Node.__dirname, "build/index.html"),
   )
   ->Js.Promise.then_(() => {
-    win->Js.Promise.resolve
+    let w = win->Js.Option.some
+    mainWindow := w
+    w->Js.Promise.resolve
   }, _)
 }
 
@@ -210,7 +214,6 @@ Electron.app->Electron.onAppEvent("window-all-closed", () => {
 
 Electron.app->Electron.onAppEventPromise("activate", () => {
   createMainWindow()->Js.Promise.then_(w => {
-    mainWindow := Js.Option.some(w)
     Js.Promise.resolve()
   }, _)
 })
@@ -379,12 +382,112 @@ let getMachineId = () => {
 }
 
 let isNetworkError = (msg: string) => {
-  "net::ERR_"->Js.String.includes(msg)
+  Js.String.includes("net::ERR_", msg)
+}
+
+let updateCheckIntv = 1000 * 60 * 60 * 2
+
+let checkUpdateTask = () => {
+  ElectronUpdater.autoUpdater->ElectronUpdater.checkForUpdates->Js.Promise.catch(err => {
+    Js.log2("check update failed: ", err)->Js.Promise.resolve
+  }, _)
 }
 
 let checkForUpdates = () => {
   switch ElectronUtil.is.development {
-  | true => Js.log("Skipped updated check for dev mode")
-  | false => Js.log("prod mode")
+  | true => Js.log("Skipped update check for dev mode")->Js.Promise.resolve
+  | false => {
+      let _ = Js.Global.setInterval(() => {
+        let _ = checkUpdateTask()
+      }, updateCheckIntv)
+
+      checkUpdateTask()
+    }
   }
 }
+
+let registerUpdater = () => {
+  ElectronUpdater.setLogger(ElectronUpdater.autoUpdater, ElectronLog.log)
+  ElectronUpdater.setLogLevel(ElectronUpdater.autoUpdater, "info")
+  ElectronUpdater.setAutoDownload(ElectronUpdater.autoUpdater, false)
+
+  ElectronUpdater.autoUpdater->ElectronUpdater.onUpdaterEvent("checking-for-update", _ => {
+    Js.log("Checking for update...")
+  })
+  ElectronUpdater.autoUpdater->ElectronUpdater.onUpdaterEvent("update-available", info => {
+    Js.log("Update available: " ++ info.version)
+
+    switch mainWindow.contents {
+    | None => ()
+    | Some(main) =>
+      main->Electron.getWebContents->Electron.sendToWebContents("update-available", info)
+    }
+  })
+  ElectronUpdater.autoUpdater->ElectronUpdater.onUpdaterEvent("update-not-available", info => {
+    Js.Console.warn("Update not available: " ++ info.version)
+  })
+  ElectronUpdater.autoUpdater->ElectronUpdater.onUpdaterEvent("update-downloaded", info => {
+    Js.log("Update downloaded: " ++ info.version)
+
+    switch mainWindow.contents {
+    | None => ()
+    | Some(main) =>
+      main->Electron.getWebContents->Electron.sendToWebContents("update-downloaded", info)
+    }
+  })
+  ElectronUpdater.autoUpdater->ElectronUpdater.onUpdaterEvent("error", info => {
+    Js.Console.error2("Error in auto-updater: ", info)
+  })
+  Electron.ipcMain->Electron.onIpcMainEvent("install-update", (_, _) => {
+    ElectronUpdater.autoUpdater->ElectronUpdater.quitAndInstall(false)
+  })
+}
+
+Js.log("ChampR starting...")
+
+let _ = Electron.app->Electron.whenAppReady->Js.Promise.then_(() => {
+    Electron.menu->Electron.setApplicationMenu(Js.Nullable.null)
+    Js.Promise.resolve()
+  }, _)->Js.Promise.then_(() => {
+    osLocale()->Js.Promise.then_(locale => {
+      let appLang = AppConfig.config->ElectronStore.getString("appLang")
+      if appLang != "en-US" && appLang != "zh-CN" {
+        AppConfig.config->ElectronStore.setString("appLang", "en-US")
+      }
+      Js.log("locale :" ++ locale ++ ", app language: " ++ appLang)
+      Js.Promise.resolve()
+    }, _)
+  }, _)->Js.Promise.then_(() => {
+    createMainWindow()->Js.Promise.then_(_ => {
+      createPopupWindow()->Js.Promise.then_(_ => {
+        registerMainListeners()
+        registerUpdater()
+        Js.Promise.resolve()
+      }, _)
+    }, _)
+  }, _)->Js.Promise.then_(() => {
+    switch mainWindow.contents {
+    | None => Js.Promise.resolve()
+    | Some(main) => {
+        let options = Electron.iCenterWindowOptions(~window=main, ~animated=true, ())
+        Electron.centerWindow(options)->Js.Promise.then_(() => {
+          Js.Promise.resolve()
+        }, _)
+      }
+    }
+  }, _)->Js.Promise.then_(() => {
+    makeTray()
+    Js.Promise.resolve()
+  }, _)->Js.Promise.then_(() => {
+    getMachineId()->Js.Promise.then_(userId => {
+      Js.log("user id: " ++ userId)
+      Js.Promise.resolve()
+    }, _)
+  }, _)->Js.Promise.then_(() => {
+    checkForUpdates()->Js.Promise.then_(() => {
+      Js.Promise.resolve()
+    }, _)
+  }, _)->Js.Promise.catch(err => {
+    Js.Console.error2("got error: ", err)
+    Js.Promise.resolve()
+  }, _)
