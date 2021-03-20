@@ -1,6 +1,6 @@
 open Node
 open Electron
-open ElectronReloader
+// open ElectronReloader
 open ElectronContextMenu
 open ElectronUtil
 open ElectronStore
@@ -13,7 +13,7 @@ type unhandledOption = {showDialog: bool}
 type localWindow = ref<option<Electron.iBrowserWindow>>
 
 @module external osLocale: unit => Js.Promise.t<string> = "os-locale"
-@module external debug: unit => unit = "debug"
+@module external debug: unit => unit = "electron-debug"
 @module external unhandled: unhandledOption => unit = "electron-unhandled"
 
 type intervalID
@@ -22,21 +22,21 @@ type intervalID
 
 @module external logger: 'a = "./native/logger"
 
-try {
-  ElectronReloader.reloader(
-    Node.module_,
-    {
-      watchRenderer: false,
-      ignore: ["./src/**/*"],
-    },
-  )
-} catch {
-| Js.Exn.Error(obj) =>
-  switch Js.Exn.message(obj) {
-  | Some(_) => ()
-  | None => ()
-  }
-}
+// try {
+//   ElectronReloader.reloader(
+//     Node.module_,
+//     {
+//       watchRenderer: false,
+//       ignore: [],
+//     },
+//   )
+// } catch {
+// | Js.Exn.Error(obj) =>
+//   switch Js.Exn.message(obj) {
+//   | Some(_) => ()
+//   | None => ()
+//   }
+// }
 
 unhandled({showDialog: false})
 debug()
@@ -95,7 +95,7 @@ let createMainWindow = () => {
   win
   ->Electron.loadURL(
     ElectronUtil.is.development
-      ? "http://0.0.0.0:3000"
+      ? "http://127.0.0.1:3000"
       : "file://" ++ Node.join(Node.__dirname, "build/index.html"),
   )
   ->Js.Promise.then_(() => {
@@ -174,7 +174,7 @@ let createPopupWindow = () => {
       win
       ->Electron.loadURL(
         ElectronUtil.is.development
-          ? "http://0.0.0.0:3000/popup.html"
+          ? "http://127.0.0.1:3000/popup.html"
           : "file://" ++ Node.join(Node.__dirname, "build/popup.html"),
       )
       ->Js.Promise.then_(() => {
@@ -219,7 +219,7 @@ Electron.app->Electron.onAppEventPromise("activate", () => {
 })
 
 type iPopupData = {
-  @optional championId: int,
+  @optional championId: string,
   position: string,
 }
 
@@ -238,11 +238,13 @@ let onChampionChange = (popup: Electron.iBrowserWindow, data: iPopupData) => {
 
 let lastChampion = ref(0)
 let onShowPopup = (_, data: iPopupData) => {
-  let championChanged = data.championId <= 0 || lastChampion.contents == data.championId
+  let championId = data.championId -> int_of_string
+  let championChanged = championId > 0 && lastChampion.contents != championId
+
   switch championChanged {
   | false => Js.Promise.resolve()
   | true => {
-      lastChampion := data.championId
+      lastChampion := championId
 
       switch popupWindow.contents {
       | Some(popup) => {
@@ -449,12 +451,21 @@ let _ = Electron.app->Electron.whenAppReady->Js.Promise.then_(() => {
     Electron.menu->Electron.setApplicationMenu(Js.Nullable.null)
     Js.Promise.resolve()
   }, _)->Js.Promise.then_(() => {
+    Electron.app->Electron.getPath("userData")->Js.log
     osLocale()->Js.Promise.then_(locale => {
       let appLang = AppConfig.config->ElectronStore.getString("appLang", "")
-      if appLang != "en-US" && appLang != "zh-CN" {
-        AppConfig.config->ElectronStore.setString("appLang", "en-US")
+      Js.log("locale: " ++ locale ++ ", app language: " ++ appLang)
+      let finalLang = ref("en-US")
+
+      if Js.String.length(appLang) == 0 {
+        if locale == "zh-CN" || locale == "en-US" {
+          finalLang := locale
+        }
+      } else if appLang == "en-US" && appLang == "zh-CN" {
+        finalLang := appLang
       }
-      Js.log("locale :" ++ locale ++ ", app language: " ++ appLang)
+      AppConfig.config->ElectronStore.setString("appLang", finalLang.contents)
+      // Js.log("locale: " ++ locale ++ ", app language: " ++ finalLang.contents)
       Js.Promise.resolve()
     }, _)
   }, _)->Js.Promise.then_(() => {
@@ -469,10 +480,9 @@ let _ = Electron.app->Electron.whenAppReady->Js.Promise.then_(() => {
     switch mainWindow.contents {
     | None => Js.Promise.resolve()
     | Some(main) => {
-        let options = Electron.iCenterWindowOptions(~window=main, ~animated=true, ())
-        Electron.centerWindow(options)->Js.Promise.then_(() => {
-          Js.Promise.resolve()
-        }, _)
+        let options = ElectronUtil.iCenterWindowOptions(~window=main, ~animated=true, ())
+        ElectronUtil.centerWindow(options)
+        Js.Promise.resolve()
       }
     }
   }, _)->Js.Promise.then_(() => {

@@ -32,7 +32,8 @@
     "pack": "electron-builder --dir",
     "lint": "eslint --fix",
     "re:build": "bsb -make-world -clean-world",
-    "re:watch": "bsb -make-world -clean-world -w"
+    "re:watch": "bsb -make-world -clean-world -w",
+    "re:start": "cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true run-electron src/main.bs.js --inspect=5858"
   },
   "dependencies": {
     "@glennsl/bs-json": "^5.0.2",

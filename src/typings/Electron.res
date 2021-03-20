@@ -43,6 +43,7 @@ module Electron = {
   @send external relaunch: iApp => unit = "relaunch"
   @send external exit: iApp => unit = "exit"
   @send external whenAppReady: iApp => Js.Promise.t<'a> = "whenReady"
+  @send external getPath: (iApp, string) => string = "getPath"
 
   @deriving(abstract)
   type iWebPreferences = {
@@ -121,11 +122,4 @@ module Electron = {
   @new @module("electron")
   external makeTray: iNativeImage => iTray = "Tray"
   @module("electron") external menu: iMenu = "Menu"
-
-  @deriving(abstract)
-  type iCenterWindowOptions = {
-    window: iBrowserWindow,
-    @optional animated: bool,
-  }
-  @module("electron") external centerWindow: iCenterWindowOptions => Js.Promise.t<'a> = "centerWindow"
 }
