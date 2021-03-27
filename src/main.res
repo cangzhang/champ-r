@@ -1,13 +1,15 @@
 open Node
 open Electron
-// open ElectronReloader
+open ElectronReloader
 open ElectronContextMenu
 open ElectronUtil
 open ElectronStore
 open NodeMachineId
 open ElectronUpdater
 open ElectronLog
+
 open AppConfig
+open AppLogger
 
 type unhandledOption = {showDialog: bool}
 type localWindow = ref<option<Electron.iBrowserWindow>>
@@ -20,23 +22,23 @@ type intervalID
 @val external setInterval: (unit => unit, int) => intervalID = "setInterval"
 @val external clearInterval: intervalID => unit = "clearInterval"
 
-@module external logger: 'a = "./native/logger"
+try {
+  ElectronReloader.reloader(
+    Node.module_,
+    {
+      watchRenderer: false,
+      ignore: [],
+    },
+  )
+} catch {
+| Js.Exn.Error(obj) =>
+  switch Js.Exn.message(obj) {
+  | Some(_) => ()
+  | None => ()
+  }
+}
 
-// try {
-//   ElectronReloader.reloader(
-//     Node.module_,
-//     {
-//       watchRenderer: false,
-//       ignore: [],
-//     },
-//   )
-// } catch {
-// | Js.Exn.Error(obj) =>
-//   switch Js.Exn.message(obj) {
-//   | Some(_) => ()
-//   | None => ()
-//   }
-// }
+AppLogger.init()
 
 unhandled({showDialog: false})
 debug()
@@ -213,7 +215,7 @@ Electron.app->Electron.onAppEvent("window-all-closed", () => {
 })
 
 Electron.app->Electron.onAppEventPromise("activate", () => {
-  createMainWindow()->Js.Promise.then_(w => {
+  createMainWindow()->Js.Promise.then_((_) => {
     Js.Promise.resolve()
   }, _)
 })
