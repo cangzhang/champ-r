@@ -6,3 +6,7 @@ node_modules
 .DS_Store
 ._.*
 yarn-error.log
+lib/
+.merlin
+*.bs.js
+.bsb.lock

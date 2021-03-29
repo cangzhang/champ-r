@@ -353,7 +353,7 @@ function registerUpdater() {
   });
 
   autoUpdater.on('update-available', (info) => {
-    console.log(`Update available: ${info.version}`);
+    console.log(`${info.version}`);
     if (mainWindow && mainWindow.webContents) {
       mainWindow.webContents.send(`update-available`, info);
     }
