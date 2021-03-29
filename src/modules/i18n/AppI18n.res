@@ -18,7 +18,6 @@ module AppI18n = {
       // ~resouces=r,
     )
 
-    let i18nInstance = ReactI18next.initReactI18next->I18n.use
-    // i18nInstance->I18n.init()
+    let _ = ReactI18next.initReactI18next->I18n.use->I18n.init(config)
   }
 }
