@@ -1,7 +1,7 @@
 module I18n = {
   type iI18nContext
-  type iResource<'a> = Js.Json.t
-  
+  type iI18nResource
+
   @deriving(abstract)
   type iInterpolation = {
     escapeValue: bool,
@@ -12,7 +12,7 @@ module I18n = {
     lng: string,
     fallbackLng: string,
     interpolation: iInterpolation,
-    resources: iResource<Js.Json.t>,
+    resources: Js.Dict.t<iI18nResource>,
   }
 
   type iI18n
