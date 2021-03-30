@@ -1,5 +1,26 @@
+import path from 'path';
+import _debounce from 'lodash/debounce'
+
+import reloader from 'electron-reloader';
+import osLocale from "os-locale";
+import { machineId } from 'node-machine-id'
+import { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage, nativeTheme, IpcMainEvent } from 'electron';
+import { autoUpdater } from 'electron-updater'
+import contextMenu from 'electron-context-menu'
+import unhandled from 'electron-unhandled';
+import debug from 'electron-debug';
+import electronLogger from 'electron-log'
+
+import initLogger from '../src/native/logger'
+import appStore from '../src/native/config'
+
+interface IPopupEventData {
+  championId: string;
+  position: string;
+}
+
 try {
-  require('electron-reloader')(module, {
+  reloader(module, {
     watchRenderer: false,
     ignore: [
       './src/**/*',
@@ -8,22 +29,10 @@ try {
 } catch (_) {
 }
 
-require('./src/native/logger');
+const isMac = process.platform === 'darwin';
+const isDev = process.env.IS_DEV_MODE === `true`;
 
-const path = require('path');
-const osLocale = require('os-locale');
-const { machineId } = require('node-machine-id');
-const { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage, nativeTheme } = require('electron');
-const { autoUpdater } = require('electron-updater');
-const { is, centerWindow } = require('electron-util');
-const contextMenu = require('electron-context-menu');
-
-const unhandled = require('electron-unhandled');
-const debug = require('electron-debug');
-const _debounce = require('lodash/debounce');
-
-const isDev = is.development;
-const config = require('./src/native/config');
+initLogger();
 
 unhandled({
   showDialog: false,
@@ -38,15 +47,15 @@ app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 app.allowRendererProcessReuse = false;
 
-const ignoreSystemScale = config.get(`ignoreSystemScale`);
+const ignoreSystemScale = appStore.get(`ignoreSystemScale`);
 if (ignoreSystemScale) {
-  app.commandLine.appendSwitch('high-dpi-support', 1);
-  app.commandLine.appendSwitch('force-device-scale-factor', 1);
+  app.commandLine.appendSwitch('high-dpi-support', `1`);
+  app.commandLine.appendSwitch('force-device-scale-factor', `1`);
 }
 
 // Prevent window from being garbage collected
-let mainWindow = null;
-let popupWindow = null;
+let mainWindow: BrowserWindow | null;
+let popupWindow: BrowserWindow | null;
 let tray = null;
 
 const webPreferences = {
@@ -60,6 +69,7 @@ const webPreferences = {
 const createMainWindow = async () => {
   const win = new BrowserWindow({
     title: app.name,
+    center: true,
     show: false,
     frame: false,
     height: 650,
@@ -75,8 +85,8 @@ const createMainWindow = async () => {
   win.on('closed', () => {
     // Dereference the window
     // For multiple windows store them in an array
-    mainWindow = undefined;
-    popupWindow = undefined;
+    mainWindow = null;
+    popupWindow = null;
   });
 
   await win.loadURL(
@@ -87,13 +97,13 @@ const createMainWindow = async () => {
 };
 
 const createPopupWindow = async () => {
-  const [mX, mY] = mainWindow.getPosition();
+  const [mX, mY] = mainWindow!.getPosition();
   const curDisplay = screen.getDisplayNearestPoint({
     x: mX,
     y: mY,
   });
 
-  const popupConfig = config.get(`popup`);
+  const popupConfig = appStore.get(`popup`);
   const popup = new BrowserWindow({
     show: false,
     frame: false,
@@ -116,7 +126,7 @@ const createPopupWindow = async () => {
   popup.on(`resize`, _debounce(() => persistPopUpBounds(popup), 1000));
 
   popup.on('closed', () => {
-    popupWindow = undefined;
+    popupWindow = null;
   });
 
   await popup.loadURL(
@@ -144,12 +154,12 @@ app.on('second-instance', () => {
 });
 
 app.on(`quit`, () => {
-  mainWindow = undefined;
-  popupWindow = undefined;
+  mainWindow = null;
+  popupWindow = null;
 });
 
 app.on('window-all-closed', () => {
-  if (!is.macos) {
+  if (!isMac) {
     app.quit();
   }
 });
@@ -160,22 +170,22 @@ app.on('activate', async () => {
   }
 });
 
-function persistPopUpBounds(w) {
+function persistPopUpBounds(w: BrowserWindow) {
   if (!w) {
     return;
   }
 
   const { x, y, width, height } = w.getBounds();
-  config.set(`popup.x`, x);
-  config.set(`popup.y`, y);
-  config.set(`popup.width`, width);
-  config.set(`popup.height`, height);
+  appStore.set(`popup.x`, x);
+  appStore.set(`popup.y`, y);
+  appStore.set(`popup.width`, width);
+  appStore.set(`popup.height`, height);
 }
 
-let lastChampion = null;
+let lastChampion = ``;
 
 function onShowPopup() {
-  return async (ev, data) => {
+  return async (_ev: IpcMainEvent, data: IPopupEventData) => {
     if (!data.championId || lastChampion === data.championId) {
       return;
     }
@@ -192,11 +202,11 @@ function onShowPopup() {
     popupWindow.focus();
 
     const task = setInterval(() => {
-      if (!popupWindow.isVisible()) {
+      if (!popupWindow!.isVisible()) {
         return;
       }
 
-      popupWindow.webContents.send(`for-popup`, {
+      popupWindow!.webContents.send(`for-popup`, {
         championId: data.championId,
         position: data.position,
       });
@@ -214,7 +224,7 @@ function registerMainListeners() {
 
   ipcMain.on(`hide-popup`, async () => {
     if (popupWindow) {
-      lastChampion = null;
+      lastChampion = ``;
       const isVisible = popupWindow.isVisible();
       if (isVisible) {
         popupWindow.hide();
@@ -238,17 +248,17 @@ function registerMainListeners() {
     popupWindow.setAlwaysOnTop(next);
     popupWindow.setSkipTaskbar(next);
 
-    config.set(`popup.alwaysOnTop`, next);
+    appStore.set(`popup.alwaysOnTop`, next);
   });
 
   ipcMain.on(`popup:reset-position`, () => {
-    const [mx, my] = mainWindow.getPosition();
+    const [mx, my] = mainWindow!.getPosition();
     const { bounds } = screen.getDisplayNearestPoint({ x: mx, y: my });
     const [x, y] = [bounds.width / 2, bounds.height / 2];
 
-    config.set(`popup.alwaysOnTop`, true);
-    config.set(`popup.x`, x);
-    config.set(`popup.y`, y);
+    appStore.set(`popup.alwaysOnTop`, true);
+    appStore.set(`popup.x`, x);
+    appStore.set(`popup.y`, y);
 
     if (!popupWindow) {
       return;
@@ -302,15 +312,15 @@ function makeTray() {
 }
 
 async function getMachineId() {
-  const userId = config.get(`userId`);
+  const userId = appStore.get(`userId`);
   if (userId) return userId;
 
   const id = await machineId();
-  config.set(`userId`, id);
+  appStore.set(`userId`, id);
   return id;
 }
 
-function isNetworkError(errorObject) {
+function isNetworkError(errorObject: Error) {
   return errorObject.message.includes(`net::ERR_`);
   // errorObject.message === 'net::ERR_INTERNET_DISCONNECTED' ||
   // errorObject.message === 'net::ERR_PROXY_CONNECTION_FAILED' ||
@@ -344,8 +354,8 @@ async function checkUpdates() {
 }
 
 function registerUpdater() {
-  autoUpdater.logger = require('electron-log');
-  autoUpdater.logger.transports.file.level = 'info';
+  electronLogger.transports.file.level = 'info'
+  autoUpdater.logger = electronLogger;
   autoUpdater.autoDownload = false;
 
   autoUpdater.on('checking-for-update', () => {
@@ -386,9 +396,9 @@ function registerUpdater() {
   Menu.setApplicationMenu(null);
 
   const locale = (await osLocale()) || `en-US`;
-  const sysLang = config.get(`appLang`);
+  const sysLang = appStore.get(`appLang`);
   if (!sysLang || ![`en-US`, `zh-CN`].includes(locale)) {
-    config.set(`appLang`, `en-US`);
+    appStore.set(`appLang`, `en-US`);
   }
   console.log(`locale: ${sysLang}, sys lang: ${sysLang}`);
 
@@ -397,11 +407,6 @@ function registerUpdater() {
 
   registerMainListeners();
   registerUpdater();
-
-  await centerWindow({
-    window: mainWindow,
-    animated: true,
-  });
 
   await makeTray();
   const userId = await getMachineId();

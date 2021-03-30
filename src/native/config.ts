@@ -1,6 +1,6 @@
-const Store = require('electron-store');
+import Store from 'electron-store';
 
-module.exports = new Store({
+const appStore = new Store({
   defaults: {
     userId: '',
     lolDir: '',
@@ -20,3 +20,5 @@ module.exports = new Store({
     },
   },
 });
+
+export default appStore
