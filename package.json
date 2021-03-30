@@ -14,7 +14,7 @@
     "email": "cangzan@gmail.com",
     "url": "https://github.com/cangzhang"
   },
-  "main": "app/main.ts",
+  "main": "dist/app/main.js",
   "scripts": {
     "postinstall": "cross-env electron-builder install-app-deps",
     "watch:main": "tsc -w",
