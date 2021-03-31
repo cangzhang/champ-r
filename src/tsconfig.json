@@ -1,16 +1,15 @@
 {
   "compilerOptions": {
-    "baseUrl": "..",
+    "baseUrl": "./",
     "outDir": "build/dist",
     "module": "esnext",
     "target": "esnext",
     "lib": ["es6", "dom", "esnext.asynciterable"],
     "sourceMap": true,
     "allowJs": true,
-    "allowSyntheticDefaultImports": "true",
+    "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "moduleResolution": "node",
-    "rootDir": "src",
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -19,16 +18,10 @@
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "src/*": ["./*"]
+    }
   },
-  "include": ["./**/*.tsx", "./**/*.ts"],
-  "exclude": [
-    "../node_modules",
-    "build",
-    "scripts",
-    "acceptance-tests",
-    "webpack",
-    "jest",
-    "src/setupTests.ts"
-  ]
+  "include": ["./**/*.tsx", "./**/*.ts", "*.tsx", "*.ts"]
 }

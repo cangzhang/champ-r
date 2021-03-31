@@ -2,12 +2,21 @@ import s from './style.module.scss';
 
 import _noop from 'lodash/noop';
 
-import React, { useRef } from 'react';
+import React, { useRef, FormEvent } from 'react';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Zap } from 'react-feather';
 
+import { IRuneItem } from "src/typings/commonTypes";
 import { MainStyleIds } from 'src/share/constants/runes';
+
+interface IProps {
+  isAramMode: boolean;
+  onMouseEnter: (perk: IRuneItem, el: HTMLDivElement | null, ev: FormEvent) => void;
+  onMouseLeave: () => any;
+  perk: IRuneItem;
+  onApply: () => any;
+}
 
 export default function PerkShowcase({
   perk,
@@ -15,7 +24,7 @@ export default function PerkShowcase({
   onApply,
   onMouseEnter = _noop,
   onMouseLeave = _noop,
-}) {
+}: IProps) {
   const [t] = useTranslation();
   const { primaryStyleId, subStyleId, selectedPerkIds } = perk;
   const pId = selectedPerkIds.find((i) => MainStyleIds[primaryStyleId].includes(+i));

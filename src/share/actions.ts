@@ -24,7 +24,7 @@ export const Actions = {
   CLEAR_FETCH: `IMPORT.CLEAR_FETCH`,
 };
 
-export const setLolVersion = (ver) => ({
+export const setLolVersion = (ver: string) => ({
   type: Actions.UPDATE_LOL_VERSION,
   payload: ver,
 });

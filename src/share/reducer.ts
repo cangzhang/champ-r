@@ -2,10 +2,11 @@ import produce from 'immer';
 
 import config from 'src/native/config';
 import { Actions } from 'src/share/actions';
+import { IProcessChampionItem, IState } from 'src/typings/commonTypes';
 
 export * from 'src/share/actions';
 
-export const initialState = {
+export const initialState: IState = {
   fetchingSources: [],
   fetchedSources: [],
   fetching: [],
@@ -22,7 +23,7 @@ export const initialState = {
   dataSourceVersions: {},
 };
 
-export const init = (payload) => payload;
+export const init = (payload: IState) => payload;
 
 export default produce((draft, action) => {
   const { type, payload } = action;
@@ -39,7 +40,7 @@ export default produce((draft, action) => {
     }
 
     case Actions.ADD_FETCHED: {
-      draft.fetching = draft.fetching.filter((i) => i.$identity !== payload.$identity);
+      draft.fetching = draft.fetching.filter((i: IProcessChampionItem) => i.$identity !== payload.$identity);
       draft.fetched.push(payload);
       break;
     }
@@ -56,7 +57,7 @@ export default produce((draft, action) => {
     }
 
     case Actions.FETCH_SOURCE_DONE: {
-      draft.fetchingSources = draft.fetchingSources.filter((i) => i !== payload);
+      draft.fetchingSources = draft.fetchingSources.filter((i: string) => i !== payload);
       draft.fetchedSources.push(payload);
       break;
     }
@@ -98,7 +99,7 @@ export default produce((draft, action) => {
         draft.importPage.success.push(source);
       }
       if (draft.importPage.fail.includes(source)) {
-        draft.importPage.fail = draft.importPage.fail.filter((i) => i !== source);
+        draft.importPage.fail = draft.importPage.fail.filter((i: string) => i !== source);
       }
       break;
     }
@@ -109,7 +110,7 @@ export default produce((draft, action) => {
         draft.importPage.fail.push(source);
       }
       if (draft.importPage.success.includes(source)) {
-        draft.importPage.success = draft.importPage.success.filter((i) => i !== source);
+        draft.importPage.success = draft.importPage.success.filter((i: string) => i !== source);
       }
       break;
     }

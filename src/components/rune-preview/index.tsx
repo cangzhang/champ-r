@@ -5,8 +5,19 @@ import ReactDOM from 'react-dom';
 import cn from 'classnames';
 
 import { MainRuneMap, SubRuneMap, FragmentMap } from 'src/share/constants/runes';
+import { IRuneItem, ICSSProperties } from "src/typings/commonTypes";
 
-export default function RunePreview({ perk = {}, coordinate = {} }) {
+interface ICoordinate extends ClientRect {
+  x: number;
+  y: number;
+}
+
+interface IProps {
+  perk: IRuneItem;
+  coordinate: ICoordinate;
+}
+
+export default function RunePreview({ perk, coordinate }: IProps) {
   const { primaryStyleId = 0, subStyleId = 0, selectedPerkIds } = perk;
   const mainIds = MainRuneMap[primaryStyleId];
   const subIds = SubRuneMap[subStyleId];
@@ -15,7 +26,7 @@ export default function RunePreview({ perk = {}, coordinate = {} }) {
     const selectedFIds = selectedPerkIds.slice(-3);
     const showAllRunes = window.innerWidth >= 380;
 
-    return (ids, idx) => {
+    return (ids: number[], idx: number) => {
       return (
         <div className={s.row} key={idx}>
           {ids.map((id) => {
@@ -47,12 +58,14 @@ export default function RunePreview({ perk = {}, coordinate = {} }) {
     return null;
   }
 
+  const style: ICSSProperties = {
+    '--left': `${left}px`,
+    '--top': `${top}px`,
+  }
+
   return ReactDOM.createPortal(
     <div
-      style={{
-        '--left': `${left}px`,
-        '--top': `${top}px`,
-      }}
+      style={style}
       className={cn(s.main, up && s.up)}>
       <span className={cn(s.bot, s.triangle)} />
       <span className={cn(s.top, s.triangle)} />
@@ -60,6 +73,6 @@ export default function RunePreview({ perk = {}, coordinate = {} }) {
       <div className={s.col}>{subIds.map(renderRow())}</div>
       <div className={cn(s.col, s.fragment)}>{FragmentMap.map(renderRow(true))}</div>
     </div>,
-    document.querySelector(`#popup`),
+    document.querySelector(`#popup`) as HTMLDivElement,
   );
 }

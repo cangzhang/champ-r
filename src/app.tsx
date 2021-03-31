@@ -9,7 +9,8 @@ import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 
 import AppContext from 'src/share/context';
-import appReducer, { initialState, init, setLolVersion, updateItemMap } from 'src/share/reducer';
+import appReducer, { initialState, init } from 'src/share/reducer';
+import { setLolVersion, updateItemMap } from 'src/share/actions'
 import config from 'src/native/config';
 import { getItemList, getLolVer } from 'src/service/data-source/lol-qq';
 import LCUService from 'src/service/lcu';

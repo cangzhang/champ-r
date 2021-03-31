@@ -28,9 +28,11 @@
     "baseUrl": "."
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/**/*.tsx",
+    "src/**/*.ts",
   ],
   "include": [
     "app/**/*.ts"
-  ]
+  ],
 }

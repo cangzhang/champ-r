@@ -1,7 +1,9 @@
-const _pick = require('lodash/pick');
-const fs = require('fs').promises;
-const fse = require('fs-extra');
-const config = require('../native/config');
+import _pick from 'lodash/pick';
+import fse from 'fs-extra';
+import { promises as fs } from 'fs';
+
+import config from 'src/native/config';
+import { IChampionBuild } from 'src/typings/commonTypes'
 
 const ItemSetProps = [
   'title',
@@ -17,7 +19,7 @@ const ItemSetProps = [
 ];
 
 export const makeBuildFile = (
-  { fileName, title, championId, champion, blocks, position = `` },
+  { fileName, title, championId, champion, blocks, position = `` }: IChampionBuild,
   aramOnly = false,
 ) => ({
   fileName,
@@ -38,7 +40,7 @@ export const makeBuildFile = (
   blocks: blocks.filter(Boolean),
 });
 
-export const saveToFile = async (desDir, data, stripProps = true) => {
+export const saveToFile = async (desDir: string, data: IChampionBuild, stripProps = true) => {
   try {
     const appendGameToDir = config.get(`appendGameToDir`);
     const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${
@@ -56,7 +58,7 @@ export const saveToFile = async (desDir, data, stripProps = true) => {
   }
 };
 
-export const removeFolderContent = async (dir) => {
+export const removeFolderContent = async (dir: string) => {
   try {
     await fse.emptyDir(dir);
     return true;
@@ -65,12 +67,12 @@ export const removeFolderContent = async (dir) => {
   }
 };
 
-export const getLatestLogFile = async (dir) => {
+export const getLatestLogFile = async (dir: string) => {
   try {
     const files = await fs.readdir(dir);
     const latest = files
-      .filter((f) => f.includes(`renderer.log`))
-      .sort((a, b) => a - b)
+      .filter((f: string) => f.includes(`renderer.log`))
+      .sort((a: string, b: string) => a.localeCompare(b))
       .pop();
     const info = await fs.stat(`${dir}/${latest}`);
     return info;
@@ -79,22 +81,22 @@ export const getLatestLogFile = async (dir) => {
   }
 };
 
-export const getLcuToken = async (dirPath) => {
+export const getLcuToken = async (dirPath: string) => {
   const appendGameToDir = config.get(`appendGameToDir`);
   const dir = `${appendGameToDir ? `${dirPath}/Game` : dirPath}/Logs/LeagueClient Logs`;
 
   try {
     const files = await fs.readdir(dir);
     const latest = files
-      .filter((f) => f.includes(`renderer.log`))
-      .sort((a, b) => a - b)
+      .filter((f: string) => f.includes(`renderer.log`))
+      .sort((a: string, b: string) => a.localeCompare(b))
       .pop();
 
     const content = await fs.readFile(`${dir}/${latest}`, 'utf8');
 
-    const url = content.match(/https(.*)\/index\.html/)[1];
-    const token = url.match(/riot:(.*)@/)[1];
-    const port = url.match(/:(\d+)/)[1];
+    const url = content.match(/https(.*)\/index\.html/)?.[1] ?? ``;
+    const token = url.match(/riot:(.*)@/)?.[1] ?? null;
+    const port = url.match(/:(\d+)/)?.[1] ?? null;
     const urlWithAuth = `https${url}`;
 
     return [token, port, urlWithAuth];
