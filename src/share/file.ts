@@ -77,7 +77,7 @@ export const getLatestLogFile = async (dir: string) => {
     const info = await fs.stat(`${dir}/${latest}`);
     return info;
   } catch (err) {
-    return null;
+    return;
   }
 };
 

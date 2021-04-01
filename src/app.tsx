@@ -24,7 +24,7 @@ import Settings from 'src/modules/settings';
 const engine = new Styletron();
 const GameTypes = [`pick`];
 
-const findUserChampion = (cellId, actions = []) => {
+const findUserChampion = (cellId: number, actions:{ actorCellId: number; type: string; championId: number }[][] = []) => {
   let id = 0;
   if (!actions || !actions.length) return id;
 
@@ -44,18 +44,18 @@ const App = () => {
   const [store, dispatch] = useReducer(appReducer, initialState, init);
   const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
 
-  const checkTask = useRef(null);
-  const lcuInstance = useRef({});
+  const checkTask = useRef<number>();
+  const lcuInstance = useRef<LCUService>();
 
   useEffect(() => {
-    checkTask.current = setInterval(async () => {
+    checkTask.current = window.setInterval(async () => {
       try {
         const lolDir = config.get(`lolDir`);
         if (!lolDir) {
           throw new Error(`lol folder not selected.`);
         }
 
-        if (!lcuInstance.current.getAuthToken) {
+        if (!lcuInstance.current?.getAuthToken) {
           lcuInstance.current = new LCUService(lolDir);
         }
         const lcuIns = lcuInstance.current;
@@ -76,7 +76,7 @@ const App = () => {
 
         const isRandomMode = !actions.length && myTeam.length > 0 && mChampionId > 0;
         const isVoteMode =
-          mChampionId > 0 && myTeam.length > 0 && myTeam.every((i) => i.championId === mChampionId);
+          mChampionId > 0 && myTeam.length > 0 && myTeam.every((i: { championId: number }) => i.championId === mChampionId);
 
         championId = findUserChampion(cellId, actions);
         if (!process.env.IS_DEV) {
@@ -107,6 +107,7 @@ const App = () => {
 
         console.error(_err.message);
         ipcRenderer.send(`hide-popup`);
+        return false;
       }
     }, 2000);
 
@@ -121,9 +122,7 @@ const App = () => {
       dispatch(setLolVersion(v));
       config.set(`lolVer`, v);
 
-      const appLang = config.get('appLang');
-      const language = appLang.replace('-', '_');
-      const data = await getItemList(v, language);
+      const data = await getItemList();
 
       dispatch(
         updateItemMap({

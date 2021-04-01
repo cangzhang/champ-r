@@ -34,12 +34,12 @@ export default function Home() {
   const { store, dispatch } = useContext(AppContext);
   const history = useHistory();
   const { t } = useTranslation();
-  const versionTasker = useRef(null);
+  const versionTasker = useRef<number>();
 
-  const [selectedSources, toggleSource] = useState(config.get(`selectedSources`));
+  const [selectedSources, toggleSource] = useState<string[]>(config.get(`selectedSources`));
   const [lolDir, setLolDir] = useState(``);
 
-  const toggleKeepOldItems = (ev) => {
+  const toggleKeepOldItems = (ev: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = ev.target;
     dispatch(updateConfig('keepOld', checked));
   };
@@ -60,7 +60,7 @@ export default function Home() {
     setLolDir('');
   };
 
-  const onCheck = (value) => (ev) => {
+  const onCheck = (value: string) => (ev: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = ev.target;
     let res;
     if (checked) {
@@ -101,7 +101,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchVersion().then(() => {
-      versionTasker.current = setInterval(() => {
+      versionTasker.current = window.setInterval(() => {
         fetchVersion();
       }, 10 * 60 * 1000);
     });
@@ -134,7 +134,8 @@ export default function Home() {
       if (!log && !glog) {
         return;
       }
-      const shouldAppendGameToDir = glog?.mtimeMs > (log?.mtimeMs || 0);
+
+      const shouldAppendGameToDir = glog?.mtimeMs ?? 0 > (log?.mtimeMs ?? 0);
       config.set(`appendGameToDir`, shouldAppendGameToDir);
       console.log(`shouldAppendGameToDir`, shouldAppendGameToDir);
     });
@@ -288,7 +289,7 @@ export default function Home() {
         </Button>
 
         <Checkbox
-          className={s.keepOld}
+          // className={s.keepOld}
           labelPlacement={LABEL_PLACEMENT.right}
           checkmarkType={STYLE_TYPE.toggle_round}
           checked={store.keepOld}

@@ -29,6 +29,7 @@ import MbImporter from 'src/service/data-source/murderbridge';
 import config from 'src/native/config';
 import AppContext from 'src/share/context';
 import WaitingList from 'src/components/waiting-list';
+import SourceProto from 'src/service/data-source/source-proto';
 
 export default function Import() {
   const history = useHistory();
@@ -40,13 +41,18 @@ export default function Import() {
 
   const { store, dispatch } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
-  const [cancelled, setCancel] = useState([]);
-  const [opggResult, setOpggResult] = useState({
+  const [cancelled, setCancel] = useState<string[]>([]);
+  const [opggResult, setOpggResult] = useState<{
+    fulfilled: any[];
+    rejected: any[];
+  }>({
     fulfilled: [],
     rejected: [],
   });
 
-  const workers = useRef({});
+  const workers = useRef<{
+    [key: string]: SourceProto;
+  }>({});
 
   const importFromSources = useCallback(async () => {
     const { selectedSources, keepOld, fetched } = store;
@@ -61,7 +67,7 @@ export default function Import() {
     if (!keepOld) {
       cleanFolderTask = () =>
         removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
-          toaster.positive(t(`removed outdated items`), null);
+          toaster.positive(t(`removed outdated items`), {});
         });
     }
 
@@ -78,16 +84,16 @@ export default function Import() {
         instance
           .import()
           .then(() => {
-            toaster.positive(`[${Sources.Lolqq.toUpperCase()}] ${t(`completed`)}`, null);
+            toaster.positive(`[${Sources.Lolqq.toUpperCase()}] ${t(`completed`)}`, {});
             dispatch(importBuildSucceed(Sources.Lolqq));
           })
           .catch((err) => {
             if (err.message.includes(`Error: Cancel`)) {
               setCancel(cancelled.concat(Sources.Lolqq));
-              toaster.warning(`${t(`cancelled`)}: ${Sources.Lolqq}`, null);
+              toaster.warning(`${t(`cancelled`)}: ${Sources.Lolqq}`, {});
             } else {
               dispatch(importBuildFailed(Sources.Lolqq));
-              toaster.negative(`${t(`import failed`)}: ${Sources.Lolqq}`, null);
+              toaster.negative(`${t(`import failed`)}: ${Sources.Lolqq}`, {});
               console.error(err);
             }
           });
@@ -97,7 +103,7 @@ export default function Import() {
       const instance = new MbImporter(lolDir, itemMap, dispatch);
       mbTask = () =>
         instance.importFromCDN().then(() => {
-          toaster.positive(`[${Sources.MurderBridge.toUpperCase()}] ${t(`completed`)}`, null);
+          toaster.positive(`[${Sources.MurderBridge.toUpperCase()}] ${t(`completed`)}`, {});
           dispatch(importBuildSucceed(Sources.MurderBridge));
         });
     }
@@ -112,7 +118,7 @@ export default function Import() {
           .then((result) => {
             const { fulfilled, rejected } = result;
             if (!rejected.length) {
-              toaster.positive(`[${Sources.Opgg.toUpperCase()}] ${t(`completed`)}`, null);
+              toaster.positive(`[${Sources.Opgg.toUpperCase()}] ${t(`completed`)}`, {});
               dispatch(importBuildSucceed(Sources.Opgg));
             }
             setOpggResult({
@@ -123,10 +129,10 @@ export default function Import() {
           .catch((err) => {
             if (err.message.includes(`Error: Cancel`)) {
               setCancel(cancelled.concat(Sources.Opgg));
-              toaster.warning(`${t(`cancelled`)}: ${Sources.Opgg}`, null);
+              toaster.warning(`${t(`cancelled`)}: ${Sources.Opgg}`, {});
             } else {
               dispatch(importBuildFailed(Sources.Opgg));
-              toaster.negative(`${t(`import failed`)}: ${Sources.Opgg}`, null);
+              toaster.negative(`${t(`import failed`)}: ${Sources.Opgg}`, {});
               console.error(err);
             }
           });
@@ -155,6 +161,7 @@ export default function Import() {
 
   const importRejected = async () => {
     try {
+      // @ts-ignore TODO
       const { fulfilled, rejected } = await workers.current[Sources.Opgg].importSpecified(
         opggResult.rejected,
       );
@@ -165,7 +172,7 @@ export default function Import() {
       });
 
       if (!rejected.length) {
-        toaster.positive(`[${Sources.Opgg.toUpperCase()}] ${t(`fulfilled`)}`, null);
+        toaster.positive(`[${Sources.Opgg.toUpperCase()}] ${t(`fulfilled`)}`, {});
         dispatch(importBuildSucceed(Sources.Opgg));
       }
     } catch (err) {
@@ -179,7 +186,8 @@ export default function Import() {
     if (loading) {
       return (
         <>
-          <WaitingList />
+          <WaitingList/>
+          {/* @ts-ignore */}
           <Button className={s.back} onClick={stop}>
             {t(`stop`)}
           </Button>
@@ -190,10 +198,12 @@ export default function Import() {
     if (userCancelled) {
       return (
         <>
-          <PauseCircle size={128} color={theme.colors.contentWarning} />
+          <PauseCircle size={128} color={theme.colors.contentWarning}/>
           <Button
+            // @ts-ignore
             className={s.back}
-            startEnhancer={<RefreshCw title={'Restart'} />}
+            /* @ts-ignore */
+            startEnhancer={<RefreshCw title={'Restart'}/>}
             onClick={restart}
             overrides={{
               BaseButton: {
@@ -207,8 +217,10 @@ export default function Import() {
             {t(`restart`)}
           </Button>
           <Button
+            // @ts-ignore
             className={s.back}
-            startEnhancer={<XCircle title={'Homepage'} />}
+            // @ts-ignore
+            startEnhancer={<XCircle title={'Homepage'}/>}
             onClick={backToHome}
             overrides={{
               BaseButton: {
@@ -228,9 +240,10 @@ export default function Import() {
     const opggFailed = opggResult.rejected.length > 0;
     const failed = store.importPage.fail.length > 0;
 
+    // @ts-ignore
     return (
       <>
-        {!failed && !opggFailed && <CheckCircle size={128} color={theme.colors.contentPositive} />}
+        {!failed && !opggFailed && <CheckCircle size={128} color={theme.colors.contentPositive}/>}
         {failed && (
           <div className={s.failed}>
             {t(`rejected`)}: {store.importPage.fail.join(`, `)}
@@ -253,7 +266,8 @@ export default function Import() {
 
             <Button
               shape={SHAPE.pill}
-              startEnhancer={<RefreshCcw title={'Retry'} />}
+              // @ts-ignore
+              startEnhancer={<RefreshCcw title={'Retry'}/>}
               overrides={{
                 BaseButton: {
                   style: ({ $theme }) => {
@@ -268,7 +282,8 @@ export default function Import() {
             </Button>
           </div>
         )}
-        <Button className={s.back} onClick={backToHome} startEnhancer={<Home title={`Home`} />}>
+        {/* @ts-ignore */}
+        <Button className={s.back} onClick={backToHome} startEnhancer={<Home title={`Home`}/>}>
           {t(`back to home`)}
         </Button>
       </>
@@ -288,7 +303,7 @@ export default function Import() {
   return (
     <div className={cn(s.import, loading && s.ing)}>
       {renderStatus()}
-      <ToasterContainer autoHideDuration={1500} placement={PLACEMENT.bottom} />
+      <ToasterContainer autoHideDuration={1500} placement={PLACEMENT.bottom}/>
     </div>
   );
 }
