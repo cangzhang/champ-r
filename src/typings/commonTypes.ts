@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 export interface IRuneItem {
   alias: string;
@@ -59,4 +59,26 @@ export interface IChampionBuild {
   champion: string;
   position: string;
   blocks: IBuildBlock[];
+}
+
+export interface IChampionCdnDataItem {
+  index: number;
+  id: string;
+  version: string;
+  officialVersion: string;
+  timestamp: number;
+  alias: string;
+  name: string;
+  position: string;
+  skills: string[];
+  spells: string[];
+  itemBuilds: IChampionBuild[];
+  runes: IRuneItem[];
+}
+
+export interface IChampionInfo {
+  key: string;
+  alias: string;
+  version: string;
+  name: string;
 }

@@ -1,13 +1,15 @@
 import _noop from 'lodash/noop';
-import { CancelToken } from 'axios';
+import axios from 'axios';
 import http from 'src/service/http';
 
+type IVoidFunc = () => void
+
 export default class SourceProto {
-  cancelHandlers = {};
+  cancelHandlers: { [key: string]: IVoidFunc } = {};
 
   import = _noop;
 
-  setCancelHook = (ns) => (cancel) => {
+  setCancelHook = (ns: string) => (cancel: IVoidFunc) => {
     this.cancelHandlers[ns] = cancel;
   };
 
@@ -21,7 +23,7 @@ export default class SourceProto {
       const data = await http.get(
         'https://game.gtimg.cn/images/lol/act/img/js/heroList/hero_list.js',
         {
-          cancelToken: new CancelToken((c) => {
+          cancelToken: new axios.CancelToken((c) => {
             this.setCancelHook(`fetch-champion-list`)(c);
           }),
         },
@@ -32,7 +34,7 @@ export default class SourceProto {
     }
   };
 
-  static getLatestVersionFromCdn = async (url) => {
+  static getLatestVersionFromCdn = async (url: string) => {
     try {
       const data = await http.get(`${url}?t=${Date.now()}`);
       return data[`dist-tags`].latest;
@@ -42,7 +44,7 @@ export default class SourceProto {
     }
   };
 
-  static getPkgInfo = async (npmUrl, cdnUrl) => {
+  static getPkgInfo = async (npmUrl: string, cdnUrl: string) => {
     try {
       const version = await SourceProto.getLatestVersionFromCdn(npmUrl);
       const data = await http.get(`${cdnUrl}@${version}/package.json?${Date.now()}`);

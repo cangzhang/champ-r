@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 axios.interceptors.response.use(
   (response) => {
@@ -13,4 +13,4 @@ axios.interceptors.response.use(
   },
 );
 
-module.exports = axios;
+export default axios;

@@ -1,13 +1,8 @@
-export const getChampionInfo = (id, championMap) => {
-  if (!championMap) return {};
+import { IChampionInfo } from 'src/typings/commonTypes'
 
-  const champion = Object.values(championMap).find((i) => i.key * 1 === id * 1);
-  return champion || {};
-};
-
-export const makeChampMap = (list) => {
+export const makeChampMap = (list: { [key: string]: IChampionInfo }) => {
   return Object.values(list).reduce((result, cur) => {
     result[cur.key] = cur;
     return result;
-  }, {});
+  }, {} as { [key: string]: IChampionInfo });
 };
