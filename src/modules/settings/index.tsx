@@ -4,7 +4,7 @@ import s from './style.module.scss';
 import { ipcRenderer } from 'electron';
 
 import _get from 'lodash/get';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, FormEvent } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -14,7 +14,12 @@ import { Checkbox, STYLE_TYPE } from 'baseui/checkbox';
 
 import config from 'src/native/config';
 
-const LangList = [
+interface ILangItem {
+  label: string;
+  value: string;
+}
+
+const LangList: ILangItem[] = [
   {
     label: 'English (US)',
     value: 'en-US',
@@ -24,18 +29,18 @@ const LangList = [
     value: 'zh-CN',
   },
 ];
-const getLangItem = (value) => LangList.find((i) => i.value === value) || {};
+const getLangItem = (value: string) => LangList.find((i) => i.value === value);
 
 export default function Settings() {
   const [t, i18n] = useTranslation();
   const history = useHistory();
   const sysLang = config.get(`appLang`);
-  const [values, setLangValues] = useState([getLangItem(sysLang)]);
+  const [values, setLangValues] = useState<ILangItem[]>([getLangItem(sysLang) ?? LangList[0]]);
   const [ignoreSystemScale, setIgnoreSystemScale] = useState(config.get(`ignoreSystemScale`));
 
   const recorder = useRef(false);
 
-  const onSelectLang = (param) => {
+  const onSelectLang = (param: any) => {
     setLangValues(param.value);
   };
 
@@ -43,7 +48,7 @@ export default function Settings() {
     ipcRenderer.send(`restart-app`);
   };
 
-  const onIgnoreScale = (e) => {
+  const onIgnoreScale = (e: FormEvent<HTMLInputElement>) => {
     setIgnoreSystemScale(e.currentTarget.checked);
     config.set(`ignoreSystemScale`, e.currentTarget.checked);
     ipcRenderer.send(`popup:reset-position`);
