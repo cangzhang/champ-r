@@ -2466,6 +2466,13 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
+"@types/cheerio@^0.22.28":
+  version "0.22.28"
+  resolved "https://registry.npm.taobao.org/@types/cheerio/download/@types/cheerio-0.22.28.tgz?cache=0&sync_timestamp=1616205602840&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fcheerio%2Fdownload%2F%40types%2Fcheerio-0.22.28.tgz#90808aabb44fec40fa2950f4c72351e3e4eb065b"
+  integrity sha1-kICKq7RP7ED6KVD0xyNR4+TrBls=
+  dependencies:
+    "@types/node" "*"
+
 "@types/classnames@^2.2.11":
   version "2.2.11"
   resolved "https://registry.npm.taobao.org/@types/classnames/download/@types/classnames-2.2.11.tgz#2521cc86f69d15c5b90664e4829d84566052c1cf"
@@ -2576,6 +2583,13 @@
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/@types/q/-/q-1.5.2.tgz#690a1475b84f2a884fd07cd797c00f5f31356ea8"
   integrity sha512-ce5d3q03Ex0sy4R14722Rmt6MT07Ua+k4FwDfdcToYJcMKNtRVQvJ6JCAPdAmAnbRb6CsX6aYb9m96NGod9uTw==
+
+"@types/react-custom-scrollbars@^4.0.7":
+  version "4.0.7"
+  resolved "https://registry.npm.taobao.org/@types/react-custom-scrollbars/download/@types/react-custom-scrollbars-4.0.7.tgz#b1312ec749fcf4a01fee7466508501e072ede7ea"
+  integrity sha1-sTEux0n89KAf7nRmUIUB4HLt5+o=
+  dependencies:
+    "@types/react" "*"
 
 "@types/react-dom@*":
   version "16.9.5"

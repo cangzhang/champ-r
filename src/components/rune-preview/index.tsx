@@ -5,20 +5,19 @@ import ReactDOM from 'react-dom';
 import cn from 'classnames';
 
 import { MainRuneMap, SubRuneMap, FragmentMap } from 'src/share/constants/runes';
-import { IRuneItem, ICSSProperties } from "src/typings/commonTypes";
-
-interface ICoordinate extends ClientRect {
-  x: number;
-  y: number;
-}
+import { IRuneItem, ICSSProperties, ICoordinate } from 'src/typings/commonTypes';
 
 interface IProps {
-  perk: IRuneItem;
+  perk: IRuneItem | null;
   coordinate: ICoordinate;
 }
 
 export default function RunePreview({ perk, coordinate }: IProps) {
-  const { primaryStyleId = 0, subStyleId = 0, selectedPerkIds } = perk;
+  const { primaryStyleId = 0, subStyleId = 0, selectedPerkIds } = perk ?? {
+    primaryStyleId: 0,
+    subStyleId: 0,
+    selectedPerkIds: [],
+  };
   const mainIds = MainRuneMap[primaryStyleId];
   const subIds = SubRuneMap[subStyleId];
 
@@ -30,7 +29,7 @@ export default function RunePreview({ perk, coordinate }: IProps) {
       return (
         <div className={s.row} key={idx}>
           {ids.map((id) => {
-            let selected = selectedPerkIds.includes(id);
+            let selected = (selectedPerkIds as number[]).includes(id);
             if (isFragment) {
               const selectedFId = selectedFIds[idx];
               selected = ids.includes(selectedFId) && id === selectedFId;
@@ -41,7 +40,7 @@ export default function RunePreview({ perk, coordinate }: IProps) {
             }
 
             return (
-              <div key={id} className={cn(s.runeImg, s[`rune-${id}`], selected && s.selected)} />
+              <div key={id} className={cn(s.runeImg, s[`rune-${id}`], selected && s.selected)}/>
             );
           })}
         </div>
@@ -67,8 +66,8 @@ export default function RunePreview({ perk, coordinate }: IProps) {
     <div
       style={style}
       className={cn(s.main, up && s.up)}>
-      <span className={cn(s.bot, s.triangle)} />
-      <span className={cn(s.top, s.triangle)} />
+      <span className={cn(s.bot, s.triangle)}/>
+      <span className={cn(s.top, s.triangle)}/>
       <div className={s.col}>{mainIds.map(renderRow())}</div>
       <div className={s.col}>{subIds.map(renderRow())}</div>
       <div className={cn(s.col, s.fragment)}>{FragmentMap.map(renderRow(true))}</div>

@@ -17,7 +17,7 @@ import { Button } from 'baseui/button';
 import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 
 import config from 'src/native/config';
-import { QQChampionAvatarPrefix } from 'src/service/qq';
+import { QQChampionAvatarPrefix } from 'src/share/constants/sources';
 import LCUService from 'src/service/lcu';
 import LolQQ from 'src/service/data-source/lol-qq';
 import Opgg from 'src/service/data-source/op-gg';
@@ -30,6 +30,7 @@ import Loading from 'src/components/loading-spinner';
 import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
 
 import { makeChampMap } from './utils';
+import { IChampionInfo, IRuneItem, ICoordinate } from 'src/typings/commonTypes';
 
 const engine = new Styletron();
 const SourceList = [
@@ -60,7 +61,7 @@ const Pin = styled(`button`, () => ({
   padding: `unset`,
   outline: `unset`,
 }));
-const PinBtn = styled(PinIcon, (props) => ({
+const PinBtn = styled(PinIcon, (props: { $pinned: boolean; }) => ({
   transition: `all linear 0.2s`,
   transform: props.$pinned ? `rotate(-45deg)` : `unset`,
   fill: props.$pinned ? `#276EF1` : `currentColor`,
@@ -71,19 +72,24 @@ const PinBtn = styled(PinIcon, (props) => ({
 export default function Popup() {
   const lolDir = config.get(`lolDir`);
   const [t] = useTranslation();
-  const lcu = useRef({});
+  const lcu = useRef<LCUService>();
 
   const [activeTab, setActiveTab] = useState(config.get(`perkTab`) || Sources.Lolqq);
-  const [perkList, setPerkList] = useImmer([[], [], []]);
-  const [championMap, setChampionMap] = useState(null);
-  const [championId, setChampionId] = useState('');
-  const [championDetail, setChampionDetail] = useState(null);
-  const [curPerk, setCurPerk] = useState({});
-  const [coordinate, setCoordinate] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [perkList, setPerkList] = useImmer<IRuneItem[][]>([[], [], []]);
+  const [championMap, setChampionMap] = useState<{ [key: string]: IChampionInfo }>();
+  const [championId, setChampionId] = useState<number | string>('');
+  const [championDetail, setChampionDetail] = useState<IChampionInfo | null>(null);
+  const [curPerk, setCurPerk] = useState<IRuneItem | null>(null);
+  const [coordinate, setCoordinate] = useState<ICoordinate>({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
   const [showTips, toggleTips] = useState(true);
   const instances = useRef({
     opgg: new Opgg(),
-    mb: new MurderBridge(),
+    mb: new MurderBridge(``, () => null),
     qq: new LolQQ(),
   });
   const [pinned, togglePinned] = useState(remote.getCurrentWindow().isAlwaysOnTop());
@@ -135,7 +141,7 @@ export default function Popup() {
     config.set(`perkTab`, activeTab);
   }, [activeTab]);
 
-  const apply = async (perk) => {
+  const apply = async (perk: IRuneItem) => {
     try {
       lcu.current = new LCUService(lolDir);
       await lcu.current.getAuthToken();
@@ -155,7 +161,7 @@ export default function Popup() {
     }
   };
 
-  const showPreview = (perk, el) => {
+  const showPreview = (perk: IRuneItem, el: HTMLDivElement) => {
     setCurPerk(perk);
     if (!el) return;
 
@@ -164,10 +170,10 @@ export default function Popup() {
   };
 
   const hidePreview = () => {
-    setCurPerk({});
+    setCurPerk(null);
   };
 
-  const onSelectSource = (_, idx) => {
+  const onSelectSource = (_: unknown, idx: number) => {
     setActiveTab(SourceList[idx].value);
   };
 
@@ -176,11 +182,11 @@ export default function Popup() {
     togglePinned((p) => !p);
   };
 
-  const renderList = (list = [], isAramMode = false) => {
+  const renderList = (list: IRuneItem[] = [], isAramMode = false) => {
     const shouldShowList = list.length && championDetail && list[0].alias === championDetail.id;
 
     if (!shouldShowList) {
-      return <Loading className={s.listLoading} />;
+      return <Loading className={s.listLoading}/>;
     }
 
     return (
@@ -200,14 +206,14 @@ export default function Popup() {
           />
         ))}
 
-        <RunePreview perk={curPerk} coordinate={coordinate} />
+        <RunePreview perk={curPerk} coordinate={coordinate}/>
       </Scrollbars>
     );
   };
 
   const renderContent = () => {
     if (!championMap || !perkList[0].length) {
-      return <Loading className={s.loading} />;
+      return <Loading className={s.loading}/>;
     }
 
     const tabIdx = SourceList.findIndex((i) => i.value === activeTab);
@@ -217,7 +223,7 @@ export default function Popup() {
           <div className={s.drag}>
             <StatefulPopover content={t(`pin/unpin`)} triggerType={TRIGGER_TYPE.hover}>
               <Pin onClick={toggleAlwaysOnTop}>
-                <PinBtn $pinned={pinned} />
+                <PinBtn $pinned={pinned}/>
               </Pin>
             </StatefulPopover>
 

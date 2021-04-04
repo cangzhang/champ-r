@@ -6,8 +6,8 @@ import { Loader } from 'react-feather';
 
 interface IProps {
   className: string;
-  size: number;
-  color: string;
+  size?: number;
+  color?: string;
 }
 
 // colors: #1E54B7, #3D68EC

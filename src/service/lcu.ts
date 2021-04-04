@@ -1,13 +1,29 @@
 import http from './http';
 import { getLcuToken } from 'src/share/file';
+import { ILcuUserAction } from 'src/typings/commonTypes'
 
 export default class LCUService {
-  constructor(lolDir) {
-    this.lolDir = lolDir;
-    this.active = false;
+  public active = false;
+  public url: string | null = null;
+  public token: string | null = null;
+  public port: number | string | null = null;
+  public urls: {
+    authToken: string;
+    curSession: string;
+    curPerk: string;
+    perks: string;
+  } = {
+    authToken: ``,
+    curSession: ``,
+    curPerk: ``,
+    perks: ``,
+  };
+  public auth = {};
+
+  constructor(public lolDir: string) {
   }
 
-  setVars = (token, port, url) => {
+  setVars = (token: string | null, port: number | string | null, url: string | null) => {
     this.active = !!token;
     // if (!token) {
     //   console.info(`League client not active!`)
@@ -50,7 +66,11 @@ export default class LCUService {
   };
 
   getCurrentSession = async () => {
-    const res = await http.get(this.urls.curSession, {
+    const res: {
+      actions: ILcuUserAction[][];
+      myTeam: { championId: number; summonerId: number; cellId: number; }[];
+      localPlayerCellId: number;
+    } = await http.get(this.urls.curSession, {
       ...this.auth,
       validateStatus: (status) => status < 500,
     });
@@ -63,21 +83,21 @@ export default class LCUService {
   };
 
   getPerkList = async () => {
-    const res = await http.get(this.urls.perks, this.auth);
+    const res: { current: boolean; isDeletable: boolean; id: number; }[] = await http.get(this.urls.perks, this.auth);
     return res;
   };
 
-  deletePerk = async (id) => {
+  deletePerk = async (id: string | number) => {
     const res = await http.delete(`${this.urls.perks}/${id}`, this.auth);
     return res;
   };
 
-  createPerk = async (data) => {
+  createPerk = async (data: any) => {
     const res = await http.post(this.urls.perks, data);
     return res;
   };
 
-  applyPerk = async (data) => {
+  applyPerk = async (data: any) => {
     const list = await this.getPerkList();
     const current = list.find((i) => i.current && i.isDeletable);
 

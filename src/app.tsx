@@ -21,10 +21,12 @@ import Home from 'src/modules/home';
 import Import from 'src/modules/import';
 import Settings from 'src/modules/settings';
 
+import { ILcuUserAction } from 'src/typings/commonTypes'
+
 const engine = new Styletron();
 const GameTypes = [`pick`];
 
-const findUserChampion = (cellId: number, actions:{ actorCellId: number; type: string; championId: number }[][] = []) => {
+const findUserChampion = (cellId: number, actions: ILcuUserAction[][] = []) => {
   let id = 0;
   if (!actions || !actions.length) return id;
 
@@ -70,8 +72,8 @@ const App = () => {
           localPlayerCellId: cellId,
         } = await lcuIns.getCurrentSession();
 
-        const me = _find(myTeam, (i) => i.summonerId > 0 && i.cellId === cellId) || {};
-        const { championId: mChampionId } = me;
+        const me = _find(myTeam, (i) => i.summonerId > 0 && i.cellId === cellId);
+        const { championId: mChampionId } = me ?? { championId: 0 };
         let championId;
 
         const isRandomMode = !actions.length && myTeam.length > 0 && mChampionId > 0;
@@ -87,7 +89,7 @@ const App = () => {
 
         if (isRandomMode || isVoteMode) {
           // special mode
-          championId = me.championId;
+          championId = me!.championId;
         }
 
         if (!championId) {

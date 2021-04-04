@@ -16,6 +16,7 @@ interface IProps {
   onMouseLeave: () => any;
   perk: IRuneItem;
   onApply: () => any;
+  idx?: number;
 }
 
 export default function PerkShowcase({

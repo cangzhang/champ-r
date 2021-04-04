@@ -1,6 +1,6 @@
 import _noop from 'lodash/noop';
 import { nanoid as uuid } from 'nanoid';
-import { CancelToken } from 'axios';
+import axios from 'axios';
 
 import http from 'src/service/http';
 import SourceProto from 'src/service/data-source/source-proto';
@@ -8,24 +8,24 @@ import * as Ddragon from 'src/service/ddragon';
 import Sources from 'src/share/constants/sources';
 import { saveToFile } from 'src/share/file';
 import { addFetched, addFetching } from 'src/share/actions';
+import { IChampionCdnDataItem, IFileResult, IRuneItem } from 'src/typings/commonTypes';
 
+const CancelToken = axios.CancelToken;
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/murderbridge`;
 const T_NPM_URL = `https://registry.npm.taobao.org/@champ-r/murderbridge`;
 
 export default class MurderBridge extends SourceProto {
-  constructor(lolDir, itemMap, dispatch = _noop) {
+  public version = ``;
+
+  constructor(public lolDir: string, public dispatch = _noop) {
     super();
-    this.lolDir = lolDir;
-    this.itemMap = itemMap;
-    this.dispatch = dispatch;
-    this.version = null;
   }
 
   static getPkgInfo = () => SourceProto.getPkgInfo(T_NPM_URL, CDN_URL);
 
-  getChampionDataFromCDN = async (champion, version, $id) => {
+  getChampionDataFromCDN = async (champion: string, version: string, $id: string) => {
     try {
-      const data = await http.get(`${CDN_URL}@${version}/${champion}.json`, {
+      const data: IChampionCdnDataItem[] = await http.get(`${CDN_URL}@${version}/${champion}.json`, {
         cancelToken: new CancelToken(this.setCancelHook($id)),
       });
       return data;
@@ -35,7 +35,7 @@ export default class MurderBridge extends SourceProto {
     }
   };
 
-  genBuildsFromCDN = async (champion, version, lolDir) => {
+  genBuildsFromCDN = async (champion: string, version: string, lolDir: string) => {
     try {
       const $identity = uuid();
       this.dispatch(
@@ -60,7 +60,7 @@ export default class MurderBridge extends SourceProto {
         });
 
         return t;
-      }, []);
+      }, [] as Promise<IFileResult>[]);
 
       const r = await Promise.allSettled(tasks);
       this.dispatch(
@@ -95,7 +95,7 @@ export default class MurderBridge extends SourceProto {
                   value: cur.reason,
                   reason: cur.reason,
                 }
-              : cur.value,
+              : cur.value as any, // TODO
           ),
         [],
       );
@@ -106,12 +106,12 @@ export default class MurderBridge extends SourceProto {
     }
   };
 
-  getRunesFromCDN = async (champion) => {
+  getRunesFromCDN = async (champion: string) => {
     try {
       const $id = uuid();
       const pkgVersion = await SourceProto.getLatestVersionFromCdn(T_NPM_URL);
       const data = await this.getChampionDataFromCDN(champion, pkgVersion, $id);
-      return data.reduce((arr, i) => arr.concat(i.runes), []);
+      return data.reduce((arr, i) => arr.concat(i.runes), [] as IRuneItem[]);
     } catch (err) {
       console.error(err);
       throw new Error(err);

@@ -81,4 +81,30 @@ export interface IChampionInfo {
   alias: string;
   version: string;
   name: string;
+  id: string;
+}
+
+export interface IFileResult {
+  champion: string;
+  position: string;
+  stage?: string;
+}
+
+export interface IPkgInfo {
+  version: string;
+  sourceVersion: string;
+}
+
+export interface ILcuUserAction {
+  summonerId: number;
+  championId: number;
+  actorCellId: number;
+  type: string;
+}
+
+export interface ICoordinate {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }

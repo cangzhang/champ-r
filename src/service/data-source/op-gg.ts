@@ -1,6 +1,5 @@
 import { nanoid as uuid } from 'nanoid';
 import _noop from 'lodash/noop';
-import _find from 'lodash/find';
 import axios from 'axios';
 
 import http from 'src/service/http';
@@ -8,7 +7,7 @@ import { addFetched, addFetching } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
 import Sources from 'src/share/constants/sources';
 import SourceProto from './source-proto';
-import { IChampionCdnDataItem, IRuneItem } from 'src/typings/commonTypes';
+import { IChampionCdnDataItem, IRuneItem, IFileResult, IChampionInfo } from 'src/typings/commonTypes';
 
 const CancelToken = axios.CancelToken;
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/op.gg`;
@@ -19,12 +18,6 @@ const Stages = {
   FETCH_CHAMPION_DATA: `FETCH_CHAMPION_DATA`,
   GEN_DATA_FILE: `GEN_DATA_FILE`,
 };
-
-interface IFileResult {
-  champion: string;
-  position: string;
-  stage?: string;
-}
 
 interface IFetchFailedData {
   champion: string;
@@ -52,7 +45,7 @@ export default class OpGG extends SourceProto {
   public getChampionList = async () => {
     try {
       const version = await SourceProto.getLatestVersionFromCdn(T_NPM_URL);
-      const data = await http.get(`${CDN_URL}@${version}/index.json?${Date.now()}}`, {
+      const data: { [key: string]: IChampionInfo } = await http.get(`${CDN_URL}@${version}/index.json?${Date.now()}}`, {
         cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
       });
       return data;
