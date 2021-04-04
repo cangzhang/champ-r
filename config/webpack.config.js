@@ -38,7 +38,7 @@ const shouldUglify = process.env.UGLIFY !== 'false';
 const imageInlineSizeLimit = parseInt(process.env.IMAGE_INLINE_SIZE_LIMIT || '10000');
 
 // Check if TypeScript is setup
-const useTypeScript = fs.existsSync(paths.appTsConfig);
+const useTypeScript = true;
 
 // Style files regexes
 const cssRegex = /\.css$/;
@@ -120,7 +120,7 @@ module.exports = function (webpackEnv) {
           options: {
             sourceMap: isEnvProduction && shouldUseSourceMap,
           },
-        },        {
+        }, {
           loader: require.resolve(preProcessor),
           options: {
             sourceMap: true,

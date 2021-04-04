@@ -1,3 +1,5 @@
+import { IFetchStatus } from 'src/typings/commonTypes';
+
 export const Actions = {
   ADD_FETCHING: 'LIST.ADD_FETCHING',
   REMOVE_FETCHING: 'LIST.REMOVE_FETCHING',
@@ -29,12 +31,12 @@ export const setLolVersion = (ver: string) => ({
   payload: ver,
 });
 
-export const addFetching = (data) => ({
+export const addFetching = (data: IFetchStatus) => ({
   type: Actions.ADD_FETCHING,
   payload: data,
 });
 
-export const addFetched = (data) => ({
+export const addFetched = (data: IFetchStatus) => ({
   type: Actions.ADD_FETCHED,
   payload: data,
 });
@@ -43,7 +45,7 @@ export const clearFetch = () => ({
   type: Actions.CLEAR_FETCH,
 });
 
-export const updateItemMap = (data) => ({
+export const updateItemMap = (data: any) => ({
   type: Actions.UPDATE_ITEM_MAP,
   payload: data,
 });
@@ -52,37 +54,37 @@ export const prepareReimport = () => ({
   type: Actions.PREPARE_REIMPORT,
 });
 
-export const updateFetchingSource = (source) => ({
+export const updateFetchingSource = (source: string[]) => ({
   type: Actions.FETCHING_SOURCE,
   payload: source,
 });
 
-export const fetchSourceDone = (source) => ({
+export const fetchSourceDone = (source: string) => ({
   type: Actions.FETCH_SOURCE_DONE,
   payload: source,
 });
 
-export const updateConfig = (k, v) => ({
+export const updateConfig = (k: string, v: any) => ({
   type: Actions.UPDATE_APP_CONFIG,
   payload: [k, v],
 });
 
-export const setImporterInstance = (k, v) => ({
+export const setImporterInstance = (k: string, v: string) => ({
   type: Actions.SET_IMPORTER_INSTANCE,
   payload: [k, v],
 });
 
-export const importBuildSucceed = (v) => ({
+export const importBuildSucceed = (v: string) => ({
   type: Actions.IMPORT_BUILD_SUCCEED,
   payload: v,
 });
 
-export const importBuildFailed = (v) => ({
+export const importBuildFailed = (v: string) => ({
   type: Actions.IMPORT_BUILD_FAILED,
   payload: v,
 });
 
-export const updateDataSourceVersion = (k, v) => ({
+export const updateDataSourceVersion = (k: string, v: string) => ({
   type: Actions.SET_DATA_SOURCE_VERSION,
   payload: [k, v],
 });

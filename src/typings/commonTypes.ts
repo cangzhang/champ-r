@@ -108,3 +108,9 @@ export interface ICoordinate {
   width: number;
   height: number;
 }
+
+export interface IFetchStatus {
+  $identity: string;
+  champion: string;
+  source: string;
+}
