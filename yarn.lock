@@ -2648,7 +2648,7 @@
     "@types/react" "*"
     "@types/styletron-standard" "*"
 
-"@types/styletron-standard@*":
+"@types/styletron-standard@*", "@types/styletron-standard@^2.0.1":
   version "2.0.1"
   resolved "https://registry.npm.taobao.org/@types/styletron-standard/download/@types/styletron-standard-2.0.1.tgz#1a6c071b4320d68945215f85ea65520c2b708866"
   integrity sha1-GmwHG0Mg1olFIV+F6mVSDCtwiGY=
@@ -3579,10 +3579,10 @@ base@^0.11.1:
     mixin-deep "^1.2.0"
     pascalcase "^0.1.1"
 
-baseui@9.99.0:
-  version "9.99.0"
-  resolved "https://registry.npm.taobao.org/baseui/download/baseui-9.99.0.tgz#e4c4d4213c01740cecf696487a554e0934665af9"
-  integrity sha1-5MTUITwBdAzs9pZIelVOCTRmWvk=
+baseui@9.112.0:
+  version "9.112.0"
+  resolved "https://registry.npm.taobao.org/baseui/download/baseui-9.112.0.tgz#cb8f0efeb0175187d4e5583bb2a39b5474d71b50"
+  integrity sha1-y48O/rAXUYfU5Vg7sqObVHTXG1A=
   dependencies:
     "@date-io/date-fns" "^2.6.2"
     card-validator "^6.2.0"
@@ -3590,7 +3590,6 @@ baseui@9.99.0:
     glob "^7.1.6"
     just-extend "^4.0.2"
     memoize-one "^5.1.1"
-    next-transpile-modules "^3.3.0"
     polished "^3.2.0"
     popper.js "^1.16.0"
     react-dropzone "^9.0.0"
@@ -3599,7 +3598,7 @@ baseui@9.99.0:
     react-is "^16.8.6"
     react-movable "^2.4.0"
     react-multi-ref "^1.0.0"
-    react-range "^1.6.3"
+    react-range "^1.8.0"
     react-uid "^2.3.0"
     react-virtualized "^9.21.1"
     react-virtualized-auto-sizer "^1.0.2"
@@ -6153,10 +6152,10 @@ eslint-module-utils@^2.4.0:
     debug "^2.6.9"
     pkg-dir "^2.0.0"
 
-eslint-plugin-baseui@9.99.0:
-  version "9.99.0"
-  resolved "https://registry.npm.taobao.org/eslint-plugin-baseui/download/eslint-plugin-baseui-9.99.0.tgz#4767e1c75b494f1be935b1bef1a667448e52f01f"
-  integrity sha1-R2fhx1tJTxvpNbG+8aZnRI5S8B8=
+eslint-plugin-baseui@9.112.0:
+  version "9.112.0"
+  resolved "https://registry.npm.taobao.org/eslint-plugin-baseui/download/eslint-plugin-baseui-9.112.0.tgz#525a6d8ee44d59e6fc783839d14c143a158f9138"
+  integrity sha1-UlptjuRNWeb8eDg50UwUOhWPkTg=
 
 eslint-plugin-flowtype@3.13.0:
   version "3.13.0"
@@ -10040,14 +10039,6 @@ next-tick@~1.0.0:
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
   integrity sha1-yobR/ogoFpsBICCOPchCS524NCw=
 
-next-transpile-modules@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.npm.taobao.org/next-transpile-modules/download/next-transpile-modules-3.3.0.tgz#90f197d1ceda2a2ce7a4f423b262320354456abf"
-  integrity sha1-kPGX0c7aKiznpPQjsmIyA1RFar8=
-  dependencies:
-    micromatch "^4.0.2"
-    slash "^3.0.0"
-
 nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
@@ -12084,10 +12075,10 @@ react-multi-ref@^1.0.0:
   dependencies:
     "@babel/runtime" "^7.1.2"
 
-react-range@^1.6.3:
-  version "1.6.9"
-  resolved "https://registry.npm.taobao.org/react-range/download/react-range-1.6.9.tgz#c0af0f4ce367b500c585cbf6b921ed92aa9b401e"
-  integrity sha1-wK8PTONntQDFhcv2uSHtkqqbQB4=
+react-range@^1.8.0:
+  version "1.8.7"
+  resolved "https://registry.npm.taobao.org/react-range/download/react-range-1.8.7.tgz#a890bc614517b5579179f6a2b44e642786f8d96e"
+  integrity sha1-qJC8YUUXtVeRefaitE5kJ4b42W4=
 
 react-refresh@^0.9.0:
   version "0.9.0"
@@ -13705,26 +13696,26 @@ stylehacks@^4.0.0:
     postcss "^7.0.0"
     postcss-selector-parser "^3.0.0"
 
-styletron-engine-atomic@1.4.6:
-  version "1.4.6"
-  resolved "https://registry.yarnpkg.com/styletron-engine-atomic/-/styletron-engine-atomic-1.4.6.tgz#0cfaa32dd8c386a4736b9cd25361711712c4fd98"
-  integrity sha512-1dPXjIjdd3nrQdh1PYvQ3MOd0syzAkFVJzaH31rwy0lhSSsKzfCqn1WLtaLqvL5z89J9wwAsu9CaNZis06K+4g==
+styletron-engine-atomic@^1.4.7:
+  version "1.4.7"
+  resolved "https://registry.npm.taobao.org/styletron-engine-atomic/download/styletron-engine-atomic-1.4.7.tgz#0c6572491685308f3a5b4565016c7c5637bcb4fb"
+  integrity sha1-DGVySRaFMI86W0VlAWx8Vje8tPs=
   dependencies:
     inline-style-prefixer "^5.1.0"
-    styletron-standard "^3.0.4"
+    styletron-standard "^3.0.5"
 
-styletron-react@5.2.7:
-  version "5.2.7"
-  resolved "https://registry.yarnpkg.com/styletron-react/-/styletron-react-5.2.7.tgz#7aa283a0b06787024f96289480c60bafed5048cf"
-  integrity sha512-PUUf7MAv9aaO8oT0B4ryPreeLi3BT1kQ7WIDNhkkpLkvCzk+pOvmtaZJJZRIxWPimj8756rLZqpF7/2ssF9KhQ==
+styletron-react@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.npm.taobao.org/styletron-react/download/styletron-react-6.0.1.tgz#bf4f51ce872e925bcf8ebdcc8ee69027578b93d0"
+  integrity sha1-v09RzocuklvPjr3MjuaQJ1eLk9A=
   dependencies:
     prop-types "^15.6.0"
-    styletron-standard "^3.0.4"
+    styletron-standard "^3.0.5"
 
-styletron-standard@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/styletron-standard/-/styletron-standard-3.0.4.tgz#2b286752f464e4c9824faaee466013aa8f13cf6b"
-  integrity sha512-AozOYUEtB5m0s+6ieLCObqYsBitLJmag3IoD/yg0Y9X32AYKwtGO4emx9cljD25k2S/R1XmLPgThOU+orjXTKg==
+styletron-standard@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.npm.taobao.org/styletron-standard/download/styletron-standard-3.0.5.tgz#35dd4a584d668ef73b145988cdbece69a1e39085"
+  integrity sha1-Nd1KWE1mjvc7FFmIzb7OaaHjkIU=
   dependencies:
     "@rtsao/csstype" "2.6.5-forked.0"
     inline-style-prefixer "^5.1.0"

@@ -8,11 +8,10 @@ import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import cn from 'classnames';
 
-import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home, RefreshCcw } from 'react-feather';
+import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home } from 'react-feather';
 import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
-import { Button, SHAPE } from 'baseui/button';
-import { Label1 } from 'baseui/typography';
+import { Button } from 'baseui/button';
 
 import Sources from 'src/share/constants/sources';
 import {
@@ -42,13 +41,6 @@ export default function Import() {
   const { store, dispatch } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
   const [cancelled, setCancel] = useState<string[]>([]);
-  const [opggResult, setOpggResult] = useState<{
-    fulfilled: any[];
-    rejected: any[];
-  }>({
-    fulfilled: [],
-    rejected: [],
-  });
 
   const workers = useRef<{
     [key: string]: SourceProto;
@@ -116,15 +108,11 @@ export default function Import() {
         instance
           .importFromCdn(lolDir)
           .then((result) => {
-            const { fulfilled, rejected } = result;
+            const { rejected } = result;
             if (!rejected.length) {
               toaster.positive(`[${Sources.Opgg.toUpperCase()}] ${t(`completed`)}`, {});
               dispatch(importBuildSucceed(Sources.Opgg));
             }
-            setOpggResult({
-              fulfilled,
-              rejected,
-            });
           })
           .catch((err) => {
             if (err.message.includes(`Error: Cancel`)) {
@@ -157,27 +145,6 @@ export default function Import() {
 
   const restart = () => {
     importFromSources();
-  };
-
-  const importRejected = async () => {
-    try {
-      // @ts-ignore TODO
-      const { fulfilled, rejected } = await workers.current[Sources.Opgg].importSpecified(
-        opggResult.rejected,
-      );
-
-      setOpggResult({
-        fulfilled,
-        rejected,
-      });
-
-      if (!rejected.length) {
-        toaster.positive(`[${Sources.Opgg.toUpperCase()}] ${t(`fulfilled`)}`, {});
-        dispatch(importBuildSucceed(Sources.Opgg));
-      }
-    } catch (err) {
-      console.error(err);
-    }
   };
 
   const userCancelled = useMemo(() => cancelled.length > 0, [cancelled]);
@@ -237,49 +204,15 @@ export default function Import() {
       );
     }
 
-    const opggFailed = opggResult.rejected.length > 0;
     const failed = store.importPage.fail.length > 0;
 
     // @ts-ignore
     return (
       <>
-        {!failed && !opggFailed && <CheckCircle size={128} color={theme.colors.contentPositive}/>}
+        {!failed && <CheckCircle size={128} color={theme.colors.contentPositive}/>}
         {failed && (
           <div className={s.failed}>
             {t(`rejected`)}: {store.importPage.fail.join(`, `)}
-          </div>
-        )}
-        {opggFailed && (
-          <div className={s.rejected}>
-            <Label1>
-              [{Sources.Opgg.toUpperCase()}] {t(`rejected`)}: {opggResult.rejected.length}
-            </Label1>
-
-            <ul>
-              {opggResult.rejected.map(([champion, position], idx) => (
-                <li key={idx}>
-                  {champion}
-                  {position && `@${position}`}
-                </li>
-              ))}
-            </ul>
-
-            <Button
-              shape={SHAPE.pill}
-              // @ts-ignore
-              startEnhancer={<RefreshCcw title={'Retry'}/>}
-              overrides={{
-                BaseButton: {
-                  style: ({ $theme }) => {
-                    return {
-                      backgroundColor: $theme.colors.warning,
-                    };
-                  },
-                },
-              }}
-              onClick={importRejected}>
-              {t(`try import rejected`)}
-            </Button>
           </div>
         )}
         {/* @ts-ignore */}
