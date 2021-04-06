@@ -1,7 +1,7 @@
 /* eslint react-hooks/exhaustive-deps: 0 */
 import s from './style.module.scss';
 
-import 'src/modules/i18n';
+import initI18n from 'src/modules/i18n';
 import { ipcRenderer, remote } from 'electron';
 import React, { useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
@@ -31,6 +31,8 @@ import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
 
 import { makeChampMap } from './utils';
 import { IChampionInfo, IRuneItem, ICoordinate } from 'src/typings/commonTypes';
+
+initI18n();
 
 const engine = new Styletron();
 const SourceList = [

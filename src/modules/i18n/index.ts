@@ -7,7 +7,7 @@ import zhCN, { lang as cnLang } from './zh-cn';
 
 const init = () => {
   i18n.use(initReactI18next).init({
-    lng: config.get(`appLang`) || enLang,
+    lng: config.get(`appLang`, enLang),
     fallbackLng: enLang,
     interpolation: {
       escapeValue: false,

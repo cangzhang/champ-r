@@ -19,7 +19,7 @@
     "postinstall": "cross-env electron-builder install-app-deps",
     "watch:main": "tsc -w",
     "compile:main": "tsc",
-    "start:electron": "cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true IS_DEV_MODE=true run-electron ./dist/main.js --inspect=5858",
+    "start:electron": "concurrently \"yarn watch:main\" \"cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true IS_DEV_MODE=true run-electron ./build/app/main.js --inspect=5858\"",
     "start:react": "cross-env BROWSER=none node scripts/start.js",
     "start": "concurrently \"yarn start:react\" \"wait-on http://localhost:3000 && yarn start:electron\"",
     "dist:local": "cross-env yarn compile:main && electron-builder --win --x64 -p never",
