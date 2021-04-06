@@ -9,7 +9,7 @@ process.env.PUBLIC_URL = '';
 // ignoring them. In the future, promise rejections that are not handled will
 // terminate the Node.js process with a non-zero exit code.
 process.on('unhandledRejection', err => {
-	throw err;
+  throw err;
 });
 
 // Ensure environment variables are read.
@@ -20,32 +20,32 @@ const execSync = require('child_process').execSync;
 const argv = process.argv.slice(2);
 
 function isInGitRepository() {
-	try {
-		execSync('git rev-parse --is-inside-work-tree', {stdio: 'ignore'});
-		return true;
-	} catch (error) {
-		return false;
-	}
+  try {
+    execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' });
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 function isInMercurialRepository() {
-	try {
-		execSync('hg --cwd . root', {stdio: 'ignore'});
-		return true;
-	} catch (error) {
-		return false;
-	}
+  try {
+    execSync('hg --cwd . root', { stdio: 'ignore' });
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 // Watch unless on CI or explicitly running all tests
 if (
-	!process.env.CI &&
+  !process.env.CI &&
   !argv.includes('--watchAll') &&
   !argv.includes('--watchAll=false')
 ) {
-	// https://github.com/facebook/create-react-app/issues/5210
-	const hasSourceControl = isInGitRepository() || isInMercurialRepository();
-	argv.push(hasSourceControl ? '--watch' : '--watchAll');
+  // https://github.com/facebook/create-react-app/issues/5210
+  const hasSourceControl = isInGitRepository() || isInMercurialRepository();
+  argv.push(hasSourceControl ? '--watch' : '--watchAll');
 }
 
 jest.run(argv);

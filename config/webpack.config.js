@@ -38,7 +38,7 @@ const shouldUglify = process.env.UGLIFY !== 'false';
 const imageInlineSizeLimit = parseInt(process.env.IMAGE_INLINE_SIZE_LIMIT || '10000');
 
 // Check if TypeScript is setup
-const useTypeScript = fs.existsSync(paths.appTsConfig);
+const useTypeScript = true;
 
 // Style files regexes
 const cssRegex = /\.css$/;
@@ -120,7 +120,7 @@ module.exports = function (webpackEnv) {
           options: {
             sourceMap: isEnvProduction && shouldUseSourceMap,
           },
-        },        {
+        }, {
           loader: require.resolve(preProcessor),
           options: {
             sourceMap: true,
@@ -163,7 +163,7 @@ module.exports = function (webpackEnv) {
       path: isEnvProduction ? paths.appBuild : undefined,
       // Add /* filename */ comments to generated require()s in the output.
       pathinfo: isEnvDevelopment,
-      // There will be one main bundle, and one file per asynchronous chunk.
+      // There will be one app bundle, and one file per asynchronous chunk.
       // In development, it does not produce real files.
       filename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].js'
