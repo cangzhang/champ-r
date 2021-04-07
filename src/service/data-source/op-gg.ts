@@ -50,7 +50,7 @@ export default class OpGG extends SourceProto {
       });
       return data;
     } catch (err) {
-      console.error(err);
+      console.error(err.message, err.stack);
       return Promise.reject({
         stage: Stages.FETCH_CHAMPION_LIST,
       });
@@ -65,7 +65,7 @@ export default class OpGG extends SourceProto {
       });
       return data;
     } catch (err) {
-      console.error(err);
+      console.error(err.message, err.stack);
       throw new Error(err);
     }
   };
@@ -109,7 +109,7 @@ export default class OpGG extends SourceProto {
 
       return r;
     } catch (err) {
-      console.error(err);
+      console.error(err.message, err.stack);
       return Promise.reject({
         champion: champion,
         stage: Stages.GEN_DATA_FILE,
@@ -123,7 +123,7 @@ export default class OpGG extends SourceProto {
       const data = await this.getChampionDataFromCdn(alias, $id);
       return data.reduce((arr, i) => arr.concat(i.runes), [] as IRuneItem[]);
     } catch (err) {
-      console.error(err);
+      console.error(err.message, err.stack);
       return Promise.reject(err);
     }
   };
@@ -155,7 +155,7 @@ export default class OpGG extends SourceProto {
         rejected,
       };
     } catch (err) {
-      console.error(err);
+      console.error(err.message, err.stack);
       throw new Error(err);
     }
   };
