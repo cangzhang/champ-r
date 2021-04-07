@@ -4,12 +4,36 @@ import { IPkgInfo } from 'src/typings/commonTypes'
 
 type IVoidFunc = () => void
 
-export const fetchLatestVersionFromCdn = async (url: string) => {
+interface ICachedReq<T> {
+  done: boolean;
+  lastTime: number;
+  result?: T;
+}
+
+export const fetchLatestVersionFromCdn = async (url: string, timeout = 60 * 1000) => {
+  const versionReq: { [key: string]: ICachedReq<string> } = {};
+
   try {
+    const now = Date.now();
+    const target = versionReq[url];
+
+    if (target?.done && now - (target?.lastTime ?? 0) < timeout) {
+      return target?.result;
+    }
+
+    const req: ICachedReq<string> = {
+      done: false,
+      lastTime: 0,
+    };
     const data = await http.get(`${url}?t=${Date.now()}`);
-    return data[`dist-tags`].latest;
+    req.done = true;
+    req.lastTime = Date.now();
+    req.result = data[`dist-tags`].latest;
+    versionReq[url] = req;
+
+    return req.result;
   } catch (err) {
-    console.error(err);
+    console.error(err.message, err.stack);
     return Promise.reject(err);
   }
 };

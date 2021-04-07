@@ -23,7 +23,7 @@ export default class MurderBridge extends SourceProto {
 
   static getPkgInfo = () => SourceProto.getPkgInfo(T_NPM_URL, CDN_URL);
 
-  getChampionDataFromCDN = async (champion: string, version: string, $id: string) => {
+  getChampionDataFromCDN = async (champion: string, version: string = ``, $id: string) => {
     try {
       const data: IChampionCdnDataItem[] = await http.get(`${CDN_URL}@${version}/${champion}.json`, {
         cancelToken: new CancelToken(this.setCancelHook($id)),
