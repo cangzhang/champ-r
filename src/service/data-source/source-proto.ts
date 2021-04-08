@@ -8,35 +8,49 @@ interface ICachedReq<T> {
   done: boolean;
   lastTime: number;
   result?: T;
+  index: number;
+  subscribers: { resolve: (r: T) => void, reject: (reason?: any) => void }[];
 }
 
-export const fetchLatestVersionFromCdn = async (url: string, timeout = 60 * 1000) => {
+const fetchLatestVersionFromCdn_ = () => {
+  let requestIdx = 0;
   const versionReq: { [key: string]: ICachedReq<string> } = {};
 
-  try {
-    const now = Date.now();
-    const target = versionReq[url];
+  return async (url: string, timeout = 10 * 1000) => {
+    try {
+      requestIdx++;
+      const now = Date.now();
+      const target = versionReq[url];
 
-    if (target?.done && now - (target?.lastTime ?? 0) < timeout) {
-      return target?.result;
+      if (target?.done && now - (target?.lastTime ?? 0) < timeout) {
+        return target?.result;
+      }
+
+      const req: ICachedReq<string> = {
+        done: false,
+        lastTime: 0,
+        index: requestIdx,
+        subscribers: [],
+      };
+      const data = await http.get(`${url}?t=${Date.now()}`);
+      req.done = true;
+      req.lastTime = Date.now();
+      req.result = data[`dist-tags`].latest;
+      versionReq[url] = req;
+
+      req.subscribers.forEach(i => {
+        i.resolve(req.result ?? ``)
+      })
+
+      return req.result;
+    } catch (err) {
+      console.error(err.message, err.stack);
+      return Promise.reject(err);
     }
-
-    const req: ICachedReq<string> = {
-      done: false,
-      lastTime: 0,
-    };
-    const data = await http.get(`${url}?t=${Date.now()}`);
-    req.done = true;
-    req.lastTime = Date.now();
-    req.result = data[`dist-tags`].latest;
-    versionReq[url] = req;
-
-    return req.result;
-  } catch (err) {
-    console.error(err.message, err.stack);
-    return Promise.reject(err);
   }
-};
+}
+
+export const fetchLatestVersionFromCdn = fetchLatestVersionFromCdn_()
 
 export default class SourceProto {
   public cancelHandlers: { [key: string]: IVoidFunc } = {};

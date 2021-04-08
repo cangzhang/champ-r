@@ -45,7 +45,7 @@ export default class OpGG extends SourceProto {
   public getChampionList = async () => {
     try {
       const version = await fetchLatestVersionFromCdn(T_NPM_URL);
-      const data: { [key: string]: IChampionInfo } = await http.get(`${CDN_URL}@${version}/index.json?${Date.now()}}`, {
+      const data: { [key: string]: IChampionInfo } = await http.get(`${CDN_URL}@${version}/index.json?${Date.now()}`, {
         cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
       });
       return data;
