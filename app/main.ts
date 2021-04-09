@@ -397,7 +397,7 @@ function registerUpdater() {
 
   const locale = (await osLocale()) || `en-US`;
   const sysLang = appStore.get(`appLang`);
-  if (!sysLang || ![`en-US`, `zh-CN`].includes(locale)) {
+  if (!sysLang || ![`en-US`, `zh-CN`,`fr-FR`].includes(locale)) {
     appStore.set(`appLang`, `en-US`);
   }
   console.log(`locale: ${sysLang}, sys lang: ${sysLang}`);
