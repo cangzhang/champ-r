@@ -176,8 +176,7 @@
       "build/**/*",
       "!build/**/*.{jpg,jpeg,png}",
       "src/native/**/*",
-      "package.json",
-      "app/**/*"
+      "package.json"
     ],
     "extraResources": [
       "./resources/**"
