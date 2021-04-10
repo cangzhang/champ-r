@@ -20,19 +20,20 @@
     "watch:main": "tsc -w",
     "compile:main": "tsc",
     "start:electron": "concurrently \"cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true IS_DEV_MODE=true run-electron ./build/app/main.js --inspect=5858\"",
-    "start:react": "cross-env BROWSER=none node scripts/start.js",
+    "start:react": "cross-env BROWSER=none NODE_ENV=development node scripts/start.js",
     "start": "concurrently \"yarn start:react\" \"yarn watch:main\" \"wait-on http://localhost:3000 && yarn start:electron\"",
     "dist:local": "cross-env yarn compile:main && electron-builder --win --x64 -p never",
     "dist": "cross-env yarn compile:main && electron-builder --win --x64 -p always",
     "build:react": "node scripts/build.js",
     "build:local": "cross-env ELECTRON_MIRROR=https://npm.taobao.org/mirrors/electron/ yarn build:react && yarn dist:local",
-    "build:ci": "cross-env BUILD_IN_CI=true yarn build:react && yarn dist:local",
+    "build:ci": "yarn modify:version && cross-env BUILD_IN_CI=true yarn build:react && yarn dist:local",
     "build": "cross-env yarn build:react && yarn dist",
     "b": "yarn build:local",
     "bl": "cross-env SHOW_POPUP_TRIGGER=true yarn build:local",
     "release": "yarn build",
     "pack": "electron-builder --dir",
     "lint": "eslint --fix",
+    "modify:version": "node scripts/modify-build-version.js",
     "re:build": "bsb -make-world -clean-world",
     "re:watch": "bsb -make-world -clean-world -w",
     "re:start": "cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=true run-electron src/main.bs.js --inspect=5858"
@@ -72,7 +73,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.7.4",
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.2",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@svgr/webpack": "^5.5.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -137,7 +138,7 @@
     "prettier": "2.0.5",
     "react-app-polyfill": "^1.0.5",
     "react-dev-utils": "^10.0.0",
-    "react-refresh": "^0.9.0",
+    "react-refresh": "^0.10.0",
     "react-svg-loader": "^3.0.3",
     "resolve": "1.12.2",
     "resolve-url-loader": "3.1.1",
@@ -176,8 +177,7 @@
       "build/**/*",
       "!build/**/*.{jpg,jpeg,png}",
       "src/native/**/*",
-      "package.json",
-      "app/**/*"
+      "package.json"
     ],
     "extraResources": [
       "./resources/**"

@@ -6,7 +6,7 @@ import http from 'src/service/http';
 import { addFetched, addFetching } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
 import Sources from 'src/share/constants/sources';
-import SourceProto from './source-proto';
+import SourceProto, { fetchLatestVersionFromCdn } from './source-proto';
 import { IChampionCdnDataItem, IRuneItem, IFileResult, IChampionInfo } from 'src/typings/commonTypes';
 
 const CancelToken = axios.CancelToken;
@@ -44,8 +44,8 @@ export default class OpGG extends SourceProto {
 
   public getChampionList = async () => {
     try {
-      const version = await SourceProto.getLatestVersionFromCdn(T_NPM_URL);
-      const data: { [key: string]: IChampionInfo } = await http.get(`${CDN_URL}@${version}/index.json?${Date.now()}}`, {
+      const version = await fetchLatestVersionFromCdn(T_NPM_URL);
+      const data: { [key: string]: IChampionInfo } = await http.get(`${CDN_URL}@${version}/index.json?${Date.now()}`, {
         cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
       });
       return data;
@@ -59,7 +59,7 @@ export default class OpGG extends SourceProto {
 
   public getChampionDataFromCdn = async (champion: string, $identity: string = ``) => {
     try {
-      const version = await SourceProto.getLatestVersionFromCdn(T_NPM_URL);
+      const version = await fetchLatestVersionFromCdn(T_NPM_URL);
       const data: IChampionCdnDataItem[] = await http.get(`${CDN_URL}@${version}/${champion}.json?${Date.now()}`, {
         cancelToken: new CancelToken(this.setCancelHook($identity)),
       });

@@ -1,7 +1,6 @@
 import path from 'path';
 import _debounce from 'lodash/debounce'
 
-import reloader from 'electron-reloader';
 import osLocale from "os-locale";
 import { machineId } from 'node-machine-id'
 import { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage, nativeTheme, IpcMainEvent } from 'electron';
@@ -19,18 +18,20 @@ interface IPopupEventData {
   position: string;
 }
 
-try {
-  reloader(module, {
-    watchRenderer: false,
-    ignore: [
-      './src/**/*',
-    ],
-  });
-} catch (_) {
-}
-
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
+
+try {
+  if (isDev) {
+    require('electron-reloader')(module, {
+      watchRenderer: false,
+      ignore: [
+        './src/**/*',
+      ],
+    });
+  }
+} catch (_) {
+}
 
 initLogger();
 
@@ -90,7 +91,7 @@ const createMainWindow = async () => {
   });
 
   await win.loadURL(
-    isDev ? 'http://127.0.0.1:3000' : `file://${path.join(__dirname, 'build/index.html')}`,
+    isDev ? 'http://127.0.0.1:3000' : `file://${path.join(__dirname, '../index.html')}`,
   );
 
   return win;
@@ -132,7 +133,7 @@ const createPopupWindow = async () => {
   await popup.loadURL(
     isDev
       ? `http://127.0.0.1:3000/popup.html`
-      : `file://${path.join(__dirname, 'build/popup.html')}`,
+      : `file://${path.join(__dirname, '../popup.html')}`,
   );
 
   return popup;

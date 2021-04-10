@@ -3,7 +3,7 @@ import { nanoid as uuid } from 'nanoid';
 import axios from 'axios';
 
 import http from 'src/service/http';
-import SourceProto from 'src/service/data-source/source-proto';
+import SourceProto, { fetchLatestVersionFromCdn } from 'src/service/data-source/source-proto';
 import * as Ddragon from 'src/service/ddragon';
 import Sources from 'src/share/constants/sources';
 import { saveToFile } from 'src/share/file';
@@ -23,7 +23,7 @@ export default class MurderBridge extends SourceProto {
 
   static getPkgInfo = () => SourceProto.getPkgInfo(T_NPM_URL, CDN_URL);
 
-  getChampionDataFromCDN = async (champion: string, version: string, $id: string) => {
+  getChampionDataFromCDN = async (champion: string, version: string = ``, $id: string) => {
     try {
       const data: IChampionCdnDataItem[] = await http.get(`${CDN_URL}@${version}/${champion}.json`, {
         cancelToken: new CancelToken(this.setCancelHook($id)),
@@ -109,7 +109,7 @@ export default class MurderBridge extends SourceProto {
   getRunesFromCDN = async (champion: string) => {
     try {
       const $id = uuid();
-      const pkgVersion = await SourceProto.getLatestVersionFromCdn(T_NPM_URL);
+      const pkgVersion = await fetchLatestVersionFromCdn(T_NPM_URL);
       const data = await this.getChampionDataFromCDN(champion, pkgVersion, $id);
       return data.reduce((arr, i) => arr.concat(i.runes), [] as IRuneItem[]);
     } catch (err) {
