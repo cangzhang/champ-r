@@ -28,6 +28,10 @@ const LangList: ILangItem[] = [
     label: 'Chinese (CN)',
     value: 'zh-CN',
   },
+  {
+    label: 'French (FR)',
+    value: 'fr-FR',
+  },
 ];
 const getLangItem = (value: string) => LangList.find((i) => i.value === value);
 

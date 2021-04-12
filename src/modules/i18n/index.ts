@@ -4,6 +4,8 @@ import { initReactI18next } from 'react-i18next';
 import config from 'src/native/config';
 import enUS, { lang as enLang } from './en-us';
 import zhCN, { lang as cnLang } from './zh-cn';
+import frFR, { lang as frLang } from './fr-fr';
+
 
 const init = () => {
   i18n.use(initReactI18next).init({
@@ -16,6 +18,8 @@ const init = () => {
     resources: {
       [enLang]: enUS,
       [cnLang]: zhCN,
+      [frLang]: frFR,
+
     },
   });
 }

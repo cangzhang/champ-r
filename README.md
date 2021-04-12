@@ -15,6 +15,7 @@ Another League of Legends helper.
 - ✨ i18n support
     - `Chinese`
     - `English`
+    - `French`
 - ℹ️ Update notifier
 
 ## Download
