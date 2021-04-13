@@ -19,7 +19,7 @@ import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix } from 'src/share/constants/sources';
 import LCUService from 'src/service/lcu';
-import Sources, { PkgList } from 'src/share/constants/sources';
+import Sources, { PkgList, SourceList } from 'src/share/constants/sources';
 
 import LolQQ from 'src/service/data-source/lol-qq';
 import NpmService from 'src/service/data-source/npm-service';
@@ -35,13 +35,6 @@ import { IChampionInfo, IRuneItem, ICoordinate } from 'src/typings/commonTypes';
 initI18n();
 
 const engine = new Styletron();
-const SourceList = [
-  {
-    label: `QQ`,
-    value: Sources.Lolqq,
-  },
-  ...PkgList,
-];
 
 const Pin = styled(`button`, () => ({
   margin: `0 2ex`,
