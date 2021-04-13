@@ -22,7 +22,7 @@ import {
 } from 'src/share/actions';
 import { removeFolderContent } from 'src/share/file';
 import LolQQImporter from 'src/service/data-source/lol-qq';
-import NpmService from 'src/service/data-source/npm-service';
+import CdnService from 'src/service/data-source/cdn-service';
 
 import config from 'src/native/config';
 import AppContext from 'src/share/context';
@@ -91,7 +91,7 @@ export default function Import() {
         return Promise.resolve();
       }
 
-      const instance = new NpmService(p.value, dispatch)
+      const instance = new CdnService(p.value, dispatch)
       workers.current[p.label] = instance;
       return instance
         .importFromCdn(lolDir)
