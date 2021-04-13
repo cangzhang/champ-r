@@ -22,7 +22,7 @@ import LCUService from 'src/service/lcu';
 import Sources, { PkgList, SourceList } from 'src/share/constants/sources';
 
 import LolQQ from 'src/service/data-source/lol-qq';
-import NpmService from 'src/service/data-source/npm-service';
+import CdnService from 'src/service/data-source/cdn-service';
 
 import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
@@ -58,7 +58,7 @@ const PinBtn = styled(PinIcon, (props: { $pinned: boolean; }) => ({
 
 const srvInstances = [
   new LolQQ(),
-  ...PkgList.map((p) => new NpmService(p.value)),
+  ...PkgList.map((p) => new CdnService(p.value)),
 ]
 
 export default function Popup() {
@@ -83,7 +83,7 @@ export default function Popup() {
   const instances = useRef(srvInstances);
 
   useEffect(() => {
-    (instances.current[1] as NpmService).getChampionList().then((data) => {
+    (instances.current[1] as CdnService).getChampionList().then((data) => {
       const champMap = makeChampMap(data);
       setChampionMap(champMap);
 
@@ -117,7 +117,7 @@ export default function Popup() {
         return
       }
 
-      (i as NpmService).getRunesFromCDN(champ.id).then((result) => {
+      (i as CdnService).getRunesFromCDN(champ.id).then((result) => {
         setPerkList((draft) => {
           draft[idx] = result;
         });

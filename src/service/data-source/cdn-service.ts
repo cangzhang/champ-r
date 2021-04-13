@@ -33,7 +33,7 @@ type IFetchResult = {
   reason?: IFileResult;
 };
 
-export default class NpmService extends SourceProto {
+export default class CdnService extends SourceProto {
   public cdnUrl = ``;
   public tNpmUrl = ``;
 

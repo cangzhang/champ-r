@@ -24,7 +24,7 @@ import Sources, { PkgList, SourceList } from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
 import { getLatestLogFile } from 'src/share/file';
 import LolQQ from 'src/service/data-source/lol-qq';
-import NpmService from 'src/service/data-source/npm-service';
+import CdnService from 'src/service/data-source/cdn-service';
 
 import logo from 'src/assets/app-icon.webp';
 
@@ -34,7 +34,7 @@ export default function Home() {
   const history = useHistory();
   const { t } = useTranslation();
   const versionTasker = useRef<number>();
-  const instances = useRef<NpmService[]>(PkgList.map(s => new NpmService(s.value, dispatch)));
+  const instances = useRef<CdnService[]>(PkgList.map(s => new CdnService(s.value, dispatch)));
 
   const [selectedSources, toggleSource] = useState<string[]>(config.get(`selectedSources`));
   const [lolDir, setLolDir] = useState(``);
