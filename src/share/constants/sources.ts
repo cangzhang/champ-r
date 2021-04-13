@@ -35,4 +35,12 @@ export const PkgList: IPkgItem[] = [
   },
 ];
 
+export const SourceList = [
+  {
+    label: Sources.Lolqq,
+    value: Sources.Lolqq,
+  },
+  ...PkgList,
+];
+
 export default Sources;

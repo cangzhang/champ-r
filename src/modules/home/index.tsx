@@ -20,7 +20,7 @@ import { H6 } from 'baseui/typography';
 import config from 'src/native/config';
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
 import { ChampionKeys } from 'src/share/constants/champions';
-import Sources, { isAram, PkgList } from 'src/share/constants/sources';
+import Sources, { PkgList, SourceList } from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
 import { getLatestLogFile } from 'src/share/file';
 import LolQQ from 'src/service/data-source/lol-qq';
@@ -193,15 +193,15 @@ export default function Home() {
           <div className={s.sourceTitle}>{t(`data sources`)}:</div>
         </H6>
 
-        {Object.values(Sources).map((v) => {
-          const aram = isAram(v);
-          const sourceVer = store.dataSourceVersions[v];
+        {SourceList.map((v) => {
+          const aram = v.isAram;
+          const sourceVer = store.dataSourceVersions[v.label];
 
           return (
             <Checkbox
-              key={v}
-              checked={selectedSources.includes(v)}
-              onChange={onCheck(v)}
+              key={v.value}
+              checked={selectedSources.includes(v.label)}
+              onChange={onCheck(v.label)}
               overrides={{
                 Root: {
                   style: ({ $theme }) => ({
@@ -230,7 +230,7 @@ export default function Home() {
                   }),
                 },
               }}>
-              {v}
+              {v.label}
               {sourceVer && (
                 <Tag closeable={false} variant={VARIANT.outlined} kind='warning'>
                   {sourceVer}
