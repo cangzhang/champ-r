@@ -13,7 +13,7 @@ import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
 
-import Sources from 'src/share/constants/sources';
+import Sources, { PkgList } from 'src/share/constants/sources';
 import {
   prepareReimport,
   updateFetchingSource,
@@ -21,9 +21,8 @@ import {
   importBuildSucceed,
 } from 'src/share/actions';
 import { removeFolderContent } from 'src/share/file';
-import OpGGImporter from 'src/service/data-source/op-gg';
 import LolQQImporter from 'src/service/data-source/lol-qq';
-import MbImporter from 'src/service/data-source/murderbridge';
+import NpmService from 'src/service/data-source/npm-service';
 
 import config from 'src/native/config';
 import AppContext from 'src/share/context';
@@ -34,9 +33,7 @@ export default function Import() {
   const history = useHistory();
   const [, theme] = useStyletron();
   const [t] = useTranslation();
-
   const lolDir = config.get(`lolDir`);
-  const lolVer = config.get(`lolVer`);
 
   const { store, dispatch } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
@@ -64,9 +61,7 @@ export default function Import() {
     }
 
     const { itemMap } = store;
-    let opggTask = _noop;
     let lolqqTask = _noop;
-    let mbTask = _noop;
 
     if (selectedSources.includes(Sources.Lolqq)) {
       const instance = new LolQQImporter(lolDir, itemMap, dispatch);
@@ -91,45 +86,38 @@ export default function Import() {
           });
     }
 
-    if (selectedSources.includes(Sources.MurderBridge)) {
-      const instance = new MbImporter(lolDir, dispatch);
-      mbTask = () =>
-        instance.importFromCDN().then(() => {
-          toaster.positive(`[${Sources.MurderBridge.toUpperCase()}] ${t(`completed`)}`, {});
-          dispatch(importBuildSucceed(Sources.MurderBridge));
+    const tasks = PkgList.map(p => {
+      if (!selectedSources.includes(p.label)) {
+        return Promise.resolve();
+      }
+
+      const instance = new NpmService(p.value, dispatch)
+      workers.current[p.label] = instance;
+      return instance
+        .importFromCdn(lolDir)
+        .then((result) => {
+          const { rejected } = result;
+          if (!rejected.length) {
+            toaster.positive(`[${p.label.toUpperCase()}] ${t(`completed`)}`, {});
+            dispatch(importBuildSucceed(p.label));
+          }
+        })
+        .catch((err) => {
+          if (err.message.includes(`Error: Cancel`)) {
+            setCancel(cancelled.concat(p.label));
+            toaster.warning(`${t(`cancelled`)}: ${p.label}`, {});
+          } else {
+            dispatch(importBuildFailed(p.label));
+            toaster.negative(`${t(`import failed`)}: ${p.label}`, {});
+            console.error(err);
+          }
         });
-    }
-
-    if (selectedSources.includes(Sources.Opgg)) {
-      const instance = new OpGGImporter(lolVer, lolDir, itemMap, dispatch);
-      workers.current[Sources.Opgg] = instance;
-
-      opggTask = () =>
-        instance
-          .importFromCdn(lolDir)
-          .then((result) => {
-            const { rejected } = result;
-            if (!rejected.length) {
-              toaster.positive(`[${Sources.Opgg.toUpperCase()}] ${t(`completed`)}`, {});
-              dispatch(importBuildSucceed(Sources.Opgg));
-            }
-          })
-          .catch((err) => {
-            if (err.message.includes(`Error: Cancel`)) {
-              setCancel(cancelled.concat(Sources.Opgg));
-              toaster.warning(`${t(`cancelled`)}: ${Sources.Opgg}`, {});
-            } else {
-              dispatch(importBuildFailed(Sources.Opgg));
-              toaster.negative(`${t(`import failed`)}: ${Sources.Opgg}`, {});
-              console.error(err);
-            }
-          });
-    }
+    });
 
     await cleanFolderTask();
 
     try {
-      await Promise.all([opggTask(), lolqqTask(), mbTask()]);
+      await Promise.all([...tasks, lolqqTask()]);
     } finally {
       setLoading(false);
     }

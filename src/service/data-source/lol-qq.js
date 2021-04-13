@@ -3,9 +3,8 @@ import _get from 'lodash/get';
 import _find from 'lodash/find';
 import _orderBy from 'lodash/orderBy';
 import _noop from 'lodash/noop';
-import { CancelToken } from 'axios';
 
-import http from 'src/service/http';
+import http, { CancelToken } from 'src/service/http';
 import { makeBuildFile, saveToFile } from 'src/share/file';
 import { parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
