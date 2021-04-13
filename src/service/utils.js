@@ -1,10 +1,9 @@
 import _find from 'lodash/find';
 import _sortBy from 'lodash/sortBy';
 import cheerio from 'cheerio';
-import { CancelToken } from 'axios';
 
 import { flatRunes } from 'src/share/constants/runes';
-import http from './http';
+import http, { CancelToken } from './http';
 
 const RequestLocale = `en-US`;
 

@@ -19,11 +19,11 @@ import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix } from 'src/share/constants/sources';
 import LCUService from 'src/service/lcu';
-import LolQQ from 'src/service/data-source/lol-qq';
-import Opgg from 'src/service/data-source/op-gg';
-import Sources from 'src/share/constants/sources';
+import Sources, { PkgList } from 'src/share/constants/sources';
 
-import MurderBridge from 'src/service/data-source/murderbridge';
+import LolQQ from 'src/service/data-source/lol-qq';
+import NpmService from 'src/service/data-source/npm-service';
+
 import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
 import Loading from 'src/components/loading-spinner';
@@ -37,18 +37,10 @@ initI18n();
 const engine = new Styletron();
 const SourceList = [
   {
-    name: `QQ`,
+    label: `QQ`,
     value: Sources.Lolqq,
   },
-  {
-    name: `OP.GG`,
-    value: Sources.Opgg,
-  },
-  {
-    name: `MB`,
-    value: Sources.MurderBridge,
-    aram: true,
-  },
+  ...PkgList,
 ];
 
 const Pin = styled(`button`, () => ({
@@ -71,6 +63,11 @@ const PinBtn = styled(PinIcon, (props: { $pinned: boolean; }) => ({
   width: `1.4em`,
 }));
 
+const srvInstances = [
+  new LolQQ(),
+  ...PkgList.map((p) => new NpmService(p.value)),
+]
+
 export default function Popup() {
   const lolDir = config.get(`lolDir`);
   const [t] = useTranslation();
@@ -89,15 +86,11 @@ export default function Popup() {
     height: 0,
   });
   const [showTips, toggleTips] = useState(true);
-  const instances = useRef({
-    opgg: new Opgg(),
-    mb: new MurderBridge(``, () => null),
-    qq: new LolQQ(),
-  });
   const [pinned, togglePinned] = useState(remote.getCurrentWindow().isAlwaysOnTop());
+  const instances = useRef(srvInstances);
 
   useEffect(() => {
-    instances.current.opgg.getChampionList().then((data) => {
+    (instances.current[1] as NpmService).getChampionList().then((data) => {
       const champMap = makeChampMap(data);
       setChampionMap(champMap);
 
@@ -120,23 +113,23 @@ export default function Popup() {
     }
     setChampionDetail(champ);
 
-    instances.current.qq.getChampionPerks(champ.key, champ.id).then((result) => {
+    (instances.current[0] as LolQQ).getChampionPerks(champ.key, champ.id).then((result) => {
       setPerkList((draft) => {
         draft[0] = result;
       });
     });
 
-    instances.current.opgg.getRunesFromCDN(champ.id).then((result) => {
-      setPerkList((draft) => {
-        draft[1] = result;
-      });
-    });
+    instances.current.forEach((i, idx) => {
+      if (idx === 0) {
+        return
+      }
 
-    instances.current.mb.getRunesFromCDN(champ.id).then((result) => {
-      setPerkList((draft) => {
-        draft[2] = result;
+      (i as NpmService).getRunesFromCDN(champ.id).then((result) => {
+        setPerkList((draft) => {
+          draft[idx] = result;
+        });
       });
-    });
+    })
   }, [championId, championMap]);
 
   useEffect(() => {
@@ -261,7 +254,7 @@ export default function Popup() {
                       },
                     },
                   }}>
-                  {item.name}
+                  {item.label}
                 </Button>
               ))}
             </ButtonGroup>
@@ -269,7 +262,7 @@ export default function Popup() {
         )}
 
         {perkList[tabIdx] && (
-          <div className={s.list}>{renderList(perkList[tabIdx], SourceList[tabIdx].aram)}</div>
+          <div className={s.list}>{renderList(perkList[tabIdx], SourceList[tabIdx].isAram)}</div>
         )}
       </div>
     );

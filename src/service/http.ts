@@ -13,4 +13,6 @@ axios.interceptors.response.use(
   },
 );
 
+export const CancelToken = axios.CancelToken;
+
 export default axios;

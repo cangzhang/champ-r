@@ -1,17 +1,15 @@
 import { nanoid as uuid } from 'nanoid';
 import _noop from 'lodash/noop';
-import axios from 'axios';
 
-import http from 'src/service/http';
+import http, { CancelToken } from 'src/service/http';
 import { addFetched, addFetching } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
 import Sources from 'src/share/constants/sources';
 import SourceProto, { fetchLatestVersionFromCdn } from './source-proto';
 import { IChampionCdnDataItem, IRuneItem, IFileResult, IChampionInfo } from 'src/typings/commonTypes';
 
-const CancelToken = axios.CancelToken;
-const CDN_URL = `https://cdn.jsdelivr.net/npm/@champ-r/op.gg`;
-const T_NPM_URL = `https://registry.npm.taobao.org/@champ-r/op.gg`;
+const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
+const T_NPM_PREFIX = `https://registry.npm.taobao.org/@champ-r`;
 
 const Stages = {
   FETCH_CHAMPION_LIST: `FETCH_CHAMPION_LIST`,
@@ -35,17 +33,22 @@ type IFetchResult = {
   reason?: IFileResult;
 };
 
-export default class OpGG extends SourceProto {
-  constructor(public version = ``, public lolDir = ``, public itemMap = {}, public dispatch = _noop) {
+export default class NpmService extends SourceProto {
+  public cdnUrl = ``;
+  public tNpmUrl = ``;
+
+  constructor(public pkgName = ``, public dispatch = _noop) {
     super();
+    this.cdnUrl = `${CDN_PREFIX}/${pkgName}`;
+    this.tNpmUrl = `${T_NPM_PREFIX}/${pkgName}`;
   }
 
-  static getPkgInfo = () => SourceProto.getPkgInfo(T_NPM_URL, CDN_URL);
+  public getPkgInfo = () => SourceProto.getPkgInfo(this.tNpmUrl, this.cdnUrl);
 
   public getChampionList = async () => {
     try {
-      const version = await fetchLatestVersionFromCdn(T_NPM_URL);
-      const data: { [key: string]: IChampionInfo } = await http.get(`${CDN_URL}@${version}/index.json?${Date.now()}`, {
+      const version = await fetchLatestVersionFromCdn(this.tNpmUrl);
+      const data: { [key: string]: IChampionInfo } = await http.get(`${this.cdnUrl}@${version}/index.json?${Date.now()}`, {
         cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
       });
       return data;
@@ -59,8 +62,8 @@ export default class OpGG extends SourceProto {
 
   public getChampionDataFromCdn = async (champion: string, $identity: string = ``) => {
     try {
-      const version = await fetchLatestVersionFromCdn(T_NPM_URL);
-      const data: IChampionCdnDataItem[] = await http.get(`${CDN_URL}@${version}/${champion}.json?${Date.now()}`, {
+      const version = await fetchLatestVersionFromCdn(this.tNpmUrl);
+      const data: IChampionCdnDataItem[] = await http.get(`${this.cdnUrl}@${version}/${champion}.json?${Date.now()}`, {
         cancelToken: new CancelToken(this.setCancelHook($identity)),
       });
       return data;

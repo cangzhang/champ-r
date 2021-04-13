@@ -20,12 +20,11 @@ import { H6 } from 'baseui/typography';
 import config from 'src/native/config';
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
 import { ChampionKeys } from 'src/share/constants/champions';
-import Sources, { isAram } from 'src/share/constants/sources';
+import Sources, { isAram, PkgList } from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
-import OpGG from 'src/service/data-source/op-gg';
-import LolQQ from 'src/service/data-source/lol-qq';
-import MurderBridge from 'src/service/data-source/murderbridge';
 import { getLatestLogFile } from 'src/share/file';
+import LolQQ from 'src/service/data-source/lol-qq';
+import NpmService from 'src/service/data-source/npm-service';
 
 import logo from 'src/assets/app-icon.webp';
 
@@ -35,6 +34,7 @@ export default function Home() {
   const history = useHistory();
   const { t } = useTranslation();
   const versionTasker = useRef<number>();
+  const instances = useRef<NpmService[]>(PkgList.map(s => new NpmService(s.value, dispatch)));
 
   const [selectedSources, toggleSource] = useState<string[]>(config.get(`selectedSources`));
   const [lolDir, setLolDir] = useState(``);
@@ -86,15 +86,12 @@ export default function Home() {
   const fetchVersion = useCallback(
     () =>
       Promise.allSettled([
-        OpGG.getPkgInfo().then(({ sourceVersion }) => {
-          dispatch(updateDataSourceVersion(Sources.Opgg, sourceVersion));
-        }),
         LolQQ.getLolVersion().then((v) => {
           dispatch(updateDataSourceVersion(Sources.Lolqq, v));
         }),
-        MurderBridge.getPkgInfo().then(({ sourceVersion }) => {
-          dispatch(updateDataSourceVersion(Sources.MurderBridge, sourceVersion));
-        }),
+        ...instances.current.map(i => i.getPkgInfo().then(({ sourceVersion }) => {
+          dispatch(updateDataSourceVersion(i.pkgName, sourceVersion));
+        })),
       ]),
     [dispatch],
   );
