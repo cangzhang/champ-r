@@ -4,7 +4,6 @@ import _noop from 'lodash/noop';
 import http, { CancelToken } from 'src/service/http';
 import { addFetched, addFetching } from 'src/share/actions';
 import { saveToFile } from 'src/share/file';
-import Sources from 'src/share/constants/sources';
 import SourceProto, { fetchLatestVersionFromCdn } from './source-proto';
 import { IChampionCdnDataItem, IRuneItem, IFileResult, IChampionInfo } from 'src/typings/commonTypes';
 
@@ -80,19 +79,20 @@ export default class CdnService extends SourceProto {
         addFetching({
           champion,
           $identity,
-          source: Sources.Opgg,
+          source: this.pkgName,
         }),
       );
 
       const data = await this.getChampionDataFromCdn(champion);
       const tasks = data.reduce((t, i) => {
         const { position, itemBuilds } = i;
+        const pStr = position ? `${position} - ` : ``
         itemBuilds.forEach((k) => {
           const file = {
             ...k,
             champion,
             position,
-            fileName: `[${Sources.Opgg.toUpperCase()}] ${position} - ${champion}`,
+            fileName: `[${this.pkgName.toUpperCase()}] ${pStr}${champion}`,
           };
           t = t.concat(saveToFile(lolDir, file));
         });
@@ -106,7 +106,7 @@ export default class CdnService extends SourceProto {
         addFetched({
           champion,
           $identity,
-          source: Sources.Opgg,
+          source: this.pkgName,
         }),
       );
 
