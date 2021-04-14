@@ -1,4 +1,3 @@
-/* eslint react-hooks/exhaustive-deps: 0 */
 import s from './style.module.scss';
 
 import initI18n from 'src/modules/i18n';
@@ -19,7 +18,7 @@ import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import config from 'src/native/config';
 import { QQChampionAvatarPrefix } from 'src/share/constants/sources';
 import LCUService from 'src/service/lcu';
-import Sources, { PkgList, SourceList } from 'src/share/constants/sources';
+import { PkgList, SourceList } from 'src/share/constants/sources';
 
 import LolQQ from 'src/service/data-source/lol-qq';
 import CdnService from 'src/service/data-source/cdn-service';
@@ -61,12 +60,18 @@ const srvInstances = [
   ...PkgList.map((p) => new CdnService(p.value)),
 ]
 
+const getInitTab = () => {
+  const cur = config.get(`perkTab`);
+  const validLabel = (SourceList.find(i => i.value === cur) ?? SourceList[0]).value;
+  return validLabel;
+}
+
 export default function Popup() {
   const lolDir = config.get(`lolDir`);
   const [t] = useTranslation();
   const lcu = useRef<LCUService>();
 
-  const [activeTab, setActiveTab] = useState(config.get(`perkTab`) || Sources.Lolqq);
+  const [activeTab, setActiveTab] = useState(getInitTab());
   const [perkList, setPerkList] = useImmer<IRuneItem[][]>([[], [], []]);
   const [championMap, setChampionMap] = useState<{ [key: string]: IChampionInfo }>();
   const [championId, setChampionId] = useState<number | string>('');
@@ -123,7 +128,7 @@ export default function Popup() {
         });
       });
     })
-  }, [championId, championMap]);
+  }, [championId, championMap, setPerkList]);
 
   useEffect(() => {
     config.set(`perkTab`, activeTab);
