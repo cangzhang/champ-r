@@ -11,12 +11,11 @@ import { styled } from 'styletron-react';
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
-import { ButtonGroup, SIZE } from 'baseui/button-group';
-import { Button } from 'baseui/button';
 import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
+import { Select } from "baseui/select";
 
 import config from 'src/native/config';
-import { QQChampionAvatarPrefix } from 'src/share/constants/sources';
+import { IPkgItem, QQChampionAvatarPrefix } from 'src/share/constants/sources';
 import LCUService from 'src/service/lcu';
 import { PkgList, SourceList } from 'src/share/constants/sources';
 
@@ -62,8 +61,7 @@ const srvInstances = [
 
 const getInitTab = () => {
   const cur = config.get(`perkTab`);
-  const validLabel = (SourceList.find(i => i.value === cur) ?? SourceList[0]).value;
-  return validLabel;
+  return [SourceList.find(i => i.value === cur) ?? SourceList[0]];
 }
 
 export default function Popup() {
@@ -71,7 +69,7 @@ export default function Popup() {
   const [t] = useTranslation();
   const lcu = useRef<LCUService>();
 
-  const [activeTab, setActiveTab] = useState(getInitTab());
+  const [activeTab, setActiveTab] = useState<IPkgItem[]>(getInitTab());
   const [perkList, setPerkList] = useImmer<IRuneItem[][]>([[], [], []]);
   const [championMap, setChampionMap] = useState<{ [key: string]: IChampionInfo }>();
   const [championId, setChampionId] = useState<number | string>('');
@@ -166,9 +164,14 @@ export default function Popup() {
     setCurPerk(null);
   };
 
-  const onSelectSource = (_: unknown, idx: number) => {
-    setActiveTab(SourceList[idx].value);
-  };
+  const onTabChange = ({ value }: any) => {
+    setActiveTab(value);
+  }
+
+  useEffect(() => {
+    console.log(activeTab)
+    config.set(`perkTab`, activeTab[0].value);
+  }, [activeTab])
 
   const toggleAlwaysOnTop = () => {
     ipcRenderer.send(`popup:toggle-always-on-top`);
@@ -209,7 +212,7 @@ export default function Popup() {
       return <Loading className={s.loading}/>;
     }
 
-    const tabIdx = SourceList.findIndex((i) => i.value === activeTab);
+    const tabIdx = SourceList.findIndex((i) => i.value === activeTab[0].value);
     return (
       <div className={s.main} onClick={() => toggleTips(false)}>
         {championDetail && (
@@ -229,33 +232,33 @@ export default function Popup() {
               />
             </Popover>
 
-            <ButtonGroup
-              size={SIZE.compact}
-              onClick={onSelectSource}
-              selected={[tabIdx]}
+            <Select
+              backspaceRemoves={false}
+              clearable={false}
+              deleteRemoves={false}
+              escapeClearsValue={false}
+              options={SourceList}
+              onBlurResetsInput={false}
+              onCloseResetsInput={false}
+              onSelectResetsInput={false}
+              searchable={false}
+              labelKey={`label`}
+              valueKey={`value`}
+              value={activeTab}
+              onChange={onTabChange}
               overrides={{
-                Root: {
+                DropdownListItem: {
                   style: () => ({
-                    flex: 1,
+                    textTransform: `uppercase`,
                   }),
                 },
-              }}>
-              {SourceList.map((item) => (
-                <Button
-                  key={item.value}
-                  overrides={{
-                    BaseButton: {
-                      style: () => {
-                        return {
-                          userSelect: `none`,
-                        };
-                      },
-                    },
-                  }}>
-                  {item.label}
-                </Button>
-              ))}
-            </ButtonGroup>
+                ValueContainer: {
+                  style: () => ({
+                    textTransform: `uppercase`,
+                  }),
+                },
+              }}
+            />
           </div>
         )}
 

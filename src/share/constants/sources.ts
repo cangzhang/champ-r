@@ -31,7 +31,7 @@ export const PkgList: IPkgItem[] = [
   },
 ];
 
-export const SourceList = [
+export const SourceList: IPkgItem[] = [
   {
     label: Sources.Lolqq,
     value: Sources.Lolqq,
