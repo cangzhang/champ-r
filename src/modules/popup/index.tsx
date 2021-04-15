@@ -61,28 +61,28 @@ const srvInstances = [
 
 const getInitTab = () => {
   const cur = config.get(`perkTab`);
-  return [SourceList.find(i => i.value === cur) ?? SourceList[0]];
+  return [ SourceList.find(i => i.value === cur) ?? SourceList[0] ];
 }
 
 export default function Popup() {
   const lolDir = config.get(`lolDir`);
-  const [t] = useTranslation();
+  const [ t ] = useTranslation();
   const lcu = useRef<LCUService>();
 
-  const [activeTab, setActiveTab] = useState<IPkgItem[]>(getInitTab());
-  const [perkList, setPerkList] = useImmer<IRuneItem[][]>([[], [], []]);
-  const [championMap, setChampionMap] = useState<{ [key: string]: IChampionInfo }>();
-  const [championId, setChampionId] = useState<number | string>('');
-  const [championDetail, setChampionDetail] = useState<IChampionInfo | null>(null);
-  const [curPerk, setCurPerk] = useState<IRuneItem | null>(null);
-  const [coordinate, setCoordinate] = useState<ICoordinate>({
+  const [ activeTab, setActiveTab ] = useState<IPkgItem[]>(getInitTab());
+  const [ perkList, setPerkList ] = useImmer<IRuneItem[][]>([ [], [], [] ]);
+  const [ championMap, setChampionMap ] = useState<{ [key: string]: IChampionInfo }>();
+  const [ championId, setChampionId ] = useState<number | string>('');
+  const [ championDetail, setChampionDetail ] = useState<IChampionInfo | null>(null);
+  const [ curPerk, setCurPerk ] = useState<IRuneItem | null>(null);
+  const [ coordinate, setCoordinate ] = useState<ICoordinate>({
     x: 0,
     y: 0,
     width: 0,
     height: 0,
   });
-  const [showTips, toggleTips] = useState(true);
-  const [pinned, togglePinned] = useState(remote.getCurrentWindow().isAlwaysOnTop());
+  const [ showTips, toggleTips ] = useState(true);
+  const [ pinned, togglePinned ] = useState(remote.getCurrentWindow().isAlwaysOnTop());
   const instances = useRef(srvInstances);
 
   useEffect(() => {
@@ -126,11 +126,11 @@ export default function Popup() {
         });
       });
     })
-  }, [championId, championMap, setPerkList]);
+  }, [ championId, championMap, setPerkList ]);
 
   useEffect(() => {
     config.set(`perkTab`, activeTab);
-  }, [activeTab]);
+  }, [ activeTab ]);
 
   const apply = async (perk: IRuneItem) => {
     try {
@@ -169,9 +169,8 @@ export default function Popup() {
   }
 
   useEffect(() => {
-    console.log(activeTab)
     config.set(`perkTab`, activeTab[0].value);
-  }, [activeTab])
+  }, [ activeTab ])
 
   const toggleAlwaysOnTop = () => {
     ipcRenderer.send(`popup:toggle-always-on-top`);
@@ -247,13 +246,19 @@ export default function Popup() {
               value={activeTab}
               onChange={onTabChange}
               overrides={{
+                Root: {
+                  style: ({ $theme }) => ({
+                    width: `13em`,
+                    outline: `${$theme.colors.positive100} solid`,
+                  }),
+                },
                 DropdownListItem: {
                   style: () => ({
                     textTransform: `uppercase`,
                   }),
                 },
                 ValueContainer: {
-                  style: () => ({
+                  style: ({ $theme }) => ({
                     textTransform: `uppercase`,
                   }),
                 },
