@@ -34,7 +34,7 @@ initI18n();
 const engine = new Styletron();
 
 const Pin = styled(`button`, () => ({
-  margin: `0 2ex`,
+  margin: `0 2ex 0 0`,
   height: `2em`,
   width: `2em`,
   ':hover': {
