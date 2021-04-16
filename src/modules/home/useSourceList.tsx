@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import http from 'src/service/http';
 import config from 'src/native/config';
-import { QQSource, ISourceItem, DefaultSourceList } from 'src/share/constants/sources';
+import { SourceQQ, ISourceItem, DefaultSourceList } from 'src/share/constants/sources';
 
 const TEN_MIN = 10 * 60 * 1000;
 const VersionUrl = `https://registry.npm.taobao.org/@champ-r/source-list`;
@@ -19,7 +19,7 @@ export default function UseSourceList() {
       const version = data[`dist-tags`][`latest`];
       const url = getLatestList(version);
       const rawList: ISourceItem[] = await http.get(url);
-      const list = [QQSource, ...rawList];
+      const list = [SourceQQ, ...rawList];
       config.set(`sourceList`, list);
       setSourceList(list);
     } catch (_) {}

@@ -8,7 +8,7 @@ import http, { CancelToken } from 'src/service/http';
 import { makeBuildFile, saveToFile } from 'src/share/file';
 import { parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
-import Sources from 'src/share/constants/sources';
+import { SourceQQ } from 'src/share/constants/sources';
 
 import SourceProto from './source-proto';
 
@@ -48,13 +48,13 @@ const makePerkData = (perk, champion, position) => {
 
   const winRate = strToPercent(winrate, 1);
 
-  data.name = `${champion}-${position}, pick ${igamecnt} win ${winRate}% [${Sources.Lolqq}]`;
+  data.name = `${champion}-${position}, pick ${igamecnt} win ${winRate}% [${SourceQQ.label}]`;
   data.selectedPerkIds = runes.map(Number);
   data.alias = champion;
   data.position = position;
   data.winRate = winRate;
   data.pickCount = igamecnt;
-  data.source = Sources.Lolqq;
+  data.source = SourceQQ.label;
 
   return data;
 };
@@ -168,7 +168,7 @@ export default class LolQQ extends SourceProto {
         addFetching({
           $identity,
           champion: alias.toLowerCase(),
-          source: Sources.Lolqq,
+          source: SourceQQ.label,
         }),
       );
 
@@ -262,8 +262,8 @@ export default class LolQQ extends SourceProto {
       ];
 
       const item = makeBuildFile({
-        fileName: `[${Sources.Lolqq.toUpperCase()}] ${position} - ${alias}`,
-        title: `[${Sources.Lolqq.toUpperCase()}] ${position} - ${alias}`,
+        fileName: `[${SourceQQ.label.toUpperCase()}] ${position} - ${alias}`,
+        title: `[${SourceQQ.label.toUpperCase()}] ${position} - ${alias}`,
         championId: +champion.heroId,
         champion: alias,
         blocks,
@@ -307,7 +307,7 @@ export default class LolQQ extends SourceProto {
       const fileTasks = items.map((i) => saveToFile(lolDir, i));
       const result = await Promise.all(fileTasks);
 
-      dispatch(fetchSourceDone(Sources.Lolqq));
+      dispatch(fetchSourceDone(SourceQQ.label));
 
       return result;
     } catch (error) {
