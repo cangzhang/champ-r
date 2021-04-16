@@ -137,7 +137,7 @@
     "postcss-safe-parser": "4.0.1",
     "prettier": "2.0.5",
     "react-app-polyfill": "^1.0.5",
-    "react-dev-utils": "^10.0.0",
+    "react-dev-utils": "^11.0.4",
     "react-refresh": "^0.10.0",
     "react-svg-loader": "^3.0.3",
     "resolve": "1.12.2",
