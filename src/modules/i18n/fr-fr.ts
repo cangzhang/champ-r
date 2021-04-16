@@ -1,4 +1,6 @@
-export const lang = `fr-FR`;
+import { LanguageSet } from 'src/native/langs'
+
+export const lang = LanguageSet.frFR;
 
 export default {
   translation: {

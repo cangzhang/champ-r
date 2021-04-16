@@ -15,7 +15,7 @@ import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import { Select } from "baseui/select";
 
 import config from 'src/native/config';
-import { IPkgItem, QQChampionAvatarPrefix } from 'src/share/constants/sources';
+import { ISourceItem, QQChampionAvatarPrefix } from 'src/share/constants/sources';
 import LCUService from 'src/service/lcu';
 import { PkgList, SourceList } from 'src/share/constants/sources';
 
@@ -69,7 +69,7 @@ export default function Popup() {
   const [ t ] = useTranslation();
   const lcu = useRef<LCUService>();
 
-  const [ activeTab, setActiveTab ] = useState<IPkgItem[]>(getInitTab());
+  const [ activeTab, setActiveTab ] = useState<ISourceItem[]>(getInitTab());
   const [ perkList, setPerkList ] = useImmer<IRuneItem[][]>([ [], [], [] ]);
   const [ championMap, setChampionMap ] = useState<{ [key: string]: IChampionInfo }>();
   const [ championId, setChampionId ] = useState<number | string>('');

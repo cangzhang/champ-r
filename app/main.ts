@@ -1,17 +1,18 @@
 import path from 'path';
-import _debounce from 'lodash/debounce'
+import _debounce from 'lodash/debounce';
 
-import osLocale from "os-locale";
-import { machineId } from 'node-machine-id'
+import osLocale from 'os-locale';
+import { machineId } from 'node-machine-id';
 import { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage, nativeTheme, IpcMainEvent } from 'electron';
-import { autoUpdater } from 'electron-updater'
-import contextMenu from 'electron-context-menu'
+import { autoUpdater } from 'electron-updater';
+import contextMenu from 'electron-context-menu';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
-import electronLogger from 'electron-log'
+import electronLogger from 'electron-log';
 
-import initLogger from '../src/native/logger'
-import appStore from '../src/native/config'
+import initLogger from '../src/native/logger';
+import appStore from '../src/native/config';
+import { LanguageList, LanguageSet } from '../src/native/langs';
 
 interface IPopupEventData {
   championId: string;
@@ -355,7 +356,7 @@ async function checkUpdates() {
 }
 
 function registerUpdater() {
-  electronLogger.transports.file.level = 'info'
+  electronLogger.transports.file.level = 'info';
   autoUpdater.logger = electronLogger;
   autoUpdater.autoDownload = false;
 
@@ -396,10 +397,10 @@ function registerUpdater() {
   await app.whenReady();
   Menu.setApplicationMenu(null);
 
-  const locale = (await osLocale()) || `en-US`;
+  const locale = (await osLocale()) || LanguageSet.enUS;
   const sysLang = appStore.get(`appLang`);
-  if (!sysLang || ![`en-US`, `zh-CN`,`fr-FR`].includes(locale)) {
-    appStore.set(`appLang`, `en-US`);
+  if (!sysLang || !LanguageList.includes(locale)) {
+    appStore.set(`appLang`, LanguageSet.enUS);
   }
   console.log(`locale: ${sysLang}, sys lang: ${sysLang}`);
 
@@ -410,6 +411,7 @@ function registerUpdater() {
   registerUpdater();
 
   await makeTray();
+
   const userId = await getMachineId();
   console.log(`userId: ${userId}`);
 

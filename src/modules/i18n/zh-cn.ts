@@ -1,4 +1,6 @@
-export const lang = `zh-CN`;
+import { LanguageSet } from 'src/native/langs'
+
+export const lang = LanguageSet.zhCN;
 
 export default {
   translation: {

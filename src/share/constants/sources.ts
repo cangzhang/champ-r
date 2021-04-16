@@ -8,13 +8,13 @@ export const QQServicePrefix = `https://game.gtimg.cn`;
 
 export const QQChampionAvatarPrefix = `${QQServicePrefix}/images/lol/act/img/champion`;
 
-export interface IPkgItem {
+export interface ISourceItem {
   label: string;
   value: string;
   isAram?: boolean;
 }
 
-export const PkgList: IPkgItem[] = [
+export const PkgList: ISourceItem[] = [
   {
     label: `op.gg`,
     value: `op.gg`,
@@ -31,7 +31,7 @@ export const PkgList: IPkgItem[] = [
   },
 ];
 
-export const SourceList: IPkgItem[] = [
+export const SourceList: ISourceItem[] = [
   {
     label: Sources.Lolqq,
     value: Sources.Lolqq,
