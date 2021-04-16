@@ -87,7 +87,7 @@ export default function Import() {
           });
     }
 
-    const tasks = sourceList.slice(1).map(p => {
+    const tasks = sourceList.slice(1).map(p => { // exclude the `qq` source
       if (!selectedSources.includes(p.label)) {
         return Promise.resolve();
       }

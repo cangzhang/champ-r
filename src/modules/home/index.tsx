@@ -103,6 +103,7 @@ export default function Home() {
   );
 
   useEffect(() => {
+    // exclude the `qq` source
     instances.current = sourceList.slice(1).map((s => new CdnService(s.value, dispatch)));
   }, [sourceList, dispatch]);
 
