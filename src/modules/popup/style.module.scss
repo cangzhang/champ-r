@@ -20,8 +20,8 @@ body {
 .drag {
   display: flex;
   align-items: center;
-  justify-content: center;
   height: 4rem;
+  padding-left: 2ex;
 
   .avatar {
     -webkit-user-select: none;
