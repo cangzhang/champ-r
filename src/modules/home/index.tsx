@@ -20,7 +20,6 @@ import { H6 } from 'baseui/typography';
 import config from 'src/native/config';
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
 import { ChampionKeys } from 'src/share/constants/champions';
-// import Sources, { ISourceItem } from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
 import { getLatestLogFile } from 'src/share/file';
 import LolQQ from 'src/service/data-source/lol-qq';
@@ -104,8 +103,8 @@ export default function Home() {
   );
 
   useEffect(() => {
-    instances.current = sourceList.slice(1).map((s => new CdnService(s.value, dispatch)))
-  }, [sourceList, dispatch])
+    instances.current = sourceList.slice(1).map((s => new CdnService(s.value, dispatch)));
+  }, [sourceList, dispatch]);
 
   useEffect(() => {
     fetchVersion().then(() => {
@@ -154,7 +153,7 @@ export default function Home() {
   return (
     <div className={s.container}>
       <h1 className={s.title}>
-        <img src={logo} alt='' />
+        <img src={logo} alt=""/>
         <span>ChampR</span>
       </h1>
 
@@ -162,7 +161,7 @@ export default function Home() {
         {t(`lol folder is`)}
         <Tag
           closeable={Boolean(lolDir)}
-          kind='accent'
+          kind="accent"
           onClick={onSelectDir}
           onActionClick={clearFolder}
           overrides={{
@@ -195,8 +194,8 @@ export default function Home() {
             borderRadius: theme.borders.radius300,
           }),
         )}>
-        <CornerDownRight size={`1.6em`} color={`#43BF75`} />
-        <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }} />
+        <CornerDownRight size={`1.6em`} color={`#43BF75`}/>
+        <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }}/>
       </code>
 
       <div className={s.sources}>
@@ -220,6 +219,7 @@ export default function Home() {
                     alignItems: 'center',
                     height: '3em',
                     boxShadow: `0px 1px 0 ${$theme.colors.borderTransparent}`,
+                    minHeight: `48px`,
                   }),
                 },
                 Checkmark: {
@@ -243,12 +243,12 @@ export default function Home() {
               }}>
               {v.label}
               {sourceVer && (
-                <Tag closeable={false} variant={VARIANT.outlined} kind='warning'>
+                <Tag closeable={false} variant={VARIANT.outlined} kind="warning">
                   {sourceVer}
                 </Tag>
               )}
               {aram && (
-                <Tag closeable={false} variant={VARIANT.light} kind='positive'>
+                <Tag closeable={false} variant={VARIANT.light} kind="positive">
                   {t(`aram`)}
                 </Tag>
               )}
@@ -291,7 +291,7 @@ export default function Home() {
             },
           }}
           disabled={shouldDisableImport}
-          startEnhancer={() => <ArrowRight size={24} />}
+          startEnhancer={() => <ArrowRight size={24}/>}
           onClick={startImport}>
           {t(`import now`)}
         </Button>
@@ -339,33 +339,35 @@ export default function Home() {
         </Checkbox>
       </div>
 
-      <Button
-        kind={BtnKind.secondary}
-        size={BtnSize.compact}
-        onClick={resetPopupPosition}
-        overrides={{
-          BaseButton: {
-            style: () => ({
-              alignSelf: `flex-start`,
-              marginBottom: `2ex`,
-            }),
-          },
-        }}>
-        {t(`reset popup position`)}
-      </Button>
-
-      {(process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER === `true`) && (
-        <button
-          style={{ width: `6em` }}
-          onClick={() => {
-            ipcRenderer.send(`show-popup`, {
-              championId: ChampionKeys[Math.floor(Math.random() * ChampionKeys.length)],
-              position: null,
-            });
+      <div>
+        <Button
+          kind={BtnKind.secondary}
+          size={BtnSize.compact}
+          onClick={resetPopupPosition}
+          overrides={{
+            BaseButton: {
+              style: () => ({
+                alignSelf: `flex-start`,
+                marginBottom: `2ex`,
+              }),
+            },
           }}>
-          show popup
-        </button>
-      )}
+          {t(`reset popup position`)}
+        </Button>
+
+        {(process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER === `true`) && (
+          <button
+            style={{ width: `6em`, marginLeft: `2ex` }}
+            onClick={() => {
+              ipcRenderer.send(`show-popup`, {
+                championId: ChampionKeys[Math.floor(Math.random() * ChampionKeys.length)],
+                position: null,
+              });
+            }}>
+            show popup
+          </button>
+        )}
+      </div>
     </div>
   );
 }

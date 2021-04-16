@@ -77,6 +77,8 @@
     display: flex;
     flex-direction: column;
     margin-top: 1.4ex;
+    overflow-y: auto;
+    max-height: 270px;
 
     .source-title {
       font-family: -apple-system, BlinkMacSystemFont, PingFang SC, Hiragino Sans GB, Microsoft YaHei,
