@@ -12,12 +12,11 @@ import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
-import { Select } from "baseui/select";
+import { Select } from 'baseui/select';
 
 import config from 'src/native/config';
 import { ISourceItem, QQChampionAvatarPrefix } from 'src/share/constants/sources';
 import LCUService from 'src/service/lcu';
-import { PkgList, SourceList } from 'src/share/constants/sources';
 
 import LolQQ from 'src/service/data-source/lol-qq';
 import CdnService from 'src/service/data-source/cdn-service';
@@ -54,36 +53,33 @@ const PinBtn = styled(PinIcon, (props: { $pinned: boolean; }) => ({
   width: `1.4em`,
 }));
 
-const srvInstances = [
-  new LolQQ(),
-  ...PkgList.map((p) => new CdnService(p.value)),
-]
-
 const getInitTab = () => {
   const cur = config.get(`perkTab`);
-  return [ SourceList.find(i => i.value === cur) ?? SourceList[0] ];
-}
+  const sourceList = config.get(`sourceList`);
+  return [sourceList.find(i => i.value === cur) ?? sourceList[0]];
+};
 
 export default function Popup() {
   const lolDir = config.get(`lolDir`);
-  const [ t ] = useTranslation();
+  const [t] = useTranslation();
   const lcu = useRef<LCUService>();
+  const sourceList = config.get(`sourceList`);
 
-  const [ activeTab, setActiveTab ] = useState<ISourceItem[]>(getInitTab());
-  const [ perkList, setPerkList ] = useImmer<IRuneItem[][]>([ [], [], [] ]);
-  const [ championMap, setChampionMap ] = useState<{ [key: string]: IChampionInfo }>();
-  const [ championId, setChampionId ] = useState<number | string>('');
-  const [ championDetail, setChampionDetail ] = useState<IChampionInfo | null>(null);
-  const [ curPerk, setCurPerk ] = useState<IRuneItem | null>(null);
-  const [ coordinate, setCoordinate ] = useState<ICoordinate>({
+  const [activeTab, setActiveTab] = useState<ISourceItem[]>(getInitTab());
+  const [perkList, setPerkList] = useImmer<IRuneItem[][]>([[], [], []]);
+  const [championMap, setChampionMap] = useState<{ [key: string]: IChampionInfo }>();
+  const [championId, setChampionId] = useState<number | string>('');
+  const [championDetail, setChampionDetail] = useState<IChampionInfo | null>(null);
+  const [curPerk, setCurPerk] = useState<IRuneItem | null>(null);
+  const [coordinate, setCoordinate] = useState<ICoordinate>({
     x: 0,
     y: 0,
     width: 0,
     height: 0,
   });
-  const [ showTips, toggleTips ] = useState(true);
-  const [ pinned, togglePinned ] = useState(remote.getCurrentWindow().isAlwaysOnTop());
-  const instances = useRef(srvInstances);
+  const [showTips, toggleTips] = useState(true);
+  const [pinned, togglePinned] = useState(remote.getCurrentWindow().isAlwaysOnTop());
+  const instances = useRef([new LolQQ(), ...sourceList.slice(1).map((p) => new CdnService(p.value))]);
 
   useEffect(() => {
     (instances.current[1] as CdnService).getChampionList().then((data) => {
@@ -117,7 +113,7 @@ export default function Popup() {
 
     instances.current.forEach((i, idx) => {
       if (idx === 0) {
-        return
+        return;
       }
 
       (i as CdnService).getRunesFromCDN(champ.id).then((result) => {
@@ -125,12 +121,12 @@ export default function Popup() {
           draft[idx] = result;
         });
       });
-    })
-  }, [ championId, championMap, setPerkList ]);
+    });
+  }, [championId, championMap, setPerkList]);
 
   useEffect(() => {
     config.set(`perkTab`, activeTab);
-  }, [ activeTab ]);
+  }, [activeTab]);
 
   const apply = async (perk: IRuneItem) => {
     try {
@@ -166,11 +162,11 @@ export default function Popup() {
 
   const onTabChange = ({ value }: any) => {
     setActiveTab(value);
-  }
+  };
 
   useEffect(() => {
     config.set(`perkTab`, activeTab[0].value);
-  }, [ activeTab ])
+  }, [activeTab]);
 
   const toggleAlwaysOnTop = () => {
     ipcRenderer.send(`popup:toggle-always-on-top`);
@@ -211,7 +207,7 @@ export default function Popup() {
       return <Loading className={s.loading}/>;
     }
 
-    const tabIdx = SourceList.findIndex((i) => i.value === activeTab[0].value);
+    const tabIdx = sourceList.findIndex((i) => i.value === activeTab[0].value);
     return (
       <div className={s.main} onClick={() => toggleTips(false)}>
         {championDetail && (
@@ -236,7 +232,7 @@ export default function Popup() {
               clearable={false}
               deleteRemoves={false}
               escapeClearsValue={false}
-              options={SourceList}
+              options={sourceList}
               onBlurResetsInput={false}
               onCloseResetsInput={false}
               onSelectResetsInput={false}
@@ -268,7 +264,7 @@ export default function Popup() {
         )}
 
         {perkList[tabIdx] && (
-          <div className={s.list}>{renderList(perkList[tabIdx], SourceList[tabIdx].isAram)}</div>
+          <div className={s.list}>{renderList(perkList[tabIdx], sourceList[tabIdx].isAram)}</div>
         )}
       </div>
     );

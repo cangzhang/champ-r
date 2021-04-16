@@ -15,16 +15,18 @@ import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Notification, KIND } from 'baseui/notification';
 import { Tag, VARIANT } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
-
 import { H6 } from 'baseui/typography';
+
 import config from 'src/native/config';
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
 import { ChampionKeys } from 'src/share/constants/champions';
-import Sources, { PkgList, SourceList } from 'src/share/constants/sources';
+// import Sources, { ISourceItem } from 'src/share/constants/sources';
 import AppContext from 'src/share/context';
 import { getLatestLogFile } from 'src/share/file';
 import LolQQ from 'src/service/data-source/lol-qq';
 import CdnService from 'src/service/data-source/cdn-service';
+
+import useSourceList from './useSourceList';
 
 import logo from 'src/assets/app-icon.webp';
 
@@ -34,7 +36,12 @@ export default function Home() {
   const history = useHistory();
   const { t } = useTranslation();
   const versionTasker = useRef<number>();
-  const instances = useRef<CdnService[]>(PkgList.map(s => new CdnService(s.value, dispatch)));
+  const instances = useRef<CdnService[]>([]);
+
+  const {
+    loading: fetchingSources,
+    sourceList,
+  } = useSourceList();
 
   const [selectedSources, toggleSource] = useState<string[]>(config.get(`selectedSources`));
   const [lolDir, setLolDir] = useState(``);
@@ -87,14 +94,18 @@ export default function Home() {
     () =>
       Promise.allSettled([
         LolQQ.getLolVersion().then((v) => {
-          dispatch(updateDataSourceVersion(Sources.Lolqq, v));
+          dispatch(updateDataSourceVersion(sourceList[0].label, v));
         }),
         ...instances.current.map(i => i.getPkgInfo().then(({ sourceVersion }) => {
           dispatch(updateDataSourceVersion(i.pkgName, sourceVersion));
         })),
       ]),
-    [dispatch],
+    [dispatch, sourceList],
   );
+
+  useEffect(() => {
+    instances.current = sourceList.slice(1).map((s => new CdnService(s.value, dispatch)))
+  }, [sourceList, dispatch])
 
   useEffect(() => {
     fetchVersion().then(() => {
@@ -138,7 +149,7 @@ export default function Home() {
     });
   }, [lolDir]);
 
-  const shouldDisableImport = !store.version || !lolDir || !selectedSources.length;
+  const shouldDisableImport = !store.version || !lolDir || !selectedSources.length || fetchingSources;
 
   return (
     <div className={s.container}>
@@ -193,7 +204,7 @@ export default function Home() {
           <div className={s.sourceTitle}>{t(`data sources`)}:</div>
         </H6>
 
-        {SourceList.map((v) => {
+        {sourceList.map((v) => {
           const aram = v.isAram;
           const sourceVer = store.dataSourceVersions[v.label];
 

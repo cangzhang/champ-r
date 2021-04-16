@@ -31,11 +31,13 @@ export const PkgList: ISourceItem[] = [
   },
 ];
 
-export const SourceList: ISourceItem[] = [
-  {
-    label: Sources.Lolqq,
-    value: Sources.Lolqq,
-  },
+export const QQSource: ISourceItem = {
+  label: Sources.Lolqq,
+  value: Sources.Lolqq,
+};
+
+export const DefaultSourceList: ISourceItem[] = [
+  QQSource,
   ...PkgList,
 ];
 
