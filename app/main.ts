@@ -114,7 +114,7 @@ const createPopupWindow = async () => {
 
     skipTaskbar: popupConfig.alwaysOnTop,
     alwaysOnTop: popupConfig.alwaysOnTop,
-    width: popupConfig.width || 300,
+    width: isDev ? 1000 : popupConfig.width || 300,
     height: popupConfig.height || 350,
     x:
       popupConfig.x ||
