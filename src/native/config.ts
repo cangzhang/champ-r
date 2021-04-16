@@ -1,4 +1,5 @@
 import Store from 'electron-store';
+import { DefaultSourceList } from '../share/constants/sources';
 
 const appStore = new Store({
   defaults: {
@@ -18,6 +19,7 @@ const appStore = new Store({
       y: null,
       alwaysOnTop: true,
     },
+    sourceList: DefaultSourceList,
   },
 });
 
