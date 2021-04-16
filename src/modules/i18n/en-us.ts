@@ -1,4 +1,5 @@
-export const lang = `en-US`;
+import { LanguageSet } from 'src/native/langs'
+export const lang = LanguageSet.enUS;
 
 export default {
   translation: {
