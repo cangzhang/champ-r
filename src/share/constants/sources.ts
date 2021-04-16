@@ -1,8 +1,4 @@
-export const Sources = {
-  Opgg: 'op.gg',
-  Lolqq: 'lol.qq.com',
-  MurderBridge: `murderbridge.com`,
-};
+const Lolqq = 'lol.qq.com';
 
 export const QQServicePrefix = `https://game.gtimg.cn`;
 
@@ -14,7 +10,7 @@ export interface ISourceItem {
   isAram?: boolean;
 }
 
-export const PkgList: ISourceItem[] = [
+const DefaultExtraPkgs: ISourceItem[] = [
   {
     label: `op.gg`,
     value: `op.gg`,
@@ -31,14 +27,12 @@ export const PkgList: ISourceItem[] = [
   },
 ];
 
-export const QQSource: ISourceItem = {
-  label: Sources.Lolqq,
-  value: Sources.Lolqq,
+export const SourceQQ: ISourceItem = {
+  label: Lolqq,
+  value: Lolqq,
 };
 
 export const DefaultSourceList: ISourceItem[] = [
-  QQSource,
-  ...PkgList,
+  SourceQQ,
+  ...DefaultExtraPkgs,
 ];
-
-export default Sources;

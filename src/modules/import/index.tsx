@@ -13,7 +13,7 @@ import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
 
-import Sources, { PkgList } from 'src/share/constants/sources';
+import { SourceQQ } from 'src/share/constants/sources';
 import {
   prepareReimport,
   updateFetchingSource,
@@ -34,6 +34,7 @@ export default function Import() {
   const [, theme] = useStyletron();
   const [t] = useTranslation();
   const lolDir = config.get(`lolDir`);
+  const sourceList = config.get(`sourceList`);
 
   const { store, dispatch } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
@@ -63,30 +64,30 @@ export default function Import() {
     const { itemMap } = store;
     let lolqqTask = _noop;
 
-    if (selectedSources.includes(Sources.Lolqq)) {
+    if (selectedSources.includes(SourceQQ.label)) {
       const instance = new LolQQImporter(lolDir, itemMap, dispatch);
-      workers.current[Sources.Lolqq] = instance;
+      workers.current[SourceQQ.label] = instance;
 
       lolqqTask = () =>
         instance
           .import()
           .then(() => {
-            toaster.positive(`[${Sources.Lolqq.toUpperCase()}] ${t(`completed`)}`, {});
-            dispatch(importBuildSucceed(Sources.Lolqq));
+            toaster.positive(`[${SourceQQ.label.toUpperCase()}] ${t(`completed`)}`, {});
+            dispatch(importBuildSucceed(SourceQQ.label));
           })
           .catch((err) => {
             if (err.message.includes(`Error: Cancel`)) {
-              setCancel(cancelled.concat(Sources.Lolqq));
-              toaster.warning(`${t(`cancelled`)}: ${Sources.Lolqq}`, {});
+              setCancel(cancelled.concat(SourceQQ.label));
+              toaster.warning(`${t(`cancelled`)}: ${SourceQQ.label}`, {});
             } else {
-              dispatch(importBuildFailed(Sources.Lolqq));
-              toaster.negative(`${t(`import failed`)}: ${Sources.Lolqq}`, {});
+              dispatch(importBuildFailed(SourceQQ.label));
+              toaster.negative(`${t(`import failed`)}: ${SourceQQ.label}`, {});
               console.error(err);
             }
           });
     }
 
-    const tasks = PkgList.map(p => {
+    const tasks = sourceList.slice(1).map(p => {
       if (!selectedSources.includes(p.label)) {
         return Promise.resolve();
       }
