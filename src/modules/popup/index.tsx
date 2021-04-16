@@ -79,7 +79,7 @@ export default function Popup() {
   });
   const [showTips, toggleTips] = useState(true);
   const [pinned, togglePinned] = useState(remote.getCurrentWindow().isAlwaysOnTop());
-  const instances = useRef([new LolQQ(), ...sourceList.slice(1).map((p) => new CdnService(p.value))]);
+  const instances = useRef([new LolQQ(), ...sourceList.slice(1).map((p) => new CdnService(p.value))]); // exclude the `qq` source
 
   useEffect(() => {
     (instances.current[1] as CdnService).getChampionList().then((data) => {
