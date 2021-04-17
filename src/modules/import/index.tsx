@@ -53,12 +53,10 @@ export default function Import() {
     }
     dispatch(updateFetchingSource(selectedSources));
 
-    let cleanFolderTask = () => Promise.resolve();
     if (!keepOld) {
-      cleanFolderTask = () =>
-        removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
-          toaster.positive(t(`removed outdated items`), {});
-        });
+      await removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
+        toaster.positive(t(`removed outdated items`), {});
+      });
     }
 
     const { itemMap } = store;
@@ -114,8 +112,6 @@ export default function Import() {
           }
         });
     });
-
-    await cleanFolderTask();
 
     try {
       await Promise.all([...tasks, lolqqTask()]);
