@@ -10,13 +10,15 @@
   font-size: 1.2ex;
   font-family: SF Mono, Microsoft YaHei, Consolas, sans-serif;
 
-  .star {
+  .icons {
     display: flex;
     margin-left: 1ex;
     cursor: pointer;
 
-    svg {
-      fill: #ffc043;
+    &.star {
+      svg {
+        fill: #ffc043;
+      }
     }
   }
 }
