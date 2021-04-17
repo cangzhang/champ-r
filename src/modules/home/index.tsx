@@ -7,7 +7,6 @@ import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import { CornerDownRight } from 'react-feather';
 import { useStyletron } from 'baseui';
 import { Button, KIND as BtnKind, SIZE as BtnSize } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
@@ -16,6 +15,7 @@ import { Notification, KIND } from 'baseui/notification';
 import { Tag, VARIANT } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
 import { H6 } from 'baseui/typography';
+import { CornerDownRight } from 'react-feather';
 
 import config from 'src/native/config';
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
