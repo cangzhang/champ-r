@@ -404,16 +404,20 @@ function registerUpdater() {
   }
   console.log(`locale: ${sysLang}, sys lang: ${sysLang}`);
 
-  mainWindow = await createMainWindow();
-  popupWindow = await createPopupWindow();
-
-  registerMainListeners();
-  registerUpdater();
-
-  await makeTray();
-
-  const userId = await getMachineId();
-  console.log(`userId: ${userId}`);
-
-  await checkUpdates();
+  try {
+    mainWindow = await createMainWindow();
+    popupWindow = await createPopupWindow();
+  
+    registerMainListeners();
+    registerUpdater();
+  
+    await makeTray();
+  
+    const userId = await getMachineId();
+    console.log(`userId: ${userId}`);
+  
+    await checkUpdates();
+  } catch (err) {
+    console.error(err);
+  }
 })();
