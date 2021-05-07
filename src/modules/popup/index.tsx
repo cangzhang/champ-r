@@ -1,7 +1,8 @@
 import s from './style.module.scss';
 
-import initI18n from 'src/modules/i18n';
-import { ipcRenderer, remote } from 'electron';
+import { ipcRenderer } from 'electron';
+import { getCurrentWindow } from '@electron/remote';
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,7 @@ import { LightTheme, BaseProvider } from 'baseui';
 import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import { Select } from 'baseui/select';
 
+import initI18n from 'src/modules/i18n';
 import config from 'src/native/config';
 import { ISourceItem, QQChampionAvatarPrefix } from 'src/share/constants/sources';
 import LCUService from 'src/service/lcu';
@@ -78,7 +80,7 @@ export default function Popup() {
     height: 0,
   });
   const [showTips, toggleTips] = useState(true);
-  const [pinned, togglePinned] = useState(remote.getCurrentWindow().isAlwaysOnTop());
+  const [pinned, togglePinned] = useState(getCurrentWindow().isAlwaysOnTop());
   const instances = useRef([new LolQQ(), ...sourceList.slice(1).map((p) => new CdnService(p.value))]); // exclude the `qq` source
 
   useEffect(() => {
