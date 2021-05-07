@@ -1,4 +1,4 @@
-'use strict';
+
 
 // Do this as the first thing so that any code reading it knows the right env.
 process.env.BABEL_ENV = 'production';
@@ -14,9 +14,11 @@ process.on('unhandledRejection', err => {
 // Ensure environment variables are read.
 require('../config/env');
 
+
 const path = require('path');
 const chalk = require('react-dev-utils/chalk');
 const fs = require('fs-extra');
+const bfj = require('bfj');
 const webpack = require('webpack');
 const configFactory = require('../config/webpack.config');
 const paths = require('../config/paths');
@@ -41,6 +43,9 @@ const isInteractive = process.stdout.isTTY;
 if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
   process.exit(1);
 }
+
+const argv = process.argv.slice(2);
+const writeStatsJson = argv.indexOf('--stats') !== -1;
 
 // Generate configuration
 const config = configFactory('production');
@@ -93,7 +98,7 @@ checkBrowsers(paths.appPath, isInteractive)
       console.log();
 
       const appPackage = require(paths.appPackageJson);
-      const publicUrl = paths.publicUrl;
+      const publicUrl = paths.publicUrlOrPath;
       const publicPath = config.output.publicPath;
       const buildFolder = path.relative(process.cwd(), paths.appBuild);
       printHostingInstructions(
@@ -120,29 +125,16 @@ checkBrowsers(paths.appPath, isInteractive)
       }
     },
   )
-  .catch(error => {
-    if (error && error.message) {
-      console.log(error.message);
+  .catch(err => {
+    if (err && err.message) {
+      console.log(err.message);
     }
-
     process.exit(1);
   });
 
 // Create the production build and print the deployment instructions.
 function build(previousFileSizes) {
-  // We used to support resolving modules according to `NODE_PATH`.
-  // This now has been deprecated in favor of jsconfig/tsconfig.json
-  // This lets you use absolute paths in imports inside large monorepos:
-  if (process.env.NODE_PATH) {
-    console.log(
-      chalk.yellow(
-        'Setting NODE_PATH to resolve modules absolutely has been deprecated in favor of setting baseUrl in jsconfig.json (or tsconfig.json if you are using TypeScript) and will be removed in a future major release of create-react-app.',
-      ),
-    );
-    console.log();
-  }
-
-  console.log('Creating an optimized production build…');
+  console.log('Creating an optimized production build...');
 
   const compiler = webpack(config);
   return new Promise((resolve, reject) => {
@@ -159,7 +151,7 @@ function build(previousFileSizes) {
         if (Object.prototype.hasOwnProperty.call(err, 'postcssNode')) {
           errMessage +=
             '\nCompileError: Begins at CSS selector ' +
-            err.postcssNode.selector;
+            err['postcssNode'].selector;
         }
 
         messages = formatWebpackMessages({
@@ -171,17 +163,14 @@ function build(previousFileSizes) {
           stats.toJson({ all: false, warnings: true, errors: true }),
         );
       }
-
       if (messages.errors.length) {
         // Only keep the first error. Others are often indicative
         // of the same problem, but confuse the reader with noise.
         if (messages.errors.length > 1) {
           messages.errors.length = 1;
         }
-
         return reject(new Error(messages.errors.join('\n\n')));
       }
-
       if (
         process.env.CI &&
         (typeof process.env.CI !== 'string' ||
@@ -197,11 +186,20 @@ function build(previousFileSizes) {
         return reject(new Error(messages.warnings.join('\n\n')));
       }
 
-      return resolve({
+      const resolveArgs = {
         stats,
         previousFileSizes,
         warnings: messages.warnings,
-      });
+      };
+
+      if (writeStatsJson) {
+        return bfj
+          .write(paths.appBuild + '/bundle-stats.json', stats.toJson())
+          .then(() => resolve(resolveArgs))
+          .catch(error => reject(new Error(error)));
+      }
+
+      return resolve(resolveArgs);
     });
   });
 }
