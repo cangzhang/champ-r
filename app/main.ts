@@ -9,6 +9,7 @@ import contextMenu from 'electron-context-menu';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 import electronLogger from 'electron-log';
+import { initialize as initRemoteMain } from '@electron/remote/dist/src/main';
 
 import initLogger from '../src/native/logger';
 import appStore from '../src/native/config';
@@ -21,6 +22,8 @@ interface IPopupEventData {
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
+
+initRemoteMain();
 
 try {
   if (isDev) {
@@ -62,6 +65,7 @@ let tray = null;
 
 const webPreferences = {
   nodeIntegration: true,
+  contextIsolation: false,
   webSecurity: false,
   allowRunningInsecureContent: true,
   zoomFactor: 1,

@@ -1,6 +1,7 @@
 import s from 'src/app.module.scss';
 
-import { ipcRenderer, remote } from 'electron';
+import { ipcRenderer } from 'electron';
+import { dialog } from '@electron/remote';
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -51,7 +52,7 @@ export default function Home() {
   };
 
   const onSelectDir = async () => {
-    const { canceled, filePaths } = await remote.dialog.showOpenDialog({
+    const { canceled, filePaths } = await dialog.showOpenDialog({
       properties: ['openDirectory'],
     });
     if (canceled) {
