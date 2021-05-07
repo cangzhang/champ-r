@@ -34,7 +34,7 @@ export default {
     'ignore system scale': `Ignorer l'échelle du système (redémarrage requis)`,
     'restart app': `Redémarrer ChampR`,
     aram: `ARAM`,
-    'data sources': `Sources de données`,
+    'data sources': `<strong>Sources de données:</strong>`,
     'import failed': `Importation échouée`,
     'import failed list': `Echoué`,
     fulfilled: `Réussi`,

@@ -83,6 +83,23 @@
     .source-title {
       font-family: -apple-system, BlinkMacSystemFont, PingFang SC, Hiragino Sans GB, Microsoft YaHei,
         helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, Arial, sans-serif;
+
+      > strong {
+        position: relative;
+
+        &:after {
+          content: '';
+          background-image: url('~src/assets/icons/zap.svg');
+          background-size: 100% 100%;
+          background-repeat: no-repeat;
+
+          height: 0.6ex;
+          width: 100%;
+          display: block;
+          position: absolute;
+          left: 0;
+        }
+      }
     }
   }
 

@@ -202,7 +202,11 @@ export default function Home() {
 
       <div className={s.sources}>
         <H6 margin={`0 0 1ex 0`} color={theme.colors.borderInverseOpaque}>
-          <div className={s.sourceTitle}>{t(`data sources`)}:</div>
+          <div
+            className={s.sourceTitle}
+            dangerouslySetInnerHTML={{
+              __html: t(`data sources`),
+            }}/>
         </H6>
 
         {sourceList.map((v) => {
