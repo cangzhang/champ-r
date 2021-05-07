@@ -62,6 +62,7 @@ let tray = null;
 
 const webPreferences = {
   nodeIntegration: true,
+  contextIsolation: false,
   webSecurity: false,
   allowRunningInsecureContent: true,
   zoomFactor: 1,
