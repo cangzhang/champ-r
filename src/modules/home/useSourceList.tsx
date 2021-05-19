@@ -5,7 +5,10 @@ import { SourceQQ, ISourceItem, DefaultSourceList } from 'src/share/constants/so
 
 const TEN_MIN = 10 * 60 * 1000;
 const VersionUrl = `https://registry.npm.taobao.org/@champ-r/source-list`;
-const getLatestList = (version: string) => `https://cdn.jsdelivr.net/npm/@champ-r/source-list@${version}/index.json`;
+const DevVersionUrl = `https://registry.npm.taobao.org/@champ-r/source-list.dev`;
+const getLatestList = (version: string, isDev: boolean) => `https://cdn.jsdelivr.net/npm/@champ-r/source-list${isDev ? '.dev' : ''}@${version}/index.json`;
+
+const isDev = process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER
 
 export default function UseSourceList() {
   const [loading, setLoading] = useState(true);
@@ -15,9 +18,9 @@ export default function UseSourceList() {
 
   const setupTask = async () => {
     try {
-      const data = await http.get(VersionUrl);
+      const data = await http.get(isDev ? DevVersionUrl : VersionUrl);
       const version = data[`dist-tags`][`latest`];
-      const url = getLatestList(version);
+      const url = getLatestList(version, !!isDev);
       const rawList: ISourceItem[] = await http.get(url);
       const list = [SourceQQ, ...rawList];
       config.set(`sourceList`, list);
