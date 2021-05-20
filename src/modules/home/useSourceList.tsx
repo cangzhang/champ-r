@@ -8,7 +8,7 @@ const VersionUrl = `https://registry.npm.taobao.org/@champ-r/source-list`;
 const DevVersionUrl = `https://registry.npm.taobao.org/@champ-r/source-list.dev`;
 const getLatestList = (version: string, isDev: boolean) => `https://cdn.jsdelivr.net/npm/@champ-r/source-list${isDev ? '.dev' : ''}@${version}/index.json`;
 
-const isDev = process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER
+const ENABLED_TEST_CHANNEL = Boolean(process.env.IS_DEV || process.env.ENABLED_TEST_CHANNEL);
 
 export default function UseSourceList() {
   const [loading, setLoading] = useState(true);
@@ -18,9 +18,9 @@ export default function UseSourceList() {
 
   const setupTask = async () => {
     try {
-      const data = await http.get(isDev ? DevVersionUrl : VersionUrl);
+      const data = await http.get(ENABLED_TEST_CHANNEL ? DevVersionUrl : VersionUrl);
       const version = data[`dist-tags`][`latest`];
-      const url = getLatestList(version, !!isDev);
+      const url = getLatestList(version, ENABLED_TEST_CHANNEL);
       const rawList: ISourceItem[] = await http.get(url);
       const list = [SourceQQ, ...rawList];
       config.set(`sourceList`, list);

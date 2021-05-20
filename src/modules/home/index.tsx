@@ -211,7 +211,7 @@ export default function Home() {
 
         {sourceList.map((v) => {
           const aram = v.isAram;
-          const sourceVer = store.dataSourceVersions[v.label];
+          const sourceVer = store.dataSourceVersions[v.value];
 
           return (
             <Checkbox
