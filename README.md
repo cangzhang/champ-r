@@ -45,6 +45,11 @@ https://github.com/cangzhang/champ-r/releases
 1. Start pvp game, the rune popup would show in the screen
 1. Press `Apply` icon
 
+## FAQ
+
+1. [Start ChampR & LOL/WeGame with one click](https://github.com/cangzhang/champ-r/issues/63)
+1. [Fix app installation stuck](https://github.com/cangzhang/champ-r/issues/64)
+
 ## Development
 
 ### Prerequisite
