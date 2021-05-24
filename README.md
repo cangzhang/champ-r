@@ -19,11 +19,12 @@ Yet another League of Legends helper.
     - 🇺🇸 `English`
     - 🇫🇷 `French`
 - ℹ️ Update notifier
-- 😎 Multiple data sources
+- 😎 Multiple data sources for **Summoner's Rift** & **ARAM**
   - `op.gg`
   - `lolalytics.com`
   - `murderbridge.com`
   - `101.qq.com`
+  - ...
 
 ## Download
 
