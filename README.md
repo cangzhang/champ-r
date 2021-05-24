@@ -4,23 +4,46 @@
 [![](https://img.shields.io/github/downloads/cangzhang/champ-r/total?style=for-the-badge)](https://github.com/cangzhang/champ-r/releases)
 [![](https://img.shields.io/github/workflow/status/cangzhang/champ-r/release?style=for-the-badge&color=65C0A3)](https://github.com/cangzhang/champ-r/actions)
 
-Another League of Legends helper.
+<img src="https://user-images.githubusercontent.com/1357073/119310269-15b77300-bca2-11eb-92d1-20305f6a7f48.png" height="400" /> <img src="https://user-images.githubusercontent.com/1357073/119310086-da1ca900-bca1-11eb-9d1e-73cae2b36c0c.png" height="400" />
 
-[Screenshots here](./screenshots). [App icon](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
+Yet another League of Legends helper.
+
+[App icon](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
 
 ## Features
 
 - 📦 Auto generate recommend champion builds
 - 🎉 Popup runes list & apply on the fly
 - ✨ i18n support
-    - `Chinese`
-    - `English`
-    - `French`
+    - 🇨🇳 `Chinese`
+    - 🇺🇸 `English`
+    - 🇫🇷 `French`
 - ℹ️ Update notifier
+- 😎 Multiple data sources
+  - `op.gg`
+  - `lolalytics.com`
+  - `murderbridge.com`
+  - `101.qq.com`
 
 ## Download
 
 https://github.com/cangzhang/champ-r/releases
+
+## How to use
+
+### Import builds
+
+1. Run ChampR as **administrator**
+1. Choose the installation folder of League of Lengends
+1. Select data sources
+1. Hit `Import` button, they will appear in the shop when open it
+
+### Apply Runes
+
+1. Run ChampR as **administrator**
+1. Choose the installation folder of League of Lengends
+1. Start pvp game, the rune popup would show in the screen
+1. Press `Apply` icon
 
 ## Development
 
