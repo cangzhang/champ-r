@@ -25,7 +25,7 @@
     "dist:local": "cross-env yarn compile:main && electron-builder --win --x64 -p never",
     "dist": "cross-env yarn compile:main && electron-builder --win --x64 -p always",
     "build:react": "node scripts/build.js",
-    "build:local": "cross-env ELECTRON_MIRROR=https://npm.taobao.org/mirrors/electron/ yarn build:react && yarn dist:local",
+    "build:local": "cross-env yarn build:react && yarn dist:local",
     "build:ci": "yarn modify:version && cross-env BUILD_IN_CI=true yarn build:react && yarn dist:local",
     "build": "cross-env yarn build:react && yarn dist",
     "b": "cross-env TEST_CHANNEL=true yarn build:local",
