@@ -27,7 +27,7 @@ jobs:
     - name: Build
       run: |
         $sha = (git rev-parse --short HEAD)
-        Remove-Item .yarnrc
+        # Remove-Item .yarnrc
         yarn install --silent
         $env:SHORT_SHA=$sha; yarn build:ci
 
