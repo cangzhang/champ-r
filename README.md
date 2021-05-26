@@ -37,7 +37,8 @@ https://github.com/cangzhang/champ-r/releases
 1. Run ChampR as **administrator**
 1. Choose the installation folder of League of Lengends
 1. Select data sources
-1. Hit `Import` button, they will appear in the shop when open it
+1. Hit `Import` button
+1. You can find them in the shop menu when playing game
 
 ### Apply Runes
 
@@ -49,7 +50,7 @@ https://github.com/cangzhang/champ-r/releases
 ## FAQ
 
 1. [Start ChampR & LOL/WeGame with one click](https://github.com/cangzhang/champ-r/issues/63)
-1. [Fix app installation stuck](https://github.com/cangzhang/champ-r/issues/64)
+1. [Fix installation stuck at the progress view](https://github.com/cangzhang/champ-r/issues/64)
 
 ## Development
 
