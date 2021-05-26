@@ -4,7 +4,7 @@
 [![](https://img.shields.io/github/downloads/cangzhang/champ-r/total?style=for-the-badge)](https://github.com/cangzhang/champ-r/releases)
 [![](https://img.shields.io/github/workflow/status/cangzhang/champ-r/release?style=for-the-badge&color=65C0A3)](https://github.com/cangzhang/champ-r/actions)
 
-<img src="https://user-images.githubusercontent.com/1357073/119310269-15b77300-bca2-11eb-92d1-20305f6a7f48.png" height="400" /> <img src="https://user-images.githubusercontent.com/1357073/119310086-da1ca900-bca1-11eb-9d1e-73cae2b36c0c.png" height="400" />
+<img src="https://user-images.githubusercontent.com/1357073/119595829-bc218680-be10-11eb-8e06-cb47902a7d11.png" height="400" /> <img src="https://user-images.githubusercontent.com/1357073/119310086-da1ca900-bca1-11eb-9d1e-73cae2b36c0c.png" height="400" />
 
 Yet another League of Legends helper.
 
