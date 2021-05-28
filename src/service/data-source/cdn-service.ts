@@ -87,12 +87,12 @@ export default class CdnService extends SourceProto {
       const tasks = data.reduce((t, i) => {
         const { position, itemBuilds } = i;
         const pStr = position ? `${position} - ` : ``
-        itemBuilds.forEach((k) => {
+        itemBuilds.forEach((k, idx) => {
           const file = {
             ...k,
             champion,
             position,
-            fileName: `[${this.pkgName.toUpperCase()}] ${pStr}${champion}`,
+            fileName: `[${this.pkgName.toUpperCase()}] ${pStr}${champion}-${idx + 1}`,
           };
           t = t.concat(saveToFile(lolDir, file));
         });
