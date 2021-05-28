@@ -7,6 +7,10 @@ import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
+import {
+  SnackbarProvider,
+  PLACEMENT,
+} from 'baseui/snackbar';
 
 import AppContext from 'src/share/context';
 import appReducer, { initialState, init } from 'src/share/reducer';
@@ -150,6 +154,13 @@ const App = () => {
     <AppContext.Provider value={contextValue}>
       <StyletronProvider value={engine}>
         <BaseProvider theme={LightTheme}>
+          <SnackbarProvider placement={PLACEMENT.bottom} overrides={{
+            Root: {
+              style: () => ({
+                marginBottom: `2em`,
+              }),
+            },
+          }}>
           <Router>
             <Toolbar />
             <Switch>
@@ -165,6 +176,7 @@ const App = () => {
             </Switch>
           </Router>
           <Footer />
+          </SnackbarProvider>
         </BaseProvider>
       </StyletronProvider>
     </AppContext.Provider>

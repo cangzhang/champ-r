@@ -8,15 +8,19 @@ import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import { CornerDownRight } from 'react-feather';
 import { useStyletron } from 'baseui';
 import { Button, KIND as BtnKind, SIZE as BtnSize } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
 import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
-import { Notification, KIND } from 'baseui/notification';
 import { Tag, VARIANT } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
 import { H6 } from 'baseui/typography';
-import { CornerDownRight } from 'react-feather';
+import {
+  useSnackbar,
+  DURATION,
+} from 'baseui/snackbar';
+import { Alert as AlertIcon } from 'baseui/icon';
 
 import config from 'src/native/config';
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
@@ -32,9 +36,11 @@ import logo from 'src/assets/app-icon.webp';
 
 export default function Home() {
   const [css, theme] = useStyletron();
-  const { store, dispatch } = useContext(AppContext);
+  const { enqueue, dequeue } = useSnackbar();
   const history = useHistory();
   const { t } = useTranslation();
+
+  const { store, dispatch } = useContext(AppContext);
   const versionTasker = useRef<number>();
   const instances = useRef<CdnService[]>([]);
 
@@ -133,9 +139,17 @@ export default function Home() {
   useEffect(() => {
     config.set('lolDir', lolDir);
     if (!lolDir) {
+      enqueue(
+        {
+        message: t(`please specify lol dir`),
+        startEnhancer: ({ size }) => <AlertIcon size={size} />,
+      },
+        DURATION.infinite,
+      );
       return;
     }
 
+    dequeue();
     Promise.all([
       getLatestLogFile(`${lolDir}/Logs/LeagueClient Logs`),
       getLatestLogFile(`${lolDir}/Game/Logs/LeagueClient Logs`),
@@ -148,7 +162,7 @@ export default function Home() {
       config.set(`appendGameToDir`, shouldAppendGameToDir);
       console.log(`shouldAppendGameToDir`, shouldAppendGameToDir);
     });
-  }, [lolDir]);
+  }, [lolDir]); // eslint-disable-line
 
   const shouldDisableImport = !store.version || !lolDir || !selectedSources.length || fetchingSources;
 
@@ -262,21 +276,6 @@ export default function Home() {
           );
         })}
       </div>
-
-      {!lolDir && (
-        <Notification
-          kind={KIND.negative}
-          overrides={{
-            Body: {
-              style: () => ({
-                marginTop: `4ex`,
-                width: `auto`,
-              }),
-            },
-          }}>
-          {() => t(`please specify lol dir`)}
-        </Notification>
-      )}
 
       <div className={s.control}>
         <Button
