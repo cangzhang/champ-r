@@ -10,6 +10,8 @@ Yet another League of Legends helper.
 
 [App icon](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
 
+> ❤️ Special thanks to [JetBrains](https://www.jetbrains.com/?from=champ-r) for sponsoring opensource license to this project.
+
 ## Features
 
 - 📦 Auto generate recommend champion builds
