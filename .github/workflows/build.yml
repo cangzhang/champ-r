@@ -26,8 +26,9 @@ jobs:
 
     - name: Build
       run: |
+        npm i -g yarn
+        yarn set version berry
         $sha = (git rev-parse --short HEAD)
-        Remove-Item .yarnrc
         yarn install --silent
         $env:SHORT_SHA=$sha; yarn build:ci
 

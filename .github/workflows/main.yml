@@ -25,7 +25,8 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       shell: pwsh
       run: |
-        Remove-Item .yarnrc
+        npm i -g yarn
+        yarn set version berry
         $sha = (git rev-parse --short HEAD)
         yarn --silent
         $env:SHORT_SHA=$sha; yarn release
