@@ -1,0 +1,12 @@
+{
+  "env": {
+    "ELECTRON_DISABLE_SECURITY_WARNINGS": true,
+    "IS_DEV_MODE": true
+  },
+  "watch": [
+    "./app/",
+    "./src/native",
+    "./src/share"
+  ],
+  "ext": "js, json, ts"
+}

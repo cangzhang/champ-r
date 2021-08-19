@@ -24,19 +24,6 @@ const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
 
 initRemoteMain();
-
-try {
-  if (isDev) {
-    require('electron-reloader')(module, {
-      watchRenderer: false,
-      ignore: [
-        './src/**/*',
-      ],
-    });
-  }
-} catch (_) {
-}
-
 initLogger();
 
 unhandled({
@@ -79,13 +66,14 @@ const createMainWindow = async () => {
     show: false,
     frame: false,
     height: 650,
-    width: isDev ? 1300 : 400,
+    width: 400,
     resizable: isDev || ignoreSystemScale,
     webPreferences,
   });
 
   win.on('ready-to-show', () => {
     win.show();
+    console.log(22233)
   });
 
   win.on('closed', () => {
@@ -118,7 +106,7 @@ const createPopupWindow = async () => {
 
     skipTaskbar: popupConfig.alwaysOnTop,
     alwaysOnTop: popupConfig.alwaysOnTop,
-    width: isDev ? 1000 : popupConfig.width || 300,
+    width: 300,
     height: popupConfig.height || 350,
     x:
       popupConfig.x ||
