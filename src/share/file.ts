@@ -81,22 +81,35 @@ export const getLatestLogFile = async (dir: string) => {
   }
 };
 
+const authReg = /https:\/\/riot:.+@127\.0\.0\.1:\d+\/index.html/
+
 export const getLcuToken = async (dirPath: string) => {
   const appendGameToDir = config.get(`appendGameToDir`);
   const dir = `${appendGameToDir ? `${dirPath}/Game` : dirPath}/Logs/LeagueClient Logs`;
 
   try {
     const files = await fs.readdir(dir);
-    const latest = files
+    const rendererLogs = files
       .filter((f: string) => f.includes(`renderer.log`))
-      .sort((a: string, b: string) => a.localeCompare(b))
-      .pop();
+      .sort((a: string, b: string) => b.localeCompare(a));
 
-    const content = await fs.readFile(`${dir}/${latest}`, 'utf8');
+    let content = ''
+    for(const f of rendererLogs) {
+      content = await fs.readFile(`${dir}/${f}`, 'utf8');
+      if (authReg.test(content)) {
+        break
+      }
+      continue
+    }
+
+    if (!content) {
+      console.error(`[LCU] cannot find target renderer log.`)
+      return [null, null, null]
+    }
 
     const url = content.match(/https(.*)\/index\.html/)?.[1] ?? ``;
     const token = url.match(/riot:(.*)@/)?.[1] ?? null;
-    const port = url.match(/:(\d+)/)?.[1] ?? null;
+    const port = url.match(/:(\d+)$/)?.[1] ?? null;
     const urlWithAuth = `https${url}`;
 
     return [token, port, urlWithAuth];
