@@ -180,6 +180,9 @@
       "icon": "./resources/app-icon.png",
       "requestedExecutionLevel": "requireAdministrator"
     },
+    "nsis": {
+      "perMachine": true
+    },
     "publish": {
       "provider": "github",
       "releaseType": "release"

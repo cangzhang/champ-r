@@ -11,4 +11,4 @@ import App from './app';
 initLogger();
 initI18n();
 
-ReactDOM.render(<App />, document.querySelector('#root'));
+ReactDOM.render(<App/>, document.querySelector('#root'));
