@@ -79,7 +79,7 @@ const createMainWindow = async () => {
     show: false,
     frame: false,
     height: 650,
-    width: isDev ? 1300 : 400,
+    width: 400,
     resizable: isDev || ignoreSystemScale,
     webPreferences,
   });
@@ -118,7 +118,7 @@ const createPopupWindow = async () => {
 
     skipTaskbar: popupConfig.alwaysOnTop,
     alwaysOnTop: popupConfig.alwaysOnTop,
-    width: isDev ? 1000 : popupConfig.width || 300,
+    width: popupConfig.width || 300,
     height: popupConfig.height || 350,
     x:
       popupConfig.x ||
@@ -273,6 +273,10 @@ function registerMainListeners() {
     popupWindow.setAlwaysOnTop(true);
     popupWindow.setPosition(x, y);
   });
+
+  ipcMain.on(`app-sha`, (_ev, data) => {
+    console.info(`app sha is ${data.sha}`);
+  });
 }
 
 function toggleMainWindow() {
@@ -396,7 +400,7 @@ function registerUpdater() {
 }
 
 (async () => {
-  console.log(`ChampR starting...`);
+  console.log(`ChampR starting, app version ${app.getVersion()}.`);
 
   await app.whenReady();
   Menu.setApplicationMenu(null);

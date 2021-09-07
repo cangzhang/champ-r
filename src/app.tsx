@@ -14,7 +14,7 @@ import {
 
 import AppContext from 'src/share/context';
 import appReducer, { initialState, init } from 'src/share/reducer';
-import { setLolVersion, updateItemMap } from 'src/share/actions'
+import { setLolVersion, updateItemMap } from 'src/share/actions';
 import config from 'src/native/config';
 import { getItemList, getLolVer } from 'src/service/data-source/lol-qq';
 import LCUService from 'src/service/lcu';
@@ -25,7 +25,7 @@ import Home from 'src/modules/home';
 import Import from 'src/modules/import';
 import Settings from 'src/modules/settings';
 
-import { ILcuUserAction } from 'src/typings/commonTypes'
+import { ILcuUserAction } from 'src/typings/commonTypes';
 
 const engine = new Styletron();
 const GameTypes = [`pick`];
@@ -150,6 +150,12 @@ const App = () => {
     // ipcRenderer.on(`update-downloaded`, () => {});
   }, []);
 
+  useEffect(() => {
+    setTimeout(() => {
+      ipcRenderer.send(`app-sha`, { sha: process.env.HEAD });
+    }, 5 * 1000);
+  }, []);
+
   return (
     <AppContext.Provider value={contextValue}>
       <StyletronProvider value={engine}>
@@ -161,21 +167,21 @@ const App = () => {
               }),
             },
           }}>
-          <Router>
-            <Toolbar />
-            <Switch>
-              <Route exact path={'/'}>
-                <Home />
-              </Route>
-              <Route path={`/import`}>
-                <Import />
-              </Route>
-              <Route path={`/settings`}>
-                <Settings />
-              </Route>
-            </Switch>
-          </Router>
-          <Footer />
+            <Router>
+              <Toolbar/>
+              <Switch>
+                <Route exact path={'/'}>
+                  <Home/>
+                </Route>
+                <Route path={`/import`}>
+                  <Import/>
+                </Route>
+                <Route path={`/settings`}>
+                  <Settings/>
+                </Route>
+              </Switch>
+            </Router>
+            <Footer/>
           </SnackbarProvider>
         </BaseProvider>
       </StyletronProvider>
