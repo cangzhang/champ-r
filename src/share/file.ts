@@ -86,15 +86,13 @@ export const getLcuToken = async (dirPath: string) => {
   const lockfilePath = `${appendGameToDir ? `${dirPath}/LeagueClient` : dirPath}/lockfile`;
 
   try {
-    const lockfile = await fs.readFile(`${lockfilePath}`, 'utf8');
+    const lockfile = await fs.readFile(lockfilePath, 'utf8');
     const port = lockfile.split(`:`)[2];
     const token = lockfile.split(`:`)[3];
-
-    const url = `://riot:${passwd}@127.0.0.1:${port}`
+    const url = `://riot:${token}@127.0.0.1:${port}`
     const urlWithAuth = `https${url}`;
 
     return [token, port, urlWithAuth];
-
   } catch (err) {
     return [null, null, null];
   }
