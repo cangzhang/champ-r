@@ -88,12 +88,12 @@ export const getLcuToken = async (dirPath: string) => {
   try {
     const lockfile = await fs.readFile(`${lockfilePath}`, 'utf8');
     const port = lockfile.split(`:`)[2];
-    const passwd = lockfile.split(`:`)[3];
+    const token = lockfile.split(`:`)[3];
 
     const url = `://riot:${passwd}@127.0.0.1:${port}`
     const urlWithAuth = `https${url}`;
 
-    return [passwd, port, urlWithAuth];
+    return [token, port, urlWithAuth];
 
   } catch (err) {
     return [null, null, null];
