@@ -82,7 +82,7 @@ export const getLatestLogFile = async (dir: string) => {
 
 
 export const getLcuToken = async (dirPath: string) => {
-  const appendGameToDir = config.get(`appendGameToDir`);
+  const appendGameToDir = config.get(`appendGameToDir`); // if lcu is CN client
   const lockfilePath = `${appendGameToDir ? `${dirPath}/LeagueClient` : dirPath}/lockfile`;
 
   try {
