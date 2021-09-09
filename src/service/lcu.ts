@@ -12,11 +12,15 @@ export default class LCUService {
     curSession: string;
     curPerk: string;
     perks: string;
+    gameflowPhase: string;
+    acceptMatch: string;
   } = {
     authToken: ``,
     curSession: ``,
     curPerk: ``,
     perks: ``,
+    gameflowPhase: ``,
+    acceptMatch: ``,
   };
   public auth = {};
 
@@ -37,6 +41,8 @@ export default class LCUService {
       curSession: `${url}/lol-champ-select/v1/session`,
       curPerk: `${url}/lol-perks/v1/currentpage`,
       perks: `${url}/lol-perks/v1/pages`,
+      gameflowPhase: `${url}/lol-gameflow/v1/gameflow-phase`,
+      acceptMatch: `${url}/lol-matchmaking/v1/ready-check/accept`,
     };
     this.auth = {
       auth: {
@@ -110,4 +116,14 @@ export default class LCUService {
     await this.createPerk(data);
     return true;
   };
+
+  getCurPhase = async ()=>{
+    const res: string = await http.get(this.urls.gameflowPhase, this.auth);
+    return res;
+  };
+
+  acceptMatch = async ()=>{
+    const res = await http.post(this.urls.acceptMatch, this.auth);
+    return res;
+  }
 }

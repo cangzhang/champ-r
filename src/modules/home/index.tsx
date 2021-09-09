@@ -57,6 +57,11 @@ export default function Home() {
     dispatch(updateConfig('keepOld', checked));
   };
 
+  const toggleAutoAccept = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = ev.target;
+    dispatch(updateConfig('autoAccept', checked));
+  };
+
   const onSelectDir = async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       properties: ['openDirectory'],
@@ -129,8 +134,9 @@ export default function Home() {
   useEffect(() => {
     // persist user preference
     config.set('keepOldItems', store.keepOld);
+    config.set('autoAccept', store.autoAccept);
     config.set(`selectedSources`, selectedSources);
-  }, [store.keepOld, lolDir, selectedSources]);
+  }, [store.keepOld, store.autoAccept, lolDir, selectedSources]);
 
   useEffect(() => {
     setLolDir(config.get('lolDir'));
@@ -300,7 +306,7 @@ export default function Home() {
           onClick={startImport}>
           {t(`import now`)}
         </Button>
-
+        <div>
         <Checkbox
           // className={s.keepOld}
           labelPlacement={LABEL_PLACEMENT.right}
@@ -342,6 +348,49 @@ export default function Home() {
           }}>
           {t('keep old items')}
         </Checkbox>
+        
+        <Checkbox
+          // className={s.keepOld}
+          labelPlacement={LABEL_PLACEMENT.right}
+          checkmarkType={STYLE_TYPE.toggle_round}
+          checked={store.autoAccept}
+          onChange={toggleAutoAccept}
+          overrides={{
+            Root: {
+              style: () => ({
+                // ...$theme.borders.border100,
+                display: 'flex',
+                alignSelf: 'flex-end',
+                marginLeft: '2ex',
+                marginBottom: '0.8ex',
+              }),
+            },
+            Checkmark: {
+              style: ({ $checked, $theme }) => ({
+                backgroundColor: $checked ? $theme.colors.positive : '#ffffff',
+              }),
+            },
+            ToggleTrack: {
+              style: ({ $theme }) => {
+                return {
+                  backgroundColor: $theme.colors.backgroundLightAccent,
+                };
+              },
+            },
+            Toggle: {
+              style: ({ $theme, $checked }) => {
+                return {
+                  // Outline: `${$theme.colors.warning200} solid`,
+                  backgroundColor: $checked
+                    ? $theme.colors.borderPositive
+                    : $theme.colors.backgroundLightAccent,
+                };
+              },
+            },
+          }}>
+          {t('auto accept match')}
+        </Checkbox>
+        </div>
       </div>
 
       <div>

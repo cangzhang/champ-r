@@ -8,6 +8,7 @@ export default {
     'lol version is': `La version de LOL est`,
     'import now': `Importer Maintenant`,
     'keep old items': `Garder les anciens objets`,
+    'auto accept match': `auto correspondance accepter`,
     'click here to select': 'Cliquez ici pour sélectionner',
     'click here to re-select': 'Cliquez ici pour re-sélectionner',
     'installation path of League of Legends': `<b>CHEMIN D'INSTALLATION</b> de League of Legends`,

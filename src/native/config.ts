@@ -9,6 +9,7 @@ const appStore = new Store({
     lolVer: '',
     appLang: '',
     keepOldItems: true,
+    autoAccept: false,
     ignoreSystemScale: false,
     selectedSources: [],
     perkTab: ``,

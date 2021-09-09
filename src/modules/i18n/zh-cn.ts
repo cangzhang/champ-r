@@ -8,6 +8,7 @@ export default {
     'lol version is': `LOL 版本`,
     'import now': `一键导入出装!`,
     'keep old items': `保留旧出装文件`,
+    'auto accept match': `自动接受对局`,
     'click here to select': '点击此处选择文件夹',
     'click here to re-select': '点击此处重新选择',
     'installation path of League of Legends': `LOL <b>安装文件夹</b>, 如: <code>C:\\Program Files\\英雄联盟</code>`,
