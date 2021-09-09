@@ -43,9 +43,8 @@ export const makeBuildFile = (
 export const saveToFile = async (desDir: string, data: IChampionBuild, stripProps = true) => {
   try {
     const appendGameToDir = config.get(`appendGameToDir`);
-    const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${
-      data.champion
-    }/Recommended/${data.fileName}.json`;
+    const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${data.champion
+      }/Recommended/${data.fileName}.json`;
     const content = stripProps ? _pick(data, ItemSetProps) : data;
     await fse.outputFile(file, JSON.stringify(content, null, 4));
 
@@ -81,39 +80,23 @@ export const getLatestLogFile = async (dir: string) => {
   }
 };
 
-const authReg = /https:\/\/riot:.+@127\.0\.0\.1:\d+\/index.html/
 
 export const getLcuToken = async (dirPath: string) => {
   const appendGameToDir = config.get(`appendGameToDir`);
-  const dir = `${appendGameToDir ? `${dirPath}/Game` : dirPath}/Logs/LeagueClient Logs`;
+  const lockfilePath = `${appendGameToDir ? `${dirPath}/LeagueClient` : dirPath}/lockfile`;
 
   try {
-    const files = await fs.readdir(dir);
-    const rendererLogs = files
-      .filter((f: string) => f.includes(`renderer.log`))
-      .sort((a: string, b: string) => b.localeCompare(a));
+    const lockfile = await fs.readFile(`${lockfilePath}`, 'utf8');
+    const port = lockfile.split(`:`)[2];
+    const passwd = lockfile.split(`:`)[3];
 
-    let content = ''
-    for(const f of rendererLogs) {
-      content = await fs.readFile(`${dir}/${f}`, 'utf8');
-      if (authReg.test(content)) {
-        break
-      }
-      continue
-    }
-
-    if (!content) {
-      console.error(`[LCU] cannot find target renderer log.`)
-      return [null, null, null]
-    }
-
-    const url = content.match(/https(.*)\/index\.html/)?.[1] ?? ``;
-    const token = url.match(/riot:(.*)@/)?.[1] ?? null;
-    const port = url.match(/:(\d+)$/)?.[1] ?? null;
+    const url = `://riot:${passwd}@127.0.0.1:${port}`
     const urlWithAuth = `https${url}`;
 
-    return [token, port, urlWithAuth];
+    return [passwd, port, urlWithAuth];
+
   } catch (err) {
     return [null, null, null];
   }
+
 };
