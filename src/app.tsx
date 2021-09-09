@@ -70,6 +70,15 @@ const App = () => {
           throw new Error(`lcu not running.`);
         }
 
+        const autoAccept = config.get(`autoAccept`);
+        if (autoAccept) {
+          const gamePhase = await lcuIns.getCurPhase();
+          console.log(gamePhase);
+          if (gamePhase === 'ReadyCheck') {
+            await lcuIns.acceptMatch();
+          }
+        }
+
         const {
           actions = [],
           myTeam = [],
@@ -168,20 +177,20 @@ const App = () => {
             },
           }}>
             <Router>
-              <Toolbar/>
+              <Toolbar />
               <Switch>
                 <Route exact path={'/'}>
-                  <Home/>
+                  <Home />
                 </Route>
                 <Route path={`/import`}>
-                  <Import/>
+                  <Import />
                 </Route>
                 <Route path={`/settings`}>
-                  <Settings/>
+                  <Settings />
                 </Route>
               </Switch>
             </Router>
-            <Footer/>
+            <Footer />
           </SnackbarProvider>
         </BaseProvider>
       </StyletronProvider>

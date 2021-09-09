@@ -7,6 +7,7 @@ export default {
     'lol version is': `LOL version is`,
     'import now': `Import Now`,
     'keep old items': `Keep old items`,
+    'auto accept match': `auto accept match`,
     'click here to select': 'Click here to select',
     'click here to re-select': 'Click here to re-select',
     'installation path of League of Legends': `<b>INSTALLATION PATH</b> of League of Legends`,

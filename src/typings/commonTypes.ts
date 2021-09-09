@@ -32,6 +32,7 @@ export interface IState {
   itemMap: any;
   selectedSources: string[];
   keepOld: boolean;
+  autoAccept: boolean;
   importerInstances: {};
   importPage: {
     success: any[];

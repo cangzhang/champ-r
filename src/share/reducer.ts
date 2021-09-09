@@ -15,6 +15,7 @@ export const initialState: IState = {
   itemMap: null,
   selectedSources: config.get(`selectedSources`),
   keepOld: config.get('keepOldItems'),
+  autoAccept: config.get('autoAccept'),
   importerInstances: {},
   importPage: {
     success: [],
