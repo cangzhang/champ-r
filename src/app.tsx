@@ -74,7 +74,6 @@ const App = () => {
         if (autoAccept) {
           const gamePhase = await lcuIns.getCurPhase();
           console.log(gamePhase);
-
           if (gamePhase === 'ReadyCheck') {
             await lcuIns.acceptMatch();
           }
