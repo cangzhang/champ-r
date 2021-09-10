@@ -80,6 +80,43 @@ export const getLatestLogFile = async (dir: string) => {
   }
 };
 
+const authReg = /https:\/\/riot:.+@127\.0\.0\.1:\d+\/index.html/
+
+export const getLcuTokenFromLog = async (dirPath: string) => {
+  const appendGameToDir = config.get(`appendGameToDir`);
+  const dir = `${appendGameToDir ? `${dirPath}/Game` : dirPath}/Logs/LeagueClient Logs`;
+
+  try {
+    const files = await fs.readdir(dir);
+    const rendererLogs = files
+      .filter((f: string) => f.includes(`renderer.log`))
+      .sort((a: string, b: string) => b.localeCompare(a));
+
+    let content = ''
+    for(const f of rendererLogs) {
+      content = await fs.readFile(`${dir}/${f}`, 'utf8');
+      if (authReg.test(content)) {
+        console.info(`target log file is: `, `${dir}/${f}`)
+        break
+      }
+      continue
+    }
+
+    if (!content) {
+      console.error(`[LCU] cannot find target renderer log.`)
+      return [null, null, null]
+    }
+
+    const url = content.match(/https(.*)\/index\.html/)?.[1] ?? ``;
+    const token = url.match(/riot:(.*)@/)?.[1] ?? null;
+    const port = url.match(/:(\d+)$/)?.[1] ?? null;
+    const urlWithAuth = `https${url}`;
+
+    return [token, port, urlWithAuth];
+  } catch (err) {
+    return [null, null, null];
+  }
+};
 
 export const getLcuToken = async (dirPath: string) => {
   const appendGameToDir = config.get(`appendGameToDir`); // if lcu is CN client
@@ -96,5 +133,4 @@ export const getLcuToken = async (dirPath: string) => {
   } catch (err) {
     return [null, null, null];
   }
-
 };

@@ -137,7 +137,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    config.set('lolDir', lolDir);
+    ipcRenderer.send(`updateLolDir`, { lolDir })
+
     if (!lolDir) {
       enqueue(
         {
@@ -158,7 +159,7 @@ export default function Home() {
         return;
       }
 
-      const shouldAppendGameToDir = glog?.mtimeMs ?? 0 > (log?.mtimeMs ?? 0);
+      const shouldAppendGameToDir = Boolean(glog?.mtimeMs ?? 0 > (log?.mtimeMs ?? 0));
       config.set(`appendGameToDir`, shouldAppendGameToDir);
       console.log(`shouldAppendGameToDir`, shouldAppendGameToDir);
     });

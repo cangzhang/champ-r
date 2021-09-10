@@ -11,6 +11,7 @@ import debug from 'electron-debug';
 import electronLogger from 'electron-log';
 import { initialize as initRemoteMain } from '@electron/remote/dist/src/main';
 
+// import { getAuthTask } from "./utils";
 import initLogger from '../src/native/logger';
 import appStore from '../src/native/config';
 import { LanguageList, LanguageSet } from '../src/native/langs';
@@ -42,7 +43,9 @@ initLogger();
 unhandled({
   showDialog: false,
 });
-debug();
+debug({
+  showDevTools: false,
+});
 contextMenu();
 
 nativeTheme.themeSource = `light`;
@@ -277,6 +280,11 @@ function registerMainListeners() {
   ipcMain.on(`app-sha`, (_ev, data) => {
     console.info(`app sha is ${data.sha}`);
   });
+
+  ipcMain.on(`updateLolDir`, (_ev, { lolDir }) => {
+    console.info(`lolDir is ${lolDir}`);
+    appStore.set(`lolDir`, lolDir)
+  });
 }
 
 function toggleMainWindow() {
@@ -419,9 +427,10 @@ function registerUpdater() {
   registerUpdater();
 
   await makeTray();
-
   const userId = await getMachineId();
+
   console.log(`userId: ${userId}`);
+  // getAuthTask()
 
   await checkUpdates();
 })();
