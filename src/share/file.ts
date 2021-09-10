@@ -1,9 +1,10 @@
 import _pick from 'lodash/pick';
 import fse from 'fs-extra';
 import { promises as fs } from 'fs';
+import { TextDecoder, TextEncoder } from 'util';
 
 import config from 'src/native/config';
-import { IChampionBuild } from 'src/typings/commonTypes'
+import { IChampionBuild } from 'src/typings/commonTypes';
 
 const ItemSetProps = [
   'title',
@@ -17,6 +18,12 @@ const ItemSetProps = [
   'startedFrom',
   'blocks',
 ];
+
+export const utf8ToGb18030 = (str: string) => {
+  const uint8array = new TextEncoder().encode(str);
+  const ret = new TextDecoder(`gb18030`).decode(uint8array);
+  return ret;
+};
 
 export const makeBuildFile = (
   { fileName, title, championId, champion, blocks, position = `` }: IChampionBuild,
@@ -44,9 +51,13 @@ export const saveToFile = async (desDir: string, data: IChampionBuild, stripProp
   try {
     const appendGameToDir = config.get(`appendGameToDir`);
     const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${data.champion
-      }/Recommended/${data.fileName}.json`;
+    }/Recommended/${data.fileName}.json`;
     const content = stripProps ? _pick(data, ItemSetProps) : data;
     await fse.outputFile(file, JSON.stringify(content, null, 4));
+    if (appendGameToDir) {
+      const cnFile = utf8ToGb18030(file);
+      await fse.outputFile(cnFile, JSON.stringify(content, null, 4));
+    }
 
     return {
       champion: data.champion,
@@ -80,7 +91,7 @@ export const getLatestLogFile = async (dir: string) => {
   }
 };
 
-const authReg = /https:\/\/riot:.+@127\.0\.0\.1:\d+\/index.html/
+const authReg = /https:\/\/riot:.+@127\.0\.0\.1:\d+\/index.html/;
 
 export const getLcuTokenFromLog = async (dirPath: string) => {
   const appendGameToDir = config.get(`appendGameToDir`);
@@ -92,19 +103,19 @@ export const getLcuTokenFromLog = async (dirPath: string) => {
       .filter((f: string) => f.includes(`renderer.log`))
       .sort((a: string, b: string) => b.localeCompare(a));
 
-    let content = ''
-    for(const f of rendererLogs) {
+    let content = '';
+    for (const f of rendererLogs) {
       content = await fs.readFile(`${dir}/${f}`, 'utf8');
       if (authReg.test(content)) {
-        console.info(`target log file is: `, `${dir}/${f}`)
-        break
+        console.info(`target log file is: `, `${dir}/${f}`);
+        break;
       }
-      continue
+      continue;
     }
 
     if (!content) {
-      console.error(`[LCU] cannot find target renderer log.`)
-      return [null, null, null]
+      console.error(`[LCU] cannot find target renderer log.`);
+      return [null, null, null];
     }
 
     const url = content.match(/https(.*)\/index\.html/)?.[1] ?? ``;
@@ -126,7 +137,7 @@ export const getLcuToken = async (dirPath: string) => {
     const lockfile = await fs.readFile(lockfilePath, 'utf8');
     const port = lockfile.split(`:`)[2];
     const token = lockfile.split(`:`)[3];
-    const url = `://riot:${token}@127.0.0.1:${port}`
+    const url = `://riot:${token}@127.0.0.1:${port}`;
     const urlWithAuth = `https${url}`;
 
     return [token, port, urlWithAuth];

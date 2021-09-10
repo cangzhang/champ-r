@@ -1,46 +1,27 @@
-import { promises as fs } from "fs";
-import * as path from "path";
-import config from '../src/native/config'
-import { Stats } from "fs-extra";
+import { promises as fs, constants as fsConstants } from 'fs';
+import * as path from 'path';
+import cjk from 'cjk-regex';
 
-export async function getFileContent(path: string): Promise<[string, Stats | null]> {
+import appStore from '../src/native/config';
+
+const cjk_charset = cjk();
+
+export async function ifIsCNServer(dir: string) {
+  const target = path.join(dir, `TCLS`, `Client.exe`);
+  let result = false;
   try {
-    const stat = await fs.stat(path);
-    const content = await fs.readFile(path, 'utf-8')
-    return [content, stat]
+    await fs.access(dir, fsConstants.F_OK);
+    await fs.access(target, fsConstants.F_OK);
+    result = true;
   } catch (err) {
-    return ["", null];
+    console.info(err);
   }
+
+  appStore.set(`appendGameToDir`, result);
+  console.log('shouldAppendGameToDir', result);
+  return result;
 }
 
-export async function getFiles(dir: string) {
-  try {
-    const [[c1, c1Stat], [c2, c2Stat]] = await Promise.all([
-      getFileContent(path.join(dir, "lockfile")),
-      getFileContent(path.join(dir, "LeagueClient", "lockfile")),
-    ])
-    const shouldAppendGameToDir = Boolean(!c1Stat && c2Stat)
-    console.log(`shouldAppendGameToDir: `, shouldAppendGameToDir)
-    console.log(c1Stat?.mtimeMs, c2Stat?.mtimeMs)
-    return c1 || c2
-  } catch (err) {
-    console.error(err)
-    return ""
-  }
-}
-
-export async function getAuthTask() {
-  setInterval(async () => {
-    const lolDir = config.get(`lolDir`, ``)
-    if (!lolDir) {
-      return
-    }
-
-    try {
-      const content = await getFiles(lolDir)
-      console.log(content)
-    } catch (err) {
-      console.error(err)
-    }
-  }, 1500)
-}
+export const hasCJK = (p: string) => {
+  return cjk_charset.toRegExp().test(p);
+};
