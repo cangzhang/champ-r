@@ -1,6 +1,7 @@
 import http from './http';
 import { getLcuToken } from 'src/share/file';
 import { ILcuUserAction } from 'src/typings/commonTypes'
+import config from 'src/native/config';
 
 export default class LCUService {
   public active = false;
@@ -47,7 +48,7 @@ export default class LCUService {
   };
 
   getAuthToken = async () => {
-    const [token, port, url] = await getLcuToken(this.lolDir);
+    const [token, port, url] = await getLcuToken(config.get(`lolDir`));
     this.setVars(token, port, url);
     return [token, port, url];
   };

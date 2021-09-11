@@ -26,7 +26,6 @@ import config from 'src/native/config';
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
 import { ChampionKeys } from 'src/share/constants/champions';
 import AppContext from 'src/share/context';
-import { getLatestLogFile } from 'src/share/file';
 import LolQQ from 'src/service/data-source/lol-qq';
 import CdnService from 'src/service/data-source/cdn-service';
 
@@ -34,7 +33,11 @@ import useSourceList from './useSourceList';
 
 import logo from 'src/assets/app-icon.webp';
 
-export default function Home() {
+interface IProps {
+  onDirChange: (p: string) => void;
+}
+
+export default function Home({ onDirChange }: IProps) {
   const [css, theme] = useStyletron();
   const { enqueue, dequeue } = useSnackbar();
   const history = useHistory();
@@ -137,31 +140,21 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    config.set('lolDir', lolDir);
+    ipcRenderer.send(`updateLolDir`, { lolDir });
+    onDirChange(lolDir);
+
     if (!lolDir) {
       enqueue(
         {
-        message: t(`please specify lol dir`),
-        startEnhancer: ({ size }) => <AlertIcon size={size} />,
-      },
+          message: t(`please specify lol dir`),
+          startEnhancer: ({ size }) => <AlertIcon size={size}/>,
+        },
         DURATION.infinite,
       );
       return;
     }
 
     dequeue();
-    Promise.all([
-      getLatestLogFile(`${lolDir}/Logs/LeagueClient Logs`),
-      getLatestLogFile(`${lolDir}/Game/Logs/LeagueClient Logs`),
-    ]).then(([log, glog]) => {
-      if (!log && !glog) {
-        return;
-      }
-
-      const shouldAppendGameToDir = glog?.mtimeMs ?? 0 > (log?.mtimeMs ?? 0);
-      config.set(`appendGameToDir`, shouldAppendGameToDir);
-      console.log(`shouldAppendGameToDir`, shouldAppendGameToDir);
-    });
   }, [lolDir]); // eslint-disable-line
 
   const shouldDisableImport = !store.version || !lolDir || !selectedSources.length || fetchingSources;

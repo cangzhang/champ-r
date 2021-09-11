@@ -20,7 +20,8 @@ const appStore = new Store({
       alwaysOnTop: true,
     },
     sourceList: DefaultSourceList,
+    lolDirHasCJKChar: false,
   },
 });
 
-export default appStore
+export default appStore;

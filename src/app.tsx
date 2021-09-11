@@ -1,7 +1,7 @@
 import { ipcRenderer, shell } from 'electron';
 import _find from 'lodash/find';
 
-import React, { useReducer, useMemo, useRef, useEffect } from 'react';
+import React, { useReducer, useMemo, useRef, useEffect, useCallback } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
@@ -53,10 +53,13 @@ const App = () => {
   const checkTask = useRef<number>();
   const lcuInstance = useRef<LCUService>();
 
-  useEffect(() => {
+  const createCheckTask = useCallback((dir: string) => {
     checkTask.current = window.setInterval(async () => {
       try {
-        const lolDir = config.get(`lolDir`);
+        let lolDir = dir;
+        if (!lolDir) {
+          lolDir = config.get(`lolDir`);
+        }
         if (!lolDir) {
           throw new Error(`lol folder not selected.`);
         }
@@ -109,18 +112,28 @@ const App = () => {
         console.log(`show popup.`);
         return true;
       } catch (_err) {
-        if (process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER === `true`) return;
+        const doNothing = Boolean(process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER === `true`);
+        if (doNothing) return;
 
         console.error(_err.message);
         ipcRenderer.send(`hide-popup`);
         return false;
       }
     }, 2000);
+  }, []);
+
+  const onDirChange = (lolDir: string) => {
+    window.clearInterval(checkTask.current);
+    createCheckTask(lolDir);
+  };
+
+  useEffect(() => {
+    createCheckTask('');
 
     return () => {
       clearInterval(checkTask.current);
     };
-  }, []);
+  }, [createCheckTask]);
 
   useEffect(() => {
     const getVerAndItems = async () => {
@@ -171,7 +184,7 @@ const App = () => {
               <Toolbar/>
               <Switch>
                 <Route exact path={'/'}>
-                  <Home/>
+                  <Home onDirChange={onDirChange}/>
                 </Route>
                 <Route path={`/import`}>
                   <Import/>

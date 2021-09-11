@@ -14,6 +14,7 @@ import { initialize as initRemoteMain } from '@electron/remote/dist/src/main';
 import initLogger from '../src/native/logger';
 import appStore from '../src/native/config';
 import { LanguageList, LanguageSet } from '../src/native/langs';
+import { ifIsCNServer } from './utils';
 
 interface IPopupEventData {
   championId: string;
@@ -42,7 +43,9 @@ initLogger();
 unhandled({
   showDialog: false,
 });
-debug();
+debug({
+  showDevTools: false,
+});
 contextMenu();
 
 nativeTheme.themeSource = `light`;
@@ -277,6 +280,16 @@ function registerMainListeners() {
   ipcMain.on(`app-sha`, (_ev, data) => {
     console.info(`app sha is ${data.sha}`);
   });
+
+  ipcMain.on(`updateLolDir`, async (_ev, { lolDir }) => {
+    console.info(`lolDir is ${lolDir}`);
+    appStore.set(`lolDir`, lolDir);
+    if (!lolDir) {
+      return;
+    }
+
+    await ifIsCNServer(lolDir);
+  });
 }
 
 function toggleMainWindow() {
@@ -407,6 +420,7 @@ function registerUpdater() {
 
   const locale = (await osLocale()) || LanguageSet.enUS;
   const sysLang = appStore.get(`appLang`);
+  const lolDir = appStore.get(`lolDir`);
   if (!sysLang || !LanguageList.includes(locale)) {
     appStore.set(`appLang`, LanguageSet.enUS);
   }
@@ -417,11 +431,11 @@ function registerUpdater() {
 
   registerMainListeners();
   registerUpdater();
+  ifIsCNServer(lolDir);
 
   await makeTray();
-
   const userId = await getMachineId();
-  console.log(`userId: ${userId}`);
 
+  console.log(`userId: ${userId}`);
   await checkUpdates();
 })();
