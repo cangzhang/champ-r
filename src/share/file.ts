@@ -2,7 +2,6 @@ import _pick from 'lodash/pick';
 import fse from 'fs-extra';
 import { promises as fs } from 'fs';
 import { TextDecoder, TextEncoder } from 'util';
-import cjk from 'cjk-regex';
 
 import config from 'src/native/config';
 import { IChampionBuild } from 'src/typings/commonTypes';
@@ -24,11 +23,6 @@ export const utf8ToGb18030 = (str: string) => {
   const uint8array = new TextEncoder().encode(str);
   const ret = new TextDecoder(`gb18030`).decode(uint8array);
   return ret;
-};
-
-export const hasCJK = (p: string) => {
-  const cjk_charset = cjk();
-  return cjk_charset.toRegExp().test(p);
 };
 
 export const makeBuildFile = (
@@ -56,16 +50,16 @@ export const makeBuildFile = (
 export const saveToFile = async (desDir: string, data: IChampionBuild, stripProps = true) => {
   try {
     const appendGameToDir = config.get(`appendGameToDir`);
+    const hasCjkChar = config.get(`lolDirHasCJKChar`);
+
     const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${data.champion
     }/Recommended/${data.fileName}.json`;
     const content = stripProps ? _pick(data, ItemSetProps) : data;
     await fse.outputFile(file, JSON.stringify(content, null, 4));
-    if (appendGameToDir) {
-      const hasCjkChar = hasCJK(file);
-      if (hasCjkChar) {
-        const cnFile = utf8ToGb18030(file);
-        await fse.outputFile(cnFile, JSON.stringify(content, null, 4));
-      }
+
+    if (appendGameToDir && hasCjkChar) {
+      const cnFile = utf8ToGb18030(file);
+      await fse.outputFile(cnFile, JSON.stringify(content, null, 4));
     }
 
     return {
