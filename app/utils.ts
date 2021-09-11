@@ -1,10 +1,7 @@
 import { promises as fs, constants as fsConstants } from 'fs';
 import * as path from 'path';
-import cjk from 'cjk-regex';
 
 import appStore from '../src/native/config';
-
-const cjk_charset = cjk();
 
 export async function ifIsCNServer(dir: string) {
   const target = path.join(dir, `TCLS`, `Client.exe`);
@@ -21,7 +18,3 @@ export async function ifIsCNServer(dir: string) {
   console.log('shouldAppendGameToDir', result);
   return result;
 }
-
-export const hasCJK = (p: string) => {
-  return cjk_charset.toRegExp().test(p);
-};
