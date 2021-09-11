@@ -53,10 +53,13 @@ const App = () => {
   const checkTask = useRef<number>();
   const lcuInstance = useRef<LCUService>();
 
-  const createCheckTask = useCallback(() => {
+  const createCheckTask = useCallback((dir: string) => {
     checkTask.current = window.setInterval(async () => {
       try {
-        const lolDir = config.get(`lolDir`);
+        let lolDir = dir;
+        if (!lolDir) {
+          lolDir = config.get(`lolDir`);
+        }
         if (!lolDir) {
           throw new Error(`lol folder not selected.`);
         }
@@ -121,11 +124,11 @@ const App = () => {
 
   const onDirChange = (lolDir: string) => {
     window.clearInterval(checkTask.current);
-    createCheckTask();
+    createCheckTask(lolDir);
   };
 
   useEffect(() => {
-    createCheckTask();
+    createCheckTask('');
 
     return () => {
       clearInterval(checkTask.current);

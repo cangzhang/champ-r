@@ -20,7 +20,7 @@ export async function ifIsCNServer(dir: string) {
   appStore.set(`appendGameToDir`, result);
   const hasCjk = hasCJKChar(dir);
   appStore.set(`lolDirHasCJKChar`, hasCjk);
-  console.log('shouldAppendGameToDir: ', result, `lolDirHasCJKChar`, hasCjk);
+  console.log('shouldAppendGameToDir: ', result, `lolDirHasCJKChar: `, hasCjk);
   return result;
 }
 

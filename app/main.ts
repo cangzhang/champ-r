@@ -11,7 +11,6 @@ import debug from 'electron-debug';
 import electronLogger from 'electron-log';
 import { initialize as initRemoteMain } from '@electron/remote/dist/src/main';
 
-// import { getAuthTask } from "./utils";
 import initLogger from '../src/native/logger';
 import appStore from '../src/native/config';
 import { LanguageList, LanguageSet } from '../src/native/langs';
@@ -438,7 +437,5 @@ function registerUpdater() {
   const userId = await getMachineId();
 
   console.log(`userId: ${userId}`);
-  // getAuthTask()
-
   await checkUpdates();
 })();

@@ -1,6 +1,7 @@
 import _pick from 'lodash/pick';
 import fse from 'fs-extra';
 import { promises as fs } from 'fs';
+import * as path from 'path';
 import { TextDecoder, TextEncoder } from 'util';
 
 import config from 'src/native/config';
@@ -134,7 +135,7 @@ export const getLcuTokenFromLog = async (dirPath: string) => {
 
 export const getLcuToken = async (dirPath: string) => {
   const appendGameToDir = config.get(`appendGameToDir`); // if lcu is CN client
-  const lockfilePath = `${appendGameToDir ? `${dirPath}/LeagueClient` : dirPath}/lockfile`;
+  const lockfilePath = path.join(dirPath, appendGameToDir ? 'LeagueClient' : '', 'lockfile');
 
   try {
     const lockfile = await fs.readFile(lockfilePath, 'utf8');
