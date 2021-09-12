@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2020",
     "module": "commonjs",
     "lib": [
       "dom",
       "es6",
       "es2017",
+      "es2020",
       "esnext.asynciterable"
     ],
     "sourceMap": true,

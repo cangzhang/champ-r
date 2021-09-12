@@ -1,18 +1,18 @@
-declare module "*.module.css" {
+declare module '*.module.css' {
   const classNames: {
     [key: string]: string;
-  }
+  };
   export default classNames;
-};
+}
 
-declare module "*.module.scss" {
+declare module '*.module.scss' {
   const classNames: {
     [key: string]: string;
-  }
+  };
   export default classNames;
-};
+}
 
-declare module "*.webp";
+declare module '*.webp';
 
 declare module '*.svg' {
   import * as React from 'react';
@@ -21,4 +21,8 @@ declare module '*.svg' {
 
   const svgUrl: string;
   export default svgUrl;
+}
+
+declare interface PromiseConstructor {
+  allSettled(promises: Array<Promise<any>>): Promise<Array<{ status: 'fulfilled' | 'rejected', value?: any, reason?: any }>>;
 }

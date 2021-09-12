@@ -53,7 +53,6 @@ nativeTheme.themeSource = `light`;
 app.setAppUserModelId('com.al.champ-r');
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
-app.allowRendererProcessReuse = false;
 
 const ignoreSystemScale = appStore.get(`ignoreSystemScale`);
 if (ignoreSystemScale) {
