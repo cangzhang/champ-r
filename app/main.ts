@@ -429,17 +429,19 @@ function registerUpdater() {
   await app.whenReady();
   Menu.setApplicationMenu(null);
 
-  let locale = await osLocale();
-  if (!locale) {
-    locale = LanguageSet.enUS;
-  }
-
-  const sysLang = appStore.get(`appLang`);
   const lolDir = appStore.get(`lolDir`);
-  if (!sysLang || !LanguageList.includes(locale)) {
-    appStore.set(`appLang`, LanguageSet.enUS);
+
+  let locale = await osLocale();
+  let appLang = appStore.get(`appLang`);
+  console.info(`System locale is ${locale}, app lang is ${appLang || 'unset'}`);
+
+  if (!appLang) {
+    if (LanguageList.includes(locale)) {
+      appStore.set(`appLang`, locale);
+    } else {
+      appStore.set(`appLang`, LanguageSet.enUS);
+    }
   }
-  console.log(`locale: ${sysLang}, sys lang: ${sysLang}`);
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();
