@@ -3,7 +3,17 @@ import _debounce from 'lodash/debounce';
 
 import osLocale from 'os-locale';
 import { machineId } from 'node-machine-id';
-import { app, BrowserWindow, Menu, ipcMain, screen, Tray, nativeImage, nativeTheme, IpcMainEvent } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  Menu,
+  ipcMain,
+  screen,
+  Tray,
+  nativeImage,
+  nativeTheme,
+  IpcMainEvent,
+} from 'electron';
 import { autoUpdater } from 'electron-updater';
 import contextMenu from 'electron-context-menu';
 import unhandled from 'electron-unhandled';
@@ -30,13 +40,10 @@ try {
   if (isDev) {
     require('electron-reloader')(module, {
       watchRenderer: false,
-      ignore: [
-        './src/**/*',
-      ],
+      ignore: ['./src/**/*'],
     });
   }
-} catch (_) {
-}
+} catch (_) {}
 
 initLogger();
 
@@ -122,25 +129,27 @@ const createPopupWindow = async () => {
     alwaysOnTop: popupConfig.alwaysOnTop,
     width: popupConfig.width || 300,
     height: popupConfig.height || 350,
-    x:
-      popupConfig.x ||
-      (isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140),
+    x: popupConfig.x || (isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140),
     y: popupConfig.y || curDisplay.bounds.height / 2,
     webPreferences,
   });
 
-  popup.on(`move`, _debounce(() => persistPopUpBounds(popup), 1000));
+  popup.on(
+    `move`,
+    _debounce(() => persistPopUpBounds(popup), 1000),
+  );
 
-  popup.on(`resize`, _debounce(() => persistPopUpBounds(popup), 1000));
+  popup.on(
+    `resize`,
+    _debounce(() => persistPopUpBounds(popup), 1000),
+  );
 
   popup.on('closed', () => {
     popupWindow = null;
   });
 
   await popup.loadURL(
-    isDev
-      ? `http://127.0.0.1:3000/popup.html`
-      : `file://${path.join(__dirname, '../popup.html')}`,
+    isDev ? `http://127.0.0.1:3000/popup.html` : `file://${path.join(__dirname, '../popup.html')}`,
   );
 
   return popup;
@@ -307,7 +316,10 @@ function toggleMainWindow() {
 }
 
 function makeTray() {
-  const iconPath = path.join(isDev ? `${__dirname}/../../` : process.resourcesPath, 'resources/app-icon.png');
+  const iconPath = path.join(
+    isDev ? `${__dirname}/../../` : process.resourcesPath,
+    'resources/app-icon.png',
+  );
   const icon = nativeImage.createFromPath(iconPath).resize({ width: 24, height: 24 });
 
   tray = new Tray(icon);
@@ -417,7 +429,11 @@ function registerUpdater() {
   await app.whenReady();
   Menu.setApplicationMenu(null);
 
-  const locale = (await osLocale()) || LanguageSet.enUS;
+  let locale = await osLocale();
+  if (!locale) {
+    locale = LanguageSet.enUS;
+  }
+
   const sysLang = appStore.get(`appLang`);
   const lolDir = appStore.get(`lolDir`);
   if (!sysLang || !LanguageList.includes(locale)) {
