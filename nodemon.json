@@ -1,0 +1,11 @@
+{
+  "ext": "js,ts,json",
+  "watch": [
+    "app/"
+  ],
+  "env": {
+    "NODE_ENV": "development",
+    "ELECTRON_DISABLE_SECURITY_WARNINGS": true,
+    "IS_DEV_MODE": true
+  }
+}

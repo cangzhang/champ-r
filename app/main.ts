@@ -36,15 +36,6 @@ const isDev = process.env.IS_DEV_MODE === `true`;
 
 initRemoteMain();
 
-try {
-  if (isDev) {
-    require('electron-reloader')(module, {
-      watchRenderer: false,
-      ignore: ['./src/**/*'],
-    });
-  }
-} catch (_) {}
-
 initLogger();
 
 unhandled({
@@ -316,8 +307,9 @@ function toggleMainWindow() {
 }
 
 function makeTray() {
+  console.log(__dirname);
   const iconPath = path.join(
-    isDev ? `${__dirname}/../../` : process.resourcesPath,
+    isDev ? `${__dirname}/../` : process.resourcesPath,
     'resources/app-icon.png',
   );
   const icon = nativeImage.createFromPath(iconPath).resize({ width: 24, height: 24 });
