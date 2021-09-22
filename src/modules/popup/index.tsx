@@ -47,7 +47,7 @@ const Pin = styled(`button`, () => ({
   padding: `unset`,
   outline: `unset`,
 }));
-const PinBtn = styled(PinIcon, (props: { $pinned: boolean; }) => ({
+const PinBtn = styled(PinIcon, (props: { $pinned: boolean }) => ({
   transition: `all linear 0.2s`,
   transform: props.$pinned ? `rotate(-45deg)` : `unset`,
   fill: props.$pinned ? `#276EF1` : `currentColor`,
@@ -58,7 +58,7 @@ const PinBtn = styled(PinIcon, (props: { $pinned: boolean; }) => ({
 const getInitTab = () => {
   const cur = config.get(`perkTab`);
   const sourceList = config.get(`sourceList`);
-  return [sourceList.find(i => i.value === cur) ?? sourceList[0]];
+  return [sourceList.find((i) => i.value === cur) ?? sourceList[0]];
 };
 
 export default function Popup() {
@@ -81,7 +81,10 @@ export default function Popup() {
   });
   const [showTips, toggleTips] = useState(true);
   const [pinned, togglePinned] = useState(getCurrentWindow().isAlwaysOnTop());
-  const instances = useRef([new LolQQ(), ...sourceList.slice(1).map((p) => new CdnService(p.value))]); // exclude the `qq` source
+  const instances = useRef([
+    new LolQQ(),
+    ...sourceList.slice(1).map((p) => new CdnService(p.value)),
+  ]); // exclude the `qq` source
 
   useEffect(() => {
     (instances.current[1] as CdnService).getChampionList().then((data) => {
@@ -170,6 +173,13 @@ export default function Popup() {
     config.set(`perkTab`, activeTab[0].value);
   }, [activeTab]);
 
+  useEffect(() => {
+    ipcRenderer.send(`request-for-auth-config`);
+    ipcRenderer.on(`got-auth`, (_, data) => {
+      console.log(`got auth`, data);
+    });
+  }, []);
+
   const toggleAlwaysOnTop = () => {
     ipcRenderer.send(`popup:toggle-always-on-top`);
     togglePinned((p) => !p);
@@ -179,7 +189,7 @@ export default function Popup() {
     const shouldShowList = list.length && championDetail && list[0].alias === championDetail.id;
 
     if (!shouldShowList) {
-      return <Loading className={s.listLoading}/>;
+      return <Loading className={s.listLoading} />;
     }
 
     return (
@@ -199,14 +209,14 @@ export default function Popup() {
           />
         ))}
 
-        <RunePreview perk={curPerk} coordinate={coordinate}/>
+        <RunePreview perk={curPerk} coordinate={coordinate} />
       </Scrollbars>
     );
   };
 
   const renderContent = () => {
     if (!championMap || !perkList[0].length) {
-      return <Loading className={s.loading}/>;
+      return <Loading className={s.loading} />;
     }
 
     const tabIdx = sourceList.findIndex((i) => i.value === activeTab[0].value);
@@ -216,7 +226,7 @@ export default function Popup() {
           <div className={s.drag}>
             <StatefulPopover content={t(`pin/unpin`)} triggerType={TRIGGER_TYPE.hover}>
               <Pin onClick={toggleAlwaysOnTop}>
-                <PinBtn $pinned={pinned}/>
+                <PinBtn $pinned={pinned} />
               </Pin>
             </StatefulPopover>
 

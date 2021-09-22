@@ -7,10 +7,7 @@ import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
-import {
-  SnackbarProvider,
-  PLACEMENT,
-} from 'baseui/snackbar';
+import { SnackbarProvider, PLACEMENT } from 'baseui/snackbar';
 
 import AppContext from 'src/share/context';
 import appReducer, { initialState, init } from 'src/share/reducer';
@@ -85,7 +82,9 @@ const App = () => {
 
         const isRandomMode = !actions.length && myTeam.length > 0 && mChampionId > 0;
         const isVoteMode =
-          mChampionId > 0 && myTeam.length > 0 && myTeam.every((i: { championId: number }) => i.championId === mChampionId);
+          mChampionId > 0 &&
+          myTeam.length > 0 &&
+          myTeam.every((i: { championId: number }) => i.championId === mChampionId);
 
         championId = findUserChampion(cellId, actions);
         if (!process.env.IS_DEV) {
@@ -122,10 +121,13 @@ const App = () => {
     }, 2000);
   }, []);
 
-  const onDirChange = (lolDir: string) => {
-    window.clearInterval(checkTask.current);
-    createCheckTask(lolDir);
-  };
+  const onDirChange = useCallback(
+    (lolDir: string) => {
+      window.clearInterval(checkTask.current);
+      createCheckTask(lolDir);
+    },
+    [createCheckTask],
+  );
 
   useEffect(() => {
     createCheckTask('');
@@ -169,32 +171,41 @@ const App = () => {
     }, 5 * 1000);
   }, []);
 
+  useEffect(() => {
+    ipcRenderer.send(`request-for-auth-config`);
+    ipcRenderer.on(`got-auth`, (_, data) => {
+      console.log(`got auth`, data);
+    });
+  }, []);
+
   return (
     <AppContext.Provider value={contextValue}>
       <StyletronProvider value={engine}>
         <BaseProvider theme={LightTheme}>
-          <SnackbarProvider placement={PLACEMENT.bottom} overrides={{
-            Root: {
-              style: () => ({
-                marginBottom: `2em`,
-              }),
-            },
-          }}>
+          <SnackbarProvider
+            placement={PLACEMENT.bottom}
+            overrides={{
+              Root: {
+                style: () => ({
+                  marginBottom: `2em`,
+                }),
+              },
+            }}>
             <Router>
-              <Toolbar/>
+              <Toolbar />
               <Switch>
                 <Route exact path={'/'}>
-                  <Home onDirChange={onDirChange}/>
+                  <Home onDirChange={onDirChange} />
                 </Route>
                 <Route path={`/import`}>
-                  <Import/>
+                  <Import />
                 </Route>
                 <Route path={`/settings`}>
-                  <Settings/>
+                  <Settings />
                 </Route>
               </Switch>
             </Router>
-            <Footer/>
+            <Footer />
           </SnackbarProvider>
         </BaseProvider>
       </StyletronProvider>

@@ -24,7 +24,7 @@ import { initialize as initRemoteMain } from '@electron/remote/dist/src/main';
 import initLogger from '../src/native/logger';
 import appStore from '../src/native/config';
 import { LanguageList, LanguageSet } from '../src/native/langs';
-import { ifIsCNServer } from './utils';
+import { watchLockFile } from './utils';
 
 interface IPopupEventData {
   championId: string;
@@ -286,8 +286,10 @@ function registerMainListeners() {
     if (!lolDir) {
       return;
     }
+  });
 
-    await ifIsCNServer(lolDir);
+  ipcMain.on(`request-for-auth-config`, () => {
+    watchLockFile([mainWindow, popupWindow]);
   });
 }
 
@@ -421,8 +423,6 @@ function registerUpdater() {
   await app.whenReady();
   Menu.setApplicationMenu(null);
 
-  const lolDir = appStore.get(`lolDir`);
-
   let locale = await osLocale();
   let appLang = appStore.get(`appLang`);
   console.info(`System locale is ${locale}, app lang is ${appLang || 'unset'}`);
@@ -440,7 +440,6 @@ function registerUpdater() {
 
   registerMainListeners();
   registerUpdater();
-  ifIsCNServer(lolDir);
 
   await makeTray();
   const userId = await getMachineId();

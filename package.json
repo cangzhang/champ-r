@@ -19,7 +19,7 @@
     "postinstall": "cross-env electron-builder install-app-deps",
     "watch:main": "tsc -w",
     "compile:main": "tsc",
-    "start:electron": "nodemon --inspect=5858 --exec \"run-electron app/dev.js\"",
+    "start:electron": "nodemon --exec \"run-electron app/dev.js --inspect=5858\"",
     "start:react": "cross-env BROWSER=none NODE_ENV=development node scripts/start.js",
     "start": "concurrently \"yarn start:react\" \"wait-on http://localhost:3000 && yarn start:electron\"",
     "dist:local": "cross-env yarn compile:main && electron-builder --win --x64 -p never",
