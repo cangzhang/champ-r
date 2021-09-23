@@ -17,9 +17,8 @@
   "main": "build/app/main.js",
   "scripts": {
     "postinstall": "cross-env electron-builder install-app-deps",
-    "watch:main": "tsc -w",
     "compile:main": "tsc",
-    "start:electron": "nodemon --exec \"run-electron app/dev.js --inspect=5858\"",
+    "start:electron": "nodemon --exec \"yarn compile:main && run-electron build/app/main.js --inspect=5858\"",
     "start:react": "cross-env BROWSER=none NODE_ENV=development node scripts/start.js",
     "start": "concurrently \"yarn start:react\" \"wait-on http://localhost:3000 && yarn start:electron\"",
     "dist:local": "cross-env yarn compile:main && electron-builder --win --x64 -p never",
@@ -143,7 +142,6 @@
     "semver": "6.3.0",
     "style-loader": "1.0.0",
     "terser-webpack-plugin": "2.2.1",
-    "ts-node": "^10.2.1",
     "ts-pnp": "1.1.5",
     "typescript": "^4.4.3",
     "url-loader": "2.3.0",

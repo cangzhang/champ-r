@@ -309,9 +309,8 @@ function toggleMainWindow() {
 }
 
 function makeTray() {
-  console.log(__dirname);
   const iconPath = path.join(
-    isDev ? `${__dirname}/../` : process.resourcesPath,
+    isDev ? `${__dirname}/../../` : process.resourcesPath,
     'resources/app-icon.png',
   );
   const icon = nativeImage.createFromPath(iconPath).resize({ width: 24, height: 24 });
