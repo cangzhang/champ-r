@@ -21,8 +21,8 @@ import debug from 'electron-debug';
 import electronLogger from 'electron-log';
 import { initialize as initRemoteMain } from '@electron/remote/dist/src/main';
 
-import initLogger from '../src/native/logger';
-import appStore from '../src/native/config';
+import { initLogger } from './logger';
+import appStore from './config';
 import { LanguageList, LanguageSet } from '../src/native/langs';
 import { watchLockFile } from './utils';
 
@@ -65,11 +65,11 @@ let tray = null;
 
 const webPreferences = {
   nodeIntegration: true,
-  contextIsolation: false,
   webSecurity: false,
   allowRunningInsecureContent: true,
   zoomFactor: 1,
   enableRemoteModule: true,
+  preload: path.join(__dirname, 'preload.js'),
 };
 
 const createMainWindow = async () => {
@@ -370,6 +370,7 @@ async function checkUpdates() {
     }, 1000 * 60 * 60 * 4);
 
     await autoUpdater.checkForUpdates();
+    // @ts-ignore
   } catch (err) {
     if (isNetworkError(err)) {
       console.error('Network Error');
