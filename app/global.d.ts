@@ -1,9 +1,14 @@
-import { api } from './preload';
+import { bridge } from './preload';
+import { appConfig } from './config';
+
 import ipcRenderer = Electron.Renderer.ipcRenderer;
+import shell = Electron.shell;
 
 declare global {
   interface Window {
-    Main: typeof api;
+    bridge: typeof bridge;
     ipcRenderer: typeof ipcRenderer;
+    shell: typeof shell;
+    appConfig: typeof appConfig;
   }
 }

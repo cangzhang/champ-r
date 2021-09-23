@@ -1,8 +1,5 @@
 import s from './style.module.scss';
 
-import { ipcRenderer } from 'electron';
-import { app } from '@electron/remote';
-
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -15,10 +12,10 @@ const Toolbar = () => {
   const history = useHistory();
 
   const onHide = () => {
-    ipcRenderer.send(`toggle-main-window`);
+    window.bridge.sendMessage(`toggle-main-window`);
   };
   const onClose = () => {
-    app.quit();
+    window.bridge.quitApp();
   };
 
   return (

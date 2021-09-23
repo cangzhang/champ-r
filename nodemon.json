@@ -1,7 +1,9 @@
 {
   "ext": "js,ts,json",
   "watch": [
-    "app/"
+    "app/",
+    "tsconfig.json",
+    "config/"
   ],
   "env": {
     "NODE_ENV": "development",

@@ -4,7 +4,7 @@ import fse from 'fs-extra';
 import cjk from 'cjk-regex';
 import { BrowserWindow } from 'electron';
 
-import appStore from '../src/native/config';
+import { appConfig } from './config';
 
 const cjk_charset = cjk();
 
@@ -19,9 +19,9 @@ export async function ifIsCNServer(dir: string) {
     console.info(err);
   }
 
-  appStore.set(`appendGameToDir`, result);
+  appConfig.set(`appendGameToDir`, result);
   const hasCjk = hasCJKChar(dir);
-  appStore.set(`lolDirHasCJKChar`, hasCjk);
+  appConfig.set(`lolDirHasCJKChar`, hasCjk);
   console.log('shouldAppendGameToDir: ', result, `lolDirHasCJKChar: `, hasCjk);
   return result;
 }
@@ -33,7 +33,7 @@ export const hasCJKChar = (p: string) => {
 let checkTask: NodeJS.Timeout;
 
 export async function watchLockFile(wins: (BrowserWindow | null)[]) {
-  const dir = appStore.get(`lolDir`);
+  const dir = appConfig.get(`lolDir`);
   try {
     if (!dir) {
       throw new Error(`please select lol dir first.`);
@@ -65,6 +65,7 @@ export async function watchLockFile(wins: (BrowserWindow | null)[]) {
         throw err;
       }
     });
+    // @ts-ignore
   } catch (err) {
     console.info(err.message);
     clearInterval(checkTask);

@@ -1,7 +1,7 @@
 import Store from 'electron-store';
 import { DefaultSourceList } from './sources';
 
-const appStore = new Store({
+export const appConfig = new Store({
   defaults: {
     userId: '',
     lolDir: '',
@@ -23,5 +23,3 @@ const appStore = new Store({
     lolDirHasCJKChar: false,
   },
 });
-
-export default appStore;

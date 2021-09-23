@@ -8,8 +8,9 @@
       "es2020",
       "esnext.asynciterable"
     ],
-    "allowJs": false,
-    "skipLibCheck": false,
+    "useUnknownInCatchVariables": false,
+    "allowJs": true,
+    "skipLibCheck": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
@@ -28,11 +29,12 @@
     }
   },
   "exclude": [
-    "node_modules/"
+    "node_modules"
   ],
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "**/*.js"
+    "app/**/*.js",
+    "src/**/*.js"
   ]
 }

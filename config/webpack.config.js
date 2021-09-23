@@ -156,7 +156,7 @@ module.exports = function (webpackEnv) {
       ].filter(Boolean),
     },
 
-    target: 'electron-renderer',
+    target: 'web',
 
     output: {
       // The build folder.

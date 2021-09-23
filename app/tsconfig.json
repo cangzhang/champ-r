@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "useUnknownInCatchVariables": false,
     "allowJs": true,
     "alwaysStrict": true,
     "esModuleInterop": true,
@@ -17,7 +18,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "outDir": "../main",
+    "outDir": "../build",
     "sourceMap": true,
     "typeRoots": ["global.d.ts"]
   },

@@ -13,16 +13,16 @@ import {
   nativeImage,
   nativeTheme,
   IpcMainEvent,
+  dialog,
 } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import contextMenu from 'electron-context-menu';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 import electronLogger from 'electron-log';
-import { initialize as initRemoteMain } from '@electron/remote/dist/src/main';
 
 import { initLogger } from './logger';
-import appStore from './config';
+import { appConfig } from './config';
 import { LanguageList, LanguageSet } from '../src/native/langs';
 import { watchLockFile } from './utils';
 
@@ -33,9 +33,6 @@ interface IPopupEventData {
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
-
-initRemoteMain();
-
 initLogger();
 
 unhandled({
@@ -52,7 +49,7 @@ app.setAppUserModelId('com.al.champ-r');
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 
-const ignoreSystemScale = appStore.get(`ignoreSystemScale`);
+const ignoreSystemScale = appConfig.get(`ignoreSystemScale`);
 if (ignoreSystemScale) {
   app.commandLine.appendSwitch('high-dpi-support', `1`);
   app.commandLine.appendSwitch('force-device-scale-factor', `1`);
@@ -64,11 +61,12 @@ let popupWindow: BrowserWindow | null;
 let tray = null;
 
 const webPreferences = {
-  nodeIntegration: true,
   webSecurity: false,
+  nodeIntegration: true,
+  contextIsolation: true,
+  enableRemoteModule: true,
   allowRunningInsecureContent: true,
   zoomFactor: 1,
-  enableRemoteModule: true,
   preload: path.join(__dirname, 'preload.js'),
 };
 
@@ -109,7 +107,7 @@ const createPopupWindow = async () => {
     y: mY,
   });
 
-  const popupConfig = appStore.get(`popup`);
+  const popupConfig = appConfig.get(`popup`);
   const popup = new BrowserWindow({
     show: false,
     frame: false,
@@ -184,10 +182,10 @@ function persistPopUpBounds(w: BrowserWindow) {
   }
 
   const { x, y, width, height } = w.getBounds();
-  appStore.set(`popup.x`, x);
-  appStore.set(`popup.y`, y);
-  appStore.set(`popup.width`, width);
-  appStore.set(`popup.height`, height);
+  appConfig.set(`popup.x`, x);
+  appConfig.set(`popup.y`, y);
+  appConfig.set(`popup.width`, width);
+  appConfig.set(`popup.height`, height);
 }
 
 let lastChampion = ``;
@@ -256,7 +254,7 @@ function registerMainListeners() {
     popupWindow.setAlwaysOnTop(next);
     popupWindow.setSkipTaskbar(next);
 
-    appStore.set(`popup.alwaysOnTop`, next);
+    appConfig.set(`popup.alwaysOnTop`, next);
   });
 
   ipcMain.on(`popup:reset-position`, () => {
@@ -264,9 +262,9 @@ function registerMainListeners() {
     const { bounds } = screen.getDisplayNearestPoint({ x: mx, y: my });
     const [x, y] = [bounds.width / 2, bounds.height / 2];
 
-    appStore.set(`popup.alwaysOnTop`, true);
-    appStore.set(`popup.x`, x);
-    appStore.set(`popup.y`, y);
+    appConfig.set(`popup.alwaysOnTop`, true);
+    appConfig.set(`popup.x`, x);
+    appConfig.set(`popup.y`, y);
 
     if (!popupWindow) {
       return;
@@ -282,7 +280,7 @@ function registerMainListeners() {
 
   ipcMain.on(`updateLolDir`, async (_ev, { lolDir }) => {
     console.info(`lolDir is ${lolDir}`);
-    appStore.set(`lolDir`, lolDir);
+    appConfig.set(`lolDir`, lolDir);
     if (!lolDir) {
       return;
     }
@@ -290,6 +288,17 @@ function registerMainListeners() {
 
   ipcMain.on(`request-for-auth-config`, () => {
     watchLockFile([mainWindow, popupWindow]);
+  });
+
+  ipcMain.on(`open-select-folder-dialog`, async (_, { resolve, reject }: any) => {
+    console.log(`open folder dialog...`);
+    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+    if (canceled) {
+      reject();
+      return;
+    }
+
+    resolve(filePaths);
   });
 }
 
@@ -339,11 +348,11 @@ function makeTray() {
 }
 
 async function getMachineId() {
-  const userId = appStore.get(`userId`);
+  const userId = appConfig.get(`userId`);
   if (userId) return userId;
 
   const id = await machineId();
-  appStore.set(`userId`, id);
+  appConfig.set(`userId`, id);
   return id;
 }
 
@@ -370,7 +379,6 @@ async function checkUpdates() {
     }, 1000 * 60 * 60 * 4);
 
     await autoUpdater.checkForUpdates();
-    // @ts-ignore
   } catch (err) {
     if (isNetworkError(err)) {
       console.error('Network Error');
@@ -424,14 +432,14 @@ function registerUpdater() {
   Menu.setApplicationMenu(null);
 
   let locale = await osLocale();
-  let appLang = appStore.get(`appLang`);
+  let appLang = appConfig.get(`appLang`);
   console.info(`System locale is ${locale}, app lang is ${appLang || 'unset'}`);
 
   if (!appLang) {
     if (LanguageList.includes(locale)) {
-      appStore.set(`appLang`, locale);
+      appConfig.set(`appLang`, locale);
     } else {
-      appStore.set(`appLang`, LanguageSet.enUS);
+      appConfig.set(`appLang`, LanguageSet.enUS);
     }
   }
 

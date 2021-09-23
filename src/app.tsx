@@ -1,4 +1,3 @@
-import { ipcRenderer, shell } from 'electron';
 import _find from 'lodash/find';
 
 import React, { useReducer, useMemo, useRef, useEffect, useCallback } from 'react';
@@ -12,7 +11,6 @@ import { SnackbarProvider, PLACEMENT } from 'baseui/snackbar';
 import AppContext from 'src/share/context';
 import appReducer, { initialState, init } from 'src/share/reducer';
 import { setLolVersion, updateItemMap } from 'src/share/actions';
-import config from 'src/native/config';
 import { getItemList, getLolVer } from 'src/service/data-source/lol-qq';
 import LCUService from 'src/service/lcu';
 
@@ -55,7 +53,7 @@ const App = () => {
       try {
         let lolDir = dir;
         if (!lolDir) {
-          lolDir = config.get(`lolDir`);
+          lolDir = window.bridge.appConfig.get(`lolDir`);
         }
         if (!lolDir) {
           throw new Error(`lol folder not selected.`);
@@ -103,19 +101,19 @@ const App = () => {
         }
 
         console.log(`got champion id: `, championId);
-        ipcRenderer.send(`show-popup`, {
+        window.bridge.sendMessage(`show-popup`, {
           championId,
           position: null,
         });
 
         console.log(`show popup.`);
         return true;
-      } catch (_err) {
+      } catch (err) {
         const doNothing = Boolean(process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER === `true`);
         if (doNothing) return;
 
-        console.error(_err.message);
-        ipcRenderer.send(`hide-popup`);
+        console.error(err.message);
+        window.bridge.sendMessage(`hide-popup`);
         return false;
       }
     }, 2000);
@@ -141,7 +139,7 @@ const App = () => {
     const getVerAndItems = async () => {
       const v = await getLolVer();
       dispatch(setLolVersion(v));
-      config.set(`lolVer`, v);
+      window.bridge.appConfig.set(`lolVer`, v);
 
       const data = await getItemList();
 
@@ -154,26 +152,24 @@ const App = () => {
 
     getVerAndItems();
 
-    ipcRenderer.on(`update-available`, (ev, info) => {
+    window.bridge.on(`update-available`, (ev: any, info: any) => {
       const notify = new Notification(`New version available: ${info.version}`);
 
       notify.onclick = () => {
-        shell.openExternal(`https://github.com/cangzhang/champ-r/releases`);
+        window.shell.openExternal(`https://github.com/cangzhang/champ-r/releases`);
       };
     });
-
-    // ipcRenderer.on(`update-downloaded`, () => {});
   }, []);
 
   useEffect(() => {
     setTimeout(() => {
-      ipcRenderer.send(`app-sha`, { sha: process.env.HEAD });
+      window.bridge.sendMessage(`app-sha`, { sha: process.env.HEAD });
     }, 5 * 1000);
   }, []);
 
   useEffect(() => {
-    ipcRenderer.send(`request-for-auth-config`);
-    ipcRenderer.on(`got-auth`, (_, data) => {
+    window.bridge.sendMessage(`request-for-auth-config`);
+    window.bridge.on(`got-auth`, (_: any, data: any) => {
       console.log(`got auth`, data);
     });
   }, []);

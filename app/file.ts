@@ -4,8 +4,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { TextDecoder, TextEncoder } from 'util';
 
-import config from 'src/native/config';
-import { IChampionBuild } from 'src/typings/commonTypes';
+import { IChampionBuild, IFileResult } from '../src/typings/commonTypes';
 
 const ItemSetProps = [
   'title',
@@ -48,12 +47,17 @@ export const makeBuildFile = (
   blocks: blocks.filter(Boolean),
 });
 
-export const saveToFile = async (desDir: string, data: IChampionBuild, stripProps = true) => {
+export const saveToFile = async (
+  desDir: string,
+  data: IChampionBuild,
+  stripProps = true,
+): Promise<IFileResult | Error> => {
   try {
-    const appendGameToDir = config.get(`appendGameToDir`);
-    const hasCjkChar = config.get(`lolDirHasCJKChar`);
+    const appendGameToDir = window.bridge.appConfig.get(`appendGameToDir`);
+    const hasCjkChar = window.bridge.appConfig.get(`lolDirHasCJKChar`);
 
-    const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${data.champion
+    const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${
+      data.champion
     }/Recommended/${data.fileName}.json`;
     const content = stripProps ? _pick(data, ItemSetProps) : data;
     await fse.outputFile(file, JSON.stringify(content, null, 4));
@@ -98,7 +102,7 @@ export const getLatestLogFile = async (dir: string) => {
 const authReg = /https:\/\/riot:.+@127\.0\.0\.1:\d+\/index.html/;
 
 export const getLcuTokenFromLog = async (dirPath: string) => {
-  const appendGameToDir = config.get(`appendGameToDir`);
+  const appendGameToDir = window.bridge.appConfig.get(`appendGameToDir`);
   const dir = `${appendGameToDir ? `${dirPath}/Game` : dirPath}/Logs/LeagueClient Logs`;
 
   try {
@@ -134,7 +138,7 @@ export const getLcuTokenFromLog = async (dirPath: string) => {
 };
 
 export const getLcuToken = async (dirPath: string) => {
-  const appendGameToDir = config.get(`appendGameToDir`); // if lcu is CN client
+  const appendGameToDir = window.bridge.appConfig.get(`appendGameToDir`); // if lcu is CN client
   const lockfilePath = path.join(dirPath, appendGameToDir ? 'LeagueClient' : '', 'lockfile');
 
   try {

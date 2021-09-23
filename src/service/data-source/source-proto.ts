@@ -1,15 +1,15 @@
 import _noop from 'lodash/noop';
 import http from 'src/service/http';
-import { IPkgInfo } from 'src/typings/commonTypes'
+import { IPkgInfo } from 'src/typings/commonTypes';
 
-type IVoidFunc = () => void
+type IVoidFunc = () => void;
 
 interface ICachedReq<T> {
   done: boolean;
   lastTime: number;
   result?: T;
   index: number;
-  subscribers: { resolve: (r: T) => void, reject: (reason?: any) => void }[];
+  subscribers: { resolve: (r: T) => void; reject: (reason?: any) => void }[];
 }
 
 const fetchLatestVersionFromCdn_ = () => {
@@ -32,25 +32,25 @@ const fetchLatestVersionFromCdn_ = () => {
         index: requestIdx,
         subscribers: [],
       };
-      const data = await http.get(`${url}?t=${Date.now()}`);
+      const data: any = await http.get(`${url}?t=${Date.now()}`);
       req.done = true;
       req.lastTime = Date.now();
       req.result = data[`dist-tags`].latest;
       versionReq[url] = req;
 
-      req.subscribers.forEach(i => {
-        i.resolve(req.result ?? ``)
-      })
+      req.subscribers.forEach((i) => {
+        i.resolve(req.result ?? ``);
+      });
 
       return req.result;
     } catch (err) {
       console.error(err.message, err.stack);
       return Promise.reject(err);
     }
-  }
-}
+  };
+};
 
-export const fetchLatestVersionFromCdn = fetchLatestVersionFromCdn_()
+export const fetchLatestVersionFromCdn = fetchLatestVersionFromCdn_();
 
 export default class SourceProto {
   public cancelHandlers: { [key: string]: IVoidFunc } = {};

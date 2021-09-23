@@ -13,18 +13,16 @@ import { useStyletron } from 'baseui';
 import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 import { Button } from 'baseui/button';
 
-import { SourceQQ } from 'src/share/constants/sources';
+import { ISourceItem, SourceQQ } from 'src/share/constants/sources';
 import {
   prepareReimport,
   updateFetchingSource,
   importBuildFailed,
   importBuildSucceed,
 } from 'src/share/actions';
-import { removeFolderContent } from 'src/share/file';
 import LolQQImporter from 'src/service/data-source/lol-qq';
 import CdnService from 'src/service/data-source/cdn-service';
 
-import config from 'src/native/config';
 import AppContext from 'src/share/context';
 import WaitingList from 'src/components/waiting-list';
 import SourceProto from 'src/service/data-source/source-proto';
@@ -33,8 +31,8 @@ export default function Import() {
   const history = useHistory();
   const [, theme] = useStyletron();
   const [t] = useTranslation();
-  const lolDir = config.get(`lolDir`);
-  const sourceList = config.get(`sourceList`);
+  const lolDir = window.bridge.appConfig.get(`lolDir`);
+  const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
 
   const { store, dispatch } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
@@ -54,7 +52,7 @@ export default function Import() {
     dispatch(updateFetchingSource(selectedSources));
 
     if (!keepOld) {
-      await removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
+      await window.bridge.file.removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
         toaster.positive(t(`removed outdated items`), {});
       });
     }
@@ -85,12 +83,13 @@ export default function Import() {
           });
     }
 
-    const tasks = sourceList.slice(1).map(p => { // exclude the `qq` source
+    const tasks = sourceList.slice(1).map((p) => {
+      // exclude the `qq` source
       if (!selectedSources.includes(p.label)) {
         return Promise.resolve();
       }
 
-      const instance = new CdnService(p.value, dispatch)
+      const instance = new CdnService(p.value, dispatch);
       workers.current[p.label] = instance;
       return instance
         .importFromCdn(lolDir)
@@ -138,7 +137,7 @@ export default function Import() {
     if (loading) {
       return (
         <>
-          <WaitingList/>
+          <WaitingList />
           {/* @ts-ignore */}
           <Button className={s.back} onClick={stop}>
             {t(`stop`)}
@@ -150,12 +149,12 @@ export default function Import() {
     if (userCancelled) {
       return (
         <>
-          <PauseCircle size={128} color={theme.colors.contentWarning}/>
+          <PauseCircle size={128} color={theme.colors.contentWarning} />
           <Button
             // @ts-ignore
             className={s.back}
             /* @ts-ignore */
-            startEnhancer={<RefreshCw title={'Restart'}/>}
+            startEnhancer={<RefreshCw title={'Restart'} />}
             onClick={restart}
             overrides={{
               BaseButton: {
@@ -172,7 +171,7 @@ export default function Import() {
             // @ts-ignore
             className={s.back}
             // @ts-ignore
-            startEnhancer={<XCircle title={'Homepage'}/>}
+            startEnhancer={<XCircle title={'Homepage'} />}
             onClick={backToHome}
             overrides={{
               BaseButton: {
@@ -194,14 +193,14 @@ export default function Import() {
     // @ts-ignore
     return (
       <>
-        {!failed && <CheckCircle size={128} color={theme.colors.contentPositive}/>}
+        {!failed && <CheckCircle size={128} color={theme.colors.contentPositive} />}
         {failed && (
           <div className={s.failed}>
             {t(`rejected`)}: {store.importPage.fail.join(`, `)}
           </div>
         )}
         {/* @ts-ignore */}
-        <Button className={s.back} onClick={backToHome} startEnhancer={<Home title={`Home`}/>}>
+        <Button className={s.back} onClick={backToHome} startEnhancer={<Home title={`Home`} />}>
           {t(`back to home`)}
         </Button>
       </>
@@ -221,7 +220,7 @@ export default function Import() {
   return (
     <div className={cn(s.import, loading && s.ing)}>
       {renderStatus()}
-      <ToasterContainer autoHideDuration={1500} placement={PLACEMENT.bottom}/>
+      <ToasterContainer autoHideDuration={1500} placement={PLACEMENT.bottom} />
     </div>
   );
 }

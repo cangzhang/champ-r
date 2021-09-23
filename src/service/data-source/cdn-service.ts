@@ -3,9 +3,13 @@ import _noop from 'lodash/noop';
 
 import http, { CancelToken } from 'src/service/http';
 import { addFetched, addFetching } from 'src/share/actions';
-import { saveToFile } from 'src/share/file';
 import SourceProto, { fetchLatestVersionFromCdn } from './source-proto';
-import { IChampionCdnDataItem, IRuneItem, IFileResult, IChampionInfo } from 'src/typings/commonTypes';
+import {
+  IChampionCdnDataItem,
+  IRuneItem,
+  IFileResult,
+  IChampionInfo,
+} from 'src/typings/commonTypes';
 
 const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
 const T_NPM_PREFIX = `https://registry.npm.taobao.org/@champ-r`;
@@ -22,15 +26,17 @@ interface IFetchFailedData {
   position?: string;
 }
 
-type IFetchResult = {
-  status: string;
-  reason: IFetchFailedData;
-  value: IFetchFailedData;
-} | {
-  status: string;
-  value: IFileResult;
-  reason?: IFileResult;
-};
+type IFetchResult =
+  | {
+      status: string;
+      reason: IFetchFailedData;
+      value: IFetchFailedData;
+    }
+  | {
+      status: string;
+      value: IFileResult;
+      reason?: IFileResult;
+    };
 
 export default class CdnService extends SourceProto {
   public cdnUrl = ``;
@@ -47,9 +53,12 @@ export default class CdnService extends SourceProto {
   public getChampionList = async () => {
     try {
       const version = await fetchLatestVersionFromCdn(this.tNpmUrl);
-      const data: { [key: string]: IChampionInfo } = await http.get(`${this.cdnUrl}@${version}/index.json?${Date.now()}`, {
-        cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
-      });
+      const data: { [key: string]: IChampionInfo } = await http.get(
+        `${this.cdnUrl}@${version}/index.json?${Date.now()}`,
+        {
+          cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
+        },
+      );
       return data;
     } catch (err) {
       console.error(err.message, err.stack);
@@ -62,9 +71,12 @@ export default class CdnService extends SourceProto {
   public getChampionDataFromCdn = async (champion: string, $identity: string = ``) => {
     try {
       const version = await fetchLatestVersionFromCdn(this.tNpmUrl);
-      const data: IChampionCdnDataItem[] = await http.get(`${this.cdnUrl}@${version}/${champion}.json?${Date.now()}`, {
-        cancelToken: new CancelToken(this.setCancelHook($identity)),
-      });
+      const data: IChampionCdnDataItem[] = await http.get(
+        `${this.cdnUrl}@${version}/${champion}.json?${Date.now()}`,
+        {
+          cancelToken: new CancelToken(this.setCancelHook($identity)),
+        },
+      );
       return data;
     } catch (err) {
       console.error(err.message, err.stack);
@@ -86,7 +98,7 @@ export default class CdnService extends SourceProto {
       const data = await this.getChampionDataFromCdn(champion);
       const tasks = data.reduce((t, i) => {
         const { position, itemBuilds } = i;
-        const pStr = position ? `${position} - ` : ``
+        const pStr = position ? `${position} - ` : ``;
         itemBuilds.forEach((k, idx) => {
           const file = {
             ...k,
@@ -94,11 +106,11 @@ export default class CdnService extends SourceProto {
             position,
             fileName: `[${this.pkgName.toUpperCase()}] ${pStr}${champion}-${idx + 1}`,
           };
-          t = t.concat(saveToFile(lolDir, file));
+          t = t.concat(window.bridge.file.saveToFile(lolDir, file));
         });
 
         return t;
-      }, [] as Promise<IFileResult>[]);
+      }, [] as Promise<IFileResult | Error>[]);
 
       const r = await Promise.allSettled(tasks);
 
@@ -143,11 +155,11 @@ export default class CdnService extends SourceProto {
           arr.concat(
             cur.status === `rejected`
               ? {
-                status: `rejected`,
-                value: cur.reason,
-                reason: cur.reason,
-              }
-              : cur.value as any, // TODO
+                  status: `rejected`,
+                  value: cur.reason,
+                  reason: cur.reason,
+                }
+              : (cur.value as any), // TODO
           ),
         [] as IFetchResult[],
       );

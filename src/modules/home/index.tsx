@@ -1,8 +1,5 @@
 import s from 'src/app.module.scss';
 
-import { ipcRenderer } from 'electron';
-import { dialog } from '@electron/remote';
-
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
@@ -16,13 +13,9 @@ import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Tag, VARIANT } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
 import { H6 } from 'baseui/typography';
-import {
-  useSnackbar,
-  DURATION,
-} from 'baseui/snackbar';
+import { useSnackbar, DURATION } from 'baseui/snackbar';
 import { Alert as AlertIcon } from 'baseui/icon';
 
-import config from 'src/native/config';
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
 import { ChampionKeys } from 'src/share/constants/champions';
 import AppContext from 'src/share/context';
@@ -47,12 +40,11 @@ export default function Home({ onDirChange }: IProps) {
   const versionTasker = useRef<number>();
   const instances = useRef<CdnService[]>([]);
 
-  const {
-    loading: fetchingSources,
-    sourceList,
-  } = useSourceList();
-
-  const [selectedSources, toggleSource] = useState<string[]>(config.get(`selectedSources`));
+  const { loading: fetchingSources, sourceList } = useSourceList();
+  // FIXME
+  const [selectedSources, toggleSource] = useState<string[]>(
+    window.bridge.appConfig.get(`selectedSources`) ?? [],
+  );
   const [lolDir, setLolDir] = useState(``);
 
   const toggleKeepOldItems = (ev: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,16 +52,24 @@ export default function Home({ onDirChange }: IProps) {
     dispatch(updateConfig('keepOld', checked));
   };
 
-  const onSelectDir = async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      properties: ['openDirectory'],
+  // FIXME
+  const selectFolder = (): Promise<string[]> => {
+    return new Promise((resolve, reject) => {
+      window.bridge.sendMessage(`open-select-folder-dialog`, {
+        resolve,
+        reject,
+      });
     });
-    if (canceled) {
-      return;
-    }
+  };
 
-    const dir = filePaths[0];
-    setLolDir(dir);
+  const onSelectDir = async () => {
+    try {
+      const filePaths = await selectFolder();
+      const dir = filePaths[0];
+      setLolDir(dir);
+    } catch (_e) {
+      console.error(_e);
+    }
   };
 
   const clearFolder = () => {
@@ -95,7 +95,7 @@ export default function Home({ onDirChange }: IProps) {
   };
 
   const resetPopupPosition = () => {
-    ipcRenderer.send(`popup:reset-position`);
+    window.bridge.sendMessage(`popup:reset-position`);
     new window.Notification(t(`done`));
   };
 
@@ -105,16 +105,18 @@ export default function Home({ onDirChange }: IProps) {
         LolQQ.getLolVersion().then((v) => {
           dispatch(updateDataSourceVersion(sourceList[0].label, v));
         }),
-        ...instances.current.map(i => i.getPkgInfo().then(({ sourceVersion }) => {
-          dispatch(updateDataSourceVersion(i.pkgName, sourceVersion));
-        })),
+        ...instances.current.map((i) =>
+          i.getPkgInfo().then(({ sourceVersion }) => {
+            dispatch(updateDataSourceVersion(i.pkgName, sourceVersion));
+          }),
+        ),
       ]),
     [dispatch, sourceList],
   );
 
   useEffect(() => {
     // exclude the `qq` source
-    instances.current = sourceList.slice(1).map((s => new CdnService(s.value, dispatch)));
+    instances.current = sourceList.slice(1).map((s) => new CdnService(s.value, dispatch));
   }, [sourceList, dispatch]);
 
   useEffect(() => {
@@ -131,23 +133,23 @@ export default function Home({ onDirChange }: IProps) {
 
   useEffect(() => {
     // persist user preference
-    config.set('keepOldItems', store.keepOld);
-    config.set(`selectedSources`, selectedSources);
+    window.bridge.appConfig.set('keepOldItems', store.keepOld);
+    window.bridge.appConfig.set(`selectedSources`, selectedSources);
   }, [store.keepOld, lolDir, selectedSources]);
 
   useEffect(() => {
-    setLolDir(config.get('lolDir'));
+    setLolDir(window.bridge.appConfig.get('lolDir') || ``);
   }, []);
 
   useEffect(() => {
-    ipcRenderer.send(`updateLolDir`, { lolDir });
+    window.bridge.sendMessage(`updateLolDir`, { lolDir });
     onDirChange(lolDir);
 
     if (!lolDir) {
       enqueue(
         {
           message: t(`please specify lol dir`),
-          startEnhancer: ({ size }) => <AlertIcon size={size}/>,
+          startEnhancer: ({ size }) => <AlertIcon size={size} />,
         },
         DURATION.infinite,
       );
@@ -157,12 +159,13 @@ export default function Home({ onDirChange }: IProps) {
     dequeue();
   }, [lolDir]); // eslint-disable-line
 
-  const shouldDisableImport = !store.version || !lolDir || !selectedSources.length || fetchingSources;
+  const shouldDisableImport =
+    !store.version || !lolDir || !selectedSources.length || fetchingSources;
 
   return (
     <div className={s.container}>
       <h1 className={s.title}>
-        <img src={logo} alt=""/>
+        <img src={logo} alt='' />
         <span>ChampR</span>
       </h1>
 
@@ -170,7 +173,7 @@ export default function Home({ onDirChange }: IProps) {
         {t(`lol folder is`)}
         <Tag
           closeable={Boolean(lolDir)}
-          kind="accent"
+          kind='accent'
           onClick={onSelectDir}
           onActionClick={clearFolder}
           overrides={{
@@ -203,8 +206,8 @@ export default function Home({ onDirChange }: IProps) {
             borderRadius: theme.borders.radius300,
           }),
         )}>
-        <CornerDownRight size={`1.6em`} color={`#43BF75`}/>
-        <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }}/>
+        <CornerDownRight size={`1.6em`} color={`#43BF75`} />
+        <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }} />
       </code>
 
       <div className={s.sources}>
@@ -213,7 +216,8 @@ export default function Home({ onDirChange }: IProps) {
             className={s.sourceTitle}
             dangerouslySetInnerHTML={{
               __html: t(`data sources`),
-            }}/>
+            }}
+          />
         </H6>
 
         {sourceList.map((v) => {
@@ -256,12 +260,12 @@ export default function Home({ onDirChange }: IProps) {
               }}>
               {v.label}
               {sourceVer && (
-                <Tag closeable={false} variant={VARIANT.outlined} kind="warning">
+                <Tag closeable={false} variant={VARIANT.outlined} kind='warning'>
                   {sourceVer}
                 </Tag>
               )}
               {aram && (
-                <Tag closeable={false} variant={VARIANT.light} kind="positive">
+                <Tag closeable={false} variant={VARIANT.light} kind='positive'>
                   {t(`aram`)}
                 </Tag>
               )}
@@ -289,7 +293,7 @@ export default function Home({ onDirChange }: IProps) {
             },
           }}
           disabled={shouldDisableImport}
-          startEnhancer={() => <ArrowRight size={24}/>}
+          startEnhancer={() => <ArrowRight size={24} />}
           onClick={startImport}>
           {t(`import now`)}
         </Button>
@@ -357,7 +361,7 @@ export default function Home({ onDirChange }: IProps) {
           <button
             style={{ width: `6em`, marginLeft: `2ex` }}
             onClick={() => {
-              ipcRenderer.send(`show-popup`, {
+              window.bridge.sendMessage(`show-popup`, {
                 championId: ChampionKeys[Math.floor(Math.random() * ChampionKeys.length)],
                 position: null,
               });

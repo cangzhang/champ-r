@@ -1,6 +1,5 @@
 import produce from 'immer';
 
-import config from 'src/native/config';
 import { Actions } from 'src/share/actions';
 import { IProcessChampionItem, IState } from 'src/typings/commonTypes';
 
@@ -13,8 +12,8 @@ export const initialState: IState = {
   fetched: [],
   version: null,
   itemMap: null,
-  selectedSources: config.get(`selectedSources`),
-  keepOld: config.get('keepOldItems'),
+  selectedSources: window.bridge.appConfig.get(`selectedSources`),
+  keepOld: window.bridge.appConfig.get('keepOldItems'),
   importerInstances: {},
   importPage: {
     success: [],
@@ -40,7 +39,9 @@ export default produce((draft, action) => {
     }
 
     case Actions.ADD_FETCHED: {
-      draft.fetching = draft.fetching.filter((i: IProcessChampionItem) => i.$identity !== payload.$identity);
+      draft.fetching = draft.fetching.filter(
+        (i: IProcessChampionItem) => i.$identity !== payload.$identity,
+      );
       draft.fetched.push(payload);
       break;
     }

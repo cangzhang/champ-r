@@ -1,8 +1,5 @@
 import s from './style.module.scss';
 
-import { ipcRenderer } from 'electron';
-import { getCurrentWindow } from '@electron/remote';
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +13,6 @@ import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import { Select } from 'baseui/select';
 
 import initI18n from 'src/modules/i18n';
-import config from 'src/native/config';
 import { ISourceItem, QQChampionAvatarPrefix } from 'src/share/constants/sources';
 import LCUService from 'src/service/lcu';
 
@@ -56,16 +52,16 @@ const PinBtn = styled(PinIcon, (props: { $pinned: boolean }) => ({
 }));
 
 const getInitTab = () => {
-  const cur = config.get(`perkTab`);
-  const sourceList = config.get(`sourceList`);
+  const cur = window.bridge.appConfig.get(`perkTab`);
+  const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
   return [sourceList.find((i) => i.value === cur) ?? sourceList[0]];
 };
 
 export default function Popup() {
-  const lolDir = config.get(`lolDir`);
+  const lolDir = window.bridge.appConfig.get(`lolDir`);
   const [t] = useTranslation();
   const lcu = useRef<LCUService>();
-  const sourceList = config.get(`sourceList`);
+  const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
 
   const [activeTab, setActiveTab] = useState<ISourceItem[]>(getInitTab());
   const [perkList, setPerkList] = useImmer<IRuneItem[][]>([[], [], []]);
@@ -80,7 +76,8 @@ export default function Popup() {
     height: 0,
   });
   const [showTips, toggleTips] = useState(true);
-  const [pinned, togglePinned] = useState(getCurrentWindow().isAlwaysOnTop());
+  // const [pinned, togglePinned] = useState(window.bridge.getCurrentWindow()?.isAlwaysOnTop()); // FIXME
+  const [pinned, togglePinned] = useState(true);
   const instances = useRef([
     new LolQQ(),
     ...sourceList.slice(1).map((p) => new CdnService(p.value)),
@@ -91,7 +88,7 @@ export default function Popup() {
       const champMap = makeChampMap(data);
       setChampionMap(champMap);
 
-      ipcRenderer.on('for-popup', (event, { championId: id }) => {
+      window.bridge.on('for-popup', (_: any, { championId: id }: { championId: number }) => {
         if (id) {
           setChampionId(id);
         }
@@ -130,7 +127,7 @@ export default function Popup() {
   }, [championId, championMap, setPerkList]);
 
   useEffect(() => {
-    config.set(`perkTab`, activeTab);
+    window.bridge.appConfig.set(`perkTab`, activeTab);
   }, [activeTab]);
 
   const apply = async (perk: IRuneItem) => {
@@ -153,7 +150,7 @@ export default function Popup() {
     }
   };
 
-  const showPreview = (perk: IRuneItem, el: HTMLDivElement) => {
+  const showPreview = (perk: IRuneItem, el: HTMLDivElement | null) => {
     setCurPerk(perk);
     if (!el) return;
 
@@ -170,18 +167,18 @@ export default function Popup() {
   };
 
   useEffect(() => {
-    config.set(`perkTab`, activeTab[0].value);
+    window.bridge.appConfig.set(`perkTab`, activeTab[0].value);
   }, [activeTab]);
 
   useEffect(() => {
-    ipcRenderer.send(`request-for-auth-config`);
-    ipcRenderer.on(`got-auth`, (_, data) => {
+    window.bridge.sendMessage(`request-for-auth-config`);
+    window.bridge.on(`got-auth`, (_: any, data: any) => {
       console.log(`got auth`, data);
     });
   }, []);
 
   const toggleAlwaysOnTop = () => {
-    ipcRenderer.send(`popup:toggle-always-on-top`);
+    window.bridge.sendMessage(`popup:toggle-always-on-top`);
     togglePinned((p) => !p);
   };
 

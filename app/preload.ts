@@ -1,15 +1,34 @@
-import { ipcRenderer, contextBridge } from 'electron';
+import { ipcRenderer, contextBridge, shell, app } from 'electron';
 import log from 'electron-log';
+import cheerio from 'cheerio';
 
-export const api = {
-  sendMessage: (message: any) => {
-    ipcRenderer.send('message', message);
+import { appConfig } from './config';
+import * as file from './file';
+
+export const bridge = {
+  sendMessage: (channel: string, data?: any) => {
+    ipcRenderer.send(channel, data);
   },
   on: (channel: string, callback: Function) => {
     ipcRenderer.on(channel, (_, data) => callback(data));
   },
   console: log,
+  file,
+  cheerio,
+  appConfig: {
+    get(key: string, fallbackVal?: any) {
+      return appConfig.get(key, fallbackVal);
+    },
+    set(key: string, obj: any) {
+      return appConfig.set(key, obj);
+    },
+  },
+
+  quitApp: () => app.quit(), // FIXME
+  getCurrentWindow: () => {
+    return {};
+  },
 };
 
-contextBridge.exposeInMainWorld('Main', api);
-contextBridge.exposeInMainWorld('ipcRenderer', ipcRenderer);
+contextBridge.exposeInMainWorld('bridge', bridge);
+contextBridge.exposeInMainWorld('shell', shell);

@@ -1,7 +1,5 @@
 import http from './http';
-import { getLcuToken } from 'src/share/file';
-import { ILcuUserAction } from 'src/typings/commonTypes'
-import config from 'src/native/config';
+import { ILcuUserAction } from 'src/typings/commonTypes';
 
 export default class LCUService {
   public active = false;
@@ -21,8 +19,7 @@ export default class LCUService {
   };
   public auth = {};
 
-  constructor(public lolDir: string) {
-  }
+  constructor(public lolDir: string) {}
 
   setVars = (token: string | null, port: number | string | null, url: string | null) => {
     this.active = !!token;
@@ -48,7 +45,9 @@ export default class LCUService {
   };
 
   getAuthToken = async () => {
-    const [token, port, url] = await getLcuToken(config.get(`lolDir`));
+    const [token, port, url] = await window.bridge.file.getLcuToken(
+      window.bridge.appConfig.get(`lolDir`),
+    );
     this.setVars(token, port, url);
     return [token, port, url];
   };
@@ -69,7 +68,7 @@ export default class LCUService {
   getCurrentSession = async () => {
     const res: {
       actions: ILcuUserAction[][];
-      myTeam: { championId: number; summonerId: number; cellId: number; }[];
+      myTeam: { championId: number; summonerId: number; cellId: number }[];
       localPlayerCellId: number;
     } = await http.get(this.urls.curSession, {
       ...this.auth,
@@ -84,7 +83,10 @@ export default class LCUService {
   };
 
   getPerkList = async () => {
-    const res: { current: boolean; isDeletable: boolean; id: number; }[] = await http.get(this.urls.perks, this.auth);
+    const res: { current: boolean; isDeletable: boolean; id: number }[] = await http.get(
+      this.urls.perks,
+      this.auth,
+    );
     return res;
   };
 
