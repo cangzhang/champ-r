@@ -76,8 +76,9 @@ export default function Popup() {
     height: 0,
   });
   const [showTips, toggleTips] = useState(true);
-  // const [pinned, togglePinned] = useState(window.bridge.getCurrentWindow()?.isAlwaysOnTop()); // FIXME
-  const [pinned, togglePinned] = useState(true);
+  const [pinned, togglePinned] = useState(
+    window.bridge.appConfig.get(`popup.alwaysOnTop`) as boolean,
+  );
   const instances = useRef([
     new LolQQ(),
     ...sourceList.slice(1).map((p) => new CdnService(p.value)),
@@ -88,7 +89,7 @@ export default function Popup() {
       const champMap = makeChampMap(data);
       setChampionMap(champMap);
 
-      window.bridge.on('for-popup', (_: any, { championId: id }: { championId: number }) => {
+      window.bridge.on('for-popup', ({ championId: id }: { championId: number }) => {
         if (id) {
           setChampionId(id);
         }
@@ -172,7 +173,7 @@ export default function Popup() {
 
   useEffect(() => {
     window.bridge.sendMessage(`request-for-auth-config`);
-    window.bridge.on(`got-auth`, (_: any, data: any) => {
+    window.bridge.on(`got-auth`, (data: any) => {
       console.log(`got auth`, data);
     });
   }, []);

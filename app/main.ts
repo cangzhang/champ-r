@@ -290,15 +290,16 @@ function registerMainListeners() {
     watchLockFile([mainWindow, popupWindow]);
   });
 
-  ipcMain.on(`open-select-folder-dialog`, async (_, { resolve, reject }: any) => {
-    console.log(`open folder dialog...`);
-    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-    if (canceled) {
-      reject();
-      return;
-    }
+  ipcMain.on(`open-select-folder-dialog`, async (_, { jobId }: any) => {
+    const data = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+    mainWindow?.webContents.send(`open-select-folder-dialog:done`, {
+      ...data,
+      jobId,
+    });
+  });
 
-    resolve(filePaths);
+  ipcMain.on(`quit-app`, () => {
+    app.quit();
   });
 }
 

@@ -152,7 +152,7 @@ const App = () => {
 
     getVerAndItems();
 
-    window.bridge.on(`update-available`, (ev: any, info: any) => {
+    window.bridge.on(`update-available`, (info: any) => {
       const notify = new Notification(`New version available: ${info.version}`);
 
       notify.onclick = () => {
@@ -169,7 +169,7 @@ const App = () => {
 
   useEffect(() => {
     window.bridge.sendMessage(`request-for-auth-config`);
-    window.bridge.on(`got-auth`, (_: any, data: any) => {
+    window.bridge.on(`got-auth`, (data: any) => {
       console.log(`got auth`, data);
     });
   }, []);

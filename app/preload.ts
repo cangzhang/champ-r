@@ -1,4 +1,4 @@
-import { ipcRenderer, contextBridge, shell, app } from 'electron';
+import { ipcRenderer, contextBridge, shell } from 'electron';
 import log from 'electron-log';
 import cheerio from 'cheerio';
 
@@ -22,11 +22,6 @@ export const bridge = {
     set(key: string, obj: any) {
       return appConfig.set(key, obj);
     },
-  },
-
-  quitApp: () => app.quit(), // FIXME
-  getCurrentWindow: () => {
-    return {};
   },
 };
 

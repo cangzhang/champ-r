@@ -15,7 +15,7 @@ const Toolbar = () => {
     window.bridge.sendMessage(`toggle-main-window`);
   };
   const onClose = () => {
-    window.bridge.quitApp();
+    window.bridge.sendMessage(`quit-app`);
   };
 
   return (

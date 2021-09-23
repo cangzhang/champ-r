@@ -25,6 +25,7 @@ import CdnService from 'src/service/data-source/cdn-service';
 import useSourceList from './useSourceList';
 
 import logo from 'src/assets/app-icon.webp';
+import { nanoid } from 'nanoid';
 
 interface IProps {
   onDirChange: (p: string) => void;
@@ -41,7 +42,6 @@ export default function Home({ onDirChange }: IProps) {
   const instances = useRef<CdnService[]>([]);
 
   const { loading: fetchingSources, sourceList } = useSourceList();
-  // FIXME
   const [selectedSources, toggleSource] = useState<string[]>(
     window.bridge.appConfig.get(`selectedSources`) ?? [],
   );
@@ -52,13 +52,33 @@ export default function Home({ onDirChange }: IProps) {
     dispatch(updateConfig('keepOld', checked));
   };
 
-  // FIXME
   const selectFolder = (): Promise<string[]> => {
+    const jobId = nanoid();
     return new Promise((resolve, reject) => {
       window.bridge.sendMessage(`open-select-folder-dialog`, {
-        resolve,
-        reject,
+        jobId,
       });
+      window.bridge.on(
+        `open-select-folder-dialog:done`,
+        ({
+          jobId: id,
+          canceled,
+          filePaths,
+        }: {
+          jobId: string;
+          canceled: boolean;
+          filePaths: string[];
+        }) => {
+          if (jobId === id) {
+            if (canceled) {
+              reject({ canceled });
+              return;
+            }
+
+            resolve(filePaths);
+          }
+        },
+      );
     });
   };
 
@@ -361,8 +381,9 @@ export default function Home({ onDirChange }: IProps) {
           <button
             style={{ width: `6em`, marginLeft: `2ex` }}
             onClick={() => {
+              const championId = ChampionKeys[Math.floor(Math.random() * ChampionKeys.length)];
               window.bridge.sendMessage(`show-popup`, {
-                championId: ChampionKeys[Math.floor(Math.random() * ChampionKeys.length)],
+                championId,
                 position: null,
               });
             }}>
