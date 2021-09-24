@@ -4,6 +4,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { TextDecoder, TextEncoder } from 'util';
 
+import { appConfig } from './config';
 import { IChampionBuild, IFileResult } from '../src/typings/commonTypes';
 
 const ItemSetProps = [
@@ -53,8 +54,8 @@ export const saveToFile = async (
   stripProps = true,
 ): Promise<IFileResult | Error> => {
   try {
-    const appendGameToDir = window.bridge.appConfig.get(`appendGameToDir`);
-    const hasCjkChar = window.bridge.appConfig.get(`lolDirHasCJKChar`);
+    const appendGameToDir = appConfig.get(`appendGameToDir`);
+    const hasCjkChar = appConfig.get(`lolDirHasCJKChar`);
 
     const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${
       data.champion
@@ -102,7 +103,7 @@ export const getLatestLogFile = async (dir: string) => {
 const authReg = /https:\/\/riot:.+@127\.0\.0\.1:\d+\/index.html/;
 
 export const getLcuTokenFromLog = async (dirPath: string) => {
-  const appendGameToDir = window.bridge.appConfig.get(`appendGameToDir`);
+  const appendGameToDir = appConfig.get(`appendGameToDir`);
   const dir = `${appendGameToDir ? `${dirPath}/Game` : dirPath}/Logs/LeagueClient Logs`;
 
   try {
@@ -138,7 +139,7 @@ export const getLcuTokenFromLog = async (dirPath: string) => {
 };
 
 export const getLcuToken = async (dirPath: string) => {
-  const appendGameToDir = window.bridge.appConfig.get(`appendGameToDir`); // if lcu is CN client
+  const appendGameToDir = appConfig.get(`appendGameToDir`); // if lcu is CN client
   const lockfilePath = path.join(dirPath, appendGameToDir ? 'LeagueClient' : '', 'lockfile');
 
   try {
