@@ -94,7 +94,7 @@ const createMainWindow = async () => {
   });
 
   await win.loadURL(
-    isDev ? 'http://127.0.0.1:3000' : `file://${path.join(__dirname, '../index.html')}`,
+    isDev ? 'http://127.0.0.1:3000' : `file://${path.join(__dirname, 'index.html')}`,
   );
 
   return win;
@@ -138,7 +138,7 @@ const createPopupWindow = async () => {
   });
 
   await popup.loadURL(
-    isDev ? `http://127.0.0.1:3000/popup.html` : `file://${path.join(__dirname, '../popup.html')}`,
+    isDev ? `http://127.0.0.1:3000/popup.html` : `file://${path.join(__dirname, 'popup.html')}`,
   );
 
   return popup;
