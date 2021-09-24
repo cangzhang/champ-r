@@ -1,4 +1,4 @@
-import { IChampionInfo } from 'src/typings/commonTypes'
+import { IChampionInfo } from '@interfaces/commonTypes';
 
 export const makeChampMap = (list: { [key: string]: IChampionInfo }) => {
   return Object.values(list).reduce((result, cur) => {

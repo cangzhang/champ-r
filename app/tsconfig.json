@@ -1,5 +1,7 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
+    "lib": ["dom", "es2017", "es2020"],
     "useUnknownInCatchVariables": false,
     "allowJs": true,
     "alwaysStrict": true,
@@ -7,7 +9,6 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "lib": ["dom", "es2017", "es2020"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmit": false,
@@ -20,8 +21,7 @@
     "target": "esnext",
     "outDir": "../build",
     "sourceMap": true,
-    "typeRoots": ["global.d.ts"]
+    "typeRoots": ["../node_modules/@types", "global.d.ts"]
   },
-  "exclude": ["node_modules"],
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
 }

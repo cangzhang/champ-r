@@ -20,7 +20,7 @@ import Home from 'src/modules/home';
 import Import from 'src/modules/import';
 import Settings from 'src/modules/settings';
 
-import { ILcuUserAction } from 'src/typings/commonTypes';
+import { ILcuUserAction } from '@interfaces/commonTypes';
 
 const engine = new Styletron();
 const GameTypes = [`pick`];

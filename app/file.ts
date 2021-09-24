@@ -5,7 +5,7 @@ import * as path from 'path';
 import { TextDecoder, TextEncoder } from 'util';
 
 import { appConfig } from './config';
-import { IChampionBuild, IFileResult } from '../src/typings/commonTypes';
+import { IChampionBuild, IFileResult } from '@interfaces/commonTypes';
 
 const ItemSetProps = [
   'title',

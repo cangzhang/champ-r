@@ -9,7 +9,7 @@ import {
   IRuneItem,
   IFileResult,
   IChampionInfo,
-} from 'src/typings/commonTypes';
+} from '@interfaces/commonTypes';
 
 const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
 const T_NPM_PREFIX = `https://registry.npm.taobao.org/@champ-r`;

@@ -1,7 +1,7 @@
 import produce from 'immer';
 
 import { Actions } from 'src/share/actions';
-import { IProcessChampionItem, IState } from 'src/typings/commonTypes';
+import { IProcessChampionItem, IState } from '@interfaces/commonTypes';
 
 export * from 'src/share/actions';
 

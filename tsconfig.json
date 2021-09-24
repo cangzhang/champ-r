@@ -25,8 +25,15 @@
     "paths": {
       "src/*": [
         "./src/*"
+      ],
+      "@interfaces/*": [
+        "./interfaces/*"
       ]
-    }
+    },
+    "typeRoots": [
+      "node_modules/@types",
+      "src/global.d.ts"
+    ]
   },
   "exclude": [
     "node_modules"

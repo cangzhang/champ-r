@@ -23,7 +23,7 @@ import electronLogger from 'electron-log';
 
 import { initLogger } from './logger';
 import { appConfig } from './config';
-import { LanguageList, LanguageSet } from '../src/native/langs';
+import { LanguageList, LanguageSet } from './langs';
 import { watchLockFile } from './utils';
 
 interface IPopupEventData {

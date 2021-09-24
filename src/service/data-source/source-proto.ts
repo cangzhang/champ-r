@@ -1,6 +1,6 @@
 import _noop from 'lodash/noop';
 import http from 'src/service/http';
-import { IPkgInfo } from 'src/typings/commonTypes';
+import { IPkgInfo } from '@interfaces/commonTypes';
 
 type IVoidFunc = () => void;
 

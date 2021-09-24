@@ -25,7 +25,7 @@ import Loading from 'src/components/loading-spinner';
 import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
 
 import { makeChampMap } from './utils';
-import { IChampionInfo, IRuneItem, ICoordinate } from 'src/typings/commonTypes';
+import { IChampionInfo, IRuneItem, ICoordinate } from '@interfaces/commonTypes';
 
 initI18n();
 

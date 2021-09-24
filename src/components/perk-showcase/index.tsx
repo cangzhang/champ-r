@@ -7,7 +7,7 @@ import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Zap } from 'react-feather';
 
-import { IRuneItem } from 'src/typings/commonTypes';
+import { IRuneItem } from '@interfaces/commonTypes';
 import { MainStyleIds } from 'src/share/constants/runes';
 
 interface IProps {

@@ -1,6 +1,6 @@
 import _upperFirst from 'lodash/upperFirst';
 import http from './http';
-import { IChampionInfo } from 'src/typings/commonTypes';
+import { IChampionInfo } from '@interfaces/commonTypes';
 
 export const DDragonCDNUrl = 'https://ddragon.leagueoflegends.com/cdn';
 

@@ -1,6 +1,4 @@
-import { LanguageSet } from 'src/native/langs'
-
-export const lang = LanguageSet.frFR;
+export const lang = window.bridge.LanguageSet.frFR;
 
 export default {
   translation: {
@@ -15,7 +13,7 @@ export default {
     stop: `Arrêter`,
     restart: 'Redémarrer',
     cancel: 'Annuler',
-    'back to home': 'Retour à l\'accueil',
+    'back to home': "Retour à l'accueil",
     fetching: 'CHARGEMENT',
     minimize: `Réduire`,
     close: `Fermer`,

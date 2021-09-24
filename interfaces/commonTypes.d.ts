@@ -1,4 +1,4 @@
-import React from 'react';
+import CSSProperties = React.CSSProperties;
 
 export interface IRuneItem {
   alias: string;
@@ -12,7 +12,7 @@ export interface IRuneItem {
   score: number;
 }
 
-export interface ICSSProperties extends React.CSSProperties {
+export interface ICSSProperties extends CSSProperties {
   [key: string]: number | string | undefined;
 }
 

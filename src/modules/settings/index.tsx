@@ -10,8 +10,6 @@ import { Select } from 'baseui/select';
 import { Button } from 'baseui/button';
 import { Checkbox, STYLE_TYPE } from 'baseui/checkbox';
 
-import { LanguageSet } from 'src/native/langs';
-
 interface ILangItem {
   label: string;
   value: string;
@@ -20,15 +18,15 @@ interface ILangItem {
 const LangList: ILangItem[] = [
   {
     label: 'English (US)',
-    value: LanguageSet.enUS,
+    value: window.bridge.LanguageSet.enUS,
   },
   {
     label: 'Chinese (CN)',
-    value: LanguageSet.zhCN,
+    value: window.bridge.LanguageSet.zhCN,
   },
   {
     label: 'French (FR)',
-    value: LanguageSet.frFR,
+    value: window.bridge.LanguageSet.frFR,
   },
 ];
 const getLangItem = (value: string) => LangList.find((i) => i.value === value);

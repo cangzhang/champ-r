@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 import cn from 'classnames';
 
 import { MainRuneMap, SubRuneMap, FragmentMap } from 'src/share/constants/runes';
-import { IRuneItem, ICSSProperties, ICoordinate } from 'src/typings/commonTypes';
+import { IRuneItem, ICSSProperties, ICoordinate } from '@interfaces/commonTypes';
 
 interface IProps {
   perk: IRuneItem | null;
@@ -40,7 +40,7 @@ export default function RunePreview({ perk, coordinate }: IProps) {
             }
 
             return (
-              <div key={id} className={cn(s.runeImg, s[`rune-${id}`], selected && s.selected)}/>
+              <div key={id} className={cn(s.runeImg, s[`rune-${id}`], selected && s.selected)} />
             );
           })}
         </div>
@@ -60,14 +60,12 @@ export default function RunePreview({ perk, coordinate }: IProps) {
   const style: ICSSProperties = {
     '--left': `${left}px`,
     '--top': `${top}px`,
-  }
+  };
 
   return ReactDOM.createPortal(
-    <div
-      style={style}
-      className={cn(s.main, up && s.up)}>
-      <span className={cn(s.bot, s.triangle)}/>
-      <span className={cn(s.top, s.triangle)}/>
+    <div style={style} className={cn(s.main, up && s.up)}>
+      <span className={cn(s.bot, s.triangle)} />
+      <span className={cn(s.top, s.triangle)} />
       <div className={s.col}>{mainIds.map(renderRow())}</div>
       <div className={s.col}>{subIds.map(renderRow())}</div>
       <div className={cn(s.col, s.fragment)}>{FragmentMap.map(renderRow(true))}</div>

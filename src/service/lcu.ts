@@ -1,5 +1,5 @@
 import http from './http';
-import { ILcuUserAction } from 'src/typings/commonTypes';
+import { ILcuUserAction } from '@interfaces/commonTypes';
 
 export default class LCUService {
   public active = false;
