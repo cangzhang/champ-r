@@ -14,11 +14,11 @@
     "email": "cangzan@gmail.com",
     "url": "https://github.com/cangzhang"
   },
-  "main": "build/app/main.js",
+  "main": "build/main.js",
   "scripts": {
     "postinstall": "cross-env electron-builder install-app-deps && patch-package",
     "compile:main": "tsc -p app/",
-    "start:electron": "nodemon --exec \"yarn compile:main && run-electron build/app/main.js --inspect=5858\"",
+    "start:electron": "nodemon --exec \"yarn compile:main && run-electron build/main.js --inspect=5858\"",
     "start:react": "cross-env BROWSER=none NODE_ENV=development node scripts/start.js",
     "start": "concurrently \"yarn start:react\" \"wait-on http://localhost:3000 && yarn start:electron\"",
     "dist:local": "cross-env yarn compile:main && electron-builder --win --x64 -p never",

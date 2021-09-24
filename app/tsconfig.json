@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "target": "esnext",
     "lib": ["dom", "es2017", "es2020"],
     "useUnknownInCatchVariables": false,
     "allowJs": true,
@@ -18,9 +19,8 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext",
-    "outDir": "../build",
     "sourceMap": true,
+    "outDir": "../build/",
     "typeRoots": ["../node_modules/@types", "global.d.ts"]
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
