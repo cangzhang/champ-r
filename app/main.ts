@@ -24,7 +24,7 @@ import electronLogger from 'electron-log';
 import { initLogger } from './utils/logger';
 import { appConfig } from './utils/config';
 import { LanguageList, LanguageSet } from './constants/langs';
-import { watchLockFile } from './utils/lcu';
+import { ifIsCNServer, LockfileWatcher } from './utils/lcu';
 
 interface IPopupEventData {
   championId: string;
@@ -59,6 +59,7 @@ if (ignoreSystemScale) {
 let mainWindow: BrowserWindow | null;
 let popupWindow: BrowserWindow | null;
 let tray = null;
+let fileWatcher: LockfileWatcher | null = null;
 
 const webPreferences = {
   webSecurity: false,
@@ -287,7 +288,8 @@ function registerMainListeners() {
   });
 
   ipcMain.on(`request-for-auth-config`, () => {
-    watchLockFile([mainWindow, popupWindow]);
+    const lolDir = appConfig.get(`lolDir`);
+    ifIsCNServer(lolDir);
   });
 
   ipcMain.on(`open-select-folder-dialog`, async (_, { jobId }: any) => {
@@ -296,6 +298,10 @@ function registerMainListeners() {
       ...data,
       jobId,
     });
+
+    if (!data.canceled) {
+      fileWatcher?.changeDir(data.filePaths[0]);
+    }
   });
 
   ipcMain.on(`quit-app`, () => {
@@ -443,6 +449,8 @@ function registerUpdater() {
       appConfig.set(`appLang`, LanguageSet.enUS);
     }
   }
+
+  fileWatcher = new LockfileWatcher(appConfig.get(`lolDir`));
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();

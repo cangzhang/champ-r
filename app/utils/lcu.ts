@@ -1,14 +1,18 @@
-import { promises as fs, constants as fsConstants, watch as fsWatch } from 'fs';
+import { promises as fs, constants as fsConstants } from 'fs';
 import * as path from 'path';
-import fse from 'fs-extra';
 import cjk from 'cjk-regex';
-import { BrowserWindow } from 'electron';
+import chokidar, { FSWatcher } from 'chokidar';
 
+import { ILcuAuth } from '@interfaces/commonTypes';
 import { appConfig } from './config';
 
 const cjk_charset = cjk();
 
 export async function ifIsCNServer(dir: string) {
+  if (!dir) {
+    return false;
+  }
+
   const target = path.join(dir, `TCLS`, `Client.exe`);
   let result = false;
   try {
@@ -30,52 +34,7 @@ export const hasCJKChar = (p: string) => {
   return cjk_charset.toRegExp().test(p);
 };
 
-let checkTask: NodeJS.Timeout;
-
-export async function watchLockFile(wins: (BrowserWindow | null)[]) {
-  const dir = appConfig.get(`lolDir`);
-  try {
-    if (!dir) {
-      throw new Error(`please select lol dir first.`);
-    }
-
-    const appendGameToDir = await ifIsCNServer(dir);
-    const lockFilePath = path.join(dir, appendGameToDir ? `LeagueClient` : ``, `lockfile`);
-    const exists = await fse.pathExists(lockFilePath);
-    if (!exists) {
-      throw new Error(`${lockFilePath} not exists, lcu is inactive.`);
-    }
-
-    clearInterval(checkTask);
-    const auth = await getAuthConfig(lockFilePath);
-    wins.forEach((w) => {
-      console.log(`send data to web contents...`);
-      w?.webContents.send(`got-auth`, auth);
-    });
-
-    fsWatch(lockFilePath, async (_, newName) => {
-      try {
-        const auth = await getAuthConfig(newName);
-
-        wins.forEach((w) => {
-          console.log(`send data to web contents...`);
-          w?.webContents.send(`got-auth`, auth);
-        });
-      } catch (err) {
-        throw err;
-      }
-    });
-    // @ts-ignore
-  } catch (err) {
-    console.info(err.message);
-    clearInterval(checkTask);
-    checkTask = setInterval(() => {
-      watchLockFile(wins);
-    }, 1000);
-  }
-}
-
-export async function getAuthConfig(p: string) {
+export async function parseAuthInfo(p: string): Promise<ILcuAuth> {
   try {
     const lockfile = await fs.readFile(p, `utf8`);
     const port = lockfile.split(`:`)[2];
@@ -90,5 +49,78 @@ export async function getAuthConfig(p: string) {
     };
   } catch (err) {
     return Promise.reject(err);
+  }
+}
+
+export enum WatchEvent {
+  ADD = `ADD`,
+  CHANGE = `CHANGE`,
+  UNLINK = `UNLINK`,
+  INIT = `INIT`,
+}
+
+export class LockfileWatcher {
+  private watcher: FSWatcher | null = null;
+  private lolDir: string = ``;
+
+  constructor(dir?: string) {
+    const lolDir = dir || appConfig.get(`lolDir`);
+    if (lolDir) {
+      this.initWatcher(lolDir);
+    }
+  }
+
+  public async getLcuStatus(dir: string) {
+    const isCN = await ifIsCNServer(dir);
+    const p = path.join(dir, isCN ? `LeagueClient` : ``, `lockfile`);
+    await this.onFileChange(p, WatchEvent.INIT);
+  }
+
+  public initWatcher(dir: string) {
+    console.log(`init lockfile watcher, dir: ${dir}`);
+    this.lolDir = dir;
+
+    this.watcher = chokidar.watch([
+      path.join(dir, `LeagueClient`, `lockfile`),
+      path.join(dir, `lockfile`),
+    ]);
+
+    this.watcher
+      .on('add', (path) => this.onFileChange(path, WatchEvent.ADD))
+      .on('change', (path) => this.onFileChange(path, WatchEvent.CHANGE))
+      .on('unlink', (path) => this.onFileChange(path, WatchEvent.UNLINK));
+
+    this.getLcuStatus(dir);
+  }
+
+  private async onFileChange(p: string, action: string) {
+    console.log(`[watcher] ${p} ${action}`);
+
+    if (action === WatchEvent.UNLINK) {
+      console.info(`[watcher] lcu is inactive.`);
+      return;
+    }
+
+    try {
+      const info = await parseAuthInfo(p);
+      console.log(info);
+    } catch (err) {
+      console.error(err.message);
+      console.info(`[watcher] get auth failed, either lcu is not or lol dir is incorrect.`);
+    }
+  }
+
+  public async changeDir(dir: string) {
+    if (this.lolDir === dir) {
+      return;
+    }
+
+    try {
+      await this.watcher?.close();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.initWatcher(dir);
+    }
   }
 }

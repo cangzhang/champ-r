@@ -114,3 +114,9 @@ export interface IFetchStatus {
   champion: string;
   source: string;
 }
+
+export interface ILcuAuth {
+  port: string;
+  token: string;
+  urlWithAuth: string;
+}
