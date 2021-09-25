@@ -4,8 +4,8 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { TextDecoder, TextEncoder } from 'util';
 
-import { appConfig } from './config';
 import { IChampionBuild, IFileResult } from '@interfaces/commonTypes';
+import { appConfig } from './config';
 
 const ItemSetProps = [
   'title',

@@ -17,7 +17,8 @@
   "main": "build/main.js",
   "scripts": {
     "postinstall": "cross-env electron-builder install-app-deps && patch-package",
-    "compile:main": "tsc -p app/",
+    "clean:main": "npx rimraf build/",
+    "compile:main": "yarn clean:main && tsc -p app/",
     "start:electron": "nodemon --exec \"yarn compile:main && run-electron build/main.js --inspect=5858\"",
     "start:react": "cross-env BROWSER=none NODE_ENV=development node scripts/start.js",
     "start": "concurrently \"yarn start:react\" \"wait-on http://localhost:3000 && yarn start:electron\"",
@@ -139,6 +140,7 @@
     "react-svg-loader": "^3.0.3",
     "resolve": "1.12.2",
     "resolve-url-loader": "3.1.1",
+    "rimraf": "^3.0.2",
     "run-electron": "^1.0.0",
     "sass": "^1.26.10",
     "sass-loader": "8.0.0",

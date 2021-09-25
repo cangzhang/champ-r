@@ -28,6 +28,9 @@
       ],
       "@interfaces/*": [
         "./interfaces/*"
+      ],
+      "@app/*": [
+        "./app/*"
       ]
     },
     "typeRoots": [

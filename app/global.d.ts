@@ -1,5 +1,5 @@
 import { bridge } from './preload';
-import { appConfig } from './config';
+import { appConfig } from './utils/config';
 
 import ipcRenderer = Electron.Renderer.ipcRenderer;
 import shell = Electron.shell;

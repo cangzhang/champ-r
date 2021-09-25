@@ -2,9 +2,9 @@ import { ipcRenderer, contextBridge, shell } from 'electron';
 import log from 'electron-log';
 import cheerio from 'cheerio';
 
-import { appConfig } from './config';
-import * as file from './file';
-import { LanguageList, LanguageSet } from './langs';
+import { appConfig } from './utils/config';
+import * as file from './utils/file';
+import { LanguageList, LanguageSet } from './constants/langs';
 
 export const bridge = {
   sendMessage: (channel: string, data?: any) => {

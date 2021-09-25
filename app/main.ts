@@ -21,10 +21,10 @@ import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 import electronLogger from 'electron-log';
 
-import { initLogger } from './logger';
-import { appConfig } from './config';
-import { LanguageList, LanguageSet } from './langs';
-import { watchLockFile } from './utils';
+import { initLogger } from './utils/logger';
+import { appConfig } from './utils/config';
+import { LanguageList, LanguageSet } from './constants/langs';
+import { watchLockFile } from './utils/lcu';
 
 interface IPopupEventData {
   championId: string;

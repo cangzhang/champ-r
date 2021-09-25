@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { DefaultSourceList } from './sources';
+import { DefaultSourceList } from '../constants/sources';
 
 export const appConfig = new Store({
   defaults: {
