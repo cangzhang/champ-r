@@ -120,3 +120,26 @@ export interface ILcuAuth {
   token: string;
   urlWithAuth: string;
 }
+
+export interface IChampionSelectTeamItem {
+  cellId: number;
+  championId: number;
+  summonerId: number;
+  team: number;
+}
+
+export interface IChampionSelectActionItem {
+  actorCellId: number;
+  championId: number;
+  completed: boolean;
+  id: number;
+  isAllyAction: boolean;
+  isInProgress: boolean;
+  pickTurn: number;
+  type: string;
+}
+
+export interface IChampionSelectRespData {
+  myTeam: IChampionSelectTeamItem[];
+  actions: IChampionSelectActionItem[][];
+}

@@ -4,10 +4,11 @@ import cjk from 'cjk-regex';
 import chokidar, { FSWatcher } from 'chokidar';
 import WebSocket from 'ws';
 
-import { ILcuAuth } from '@interfaces/commonTypes';
+import { IChampionSelectRespData, ILcuAuth } from '@interfaces/commonTypes';
 import { appConfig } from './config';
 import { LcuMessageType } from '../constants/events';
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const cjk_charset = cjk();
 
 export async function ifIsCNServer(dir: string) {
@@ -66,6 +67,7 @@ export class LockfileWatcher {
   private lolDir: string = ``;
   private auth: ILcuAuth | null = null;
   private ws: WebSocket | null = null;
+  private connectTask: NodeJS.Timeout | null = null;
 
   constructor(dir?: string) {
     const lolDir = dir || appConfig.get(`lolDir`);
@@ -74,13 +76,13 @@ export class LockfileWatcher {
     }
   }
 
-  public async getLcuStatus(dir: string) {
+  public getLcuStatus = async (dir: string) => {
     const isCN = await ifIsCNServer(dir);
     const p = path.join(dir, isCN ? `LeagueClient` : ``, `lockfile`);
     await this.onFileChange(p, WatchEvent.INIT);
-  }
+  };
 
-  public initWatcher(dir: string) {
+  public initWatcher = (dir: string) => {
     console.log(`init lockfile watcher, dir: ${dir}`);
     this.lolDir = dir;
 
@@ -95,9 +97,9 @@ export class LockfileWatcher {
       .on('unlink', (path) => this.onFileChange(path, WatchEvent.UNLINK));
 
     this.getLcuStatus(dir);
-  }
+  };
 
-  private async onFileChange(p: string, action: string) {
+  private onFileChange = async (p: string, action: string) => {
     console.log(`[watcher] ${p} ${action}`);
 
     if (action === WatchEvent.UNLINK) {
@@ -108,14 +110,15 @@ export class LockfileWatcher {
     try {
       const info = await parseAuthInfo(p);
       console.log(info);
+      this.onAuthUpdate(info);
     } catch (err) {
       console.error(err.message);
-      console.info(`[watcher] get auth failed, either lcu is not or lol dir is incorrect`);
+      console.info(`[watcher] get auth failed, either lcu is inactive or lol dir is incorrect`);
       this.onLcuClose();
     }
-  }
+  };
 
-  public async changeDir(dir: string) {
+  public changeDir = async (dir: string) => {
     if (this.lolDir === dir) {
       return;
     }
@@ -127,23 +130,83 @@ export class LockfileWatcher {
     } finally {
       this.initWatcher(dir);
     }
-  }
+  };
 
-  public handleLcuMessage(message: string) {
-    const [type, ...data] = JSON.parse(message);
-    console.log(type, data);
-  }
+  public onSelectChampion = (data: IChampionSelectRespData) => {
+    const me = data.myTeam.find((i) => i.summonerId);
+    // console.log(data.myTeam, data.actions);
+    if (!me) {
+      console.info(`[ws] not current summoner`);
+      return;
+    }
 
-  public onLcuClose() {
+    const myAction = (data.actions.pop() ?? []).find((i) => i.actorCellId === me.cellId);
+    if (myAction?.type !== `pick`) {
+      console.info(`[ws] not pick`);
+      return;
+    }
+
+    if (myAction?.championId > 0) {
+      console.info(`[ws] picked champion ${myAction.championId}`);
+    }
+  };
+
+  public handleLcuMessage = (buffer: Buffer) => {
+    try {
+      const msg = JSON.parse(JSON.stringify(buffer.toString()));
+      const [_evType, _evName, resp] = JSON.parse(msg);
+      if (!resp) {
+        return;
+      }
+
+      switch (resp.uri) {
+        case `/lol-champ-select/v1/session`: {
+          this.onSelectChampion(resp.data);
+          return;
+        }
+        default:
+          return;
+      }
+    } catch (err) {
+      console.info(`[ws] handle lcu message improperly`, err.message);
+    }
+  };
+
+  public onLcuClose = () => {
     if (!this.ws) {
       return;
     }
 
     this.ws.terminate();
     console.log(`[watcher] ws closed`);
-  }
+  };
 
-  public onAuthUpdate(data: ILcuAuth | null) {
+  public createWsConnection = (auth: ILcuAuth) => {
+    if (this.connectTask) {
+      clearTimeout(this.connectTask);
+    }
+
+    const ws = new WebSocket(`wss://riot:${auth.token}@127.0.0.1:${auth.port}`, {
+      protocol: `wamp`,
+    });
+    ws.on(`open`, () => {
+      ws.send(JSON.stringify([LcuMessageType.SUBSCRIBE, `OnJsonApiEvent`]));
+    });
+    ws.on(`message`, this.handleLcuMessage);
+    ws.on(`error`, (err) => {
+      console.error(err.message);
+      if (err.message.includes(`connect ECONNREFUSED`)) {
+        console.info(`[ws] lcu ws server is not ready, retry in 3s`);
+        this.connectTask = setTimeout(() => {
+          this.createWsConnection(auth);
+        }, 3 * 1000);
+      }
+    });
+
+    this.ws = ws;
+  };
+
+  public onAuthUpdate = (data: ILcuAuth | null) => {
     if (!data) {
       return;
     }
@@ -153,18 +216,6 @@ export class LockfileWatcher {
     }
 
     this.auth = data;
-    const { port, token } = data;
-    const Authorization = Buffer.from(`riot:${token}`).toString('base64');
-    const ws = new WebSocket(`wss://127.0.0.1:${port}`, {
-      headers: {
-        Authorization,
-      },
-    });
-    ws.on(`open`, () => {
-      ws.send(JSON.stringify([LcuMessageType.SUBSCRIBE, `OnJsonApiEvent`]));
-    });
-    ws.on(`message`, this.handleLcuMessage);
-
-    this.ws = ws;
-  }
+    this.createWsConnection(data);
+  };
 }
