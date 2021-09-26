@@ -2,9 +2,11 @@ import { promises as fs, constants as fsConstants } from 'fs';
 import * as path from 'path';
 import cjk from 'cjk-regex';
 import chokidar, { FSWatcher } from 'chokidar';
+import WebSocket from 'ws';
 
 import { ILcuAuth } from '@interfaces/commonTypes';
 import { appConfig } from './config';
+import { LcuMessageType } from '../constants/events';
 
 const cjk_charset = cjk();
 
@@ -62,6 +64,8 @@ export enum WatchEvent {
 export class LockfileWatcher {
   private watcher: FSWatcher | null = null;
   private lolDir: string = ``;
+  private auth: ILcuAuth | null = null;
+  private ws: WebSocket | null = null;
 
   constructor(dir?: string) {
     const lolDir = dir || appConfig.get(`lolDir`);
@@ -97,7 +101,7 @@ export class LockfileWatcher {
     console.log(`[watcher] ${p} ${action}`);
 
     if (action === WatchEvent.UNLINK) {
-      console.info(`[watcher] lcu is inactive.`);
+      console.info(`[watcher] lcu is inactive`);
       return;
     }
 
@@ -106,7 +110,8 @@ export class LockfileWatcher {
       console.log(info);
     } catch (err) {
       console.error(err.message);
-      console.info(`[watcher] get auth failed, either lcu is not or lol dir is incorrect.`);
+      console.info(`[watcher] get auth failed, either lcu is not or lol dir is incorrect`);
+      this.onLcuClose();
     }
   }
 
@@ -122,5 +127,44 @@ export class LockfileWatcher {
     } finally {
       this.initWatcher(dir);
     }
+  }
+
+  public handleLcuMessage(message: string) {
+    const [type, ...data] = JSON.parse(message);
+    console.log(type, data);
+  }
+
+  public onLcuClose() {
+    if (!this.ws) {
+      return;
+    }
+
+    this.ws.terminate();
+    console.log(`[watcher] ws closed`);
+  }
+
+  public onAuthUpdate(data: ILcuAuth | null) {
+    if (!data) {
+      return;
+    }
+
+    if (data.urlWithAuth === this.auth?.urlWithAuth) {
+      return;
+    }
+
+    this.auth = data;
+    const { port, token } = data;
+    const Authorization = Buffer.from(`riot:${token}`).toString('base64');
+    const ws = new WebSocket(`wss://127.0.0.1:${port}`, {
+      headers: {
+        Authorization,
+      },
+    });
+    ws.on(`open`, () => {
+      ws.send(JSON.stringify([LcuMessageType.SUBSCRIBE, `OnJsonApiEvent`]));
+    });
+    ws.on(`message`, this.handleLcuMessage);
+
+    this.ws = ws;
   }
 }

@@ -67,7 +67,8 @@
     "react-router-dom": "^5.1.2",
     "styletron-engine-atomic": "^1.4.7",
     "styletron-react": "^6.0.1",
-    "use-immer": "^0.4.1"
+    "use-immer": "^0.4.1",
+    "ws": "^8.2.2"
   },
   "devDependencies": {
     "@babel/core": "7.7.4",
@@ -85,6 +86,7 @@
     "@types/styletron-react": "^5.0.2",
     "@types/styletron-standard": "^2.0.1",
     "@types/webpack": "^5.28.0",
+    "@types/ws": "^8.2.0",
     "@typescript-eslint/eslint-plugin": "^2.8.0",
     "@typescript-eslint/parser": "^2.8.0",
     "babel-eslint": "10.0.3",
