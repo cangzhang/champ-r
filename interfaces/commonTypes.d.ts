@@ -144,9 +144,15 @@ export interface IChampionSelectRespData {
   actions: IChampionSelectActionItem[][];
   timer: {
     phase: string;
-  }
+  };
 }
 
 export interface IPopupEventData {
   championId: number;
+}
+
+export interface IPerkPage {
+  current: boolean;
+  isDeletable: boolean;
+  id: number;
 }

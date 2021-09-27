@@ -3,8 +3,9 @@ import * as path from 'path';
 import cjk from 'cjk-regex';
 import chokidar, { FSWatcher } from 'chokidar';
 import WebSocket from 'ws';
+import got, { Got } from 'got';
 
-import { IChampionSelectRespData, ILcuAuth } from '@interfaces/commonTypes';
+import { IChampionSelectRespData, ILcuAuth, IPerkPage } from '@interfaces/commonTypes';
 import { appConfig } from './config';
 import { GamePhase, LcuEvent, LcuMessageType } from '../constants/events';
 
@@ -80,6 +81,7 @@ export class LcuWatcher {
   private ws: WebSocket | null = null;
   private connectTask: NodeJS.Timeout | null = null;
   private evBus: IEventBus | null = null;
+  private request!: Got;
 
   constructor(dir?: string) {
     const lolDir = dir || appConfig.get(`lolDir`);
@@ -250,6 +252,10 @@ export class LcuWatcher {
     }
 
     this.auth = data;
+    this.request = got.extend({
+      resolveBodyOnly: true,
+      prefixUrl: data.urlWithAuth,
+    });
     await this.createWsConnection(data);
   };
 
@@ -285,11 +291,24 @@ export class LcuWatcher {
   };
 
   public applyRunePage = async (data: any) => {
-    if (!this.ws) {
-      console.info(`[ws] connection not created`);
-      return;
+    if (!this.auth) {
+      throw new Error(`[lcu] no lcu auth available`);
     }
 
-    console.log(data);
+    try {
+      const list: IPerkPage[] = await this.request.get(`lol-perks/v1/pages`).json();
+      const current = list.find((i) => i.current && i.isDeletable);
+      if (current?.id) {
+        await this.request.delete(`lol-perks/v1/pages/${current.id}`).json();
+      }
+      await this.request
+        .post(`lol-perks/v1/pages`, {
+          json: data,
+        })
+        .json();
+    } catch (err) {
+      console.error(err);
+      return Promise.reject(err);
+    }
   };
 }

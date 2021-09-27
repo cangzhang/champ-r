@@ -287,8 +287,12 @@ function registerMainListeners() {
   });
 
   ipcMain.on(`applyRunePage`, async (_ev, data: IRuneItem) => {
-    lcuWatcher?.applyRunePage(data);
-    popupWindow!.webContents.send(`applyRunePage:success`);
+    try {
+      await lcuWatcher?.applyRunePage(data);
+      popupWindow!.webContents.send(`applyRunePage:success`);
+    } catch (err) {
+      console.error(`[main] apply perk failed: `, err.message);
+    }
   });
 
   ipcMain.on(`showPopup`, (_ev, data: IPopupEventData) => {

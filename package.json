@@ -52,6 +52,7 @@
     "electron-util": "0.17.2",
     "feather-icons": "^4.28.0",
     "fs-extra": "^10.0.0",
+    "got": "^11.8.2",
     "i18next": "^19.3.4",
     "immer": "8.0.1",
     "lodash": "^4.17.15",

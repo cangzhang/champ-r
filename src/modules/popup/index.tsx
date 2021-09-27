@@ -11,6 +11,8 @@ import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { Popover, StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import { Select } from 'baseui/select';
+import { SnackbarProvider, useSnackbar, DURATION, PLACEMENT } from 'baseui/snackbar';
+import { Check } from 'react-feather';
 
 import initI18n from 'src/modules/i18n';
 import { ISourceItem, QQChampionAvatarPrefix } from 'src/share/constants/sources';
@@ -57,8 +59,10 @@ const getInitTab = () => {
   return [sourceList.find((i) => i.value === cur) ?? sourceList[0]];
 };
 
-export default function Popup() {
+function Main() {
   const [t] = useTranslation();
+  const { enqueue } = useSnackbar();
+
   const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
 
   const [activeTab, setActiveTab] = useState<ISourceItem[]>(getInitTab());
@@ -138,6 +142,21 @@ export default function Popup() {
     });
     window.bridge.once(`applyRunePage:success`, () => {
       console.info(`Applied perk`, jobId);
+      enqueue(
+        {
+          message: t(`applied`),
+          startEnhancer: ({ size }) => <Check size={size} />,
+          overrides: {
+            Root: {
+              style: () => ({
+                marginBottom: `10vh`,
+                backgroundColor: `#048848`,
+              }),
+            },
+          },
+        },
+        DURATION.short,
+      );
     });
   };
 
@@ -160,13 +179,6 @@ export default function Popup() {
   useEffect(() => {
     window.bridge.appConfig.set(`perkTab`, activeTab[0].value);
   }, [activeTab]);
-
-  useEffect(() => {
-    window.bridge.sendMessage(`request-for-auth-config`);
-    window.bridge.on(`got-auth`, (data: any) => {
-      console.log(`got auth`, data);
-    });
-  }, []);
 
   const toggleAlwaysOnTop = () => {
     window.bridge.sendMessage(`popup:toggle-always-on-top`);
@@ -270,9 +282,17 @@ export default function Popup() {
     );
   };
 
+  return <div>{renderContent()}</div>;
+}
+
+export default function Popup() {
   return (
     <StyletronProvider value={engine}>
-      <BaseProvider theme={LightTheme}>{renderContent()}</BaseProvider>
+      <BaseProvider theme={LightTheme}>
+        <SnackbarProvider placement={PLACEMENT.bottom}>
+          <Main />
+        </SnackbarProvider>
+      </BaseProvider>
     </StyletronProvider>
   );
 }
