@@ -13,6 +13,9 @@ export const bridge = {
   on: (channel: string, callback: Function) => {
     ipcRenderer.on(channel, (_, data) => callback(data));
   },
+  once: (channel: string, callback: Function) => {
+    ipcRenderer.once(channel, (_, data) => callback(data));
+  },
   removeListener: (channel: string, cb: any) => {
     ipcRenderer.removeListener(channel, cb);
   },

@@ -6,7 +6,7 @@ import WebSocket from 'ws';
 
 import { IChampionSelectRespData, ILcuAuth } from '@interfaces/commonTypes';
 import { appConfig } from './config';
-import { LcuMessageType } from '../constants/events';
+import { LcuEvent, LcuMessageType } from '../constants/events';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const cjk_charset = cjk();
@@ -55,31 +55,45 @@ export async function parseAuthInfo(p: string): Promise<ILcuAuth> {
   }
 }
 
-export enum WatchEvent {
-  ADD = `ADD`,
-  CHANGE = `CHANGE`,
-  UNLINK = `UNLINK`,
-  INIT = `INIT`,
+export enum WsWatchEvent {
+  Add = `ADD`,
+  Change = `CHANGE`,
+  Unlink = `UNLINK`,
+  Init = `INIT`,
 }
 
-export class LockfileWatcher {
+interface IBusListener {
+  event: LcuEvent;
+  fn: Function;
+  once: boolean;
+}
+
+interface IEventBus {
+  emit: (ev: string, data?: any) => void;
+  listeners: IBusListener[];
+}
+
+export class LcuWatcher {
   private watcher: FSWatcher | null = null;
   private lolDir: string = ``;
   private auth: ILcuAuth | null = null;
   private ws: WebSocket | null = null;
   private connectTask: NodeJS.Timeout | null = null;
+  private evBus: IEventBus | null = null;
 
   constructor(dir?: string) {
     const lolDir = dir || appConfig.get(`lolDir`);
     if (lolDir) {
       this.initWatcher(lolDir);
     }
+
+    this.initListener();
   }
 
   public getLcuStatus = async (dir: string) => {
     const isCN = await ifIsCNServer(dir);
     const p = path.join(dir, isCN ? `LeagueClient` : ``, `lockfile`);
-    await this.onFileChange(p, WatchEvent.INIT);
+    await this.onFileChange(p, WsWatchEvent.Init);
   };
 
   public initWatcher = (dir: string) => {
@@ -92,9 +106,9 @@ export class LockfileWatcher {
     ]);
 
     this.watcher
-      .on('add', (path) => this.onFileChange(path, WatchEvent.ADD))
-      .on('change', (path) => this.onFileChange(path, WatchEvent.CHANGE))
-      .on('unlink', (path) => this.onFileChange(path, WatchEvent.UNLINK));
+      .on('add', (path) => this.onFileChange(path, WsWatchEvent.Add))
+      .on('change', (path) => this.onFileChange(path, WsWatchEvent.Change))
+      .on('unlink', (path) => this.onFileChange(path, WsWatchEvent.Unlink));
 
     this.getLcuStatus(dir);
   };
@@ -102,7 +116,7 @@ export class LockfileWatcher {
   private onFileChange = async (p: string, action: string) => {
     console.log(`[watcher] ${p} ${action}`);
 
-    if (action === WatchEvent.UNLINK) {
+    if (action === WsWatchEvent.Unlink) {
       console.info(`[watcher] lcu is inactive`);
       return;
     }
@@ -110,7 +124,7 @@ export class LockfileWatcher {
     try {
       const info = await parseAuthInfo(p);
       console.log(info);
-      this.onAuthUpdate(info);
+      await this.onAuthUpdate(info);
     } catch (err) {
       console.error(err.message);
       console.info(`[watcher] get auth failed, either lcu is inactive or lol dir is incorrect`);
@@ -146,9 +160,14 @@ export class LockfileWatcher {
       return;
     }
 
-    if (myAction?.championId > 0) {
-      console.info(`[ws] picked champion ${myAction.championId}`);
+    if (!(myAction?.championId > 0)) {
+      return;
     }
+
+    console.info(`[ws] picked champion ${myAction.championId}`);
+    this.evBus!.emit(LcuEvent.SelectedChampion, {
+      championId: myAction.championId,
+    });
   };
 
   public handleLcuMessage = (buffer: Buffer) => {
@@ -181,32 +200,42 @@ export class LockfileWatcher {
     console.log(`[watcher] ws closed`);
   };
 
-  public createWsConnection = (auth: ILcuAuth) => {
-    if (this.connectTask) {
-      clearTimeout(this.connectTask);
-    }
-
-    const ws = new WebSocket(`wss://riot:${auth.token}@127.0.0.1:${auth.port}`, {
-      protocol: `wamp`,
-    });
-    ws.on(`open`, () => {
-      ws.send(JSON.stringify([LcuMessageType.SUBSCRIBE, `OnJsonApiEvent`]));
-    });
-    ws.on(`message`, this.handleLcuMessage);
-    ws.on(`error`, (err) => {
-      console.error(err.message);
-      if (err.message.includes(`connect ECONNREFUSED`)) {
-        console.info(`[ws] lcu ws server is not ready, retry in 3s`);
-        this.connectTask = setTimeout(() => {
-          this.createWsConnection(auth);
-        }, 3 * 1000);
+  public createWsConnection = async (auth: ILcuAuth) => {
+    return new Promise((resolve, reject) => {
+      if (this.connectTask) {
+        clearTimeout(this.connectTask);
       }
-    });
 
-    this.ws = ws;
+      const ws = new WebSocket(`wss://riot:${auth.token}@127.0.0.1:${auth.port}`, {
+        protocol: `wamp`,
+      });
+
+      ws.on(`open`, () => {
+        ws.send(JSON.stringify([LcuMessageType.SUBSCRIBE, `OnJsonApiEvent`]));
+        resolve(ws);
+      });
+
+      ws.on(`message`, this.handleLcuMessage);
+
+      ws.on(`error`, (err) => {
+        console.error(err.message);
+        this.ws = null;
+
+        if (err.message.includes(`connect ECONNREFUSED`)) {
+          console.info(`[ws] lcu ws server is not ready, retry in 3s`);
+          this.connectTask = setTimeout(() => {
+            this.createWsConnection(auth);
+          }, 3 * 1000);
+        } else {
+          reject(err);
+        }
+      });
+
+      this.ws = ws;
+    });
   };
 
-  public onAuthUpdate = (data: ILcuAuth | null) => {
+  public onAuthUpdate = async (data: ILcuAuth | null) => {
     if (!data) {
       return;
     }
@@ -216,6 +245,46 @@ export class LockfileWatcher {
     }
 
     this.auth = data;
-    this.createWsConnection(data);
+    await this.createWsConnection(data);
+  };
+
+  public initListener = () => {
+    this.evBus = {
+      listeners: [],
+      emit: () => null,
+    };
+    this.evBus!.emit = (ev: string, data?: any) => {
+      const listeners = this.evBus!.listeners.filter((i) => i.event === ev);
+      listeners.forEach((i) => {
+        i.fn(data);
+
+        if (i.once) {
+          this.removeListener(ev, i.fn);
+        }
+      });
+    };
+  };
+
+  public addListener = (event: LcuEvent, fn: Function, once: boolean = false) => {
+    this.evBus!.listeners = (this.evBus!.listeners ?? []).concat({
+      event,
+      fn,
+      once,
+    });
+  };
+
+  public removeListener = (ev: string, fn: Function) => {
+    this.evBus!.listeners = (this.evBus!.listeners ?? []).filter(
+      (i) => i.event === ev && i.fn === fn,
+    );
+  };
+
+  public applyRunePage = async (data: any) => {
+    if (!this.ws) {
+      console.info(`[ws] connection not created`);
+      return;
+    }
+
+    console.log(data);
   };
 }

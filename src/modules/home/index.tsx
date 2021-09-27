@@ -1,4 +1,5 @@
-import s from 'src/app.module.scss';
+import { nanoid } from 'nanoid';
+import _noop from 'lodash/noop';
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -24,14 +25,14 @@ import CdnService from 'src/service/data-source/cdn-service';
 
 import useSourceList from './useSourceList';
 
+import s from 'src/app.module.scss';
 import logo from 'src/assets/app-icon.webp';
-import { nanoid } from 'nanoid';
 
 interface IProps {
-  onDirChange: (p: string) => void;
+  onDirChange?: (p: string) => void;
 }
 
-export default function Home({ onDirChange }: IProps) {
+export default function Home({ onDirChange = _noop }: IProps) {
   const [css, theme] = useStyletron();
   const { enqueue, dequeue } = useSnackbar();
   const history = useHistory();
@@ -45,7 +46,7 @@ export default function Home({ onDirChange }: IProps) {
   const [selectedSources, toggleSource] = useState<string[]>(
     window.bridge.appConfig.get(`selectedSources`) ?? [],
   );
-  const [lolDir, setLolDir] = useState(``);
+  const [lolDir, setLolDir] = useState(window.bridge.appConfig.get('lolDir') ?? ``);
 
   const toggleKeepOldItems = (ev: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = ev.target;
@@ -58,7 +59,7 @@ export default function Home({ onDirChange }: IProps) {
       window.bridge.sendMessage(`open-select-folder-dialog`, {
         jobId,
       });
-      window.bridge.on(
+      window.bridge.once(
         `open-select-folder-dialog:done`,
         ({
           jobId: id,
@@ -156,10 +157,6 @@ export default function Home({ onDirChange }: IProps) {
     window.bridge.appConfig.set('keepOldItems', store.keepOld);
     window.bridge.appConfig.set(`selectedSources`, selectedSources);
   }, [store.keepOld, lolDir, selectedSources]);
-
-  useEffect(() => {
-    setLolDir(window.bridge.appConfig.get('lolDir') || ``);
-  }, []);
 
   useEffect(() => {
     window.bridge.sendMessage(`updateLolDir`, { lolDir });
@@ -382,9 +379,8 @@ export default function Home({ onDirChange }: IProps) {
             style={{ width: `6em`, marginLeft: `2ex` }}
             onClick={() => {
               const championId = ChampionKeys[Math.floor(Math.random() * ChampionKeys.length)];
-              window.bridge.sendMessage(`show-popup`, {
+              window.bridge.sendMessage(`showPopup`, {
                 championId,
-                position: null,
               });
             }}>
             show popup

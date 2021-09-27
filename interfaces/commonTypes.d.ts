@@ -143,3 +143,7 @@ export interface IChampionSelectRespData {
   myTeam: IChampionSelectTeamItem[];
   actions: IChampionSelectActionItem[][];
 }
+
+export interface IPopupEventData {
+  championId: number;
+}

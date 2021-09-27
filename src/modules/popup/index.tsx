@@ -14,7 +14,6 @@ import { Select } from 'baseui/select';
 
 import initI18n from 'src/modules/i18n';
 import { ISourceItem, QQChampionAvatarPrefix } from 'src/share/constants/sources';
-import LCUService from 'src/service/lcu';
 
 import LolQQ from 'src/service/data-source/lol-qq';
 import CdnService from 'src/service/data-source/cdn-service';
@@ -26,6 +25,7 @@ import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
 
 import { makeChampMap } from './utils';
 import { IChampionInfo, IRuneItem, ICoordinate } from '@interfaces/commonTypes';
+import { nanoid } from 'nanoid';
 
 initI18n();
 
@@ -58,9 +58,7 @@ const getInitTab = () => {
 };
 
 export default function Popup() {
-  const lolDir = window.bridge.appConfig.get(`lolDir`);
   const [t] = useTranslation();
-  const lcu = useRef<LCUService>();
   const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
 
   const [activeTab, setActiveTab] = useState<ISourceItem[]>(getInitTab());
@@ -132,23 +130,15 @@ export default function Popup() {
   }, [activeTab]);
 
   const apply = async (perk: IRuneItem) => {
-    try {
-      lcu.current = new LCUService(lolDir);
-      await lcu.current.getAuthToken();
-
-      if (!lcu.current.active) {
-        throw new Error(`LCU not active.`);
-      }
-
-      const res = await lcu.current.applyPerk({
-        ...perk,
-      });
-      console.info(`Applied perk`, res);
-
-      new Notification(t(`applied`));
-    } catch (e) {
-      console.error(e.message);
-    }
+    // FIXME promise, in-app notification
+    const jobId = nanoid();
+    window.bridge.sendMessage(`applyRunePage`, {
+      ...perk,
+      jobId,
+    });
+    window.bridge.once(`applyRunePage:success`, () => {
+      console.info(`Applied perk`, jobId);
+    });
   };
 
   const showPreview = (perk: IRuneItem, el: HTMLDivElement | null) => {
@@ -264,7 +254,7 @@ export default function Popup() {
                   }),
                 },
                 ValueContainer: {
-                  style: ({ $theme }) => ({
+                  style: () => ({
                     textTransform: `uppercase`,
                   }),
                 },

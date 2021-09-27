@@ -1,8 +1,8 @@
 import path from 'path';
 import _debounce from 'lodash/debounce';
-
 import osLocale from 'os-locale';
 import { machineId } from 'node-machine-id';
+
 import {
   app,
   BrowserWindow,
@@ -12,7 +12,6 @@ import {
   Tray,
   nativeImage,
   nativeTheme,
-  IpcMainEvent,
   dialog,
 } from 'electron';
 import { autoUpdater } from 'electron-updater';
@@ -21,15 +20,13 @@ import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 import electronLogger from 'electron-log';
 
+import { IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
+
 import { initLogger } from './utils/logger';
 import { appConfig } from './utils/config';
+import { ifIsCNServer, LcuWatcher } from './utils/lcu';
 import { LanguageList, LanguageSet } from './constants/langs';
-import { ifIsCNServer, LockfileWatcher } from './utils/lcu';
-
-interface IPopupEventData {
-  championId: string;
-  position: string;
-}
+import { LcuEvent } from './constants/events';
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
@@ -59,7 +56,7 @@ if (ignoreSystemScale) {
 let mainWindow: BrowserWindow | null;
 let popupWindow: BrowserWindow | null;
 let tray = null;
-let fileWatcher: LockfileWatcher | null = null;
+let lcuWatcher: LcuWatcher | null = null;
 
 const webPreferences = {
   webSecurity: false,
@@ -189,56 +186,37 @@ function persistPopUpBounds(w: BrowserWindow) {
   appConfig.set(`popup.height`, height);
 }
 
-let lastChampion = ``;
+let lastChampion = 0;
 
-function onShowPopup() {
-  return async (_ev: IpcMainEvent, data: IPopupEventData) => {
-    if (!data.championId || lastChampion === data.championId) {
+async function onShowPopup(data: IPopupEventData) {
+  if (!data.championId || lastChampion === data.championId) {
+    return;
+  }
+
+  lastChampion = data.championId;
+  if (!popupWindow) {
+    popupWindow = await createPopupWindow();
+  }
+
+  // popupWindow.setAlwaysOnTop(true);
+  popupWindow.show();
+  // popupWindow.setAlwaysOnTop(false);
+  // app.focus();
+  popupWindow.focus();
+
+  const task = setInterval(() => {
+    if (!popupWindow!.isVisible()) {
       return;
     }
 
-    lastChampion = data.championId;
-    if (!popupWindow) {
-      popupWindow = await createPopupWindow();
-    }
-
-    // popupWindow.setAlwaysOnTop(true);
-    popupWindow.show();
-    // popupWindow.setAlwaysOnTop(false);
-    // app.focus();
-    popupWindow.focus();
-
-    const task = setInterval(() => {
-      if (!popupWindow!.isVisible()) {
-        return;
-      }
-
-      popupWindow!.webContents.send(`for-popup`, {
-        championId: data.championId,
-        position: data.position,
-      });
-      clearInterval(task);
-    }, 300);
-  };
+    popupWindow!.webContents.send(`for-popup`, {
+      championId: data.championId,
+    });
+    clearInterval(task);
+  }, 300);
 }
 
 function registerMainListeners() {
-  ipcMain.on(`broadcast`, (ev, data) => {
-    ev.sender.send(data.channel, data);
-  });
-
-  ipcMain.on(`show-popup`, onShowPopup());
-
-  ipcMain.on(`hide-popup`, async () => {
-    if (popupWindow) {
-      lastChampion = ``;
-      const isVisible = popupWindow.isVisible();
-      if (isVisible) {
-        popupWindow.hide();
-      }
-    }
-  });
-
   ipcMain.on(`toggle-main-window`, () => {
     toggleMainWindow();
   });
@@ -300,12 +278,21 @@ function registerMainListeners() {
     });
 
     if (!data.canceled) {
-      fileWatcher?.changeDir(data.filePaths[0]);
+      lcuWatcher?.changeDir(data.filePaths[0]);
     }
   });
 
   ipcMain.on(`quit-app`, () => {
     app.quit();
+  });
+
+  ipcMain.on(`applyRunePage`, async (_ev, data: IRuneItem) => {
+    lcuWatcher?.applyRunePage(data);
+    popupWindow!.webContents.send(`applyRunePage:success`);
+  });
+
+  ipcMain.on(`showPopup`, (_ev, data: IPopupEventData) => {
+    onShowPopup(data);
   });
 }
 
@@ -450,10 +437,23 @@ function registerUpdater() {
     }
   }
 
-  fileWatcher = new LockfileWatcher(appConfig.get(`lolDir`));
+  lcuWatcher = new LcuWatcher(appConfig.get(`lolDir`));
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();
+
+  lcuWatcher.addListener(LcuEvent.SelectedChampion, (data: IPopupEventData) => {
+    onShowPopup(data);
+  });
+  lcuWatcher.addListener(LcuEvent.MatchedStarted, () => {
+    if (popupWindow) {
+      lastChampion = 0;
+      const isVisible = popupWindow.isVisible();
+      if (isVisible) {
+        popupWindow.hide();
+      }
+    }
+  });
 
   registerMainListeners();
   registerUpdater();

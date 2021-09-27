@@ -1,6 +1,4 @@
-import _find from 'lodash/find';
-
-import React, { useReducer, useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useReducer, useMemo, useEffect } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
@@ -12,7 +10,6 @@ import AppContext from 'src/share/context';
 import appReducer, { initialState, init } from 'src/share/reducer';
 import { setLolVersion, updateItemMap } from 'src/share/actions';
 import { getItemList, getLolVer } from 'src/service/data-source/lol-qq';
-import LCUService from 'src/service/lcu';
 
 import Footer from 'src/components/footer';
 import Toolbar from 'src/components/toolbar';
@@ -20,120 +17,11 @@ import Home from 'src/modules/home';
 import Import from 'src/modules/import';
 import Settings from 'src/modules/settings';
 
-import { ILcuUserAction } from '@interfaces/commonTypes';
-
 const engine = new Styletron();
-const GameTypes = [`pick`];
-
-const findUserChampion = (cellId: number, actions: ILcuUserAction[][] = []) => {
-  let id = 0;
-  if (!actions || !actions.length) return id;
-
-  for (const action of actions) {
-    for (const cell of action) {
-      if (cell.actorCellId === cellId && GameTypes.includes(cell.type)) {
-        id = cell.championId;
-        break;
-      }
-    }
-  }
-
-  return id;
-};
 
 const App = () => {
   const [store, dispatch] = useReducer(appReducer, initialState, init);
   const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
-
-  const checkTask = useRef<number>();
-  const lcuInstance = useRef<LCUService>();
-
-  const createCheckTask = useCallback((dir: string) => {
-    checkTask.current = window.setInterval(async () => {
-      try {
-        let lolDir = dir;
-        if (!lolDir) {
-          lolDir = window.bridge.appConfig.get(`lolDir`);
-        }
-        if (!lolDir) {
-          throw new Error(`lol folder not selected.`);
-        }
-
-        if (!lcuInstance.current?.getAuthToken) {
-          lcuInstance.current = new LCUService(lolDir);
-        }
-        const lcuIns = lcuInstance.current;
-        await lcuIns.getAuthToken();
-        if (!lcuIns.active) {
-          throw new Error(`lcu not running.`);
-        }
-
-        const {
-          actions = [],
-          myTeam = [],
-          localPlayerCellId: cellId,
-        } = await lcuIns.getCurrentSession();
-
-        const me = _find(myTeam, (i) => i.summonerId > 0 && i.cellId === cellId);
-        const { championId: mChampionId } = me ?? { championId: 0 };
-        let championId;
-
-        const isRandomMode = !actions.length && myTeam.length > 0 && mChampionId > 0;
-        const isVoteMode =
-          mChampionId > 0 &&
-          myTeam.length > 0 &&
-          myTeam.every((i: { championId: number }) => i.championId === mChampionId);
-
-        championId = findUserChampion(cellId, actions);
-        if (!process.env.IS_DEV) {
-          console.log(
-            `isRandomMode: ${isRandomMode}, isVoteMode: ${isVoteMode}, My pick: ${cellId}`,
-          );
-        }
-
-        if (isRandomMode || isVoteMode) {
-          // special mode
-          championId = me!.championId;
-        }
-
-        if (!championId) {
-          throw new Error(`no matched champion.`);
-        }
-
-        console.log(`got champion id: `, championId);
-        window.bridge.sendMessage(`show-popup`, {
-          championId,
-          position: null,
-        });
-
-        console.log(`show popup.`);
-        return true;
-      } catch (err) {
-        const doNothing = Boolean(process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER === `true`);
-        if (doNothing) return;
-
-        console.error(err.message);
-        window.bridge.sendMessage(`hide-popup`);
-        return false;
-      }
-    }, 2000);
-  }, []);
-
-  const onDirChange = useCallback(
-    (lolDir: string) => {
-      window.clearInterval(checkTask.current);
-      createCheckTask(lolDir);
-    },
-    [createCheckTask],
-  );
-
-  useEffect(() => {
-    createCheckTask('');
-
-    return () => {
-      clearInterval(checkTask.current);
-    };
-  }, [createCheckTask]);
 
   useEffect(() => {
     const getVerAndItems = async () => {
@@ -191,7 +79,7 @@ const App = () => {
               <Toolbar />
               <Switch>
                 <Route exact path={'/'}>
-                  <Home onDirChange={onDirChange} />
+                  <Home />
                 </Route>
                 <Route path={`/import`}>
                   <Import />

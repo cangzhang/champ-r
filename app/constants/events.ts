@@ -9,3 +9,8 @@ export enum LcuMessageType {
   PUBLISH = 7,
   EVENT = 8,
 }
+
+export enum LcuEvent {
+  SelectedChampion = `SELECTED_CHAMPION`,
+  MatchedStarted = `MATCH_STARTED`,
+}
