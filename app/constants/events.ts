@@ -12,5 +12,10 @@ export enum LcuMessageType {
 
 export enum LcuEvent {
   SelectedChampion = `SELECTED_CHAMPION`,
-  MatchedStarted = `MATCH_STARTED`,
+  MatchedStartedOrTerminated = `MATCH_STARTED_OR_TERMINATED`,
+}
+
+export enum GamePhase {
+  GameStarting = 'GAME_STARTING',
+  Finalization = 'FINALIZATION',
 }

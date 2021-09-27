@@ -142,6 +142,9 @@ export interface IChampionSelectActionItem {
 export interface IChampionSelectRespData {
   myTeam: IChampionSelectTeamItem[];
   actions: IChampionSelectActionItem[][];
+  timer: {
+    phase: string;
+  }
 }
 
 export interface IPopupEventData {

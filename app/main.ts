@@ -445,7 +445,7 @@ function registerUpdater() {
   lcuWatcher.addListener(LcuEvent.SelectedChampion, (data: IPopupEventData) => {
     onShowPopup(data);
   });
-  lcuWatcher.addListener(LcuEvent.MatchedStarted, () => {
+  lcuWatcher.addListener(LcuEvent.MatchedStartedOrTerminated, () => {
     if (popupWindow) {
       lastChampion = 0;
       const isVisible = popupWindow.isVisible();

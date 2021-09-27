@@ -6,7 +6,7 @@ import WebSocket from 'ws';
 
 import { IChampionSelectRespData, ILcuAuth } from '@interfaces/commonTypes';
 import { appConfig } from './config';
-import { LcuEvent, LcuMessageType } from '../constants/events';
+import { GamePhase, LcuEvent, LcuMessageType } from '../constants/events';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const cjk_charset = cjk();
@@ -123,7 +123,7 @@ export class LcuWatcher {
 
     try {
       const info = await parseAuthInfo(p);
-      console.log(info);
+      console.log(`[watcher] got auth`);
       await this.onAuthUpdate(info);
     } catch (err) {
       console.error(err.message);
@@ -146,15 +146,20 @@ export class LcuWatcher {
     }
   };
 
-  public onSelectChampion = (data: IChampionSelectRespData) => {
-    const me = data.myTeam.find((i) => i.summonerId);
-    // console.log(data.myTeam, data.actions);
+  public onSelectChampion = ({ myTeam = [], actions = [], timer }: IChampionSelectRespData) => {
+    console.log(timer?.phase, actions);
+    if (actions.length === 0 || timer?.phase === GamePhase.GameStarting) {
+      this.evBus!.emit(LcuEvent.MatchedStartedOrTerminated);
+      return;
+    }
+
+    const me = myTeam.find((i) => i.summonerId);
     if (!me) {
       console.info(`[ws] not current summoner`);
       return;
     }
 
-    const myAction = (data.actions.pop() ?? []).find((i) => i.actorCellId === me.cellId);
+    const myAction = (actions.pop() ?? []).find((i) => i.actorCellId === me.cellId);
     if (myAction?.type !== `pick`) {
       console.info(`[ws] not pick`);
       return;
@@ -180,14 +185,14 @@ export class LcuWatcher {
 
       switch (resp.uri) {
         case `/lol-champ-select/v1/session`: {
-          this.onSelectChampion(resp.data);
+          this.onSelectChampion(resp.data ?? {});
           return;
         }
         default:
           return;
       }
     } catch (err) {
-      console.info(`[ws] handle lcu message improperly`, err.message);
+      console.info(`[ws] handle lcu message improperly: `, err.message);
     }
   };
 
