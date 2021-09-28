@@ -179,7 +179,6 @@
     "files": [
       "build/**/*",
       "!build/**/*.{jpg,jpeg,png}",
-      "src/native/**/*",
       "package.json"
     ],
     "extraResources": [
