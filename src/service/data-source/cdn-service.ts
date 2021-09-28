@@ -79,7 +79,7 @@ export default class CdnService extends SourceProto {
       );
       return data;
     } catch (err) {
-      console.error(err.message, err.stack);
+      console.error(err.stack);
       throw new Error(err);
     }
   };

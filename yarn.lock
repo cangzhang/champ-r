@@ -7854,6 +7854,11 @@ globby@^8.0.1:
     pify "^3.0.0"
     slash "^1.0.0"
 
+goober@^2.0.35:
+  version "2.0.41"
+  resolved "https://registry.nlark.com/goober/download/goober-2.0.41.tgz#0a3d786ff9917bcf2a096eef703bf717838cbec9"
+  integrity sha1-Cj14b/mRe88qCW7vcDv3F4OMvsk=
+
 got@^11.8.2:
   version "11.8.2"
   resolved "https://registry.nlark.com/got/download/got-11.8.2.tgz?cache=0&sync_timestamp=1628752531824&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fgot%2Fdownload%2Fgot-11.8.2.tgz#7abb3959ea28c31f3576f1576c1effce23f33599"
@@ -12815,6 +12820,13 @@ react-focus-lock@^2.2.1:
     react-clientside-effect "^1.2.2"
     use-callback-ref "^1.2.1"
     use-sidecar "^1.0.1"
+
+react-hot-toast@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.nlark.com/react-hot-toast/download/react-hot-toast-2.1.1.tgz#56409ab406b534e9e58274cf98d80355ba0fdda0"
+  integrity sha1-VkCatAa1NOnlgnTPmNgDVboP3aA=
+  dependencies:
+    goober "^2.0.35"
 
 react-i18next@^11.3.4:
   version "11.3.4"

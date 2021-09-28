@@ -23,8 +23,8 @@ export async function ifIsCNServer(dir: string) {
     await fs.access(dir, fsConstants.F_OK);
     await fs.access(target, fsConstants.F_OK);
     result = true;
-  } catch (err) {
-    console.info(err);
+  } catch (_err) {
+    console.info(`[lcu] maybe it's cn version`);
   }
 
   appConfig.set(`appendGameToDir`, result);
@@ -292,7 +292,7 @@ export class LcuWatcher {
 
   public applyRunePage = async (data: any) => {
     if (!this.auth) {
-      throw new Error(`[lcu] no lcu auth available`);
+      throw new Error(`[lcu] no auth available`);
     }
 
     try {

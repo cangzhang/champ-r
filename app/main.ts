@@ -286,12 +286,16 @@ function registerMainListeners() {
     app.quit();
   });
 
-  ipcMain.on(`applyRunePage`, async (_ev, data: IRuneItem) => {
+  ipcMain.on(`applyRunePage`, async (_ev, data: IRuneItem & { jobId: string }) => {
     try {
       await lcuWatcher?.applyRunePage(data);
-      popupWindow!.webContents.send(`applyRunePage:success`);
+      popupWindow!.webContents.send(`applyRunePage:success:${data.jobId}`);
     } catch (err) {
       console.error(`[main] apply perk failed: `, err.message);
+    } finally {
+      if (isDev) {
+        popupWindow!.webContents.send(`applyRunePage:success:${data.jobId}`);
+      }
     }
   });
 
