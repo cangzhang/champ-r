@@ -7,13 +7,6 @@ module.exports = {
     'baseui/no-deep-imports': 'warn',
     'no-warning-comments': 0,
     'comma-dangle': ['error', 'always-multiline'],
-    'object-curly-spacing': [
-      'error',
-      'always',
-      {
-        arraysInObjects: false,
-        objectsInObjects: true,
-      },
-    ],
+    'object-curly-spacing': [2, 'always']
   },
 };

@@ -1,8 +1,8 @@
 import path from 'path';
 import _debounce from 'lodash/debounce';
-
 import osLocale from 'os-locale';
 import { machineId } from 'node-machine-id';
+
 import {
   app,
   BrowserWindow,
@@ -12,39 +12,24 @@ import {
   Tray,
   nativeImage,
   nativeTheme,
-  IpcMainEvent,
+  dialog,
 } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import contextMenu from 'electron-context-menu';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 import electronLogger from 'electron-log';
-import { initialize as initRemoteMain } from '@electron/remote/dist/src/main';
 
-import initLogger from '../src/native/logger';
-import appStore from '../src/native/config';
-import { LanguageList, LanguageSet } from '../src/native/langs';
-import { ifIsCNServer } from './utils';
+import { IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
 
-interface IPopupEventData {
-  championId: string;
-  position: string;
-}
+import { initLogger } from './utils/logger';
+import { appConfig } from './utils/config';
+import { ifIsCNServer, LcuWatcher } from './utils/lcu';
+import { LanguageList, LanguageSet } from './constants/langs';
+import { LcuEvent } from './constants/events';
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
-
-initRemoteMain();
-
-try {
-  if (isDev) {
-    require('electron-reloader')(module, {
-      watchRenderer: false,
-      ignore: ['./src/**/*'],
-    });
-  }
-} catch (_) {}
-
 initLogger();
 
 unhandled({
@@ -61,7 +46,7 @@ app.setAppUserModelId('com.al.champ-r');
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 
-const ignoreSystemScale = appStore.get(`ignoreSystemScale`);
+const ignoreSystemScale = appConfig.get(`ignoreSystemScale`);
 if (ignoreSystemScale) {
   app.commandLine.appendSwitch('high-dpi-support', `1`);
   app.commandLine.appendSwitch('force-device-scale-factor', `1`);
@@ -71,14 +56,16 @@ if (ignoreSystemScale) {
 let mainWindow: BrowserWindow | null;
 let popupWindow: BrowserWindow | null;
 let tray = null;
+let lcuWatcher: LcuWatcher | null = null;
 
 const webPreferences = {
-  nodeIntegration: true,
-  contextIsolation: false,
   webSecurity: false,
+  nodeIntegration: true,
+  contextIsolation: true,
+  enableRemoteModule: true,
   allowRunningInsecureContent: true,
   zoomFactor: 1,
-  enableRemoteModule: true,
+  preload: path.join(__dirname, 'preload.js'),
 };
 
 const createMainWindow = async () => {
@@ -105,7 +92,7 @@ const createMainWindow = async () => {
   });
 
   await win.loadURL(
-    isDev ? 'http://127.0.0.1:3000' : `file://${path.join(__dirname, '../index.html')}`,
+    isDev ? 'http://127.0.0.1:3000' : `file://${path.join(__dirname, 'index.html')}`,
   );
 
   return win;
@@ -118,7 +105,7 @@ const createPopupWindow = async () => {
     y: mY,
   });
 
-  const popupConfig = appStore.get(`popup`);
+  const popupConfig = appConfig.get(`popup`);
   const popup = new BrowserWindow({
     show: false,
     frame: false,
@@ -149,7 +136,7 @@ const createPopupWindow = async () => {
   });
 
   await popup.loadURL(
-    isDev ? `http://127.0.0.1:3000/popup.html` : `file://${path.join(__dirname, '../popup.html')}`,
+    isDev ? `http://127.0.0.1:3000/popup.html` : `file://${path.join(__dirname, 'popup.html')}`,
   );
 
   return popup;
@@ -193,62 +180,43 @@ function persistPopUpBounds(w: BrowserWindow) {
   }
 
   const { x, y, width, height } = w.getBounds();
-  appStore.set(`popup.x`, x);
-  appStore.set(`popup.y`, y);
-  appStore.set(`popup.width`, width);
-  appStore.set(`popup.height`, height);
+  appConfig.set(`popup.x`, x);
+  appConfig.set(`popup.y`, y);
+  appConfig.set(`popup.width`, width);
+  appConfig.set(`popup.height`, height);
 }
 
-let lastChampion = ``;
+let lastChampion = 0;
 
-function onShowPopup() {
-  return async (_ev: IpcMainEvent, data: IPopupEventData) => {
-    if (!data.championId || lastChampion === data.championId) {
+async function onShowPopup(data: IPopupEventData) {
+  if (!data.championId || lastChampion === data.championId) {
+    return;
+  }
+
+  lastChampion = data.championId;
+  if (!popupWindow) {
+    popupWindow = await createPopupWindow();
+  }
+
+  // popupWindow.setAlwaysOnTop(true);
+  popupWindow.show();
+  // popupWindow.setAlwaysOnTop(false);
+  // app.focus();
+  popupWindow.focus();
+
+  const task = setInterval(() => {
+    if (!popupWindow!.isVisible()) {
       return;
     }
 
-    lastChampion = data.championId;
-    if (!popupWindow) {
-      popupWindow = await createPopupWindow();
-    }
-
-    // popupWindow.setAlwaysOnTop(true);
-    popupWindow.show();
-    // popupWindow.setAlwaysOnTop(false);
-    // app.focus();
-    popupWindow.focus();
-
-    const task = setInterval(() => {
-      if (!popupWindow!.isVisible()) {
-        return;
-      }
-
-      popupWindow!.webContents.send(`for-popup`, {
-        championId: data.championId,
-        position: data.position,
-      });
-      clearInterval(task);
-    }, 300);
-  };
+    popupWindow!.webContents.send(`for-popup`, {
+      championId: data.championId,
+    });
+    clearInterval(task);
+  }, 300);
 }
 
 function registerMainListeners() {
-  ipcMain.on(`broadcast`, (ev, data) => {
-    ev.sender.send(data.channel, data);
-  });
-
-  ipcMain.on(`show-popup`, onShowPopup());
-
-  ipcMain.on(`hide-popup`, async () => {
-    if (popupWindow) {
-      lastChampion = ``;
-      const isVisible = popupWindow.isVisible();
-      if (isVisible) {
-        popupWindow.hide();
-      }
-    }
-  });
-
   ipcMain.on(`toggle-main-window`, () => {
     toggleMainWindow();
   });
@@ -265,7 +233,7 @@ function registerMainListeners() {
     popupWindow.setAlwaysOnTop(next);
     popupWindow.setSkipTaskbar(next);
 
-    appStore.set(`popup.alwaysOnTop`, next);
+    appConfig.set(`popup.alwaysOnTop`, next);
   });
 
   ipcMain.on(`popup:reset-position`, () => {
@@ -273,9 +241,9 @@ function registerMainListeners() {
     const { bounds } = screen.getDisplayNearestPoint({ x: mx, y: my });
     const [x, y] = [bounds.width / 2, bounds.height / 2];
 
-    appStore.set(`popup.alwaysOnTop`, true);
-    appStore.set(`popup.x`, x);
-    appStore.set(`popup.y`, y);
+    appConfig.set(`popup.alwaysOnTop`, true);
+    appConfig.set(`popup.x`, x);
+    appConfig.set(`popup.y`, y);
 
     if (!popupWindow) {
       return;
@@ -291,12 +259,48 @@ function registerMainListeners() {
 
   ipcMain.on(`updateLolDir`, async (_ev, { lolDir }) => {
     console.info(`lolDir is ${lolDir}`);
-    appStore.set(`lolDir`, lolDir);
+    appConfig.set(`lolDir`, lolDir);
     if (!lolDir) {
       return;
     }
+  });
 
-    await ifIsCNServer(lolDir);
+  ipcMain.on(`request-for-auth-config`, () => {
+    const lolDir = appConfig.get(`lolDir`);
+    ifIsCNServer(lolDir);
+  });
+
+  ipcMain.on(`openSelectFolderDialog`, async (_, { jobId }: any) => {
+    const data = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+    mainWindow?.webContents.send(`openSelectFolderDialog:done:${jobId}`, {
+      ...data,
+      jobId,
+    });
+
+    if (!data.canceled) {
+      lcuWatcher?.changeDir(data.filePaths[0]);
+    }
+  });
+
+  ipcMain.on(`quit-app`, () => {
+    app.quit();
+  });
+
+  ipcMain.on(`applyRunePage`, async (_ev, data: IRuneItem & { jobId: string }) => {
+    try {
+      await lcuWatcher?.applyRunePage(data);
+      popupWindow!.webContents.send(`applyRunePage:done:${data.jobId}`);
+    } catch (err) {
+      console.error(`[main] apply perk failed: `, err.message);
+    } finally {
+      if (isDev) {
+        popupWindow!.webContents.send(`applyRunePage:done:${data.jobId}`);
+      }
+    }
+  });
+
+  ipcMain.on(`showPopup`, (_ev, data: IPopupEventData) => {
+    onShowPopup(data);
   });
 }
 
@@ -317,7 +321,7 @@ function toggleMainWindow() {
 
 function makeTray() {
   const iconPath = path.join(
-    isDev ? `${__dirname}/../../` : process.resourcesPath,
+    isDev ? `${__dirname}/../` : process.resourcesPath,
     'resources/app-icon.png',
   );
   const icon = nativeImage.createFromPath(iconPath).resize({ width: 24, height: 24 });
@@ -346,11 +350,11 @@ function makeTray() {
 }
 
 async function getMachineId() {
-  const userId = appStore.get(`userId`);
+  const userId = appConfig.get(`userId`);
   if (userId) return userId;
 
   const id = await machineId();
-  appStore.set(`userId`, id);
+  appConfig.set(`userId`, id);
   return id;
 }
 
@@ -429,26 +433,38 @@ function registerUpdater() {
   await app.whenReady();
   Menu.setApplicationMenu(null);
 
-  const lolDir = appStore.get(`lolDir`);
-
   let locale = await osLocale();
-  let appLang = appStore.get(`appLang`);
+  let appLang = appConfig.get(`appLang`);
   console.info(`System locale is ${locale}, app lang is ${appLang || 'unset'}`);
 
   if (!appLang) {
     if (LanguageList.includes(locale)) {
-      appStore.set(`appLang`, locale);
+      appConfig.set(`appLang`, locale);
     } else {
-      appStore.set(`appLang`, LanguageSet.enUS);
+      appConfig.set(`appLang`, LanguageSet.enUS);
     }
   }
+
+  lcuWatcher = new LcuWatcher(appConfig.get(`lolDir`));
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();
 
+  lcuWatcher.addListener(LcuEvent.SelectedChampion, (data: IPopupEventData) => {
+    onShowPopup(data);
+  });
+  lcuWatcher.addListener(LcuEvent.MatchedStartedOrTerminated, () => {
+    if (popupWindow) {
+      lastChampion = 0;
+      const isVisible = popupWindow.isVisible();
+      if (isVisible) {
+        popupWindow.hide();
+      }
+    }
+  });
+
   registerMainListeners();
   registerUpdater();
-  ifIsCNServer(lolDir);
 
   await makeTray();
   const userId = await getMachineId();

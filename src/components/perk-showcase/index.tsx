@@ -2,17 +2,17 @@ import s from './style.module.scss';
 
 import _noop from 'lodash/noop';
 
-import React, { useRef, FormEvent } from 'react';
+import React, { useRef } from 'react';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Zap } from 'react-feather';
 
-import { IRuneItem } from "src/typings/commonTypes";
+import { IRuneItem } from '@interfaces/commonTypes';
 import { MainStyleIds } from 'src/share/constants/runes';
 
 interface IProps {
   isAramMode: boolean;
-  onMouseEnter: (perk: IRuneItem, el: HTMLDivElement | null, ev: FormEvent) => void;
+  onMouseEnter: (perk: IRuneItem, el: HTMLDivElement | null) => void;
   onMouseLeave: () => any;
   perk: IRuneItem;
   onApply: () => any;
@@ -35,7 +35,7 @@ export default function PerkShowcase({
     <div
       className={s.item}
       ref={el}
-      onMouseEnter={(ev) => onMouseEnter(perk, el.current, ev)}
+      onMouseEnter={(ev) => onMouseEnter(perk, el.current)}
       onMouseLeave={onMouseLeave}>
       <div className={s.preview}>
         <div className={cn(s.primary, s[`r-${primaryStyleId}`])} />

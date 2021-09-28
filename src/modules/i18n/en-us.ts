@@ -1,5 +1,4 @@
-import { LanguageSet } from 'src/native/langs'
-export const lang = LanguageSet.enUS;
+export const lang = window.bridge.LanguageSet.enUS;
 
 export default {
   translation: {

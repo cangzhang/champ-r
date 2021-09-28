@@ -19,15 +19,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v2
       with:
-        node-version: '15.x'
+        node-version: '14'
+        cache: 'npm'
 
     - name: Build
       run: |
         $sha = (git rev-parse --short HEAD)
-        Remove-Item .yarnrc
         yarn install --silent
         $env:SHORT_SHA=$sha; yarn build:ci
 
@@ -37,7 +36,6 @@ jobs:
       run: |
         $sha = (git rev-parse --short HEAD)
         md -Name ./dist/artifacts -Force
-        #7z a -ttar -mx=9 ./dist/artifacts/windows-unpacked.tar ./dist/win-unpacked
         Copy-Item ./dist/*.exe -Destination ./dist/artifacts/
         $file = Get-ChildItem -Path ./dist/artifacts/ -Filter "*.exe" | select-object -first 1
         $newName = "$($file.BaseName).$($sha)$($file.Extension)"

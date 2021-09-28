@@ -1,6 +1,5 @@
 import _find from 'lodash/find';
 import _sortBy from 'lodash/sortBy';
-import cheerio from 'cheerio';
 
 import { flatRunes } from 'src/share/constants/runes';
 import http, { CancelToken } from './http';
@@ -25,7 +24,7 @@ export const requestHtml = async (url, setCancel, isAjax = true, showHtml = fals
         }),
       },
     );
-    const $ = cheerio.load(rawHtml);
+    const $ = window.bridge.cheerio.load(rawHtml);
     showHtml && console.log(rawHtml);
     return $;
   } catch (error) {

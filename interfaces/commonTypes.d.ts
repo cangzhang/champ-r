@@ -1,4 +1,4 @@
-import React from 'react';
+import CSSProperties = React.CSSProperties;
 
 export interface IRuneItem {
   alias: string;
@@ -12,7 +12,7 @@ export interface IRuneItem {
   score: number;
 }
 
-export interface ICSSProperties extends React.CSSProperties {
+export interface ICSSProperties extends CSSProperties {
   [key: string]: number | string | undefined;
 }
 
@@ -113,4 +113,46 @@ export interface IFetchStatus {
   $identity: string;
   champion: string;
   source: string;
+}
+
+export interface ILcuAuth {
+  port: string;
+  token: string;
+  urlWithAuth: string;
+}
+
+export interface IChampionSelectTeamItem {
+  cellId: number;
+  championId: number;
+  summonerId: number;
+  team: number;
+}
+
+export interface IChampionSelectActionItem {
+  actorCellId: number;
+  championId: number;
+  completed: boolean;
+  id: number;
+  isAllyAction: boolean;
+  isInProgress: boolean;
+  pickTurn: number;
+  type: string;
+}
+
+export interface IChampionSelectRespData {
+  myTeam: IChampionSelectTeamItem[];
+  actions: IChampionSelectActionItem[][];
+  timer: {
+    phase: string;
+  };
+}
+
+export interface IPopupEventData {
+  championId: number;
+}
+
+export interface IPerkPage {
+  current: boolean;
+  isDeletable: boolean;
+  id: number;
 }

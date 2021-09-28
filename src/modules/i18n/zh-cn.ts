@@ -1,6 +1,4 @@
-import { LanguageSet } from 'src/native/langs'
-
-export const lang = LanguageSet.zhCN;
+export const lang = window.bridge.LanguageSet.zhCN;
 
 export default {
   translation: {

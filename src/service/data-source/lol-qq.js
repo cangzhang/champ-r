@@ -5,7 +5,6 @@ import _orderBy from 'lodash/orderBy';
 import _noop from 'lodash/noop';
 
 import http, { CancelToken } from 'src/service/http';
-import { makeBuildFile, saveToFile } from 'src/share/file';
 import { parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import { SourceQQ } from 'src/share/constants/sources';
@@ -261,7 +260,7 @@ export default class LolQQ extends SourceProto {
         },
       ];
 
-      const item = makeBuildFile({
+      const item = window.bridge.file.makeBuildFile({
         fileName: `[${SourceQQ.label.toUpperCase()}] ${position} - ${alias}`,
         title: `[${SourceQQ.label.toUpperCase()}] ${position} - ${alias}`,
         championId: +champion.heroId,
@@ -304,7 +303,7 @@ export default class LolQQ extends SourceProto {
         return res.concat(block);
       }, []);
 
-      const fileTasks = items.map((i) => saveToFile(lolDir, i));
+      const fileTasks = items.map((i) => window.bridge.file.saveToFile(lolDir, i));
       const result = await Promise.all(fileTasks);
 
       dispatch(fetchSourceDone(SourceQQ.label));

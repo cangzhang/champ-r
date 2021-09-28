@@ -24,6 +24,7 @@ body {
   padding-left: 2ex;
 
   .avatar {
+    pointer-events: none;
     -webkit-user-select: none;
     -webkit-app-region: drag;
     margin-right: 2ex;

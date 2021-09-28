@@ -1,4 +1,4 @@
-import { IFetchStatus } from 'src/typings/commonTypes';
+import { IFetchStatus } from '@interfaces/commonTypes';
 
 export const Actions = {
   ADD_FETCHING: 'LIST.ADD_FETCHING',

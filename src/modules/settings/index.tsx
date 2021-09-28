@@ -1,8 +1,6 @@
 /* eslint react-hooks/exhaustive-deps: 0 */
 import s from './style.module.scss';
 
-import { ipcRenderer } from 'electron';
-
 import _get from 'lodash/get';
 import React, { useEffect, useState, useRef, FormEvent } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -12,9 +10,6 @@ import { Select } from 'baseui/select';
 import { Button } from 'baseui/button';
 import { Checkbox, STYLE_TYPE } from 'baseui/checkbox';
 
-import config from 'src/native/config';
-import { LanguageSet } from 'src/native/langs'
-
 interface ILangItem {
   label: string;
   value: string;
@@ -23,15 +18,15 @@ interface ILangItem {
 const LangList: ILangItem[] = [
   {
     label: 'English (US)',
-    value: LanguageSet.enUS,
+    value: window.bridge.LanguageSet.enUS,
   },
   {
     label: 'Chinese (CN)',
-    value: LanguageSet.zhCN,
+    value: window.bridge.LanguageSet.zhCN,
   },
   {
     label: 'French (FR)',
-    value: LanguageSet.frFR,
+    value: window.bridge.LanguageSet.frFR,
   },
 ];
 const getLangItem = (value: string) => LangList.find((i) => i.value === value);
@@ -39,9 +34,11 @@ const getLangItem = (value: string) => LangList.find((i) => i.value === value);
 export default function Settings() {
   const [t, i18n] = useTranslation();
   const history = useHistory();
-  const sysLang = config.get(`appLang`);
+  const sysLang = window.bridge.appConfig.get(`appLang`);
   const [values, setLangValues] = useState<ILangItem[]>([getLangItem(sysLang) ?? LangList[0]]);
-  const [ignoreSystemScale, setIgnoreSystemScale] = useState(config.get(`ignoreSystemScale`));
+  const [ignoreSystemScale, setIgnoreSystemScale] = useState(
+    window.bridge.appConfig.get(`ignoreSystemScale`),
+  );
 
   const recorder = useRef(false);
 
@@ -50,20 +47,20 @@ export default function Settings() {
   };
 
   const restartApp = () => {
-    ipcRenderer.send(`restart-app`);
+    window.bridge.sendMessage(`restart-app`);
   };
 
   const onIgnoreScale = (e: FormEvent<HTMLInputElement>) => {
     setIgnoreSystemScale(e.currentTarget.checked);
-    config.set(`ignoreSystemScale`, e.currentTarget.checked);
-    ipcRenderer.send(`popup:reset-position`);
+    window.bridge.appConfig.set(`ignoreSystemScale`, e.currentTarget.checked);
+    window.bridge.sendMessage(`popup:reset-position`);
     recorder.current = true;
   };
 
   useEffect(() => {
     const lang = _get(values, `0.value`, sysLang);
     if (lang !== sysLang) {
-      config.set(`appLang`, lang);
+      window.bridge.appConfig.set(`appLang`, lang);
       i18n.changeLanguage(lang);
     }
   }, [values]);

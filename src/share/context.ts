@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IState } from 'src/typings/commonTypes';
+import { IState } from '@interfaces/commonTypes';
 
 interface IContext {
   store: IState;

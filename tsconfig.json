@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
+    "target": "ESNext",
     "lib": [
       "dom",
       "es6",
@@ -9,31 +8,43 @@
       "es2020",
       "esnext.asynciterable"
     ],
-    "sourceMap": true,
-    "outDir": "./build",
-    "moduleResolution": "node",
-    "removeComments": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
+    "useUnknownInCatchVariables": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
-    "baseUrl": "."
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react",
+    "baseUrl": ".",
+    "paths": {
+      "src/*": [
+        "./src/*"
+      ],
+      "@interfaces/*": [
+        "./interfaces/*"
+      ],
+      "@app/*": [
+        "./app/*"
+      ]
+    },
+    "typeRoots": [
+      "node_modules/@types",
+      "src/global.d.ts"
+    ]
   },
   "exclude": [
-    "node_modules",
-    "src/**/*.tsx",
-    "src/**/*.ts",
+    "node_modules"
   ],
   "include": [
-    "app/**/*.ts"
-  ],
+    "**/*.ts",
+    "**/*.tsx",
+    "app/**/*.js",
+    "src/**/*.js"
+  ]
 }

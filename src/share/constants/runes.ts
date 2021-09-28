@@ -18,7 +18,11 @@ export const Resolve = {
   8400: [8437, 8439, 8465, 8446, 8463, 8401, 8429, 8444, 8473, 8451, 8453, 8242],
 };
 
-export const MainRuneMap = {
+interface IRuneMap {
+  [id: number]: number[][];
+}
+
+export const MainRuneMap: IRuneMap = {
   8000: [
     [8005, 8008, 8021, 8010],
     [9101, 9111, 8009],
@@ -51,7 +55,7 @@ export const MainRuneMap = {
   ],
 };
 
-export const SubRuneMap = {
+export const SubRuneMap: IRuneMap = {
   8000: [
     [9101, 9111, 8009],
     [9104, 9105, 9103],
@@ -75,7 +79,11 @@ export const SubRuneMap = {
   ],
 };
 
-export const MainStyleIds = {
+interface IStyleIdList {
+  [id: number]: number[];
+}
+
+export const MainStyleIds: IStyleIdList = {
   8000: [8005, 8008, 8010, 8021],
   8100: [8112, 8124, 8128, 9923],
   8200: [8214, 8229, 8230],
