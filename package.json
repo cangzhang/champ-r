@@ -73,6 +73,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.7.4",
+    "@babel/plugin-transform-react-jsx": "^7.14.9",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@svgr/webpack": "^5.5.0",
     "@testing-library/jest-dom": "^4.2.4",
@@ -158,8 +159,7 @@
     "webpack": "4.44.2",
     "webpack-dev-server": "3.11.2",
     "webpack-manifest-plugin": "2.2.0",
-    "webpack-sources": "^1.4.3",
-    "workbox-webpack-plugin": "4.3.1"
+    "webpack-sources": "^1.4.3"
   },
   "babel": {
     "presets": [
