@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid';
 import _noop from 'lodash/noop';
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -27,6 +26,7 @@ import useSourceList from './useSourceList';
 
 import s from 'src/app.module.scss';
 import logo from 'src/assets/app-icon.webp';
+import { createIpcPromise } from 'src/service/ipc';
 
 interface IProps {
   onDirChange?: (p: string) => void;
@@ -53,43 +53,21 @@ export default function Home({ onDirChange = _noop }: IProps) {
     dispatch(updateConfig('keepOld', checked));
   };
 
-  const selectFolder = (): Promise<string[]> => {
-    const jobId = nanoid();
-    return new Promise((resolve, reject) => {
-      window.bridge.sendMessage(`open-select-folder-dialog`, {
-        jobId,
-      });
-      window.bridge.once(
-        `open-select-folder-dialog:done`,
-        ({
-          jobId: id,
-          canceled,
-          filePaths,
-        }: {
-          jobId: string;
-          canceled: boolean;
-          filePaths: string[];
-        }) => {
-          if (jobId === id) {
-            if (canceled) {
-              reject({ canceled });
-              return;
-            }
-
-            resolve(filePaths);
-          }
-        },
-      );
-    });
-  };
-
   const onSelectDir = async () => {
     try {
-      const filePaths = await selectFolder();
+      const { canceled, filePaths = [] }: any = await createIpcPromise(`openSelectFolderDialog`);
+      if (canceled) {
+        return Promise.reject({ canceled });
+      }
+
+      if (!filePaths) {
+        throw new Error(`[home] select folder: got no folder`);
+      }
       const dir = filePaths[0];
       setLolDir(dir);
-    } catch (_e) {
-      console.error(_e);
+    } catch (err) {
+      console.error(err.message);
+      return Promise.reject(null);
     }
   };
 

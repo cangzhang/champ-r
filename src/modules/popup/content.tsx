@@ -1,7 +1,5 @@
 import s from './style.module.scss';
 
-import { nanoid } from 'nanoid';
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +24,7 @@ import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
 
 import { IChampionInfo, IRuneItem, ICoordinate } from '@interfaces/commonTypes';
 import { makeChampMap } from './utils';
+import { createIpcPromise } from 'src/service/ipc';
 
 const Pin = styled(`button`, () => ({
   margin: `0 2ex 0 0`,
@@ -139,17 +138,14 @@ export function Content() {
   }, []); // eslint-disable-line
 
   const apply = async (perk: IRuneItem) => {
-    // FIXME promise, in-app notification
-    const jobId = nanoid();
-    window.bridge.sendMessage(`applyRunePage`, {
-      ...perk,
-      jobId,
-    });
-    window.bridge.once(`applyRunePage:success:${jobId}`, () => {
+    try {
+      await createIpcPromise(`applyRunePage`, perk);
       console.info(`[popup] applied selected perk`);
       toast.dismiss();
       toast.success(t(`applied`));
-    });
+    } catch (_err) {
+      console.error(`[popup] apply perk failed`);
+    }
   };
 
   const showPreview = (perk: IRuneItem, el: HTMLDivElement | null) => {

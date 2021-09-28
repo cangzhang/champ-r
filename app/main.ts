@@ -270,9 +270,9 @@ function registerMainListeners() {
     ifIsCNServer(lolDir);
   });
 
-  ipcMain.on(`open-select-folder-dialog`, async (_, { jobId }: any) => {
+  ipcMain.on(`openSelectFolderDialog`, async (_, { jobId }: any) => {
     const data = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-    mainWindow?.webContents.send(`open-select-folder-dialog:done`, {
+    mainWindow?.webContents.send(`openSelectFolderDialog:done:${jobId}`, {
       ...data,
       jobId,
     });
@@ -289,12 +289,12 @@ function registerMainListeners() {
   ipcMain.on(`applyRunePage`, async (_ev, data: IRuneItem & { jobId: string }) => {
     try {
       await lcuWatcher?.applyRunePage(data);
-      popupWindow!.webContents.send(`applyRunePage:success:${data.jobId}`);
+      popupWindow!.webContents.send(`applyRunePage:done:${data.jobId}`);
     } catch (err) {
       console.error(`[main] apply perk failed: `, err.message);
     } finally {
       if (isDev) {
-        popupWindow!.webContents.send(`applyRunePage:success:${data.jobId}`);
+        popupWindow!.webContents.send(`applyRunePage:done:${data.jobId}`);
       }
     }
   });
