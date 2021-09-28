@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useImmer } from 'use-immer';
 
 import toast, { Toaster } from 'react-hot-toast';
-import { Check, Info } from 'react-feather';
+import { Check, Smile } from 'react-feather';
 import { styled } from 'styletron-react';
 import { StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import { Select } from 'baseui/select';
@@ -53,7 +53,7 @@ const getInitTab = () => {
   return [sourceList.find((i) => i.value === cur) ?? sourceList[0]];
 };
 
-export function Main() {
+export function Content() {
   const [t] = useTranslation();
   const [, theme] = useStyletron();
   const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
@@ -279,8 +279,8 @@ export function Main() {
             ...theme.typography.ParagraphSmall,
           },
           blank: {
-            icon: <Info />,
-            duration: 10 * 1000,
+            icon: <Smile size={16} />,
+            duration: 100 * 1000,
             style: {
               backgroundColor: theme.colors.backgroundInverseSecondary,
               color: theme.colors.contentInversePrimary,
