@@ -18,14 +18,13 @@ jobs:
 
     - uses: actions/setup-node@v1
       with:
-        node-version: '15.x'
+        node-version: '16.x'
 
     - name: Build & release
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       shell: pwsh
       run: |
-        Remove-Item .yarnrc
         $sha = (git rev-parse --short HEAD)
         yarn --silent
         $env:SHORT_SHA=$sha; yarn release
@@ -36,7 +35,6 @@ jobs:
       run: |
         $sha = (git rev-parse --short HEAD)
         md -Name ./dist/artifacts -Force
-        #7z a -ttar -mx=9 ./dist/artifacts/windows-unpacked.tar ./dist/win-unpacked
         Copy-Item ./dist/*.exe -Destination ./dist/artifacts/
         $file = Get-ChildItem -Path ./dist/artifacts/ -Filter "*.exe" | select-object -first 1
         $newName = "$($file.BaseName).$($sha)$($file.Extension)"
