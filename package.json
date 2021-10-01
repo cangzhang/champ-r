@@ -73,6 +73,8 @@
   },
   "devDependencies": {
     "@babel/core": "7.7.4",
+    "@babel/helper-builder-react-jsx": "^7.15.4",
+    "@babel/helper-builder-react-jsx-experimental": "^7.12.11",
     "@babel/plugin-transform-react-jsx": "^7.14.9",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@svgr/webpack": "^5.5.0",
