@@ -1,6 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-
-name: ð Test Build
+name: 😼 Test Build
 
 on:
   push:

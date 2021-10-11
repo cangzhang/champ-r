@@ -1,6 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-
-name: ð Release Build
+name: 🐶 Release Build
 
 on:
   push:
