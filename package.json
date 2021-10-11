@@ -16,6 +16,7 @@
   },
   "main": "build/main.js",
   "scripts": {
+    "prepare": "husky install",
     "postinstall": "cross-env electron-builder install-app-deps && patch-package",
     "clean:main": "npx rimraf build/",
     "compile:main": "tsc -p app/",
@@ -53,7 +54,7 @@
     "fs-extra": "^10.0.0",
     "got": "^11.8.2",
     "i18next": "^19.3.4",
-    "immer": "8.0.1",
+    "immer": "^9.0.6",
     "lodash": "^4.17.15",
     "nanoid": "^3.1.28",
     "node-machine-id": "^1.1.12",
@@ -68,7 +69,7 @@
     "react-router-dom": "^5.1.2",
     "styletron-engine-atomic": "^1.4.7",
     "styletron-react": "^6.0.1",
-    "use-immer": "^0.4.1",
+    "use-immer": "^0.6.0",
     "ws": "^8.2.2"
   },
   "devDependencies": {
@@ -121,14 +122,14 @@
     "fibers": "^5.0.0",
     "file-loader": "4.3.0",
     "html-webpack-plugin": "4.0.0-beta.5",
-    "husky": "^4.2.3",
+    "husky": "^7.0.0",
     "identity-obj-proxy": "3.0.0",
     "imagemin-webp-webpack-plugin": "3.3.2",
     "jest": "24.9.0",
     "jest-environment-jsdom-fourteen": "0.1.0",
     "jest-resolve": "24.9.0",
     "jest-watch-typeahead": "0.4.2",
-    "lint-staged": "^10.0.8",
+    "lint-staged": "^11.2.3",
     "mini-css-extract-plugin": "0.8.0",
     "nodemon": "^2.0.12",
     "optimize-css-assets-webpack-plugin": "5.0.3",
@@ -198,13 +199,8 @@
       "releaseType": "release"
     }
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
-    "{app,src}/**/*.{ts,tsx,js,json,css,scss,md}": [
+    "{app,src,config,interfaces,scripts}/**/*.{ts,tsx,js,json,css,scss,md}": [
       "prettier --write"
     ]
   }
