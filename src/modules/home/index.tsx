@@ -216,7 +216,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
         </H6>
 
         {sourceList.map((v) => {
-          const aram = v.isAram;
+          const { isAram, isURF } = v;
           const sourceVer = store.dataSourceVersions[v.value];
 
           return (
@@ -259,9 +259,14 @@ export default function Home({ onDirChange = _noop }: IProps) {
                   {sourceVer}
                 </Tag>
               )}
-              {aram && (
+              {isAram && (
                 <Tag closeable={false} variant={VARIANT.light} kind='positive'>
                   {t(`aram`)}
+                </Tag>
+              )}
+              {isURF && (
+                <Tag closeable={false} variant={VARIANT.light} kind='positive'>
+                  {t(`urf`)}
                 </Tag>
               )}
             </Checkbox>

@@ -8,6 +8,7 @@ export interface ISourceItem {
   label: string;
   value: string;
   isAram?: boolean;
+  isURF?: boolean;
 }
 
 const DefaultExtraPkgs: ISourceItem[] = [
@@ -32,7 +33,4 @@ export const SourceQQ: ISourceItem = {
   value: Lolqq,
 };
 
-export const DefaultSourceList: ISourceItem[] = [
-  SourceQQ,
-  ...DefaultExtraPkgs,
-];
+export const DefaultSourceList: ISourceItem[] = [SourceQQ, ...DefaultExtraPkgs];
