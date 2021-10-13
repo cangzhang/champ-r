@@ -148,7 +148,7 @@ export class LcuWatcher {
   };
 
   public onSelectChampion = ({ myTeam = [], actions = [], timer }: IChampionSelectRespData) => {
-    console.log(timer?.phase, actions);
+    // console.log(timer?.phase, actions);
     if (actions.length === 0 || timer?.phase === GamePhase.GameStarting) {
       this.evBus!.emit(LcuEvent.MatchedStartedOrTerminated);
       return;
