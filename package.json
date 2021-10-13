@@ -159,16 +159,12 @@
     "wait-on": "^4.0.0",
     "webpack": "4.44.2",
     "webpack-dev-server": "3.11.2",
-    "webpack-manifest-plugin": "2.2.0",
     "webpack-sources": "^1.4.3"
   },
   "babel": {
     "presets": [
       [
-        "react-app",
-        {
-          "targets": "chrome >= 89"
-        }
+        "react-app"
       ]
     ]
   },
