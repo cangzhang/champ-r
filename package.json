@@ -161,7 +161,10 @@
   },
   "babel": {
     "presets": [
-      "react-app"
+      "react-app",
+      {
+        "targets": "chrome >= 89"
+      }
     ]
   },
   "browserslist": {
