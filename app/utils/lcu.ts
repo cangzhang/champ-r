@@ -116,8 +116,7 @@ export class LcuWatcher {
   };
 
   private onFileChange = async (p: string, action: string) => {
-    console.log(`[watcher] ${p} ${action}`);
-
+    // console.log(`[watcher] ${p} ${action}`);
     if (action === WsWatchEvent.Unlink) {
       console.info(`[watcher] lcu is inactive`);
       return;
