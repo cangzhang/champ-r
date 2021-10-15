@@ -82,6 +82,7 @@ export class LcuWatcher {
   private connectTask: NodeJS.Timeout | null = null;
   private evBus: IEventBus | null = null;
   private request!: Got;
+  private summonerId = 0;
 
   constructor(dir?: string) {
     const lolDir = dir || appConfig.get(`lolDir`);
@@ -154,7 +155,11 @@ export class LcuWatcher {
       return;
     }
 
-    const me = myTeam.find((i) => i.summonerId);
+    if (this.summonerId <= 0) {
+      console.info(`[ws] cannot get current summoner.`);
+      return;
+    }
+    const me = myTeam.find((i) => i.summonerId === this.summonerId);
     if (!me) {
       console.info(`[ws] not current summoner`);
       return;
@@ -187,6 +192,10 @@ export class LcuWatcher {
       switch (resp.uri) {
         case `/lol-champ-select/v1/session`: {
           this.onSelectChampion(resp.data ?? {});
+          return;
+        }
+        case `/lol-chat/v1/me`: {
+          this.summonerId = resp?.data?.summonerId ?? 0;
           return;
         }
         default:
