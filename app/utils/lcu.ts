@@ -120,6 +120,7 @@ export class LcuWatcher {
     // console.log(`[watcher] ${p} ${action}`);
     if (action === WsWatchEvent.Unlink) {
       console.info(`[watcher] lcu is inactive`);
+      this.evBus!.emit(LcuEvent.MatchedStartedOrTerminated);
       return;
     }
 
@@ -150,18 +151,23 @@ export class LcuWatcher {
 
   public onSelectChampion = ({ myTeam = [], actions = [], timer }: IChampionSelectRespData) => {
     // console.log(timer?.phase, actions);
-    if (actions.length === 0 || timer?.phase === GamePhase.GameStarting) {
+    if (timer?.phase === GamePhase.GameStarting || this.summonerId <= 0 || myTeam.length === 0) {
+      // match started or ended
       this.evBus!.emit(LcuEvent.MatchedStartedOrTerminated);
       return;
     }
 
-    if (this.summonerId <= 0) {
-      console.info(`[ws] cannot get current summoner.`);
-      return;
-    }
     const me = myTeam.find((i) => i.summonerId === this.summonerId);
     if (!me) {
       console.info(`[ws] not current summoner`);
+      return;
+    }
+
+    if (actions.length === 0 && me.championId > 0) {
+      // aram mode
+      this.evBus!.emit(LcuEvent.SelectedChampion, {
+        championId: me.championId,
+      });
       return;
     }
 
