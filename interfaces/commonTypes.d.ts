@@ -145,6 +145,7 @@ export interface IChampionSelectRespData {
   timer: {
     phase: string;
   };
+  localPlayerCellId: number;
 }
 
 export interface IPopupEventData {

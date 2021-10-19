@@ -5,7 +5,13 @@ import chokidar, { FSWatcher } from 'chokidar';
 import WebSocket from 'ws';
 import got, { Got } from 'got';
 
-import { IChampionSelectRespData, ILcuAuth, IPerkPage } from '@interfaces/commonTypes';
+import {
+  IChampionSelectActionItem,
+  IChampionSelectRespData,
+  IChampionSelectTeamItem,
+  ILcuAuth,
+  IPerkPage,
+} from '@interfaces/commonTypes';
 import { appConfig } from './config';
 import { GamePhase, LcuEvent, LcuMessageType } from '../constants/events';
 
@@ -149,42 +155,46 @@ export class LcuWatcher {
     }
   };
 
-  public onSelectChampion = ({ myTeam = [], actions = [], timer }: IChampionSelectRespData) => {
-    // console.log(timer?.phase, actions);
+  public findChampionIdFromMyTeam = (myTeam: IChampionSelectTeamItem[] = [], cellId: number) => {
+    const me = myTeam.find((i) => i.cellId === cellId);
+    return me?.championId ?? 0;
+  };
+
+  public findChampionIdFromActions = (actions: IChampionSelectActionItem[][], cellId: number) => {
+    let championId = 0;
+    for (const row of actions) {
+      for (const i of row) {
+        if (i.actorCellId === cellId && i.type !== `ban`) {
+          championId = i.championId;
+          break;
+        }
+      }
+    }
+
+    return championId;
+  };
+
+  public onSelectChampion = (data: IChampionSelectRespData) => {
+    // console.log(data);
+    const { myTeam = [], actions = [], timer, localPlayerCellId } = data;
     if (timer?.phase === GamePhase.GameStarting || this.summonerId <= 0 || myTeam.length === 0) {
       // match started or ended
       this.evBus!.emit(LcuEvent.MatchedStartedOrTerminated);
       return;
     }
 
-    const me = myTeam.find((i) => i.summonerId === this.summonerId);
-    if (!me) {
-      console.info(`[ws] not current summoner`);
-      return;
+    let championId;
+    championId = this.findChampionIdFromMyTeam(myTeam, localPlayerCellId);
+    if (championId === 0) {
+      championId = this.findChampionIdFromActions(actions, localPlayerCellId);
     }
 
-    if (actions.length === 0 && me.championId > 0) {
-      // aram mode
+    if (championId > 0) {
+      console.info(`[ws] picked champion ${championId}`);
       this.evBus!.emit(LcuEvent.SelectedChampion, {
-        championId: me.championId,
+        championId: championId,
       });
-      return;
     }
-
-    const myAction = (actions.pop() ?? []).find((i) => i.actorCellId === me.cellId);
-    if (myAction?.type !== `pick`) {
-      console.info(`[ws] not pick`);
-      return;
-    }
-
-    if (!(myAction?.championId > 0)) {
-      return;
-    }
-
-    console.info(`[ws] picked champion ${myAction.championId}`);
-    this.evBus!.emit(LcuEvent.SelectedChampion, {
-      championId: myAction.championId,
-    });
   };
 
   public handleLcuMessage = (buffer: Buffer) => {
@@ -244,6 +254,7 @@ export class LcuWatcher {
 
         if (err.message.includes(`connect ECONNREFUSED`)) {
           console.info(`[ws] lcu ws server is not ready, retry in 3s`);
+          this.evBus?.emit(LcuEvent.MatchedStartedOrTerminated);
           this.connectTask = setTimeout(() => {
             this.createWsConnection(auth);
           }, 3 * 1000);
