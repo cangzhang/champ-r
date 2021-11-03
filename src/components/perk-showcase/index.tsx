@@ -31,6 +31,8 @@ export default function PerkShowcase({
   const pId = selectedPerkIds.find((i) => MainStyleIds[primaryStyleId].includes(+i));
   const el = useRef(null);
 
+  const shouldShowStatistics = perk.winRate?.length > 0 && perk.pickCount > 0;
+
   return (
     <div
       className={s.item}
@@ -47,7 +49,7 @@ export default function PerkShowcase({
         <div className={s.name}>
           {isAramMode ? `${t(`aram`)}` : `${t(perk.position.toLowerCase())}`}
         </div>
-        {!isAramMode && (
+        {shouldShowStatistics && (
           <div className={s.detail}>
             <span className={s.pick}>
               {t(`pick count`)} <span className={s.value}>{perk.pickCount}</span>
