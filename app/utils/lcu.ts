@@ -1,9 +1,10 @@
-import { promises as fs, constants as fsConstants } from 'fs';
+import { constants as fsConstants, promises as fs } from 'fs';
 import * as path from 'path';
 import cjk from 'cjk-regex';
 import chokidar, { FSWatcher } from 'chokidar';
 import WebSocket from 'ws';
 import got, { Got } from 'got';
+import { pathExists } from 'fs-extra';
 
 import {
   IChampionSelectActionItem,
@@ -14,6 +15,7 @@ import {
 } from '@interfaces/commonTypes';
 import { appConfig } from './config';
 import { GamePhase, LcuEvent, LcuMessageType } from '../constants/events';
+import { LCUType } from '../constants/lcu';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const cjk_charset = cjk();
@@ -42,6 +44,77 @@ export async function ifIsCNServer(dir: string) {
 
 export const hasCJKChar = (p: string) => {
   return cjk_charset.toRegExp().test(p);
+};
+
+export const getLCUType = async (dir: string) => {
+  if (!dir) {
+    return LCUType.Unknown;
+  }
+
+  const hasCjk = hasCJKChar(dir);
+  appConfig.set(`lolDirHasCJKChar`, hasCjk);
+
+  try {
+    const isTencent = await pathExists(path.join(dir, `TCLS`, `Client.exe`));
+    if (isTencent) {
+      return LCUType.Tencent;
+    }
+
+    const isGarena = await pathExists(path.join(dir, `LeagueClient`, `LeagueClient.exe`));
+    if (isGarena) {
+      return LCUType.Garena;
+    }
+
+    const isNormal = await pathExists(path.join(dir, 'League of Legends`, `LeagueClient.exe'));
+    if (isNormal) {
+      return LCUType.Normal;
+    }
+    return Promise.reject(LCUType.Unknown);
+  } catch (err) {
+    return Promise.reject(err);
+  }
+};
+
+export const makeLockfilePath = (dir: string, p: string[]) => path.join(dir, ...p, `lockfile`);
+
+export const getLockfilePath = async (dir: string) => {
+  try {
+    const lcuType = await getLCUType(dir);
+    let pathArr = [``];
+    switch (lcuType) {
+      case LCUType.Tencent:
+      case LCUType.Garena: {
+        pathArr = [`LeagueClient`];
+        break;
+      }
+      default:
+        break;
+    }
+
+    const p = makeLockfilePath(dir, pathArr);
+    return p;
+  } catch (err) {
+    return ``;
+  }
+};
+
+export const getGameConfigDir = async (dir: string) => {
+  try {
+    const lcuType = await getLCUType(dir);
+    switch (lcuType) {
+      case LCUType.Tencent:
+      case LCUType.Garena: {
+        return path.join(dir, `Game`, `Config`, `Champions`);
+      }
+      case LCUType.Normal: {
+        return path.join(dir, `League of Legends`, `Config`, `Champions`);
+      }
+      default:
+        return ``;
+    }
+  } catch (err) {
+    return Promise.reject(err);
+  }
 };
 
 export async function parseAuthInfo(p: string): Promise<ILcuAuth> {
@@ -100,9 +173,8 @@ export class LcuWatcher {
   }
 
   public getLcuStatus = async (dir: string) => {
-    const isCN = await ifIsCNServer(dir);
-    const p = path.join(dir, isCN ? `LeagueClient` : ``, `lockfile`);
-    await this.onFileChange(p, WsWatchEvent.Init);
+    const p = await getLockfilePath(dir);
+    await this.onAuthFileChange(p, WsWatchEvent.Init);
   };
 
   public initWatcher = (dir: string) => {
@@ -115,14 +187,14 @@ export class LcuWatcher {
     ]);
 
     this.watcher
-      .on('add', (path) => this.onFileChange(path, WsWatchEvent.Add))
-      .on('change', (path) => this.onFileChange(path, WsWatchEvent.Change))
-      .on('unlink', (path) => this.onFileChange(path, WsWatchEvent.Unlink));
+      .on('add', (path) => this.onAuthFileChange(path, WsWatchEvent.Add))
+      .on('change', (path) => this.onAuthFileChange(path, WsWatchEvent.Change))
+      .on('unlink', (path) => this.onAuthFileChange(path, WsWatchEvent.Unlink));
 
     this.getLcuStatus(dir);
   };
 
-  private onFileChange = async (p: string, action: string) => {
+  private onAuthFileChange = async (p: string, action: string) => {
     // console.log(`[watcher] ${p} ${action}`);
     if (action === WsWatchEvent.Unlink) {
       console.info(`[watcher] lcu is inactive`);

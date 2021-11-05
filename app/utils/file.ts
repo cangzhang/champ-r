@@ -6,6 +6,7 @@ import { TextDecoder, TextEncoder } from 'util';
 
 import { IChampionBuild, IFileResult } from '@interfaces/commonTypes';
 import { appConfig } from './config';
+import { getGameConfigDir, hasCJKChar } from '@app/utils/lcu';
 
 const ItemSetProps = [
   'title',
@@ -49,22 +50,20 @@ export const makeBuildFile = (
 });
 
 export const saveToFile = async (
-  desDir: string,
+  dir: string,
   data: IChampionBuild,
   stripProps = true,
 ): Promise<IFileResult | Error> => {
   try {
-    const appendGameToDir = appConfig.get(`appendGameToDir`);
-    const hasCjkChar = appConfig.get(`lolDirHasCJKChar`);
+    const hasCjk = hasCJKChar(dir);
+    const configDir = await getGameConfigDir(dir);
 
-    const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${
-      data.champion
-    }/Recommended/${data.fileName}.json`;
+    const filePath = path.join(configDir, data.champion, `Recommended`, `${data.fileName}.json`);
     const content = stripProps ? _pick(data, ItemSetProps) : data;
-    await fse.outputFile(file, JSON.stringify(content, null, 4));
+    await fse.outputFile(filePath, JSON.stringify(content, null, 4));
 
-    if (appendGameToDir && hasCjkChar) {
-      const cnFile = utf8ToGb18030(file);
+    if (hasCjk) {
+      const cnFile = utf8ToGb18030(filePath);
       await fse.outputFile(cnFile, JSON.stringify(content, null, 4));
     }
 
