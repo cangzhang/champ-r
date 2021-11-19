@@ -277,9 +277,9 @@ function registerMainListeners() {
       jobId,
     });
 
-    if (!data.canceled) {
-      lcuWatcher?.changeDir(data.filePaths[0]);
-    }
+    // if (!data.canceled) {
+    //   lcuWatcher?.changeDir(data.filePaths[0]);
+    // }
   });
 
   ipcMain.on(`quit-app`, () => {
@@ -445,7 +445,7 @@ function registerUpdater() {
     }
   }
 
-  lcuWatcher = new LcuWatcher(appConfig.get(`lolDir`));
+  lcuWatcher = new LcuWatcher();
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();

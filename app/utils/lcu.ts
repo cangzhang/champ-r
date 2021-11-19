@@ -4,6 +4,7 @@ import cjk from 'cjk-regex';
 import chokidar, { FSWatcher } from 'chokidar';
 import WebSocket from 'ws';
 import got, { Got } from 'got';
+import { execCmd } from './cmd';
 
 import {
   IChampionSelectActionItem,
@@ -90,13 +91,18 @@ export class LcuWatcher {
   private request!: Got;
   private summonerId = 0;
 
-  constructor(dir?: string) {
-    const lolDir = dir || appConfig.get(`lolDir`);
-    if (lolDir) {
-      this.initWatcher(lolDir);
-    }
+  private checkTask: NodeJS.Timeout | null = null;
+  private lcuURL = ``;
+
+  constructor() {
+    // const lolDir = dir || appConfig.get(`lolDir`);
+    // if (lolDir) {
+    //   this.initWatcher(lolDir);
+    // }
+    //
 
     this.initListener();
+    this.startCheckAuthTask();
   }
 
   public getLcuStatus = async (dir: string) => {
@@ -122,11 +128,68 @@ export class LcuWatcher {
     this.getLcuStatus(dir);
   };
 
+  public startCheckAuthTask = () => {
+    this.checkTask = setInterval(() => {
+      this.checkAuthFromCmd();
+    }, 2000);
+  };
+
+  public checkAuthFromCmd = async () => {
+    try {
+      const stdout = await execCmd(`wmic PROCESS WHERE name='LeagueClientUx.exe' GET commandline`);
+      const appPort = stdout.split('--app-port=')[1]?.split('"')[0] ?? ``;
+      const remotingAuthToken = stdout.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
+      let lcuURL = `https://riot:${remotingAuthToken}@127.0.0.1:${appPort}`;
+
+      if (appPort && remotingAuthToken) {
+        if (lcuURL !== this.lcuURL) {
+          this.lcuURL = lcuURL;
+          console.info(this.lcuURL);
+        }
+        clearInterval(this.checkTask!);
+        this.request = got.extend({
+          prefixUrl: this.lcuURL,
+        });
+
+        this.fetchSummonerId().finally(() => {
+          this.watchChampSelect();
+        });
+      } else {
+        console.warn(`[watcher] fetch lcu status failed`);
+        this.hidePopup();
+      }
+    } catch (e) {}
+  };
+
+  public watchChampSelect = () => {
+    let fetchChampionSelectTask = setInterval(async () => {
+      try {
+        const ret: IChampionSelectRespData = await this.request
+          .get(`lol-champ-select/v1/session`)
+          .json();
+        this.onSelectChampion(ret);
+      } catch (_err) {
+        clearInterval(fetchChampionSelectTask);
+        this.checkAuthFromCmd();
+        this.hidePopup();
+      }
+    }, 2000);
+  };
+
+  public fetchSummonerId = async () => {
+    try {
+      const ret: { summonerId: number } = await this.request.get(`lol-chat/v1/me`).json();
+      this.summonerId = ret?.summonerId ?? 0;
+    } catch (err) {
+      console.error(`[watcher]:`, err);
+    }
+  };
+
   private onFileChange = async (p: string, action: string) => {
     // console.log(`[watcher] ${p} ${action}`);
     if (action === WsWatchEvent.Unlink) {
       console.info(`[watcher] lcu is inactive`);
-      this.evBus!.emit(LcuEvent.MatchedStartedOrTerminated);
+      this.hidePopup();
       return;
     }
 
@@ -179,7 +242,7 @@ export class LcuWatcher {
     const { myTeam = [], actions = [], timer, localPlayerCellId } = data;
     if (timer?.phase === GamePhase.GameStarting || this.summonerId <= 0 || myTeam.length === 0) {
       // match started or ended
-      this.evBus!.emit(LcuEvent.MatchedStartedOrTerminated);
+      this.hidePopup();
       return;
     }
 
@@ -190,11 +253,15 @@ export class LcuWatcher {
     }
 
     if (championId > 0) {
-      console.info(`[ws] picked champion ${championId}`);
+      console.info(`[watcher] picked champion ${championId}`);
       this.evBus!.emit(LcuEvent.SelectedChampion, {
         championId: championId,
       });
     }
+  };
+
+  public hidePopup = () => {
+    this.evBus!.emit(LcuEvent.MatchedStartedOrTerminated);
   };
 
   public handleLcuMessage = (buffer: Buffer) => {
@@ -218,7 +285,7 @@ export class LcuWatcher {
           return;
       }
     } catch (err) {
-      console.info(`[ws] handle lcu message improperly: `, err.message);
+      console.info(`[watcher] handle lcu message improperly: `, err.message);
     }
   };
 
@@ -253,8 +320,8 @@ export class LcuWatcher {
         this.ws = null;
 
         if (err.message.includes(`connect ECONNREFUSED`)) {
-          console.info(`[ws] lcu ws server is not ready, retry in 3s`);
-          this.evBus?.emit(LcuEvent.MatchedStartedOrTerminated);
+          console.info(`[watcher] lcu ws server is not ready, retry in 3s`);
+          this.hidePopup();
           this.connectTask = setTimeout(() => {
             this.createWsConnection(auth);
           }, 3 * 1000);
@@ -316,7 +383,7 @@ export class LcuWatcher {
   };
 
   public applyRunePage = async (data: any) => {
-    if (!this.auth) {
+    if (!this.auth && !this.lcuURL) {
       throw new Error(`[lcu] no auth available`);
     }
 
