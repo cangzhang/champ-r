@@ -1,8 +1,6 @@
 import { promises as fs, constants as fsConstants } from 'fs';
 import * as path from 'path';
 import cjk from 'cjk-regex';
-import chokidar, { FSWatcher } from 'chokidar';
-import WebSocket from 'ws';
 import got, { Got } from 'got';
 import { execCmd } from './cmd';
 
@@ -82,59 +80,44 @@ interface IEventBus {
 }
 
 export class LcuWatcher {
-  private watcher: FSWatcher | null = null;
-  private lolDir: string = ``;
-  private auth: ILcuAuth | null = null;
-  private ws: WebSocket | null = null;
-  private connectTask: NodeJS.Timeout | null = null;
   private evBus: IEventBus | null = null;
   private request!: Got;
-  private summonerId = 0;
 
-  private checkTask: NodeJS.Timeout | null = null;
+  private auth: ILcuAuth | null = null;
+  private summonerId = 0;
   private lcuURL = ``;
+  private getAuthTask: NodeJS.Timeout | null = null;
+  private checkLcuStatusTask: NodeJS.Timeout | null = null;
+  private watchChampSelectTask: NodeJS.Timeout | null = null;
 
   constructor() {
-    // const lolDir = dir || appConfig.get(`lolDir`);
-    // if (lolDir) {
-    //   this.initWatcher(lolDir);
-    // }
-    //
-
     this.initListener();
-    this.startCheckAuthTask();
+    this.startAuthTask();
   }
 
-  public getLcuStatus = async (dir: string) => {
-    const isCN = await ifIsCNServer(dir);
-    const p = path.join(dir, isCN ? `LeagueClient` : ``, `lockfile`);
-    await this.onFileChange(p, WsWatchEvent.Init);
-  };
+  public startAuthTask = () => {
+    clearInterval(this.getAuthTask!);
 
-  public initWatcher = (dir: string) => {
-    console.log(`init lockfile watcher, dir: ${dir}`);
-    this.lolDir = dir;
-
-    this.watcher = chokidar.watch([
-      path.join(dir, `LeagueClient`, `lockfile`),
-      path.join(dir, `lockfile`),
-    ]);
-
-    this.watcher
-      .on('add', (path) => this.onFileChange(path, WsWatchEvent.Add))
-      .on('change', (path) => this.onFileChange(path, WsWatchEvent.Change))
-      .on('unlink', (path) => this.onFileChange(path, WsWatchEvent.Unlink));
-
-    this.getLcuStatus(dir);
-  };
-
-  public startCheckAuthTask = () => {
-    this.checkTask = setInterval(() => {
-      this.checkAuthFromCmd();
+    this.getAuthTask = setInterval(() => {
+      this.getAuthFromCmd();
     }, 2000);
   };
 
-  public checkAuthFromCmd = async () => {
+  public startCheckLcuStatusTask = () => {
+    clearInterval(this.checkLcuStatusTask!);
+
+    this.checkLcuStatusTask = setInterval(async () => {
+      try {
+        await this.getSummonerId();
+      } catch (err) {
+        console.info(`[watcher] lcu is not active,`, err.message);
+        clearInterval(this.checkLcuStatusTask!);
+        this.startAuthTask();
+      }
+    }, 4000);
+  };
+
+  public getAuthFromCmd = async () => {
     try {
       const stdout = await execCmd(`wmic PROCESS WHERE name='LeagueClientUx.exe' GET commandline`);
       const appPort = stdout.split('--app-port=')[1]?.split('"')[0] ?? ``;
@@ -146,75 +129,54 @@ export class LcuWatcher {
           this.lcuURL = lcuURL;
           console.info(this.lcuURL);
         }
-        clearInterval(this.checkTask!);
+
+        clearInterval(this.getAuthTask!);
+        clearInterval(this.checkLcuStatusTask!);
         this.request = got.extend({
           prefixUrl: this.lcuURL,
         });
 
-        this.fetchSummonerId().finally(() => {
-          this.watchChampSelect();
-        });
+        this.startCheckLcuStatusTask();
+        this.watchChampSelect();
       } else {
         console.warn(`[watcher] fetch lcu status failed`);
         this.hidePopup();
       }
-    } catch (e) {}
+    } catch (_) {
+      console.log(`[watcher] [cmd] lcu is not active`);
+    }
   };
 
   public watchChampSelect = () => {
-    let fetchChampionSelectTask = setInterval(async () => {
+    clearInterval(this.watchChampSelectTask!);
+
+    this.watchChampSelectTask = setInterval(async () => {
       try {
         const ret: IChampionSelectRespData = await this.request
           .get(`lol-champ-select/v1/session`)
           .json();
         this.onSelectChampion(ret);
       } catch (_err) {
-        clearInterval(fetchChampionSelectTask);
-        this.checkAuthFromCmd();
+        clearInterval(this.watchChampSelectTask!);
+        this.getAuthFromCmd();
         this.hidePopup();
       }
     }, 2000);
   };
 
-  public fetchSummonerId = async () => {
-    try {
-      const ret: { summonerId: number } = await this.request.get(`lol-chat/v1/me`).json();
-      this.summonerId = ret?.summonerId ?? 0;
-    } catch (err) {
-      console.error(`[watcher]:`, err);
-    }
-  };
+  public getSummonerId = async () => {
+    const ret: { summonerId: number } = await this.request
+      .get(`lol-chat/v1/me`, {
+        timeout: {
+          request: 3500,
+        },
+      })
+      .json();
 
-  private onFileChange = async (p: string, action: string) => {
-    // console.log(`[watcher] ${p} ${action}`);
-    if (action === WsWatchEvent.Unlink) {
-      console.info(`[watcher] lcu is inactive`);
-      this.hidePopup();
-      return;
-    }
-
-    try {
-      const info = await parseAuthInfo(p);
-      console.log(`[watcher] got auth`);
-      await this.onAuthUpdate(info);
-    } catch (err) {
-      console.error(err.message);
-      console.info(`[watcher] get auth failed, either lcu is inactive or lol dir is incorrect`);
-      this.onLcuClose();
-    }
-  };
-
-  public changeDir = async (dir: string) => {
-    if (this.lolDir === dir) {
-      return;
-    }
-
-    try {
-      await this.watcher?.close();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      this.initWatcher(dir);
+    const summonerId = ret?.summonerId ?? 0;
+    if (summonerId !== this.summonerId) {
+      console.info(`[watcher] lcu status changed`);
+      this.summonerId = summonerId;
     }
   };
 
@@ -262,93 +224,6 @@ export class LcuWatcher {
 
   public hidePopup = () => {
     this.evBus!.emit(LcuEvent.MatchedStartedOrTerminated);
-  };
-
-  public handleLcuMessage = (buffer: Buffer) => {
-    try {
-      const msg = JSON.parse(JSON.stringify(buffer.toString()));
-      const [_evType, _evName, resp] = JSON.parse(msg);
-      if (!resp) {
-        return;
-      }
-
-      switch (resp.uri) {
-        case `/lol-champ-select/v1/session`: {
-          this.onSelectChampion(resp.data ?? {});
-          return;
-        }
-        case `/lol-chat/v1/me`: {
-          this.summonerId = resp?.data?.summonerId ?? 0;
-          return;
-        }
-        default:
-          return;
-      }
-    } catch (err) {
-      console.info(`[watcher] handle lcu message improperly: `, err.message);
-    }
-  };
-
-  public onLcuClose = () => {
-    if (!this.ws) {
-      return;
-    }
-
-    this.ws.terminate();
-    console.log(`[watcher] ws closed`);
-  };
-
-  public createWsConnection = async (auth: ILcuAuth) => {
-    return new Promise((resolve, reject) => {
-      if (this.connectTask) {
-        clearTimeout(this.connectTask);
-      }
-
-      const ws = new WebSocket(`wss://riot:${auth.token}@127.0.0.1:${auth.port}`, {
-        protocol: `wamp`,
-      });
-
-      ws.on(`open`, () => {
-        ws.send(JSON.stringify([LcuMessageType.SUBSCRIBE, `OnJsonApiEvent`]));
-        resolve(ws);
-      });
-
-      ws.on(`message`, this.handleLcuMessage);
-
-      ws.on(`error`, (err) => {
-        console.error(err.message);
-        this.ws = null;
-
-        if (err.message.includes(`connect ECONNREFUSED`)) {
-          console.info(`[watcher] lcu ws server is not ready, retry in 3s`);
-          this.hidePopup();
-          this.connectTask = setTimeout(() => {
-            this.createWsConnection(auth);
-          }, 3 * 1000);
-        } else {
-          reject(err);
-        }
-      });
-
-      this.ws = ws;
-    });
-  };
-
-  public onAuthUpdate = async (data: ILcuAuth | null) => {
-    if (!data) {
-      return;
-    }
-
-    if (data.urlWithAuth === this.auth?.urlWithAuth) {
-      return;
-    }
-
-    this.auth = data;
-    this.request = got.extend({
-      resolveBodyOnly: true,
-      prefixUrl: data.urlWithAuth,
-    });
-    await this.createWsConnection(data);
   };
 
   public initListener = () => {
