@@ -40,6 +40,7 @@ debug({
 });
 contextMenu();
 
+process.env[`NODE_TLS_REJECT_UNAUTHORIZED`] = `0`;
 nativeTheme.themeSource = `light`;
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId('com.al.champ-r');
