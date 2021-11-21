@@ -3,9 +3,12 @@ import { exec } from 'child_process';
 
 const runCommand = promisify(exec);
 
-export async function execCmd(command: string) {
+export async function execCmd(command: string, powershell = true) {
   try {
-    const { stderr, stdout } = await runCommand(command);
+    let option = {
+      shell: powershell ? `powershell.exe` : `cmd.exe`,
+    };
+    const { stderr, stdout } = await runCommand(command, option);
     if (stderr) {
       return Promise.reject(stderr);
     }

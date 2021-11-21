@@ -119,9 +119,13 @@ export class LcuWatcher {
 
   public getAuthFromCmd = async () => {
     try {
-      const stdout = await execCmd(`wmic PROCESS WHERE name='LeagueClientUx.exe' GET commandline`);
-      const appPort = stdout.split('--app-port=')[1]?.split('"')[0] ?? ``;
-      const remotingAuthToken = stdout.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
+      const stdout = await execCmd(
+        `Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'" | Select CommandLine | ConvertTo-Json`,
+        true,
+      );
+      const cmdLine = (JSON.parse(stdout) ?? {}).CommandLine ?? ``;
+      const appPort = cmdLine.split('--app-port=')[1]?.split('"')[0] ?? ``;
+      const remotingAuthToken = cmdLine.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
       let lcuURL = `https://riot:${remotingAuthToken}@127.0.0.1:${appPort}`;
 
       if (appPort && remotingAuthToken) {
