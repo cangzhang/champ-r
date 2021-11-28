@@ -51,8 +51,7 @@ https://github.com/cangzhang/champ-r/releases
 
 ## FAQ
 
-1. [Start ChampR & LOL/WeGame with one click](https://github.com/cangzhang/champ-r/issues/63)
-1. [Fix installation stuck at the progress view](https://github.com/cangzhang/champ-r/issues/64)
+Check https://github.com/cangzhang/champ-r/wiki/FAQ
 
 ## Development
 
