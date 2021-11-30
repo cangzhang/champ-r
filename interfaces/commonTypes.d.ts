@@ -84,6 +84,16 @@ export interface IChampionInfo {
   id: string;
 }
 
+export interface IChampionRank {
+  version: string;
+  rank: string;
+  id: string;
+  position: string;
+  winRate: string;
+  pickRate: string;
+  tier: string | undefined;
+}
+
 export interface IFileResult {
   champion: string;
   position: string;

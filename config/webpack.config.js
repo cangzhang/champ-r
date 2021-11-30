@@ -125,6 +125,11 @@ module.exports = function (webpackEnv) {
         isEnvDevelopment && require.resolve('react-dev-utils/webpackHotDevClient'),
         paths.popupIndexJs,
       ].filter(Boolean),
+
+      statistics: [
+        isEnvDevelopment && require.resolve('react-dev-utils/webpackHotDevClient'),
+        paths.statisticsIndexJs,
+      ].filter(Boolean),
     },
 
     target: 'web',
@@ -504,6 +509,36 @@ module.exports = function (webpackEnv) {
           {
             inject: true,
             template: paths.popupHtml,
+          },
+          isEnvProduction
+            ? {
+              enableGA: true,
+              minify: {
+                removeComments: true,
+                collapseWhitespace: true,
+                removeRedundantAttributes: true,
+                useShortDoctype: true,
+                removeEmptyAttributes: true,
+                removeStyleLinkTypeAttributes: true,
+                keepClosingSlash: true,
+                minifyJS: true,
+                minifyCSS: true,
+                minifyURLs: true,
+              },
+            }
+            : undefined,
+        ),
+      ),
+
+      new HtmlWebpackPlugin(
+        Object.assign(
+          {
+            chunks: [`statistics`],
+            filename: `./statistics.html`,
+          },
+          {
+            inject: true,
+            template: paths.statisticsHtml,
           },
           isEnvProduction
             ? {
