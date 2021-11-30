@@ -11,8 +11,8 @@ import {
   IChampionInfo,
 } from '@interfaces/commonTypes';
 
-const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
-const T_NPM_PREFIX = `https://registry.npm.taobao.org/@champ-r`;
+export const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
+export const T_NPM_PREFIX = `https://registry.npmmirror.com/@champ-r`;
 
 const Stages = {
   FETCH_CHAMPION_LIST: `FETCH_CHAMPION_LIST`,
