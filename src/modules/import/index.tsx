@@ -26,7 +26,6 @@ import CdnService from 'src/service/data-source/cdn-service';
 import AppContext from 'src/share/context';
 import WaitingList from 'src/components/waiting-list';
 import SourceProto from 'src/service/data-source/source-proto';
-import { PromiseOnly } from 'got';
 
 export default function Import() {
   const history = useHistory();
