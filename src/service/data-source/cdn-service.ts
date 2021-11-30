@@ -52,6 +52,16 @@ export default class CdnService extends SourceProto {
 
   public getPkgInfo = () => SourceProto.getPkgInfo(this.tNpmUrl, this.cdnUrl);
 
+  public getPkgInfoFromJsdelivr = async () => {
+    try {
+      const info: any = await http.get(`${this.cdnUrl}@latest/package.json`);
+      return info.sourceVersion;
+    } catch (err) {
+      console.error(err);
+      return Promise.resolve(`latest`);
+    }
+  };
+
   public getChampionList = async () => {
     try {
       const version = await fetchLatestVersionFromCdn(this.tNpmUrl);

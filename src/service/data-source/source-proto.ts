@@ -12,7 +12,7 @@ interface ICachedReq<T> {
   subscribers: { resolve: (r: T) => void; reject: (reason?: any) => void }[];
 }
 
-const fetchLatestVersionFromCdn_ = () => {
+const fetchLatestVersionFromMirror = () => {
   let requestIdx = 0;
   const versionReq: { [key: string]: ICachedReq<string> } = {};
 
@@ -50,7 +50,7 @@ const fetchLatestVersionFromCdn_ = () => {
   };
 };
 
-export const fetchLatestVersionFromCdn = fetchLatestVersionFromCdn_();
+export const fetchLatestVersionFromCdn = fetchLatestVersionFromMirror();
 
 export default class SourceProto {
   public cancelHandlers: { [key: string]: IVoidFunc } = {};

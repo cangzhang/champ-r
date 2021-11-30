@@ -111,8 +111,8 @@ export default function Home({ onDirChange = _noop }: IProps) {
             });
           }
 
-          return Promise.resolve(() => {
-            dispatch(updateDataSourceVersion(i.pkgName, `latest`));
+          return i.getPkgInfoFromJsdelivr().then((ver) => {
+            dispatch(updateDataSourceVersion(i.pkgName, ver));
           });
         }),
       ]),

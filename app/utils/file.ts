@@ -57,14 +57,16 @@ export const saveToFile = async (
     const appendGameToDir = appConfig.get(`appendGameToDir`);
     const hasCjkChar = appConfig.get(`lolDirHasCJKChar`);
 
-    const file = `${appendGameToDir ? `${desDir}/Game` : desDir}/Config/Champions/${
-      data.champion
-    }/Recommended/${data.fileName}.json`;
+    const tencentFile = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
+    const riotFile = `${desDir}/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
     const content = stripProps ? _pick(data, ItemSetProps) : data;
-    await fse.outputFile(file, JSON.stringify(content, null, 4));
+    await Promise.all([
+      fse.outputFile(tencentFile, JSON.stringify(content, null, 4)),
+      fse.outputFile(riotFile, JSON.stringify(content, null, 4)),
+    ]);
 
     if (appendGameToDir && hasCjkChar) {
-      const cnFile = utf8ToGb18030(file);
+      const cnFile = utf8ToGb18030(tencentFile);
       await fse.outputFile(cnFile, JSON.stringify(content, null, 4));
     }
 
