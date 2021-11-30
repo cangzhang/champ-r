@@ -96,10 +96,16 @@ export class LcuWatcher {
   }
 
   public startAuthTask = () => {
-    clearInterval(this.getAuthTask!);
+    clearTimeout(this.getAuthTask!);
 
-    this.getAuthTask = setInterval(() => {
-      this.getAuthFromCmd();
+    this.getAuthTask = setTimeout(async () => {
+      try {
+        await this.getAuthFromCmd();
+      } catch (e) {
+        console.error(`[watcher] [getAuthTask]`, e);
+      } finally {
+        this.startAuthTask();
+      }
     }, 2000);
   };
 
@@ -134,8 +140,9 @@ export class LcuWatcher {
           console.info(this.lcuURL);
         }
 
-        clearInterval(this.getAuthTask!);
+        clearTimeout(this.getAuthTask!);
         clearInterval(this.checkLcuStatusTask!);
+
         this.request = got.extend({
           prefixUrl: this.lcuURL,
         });

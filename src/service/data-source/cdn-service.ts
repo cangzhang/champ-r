@@ -13,6 +13,8 @@ import {
 
 export const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
 export const T_NPM_PREFIX = `https://registry.npmmirror.com/@champ-r`;
+// export const NPM_MIRROR = `https://registry.npm.taobao.org`
+export const NPM_MIRROR = `https://registry.npmmirror.com`;
 
 const Stages = {
   FETCH_CHAMPION_LIST: `FETCH_CHAMPION_LIST`,
