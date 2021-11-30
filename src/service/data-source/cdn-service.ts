@@ -11,8 +11,10 @@ import {
   IChampionInfo,
 } from '@interfaces/commonTypes';
 
-const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
-const T_NPM_PREFIX = `https://registry.npm.taobao.org/@champ-r`;
+export const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
+export const T_NPM_PREFIX = `https://registry.npmmirror.com/@champ-r`;
+// export const NPM_MIRROR = `https://registry.npm.taobao.org`
+export const NPM_MIRROR = `https://registry.npmmirror.com`;
 
 const Stages = {
   FETCH_CHAMPION_LIST: `FETCH_CHAMPION_LIST`,
@@ -49,6 +51,16 @@ export default class CdnService extends SourceProto {
   }
 
   public getPkgInfo = () => SourceProto.getPkgInfo(this.tNpmUrl, this.cdnUrl);
+
+  public getPkgInfoFromJsdelivr = async () => {
+    try {
+      const info: any = await http.get(`${this.cdnUrl}@latest/package.json`);
+      return info.sourceVersion;
+    } catch (err) {
+      console.error(err);
+      return Promise.resolve(`latest`);
+    }
+  };
 
   public getChampionList = async () => {
     try {

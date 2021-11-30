@@ -79,6 +79,49 @@ interface IEventBus {
   listeners: IBusListener[];
 }
 
+const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
+  try {
+    const stdout = await execCmd(
+      `Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'" | Select CommandLine | ConvertTo-Json`,
+      true,
+    );
+    const cmdLine = (JSON.parse(stdout) ?? {}).CommandLine ?? ``;
+    const port = cmdLine.split('--app-port=')[1]?.split('"')[0] ?? ``;
+    const token = cmdLine.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
+    const urlWithAuth = `https://riot:${token}@127.0.0.1:${port}`;
+
+    return {
+      port,
+      token,
+      urlWithAuth,
+    };
+  } catch (err) {
+    console.error(`[ps] `, err);
+    return null;
+  }
+};
+
+const getAuthFromCmd = async (): Promise<ILcuAuth | null> => {
+  try {
+    const cmdLine = await execCmd(
+      `wmic PROCESS WHERE name='LeagueClientUx.exe' GET commandline`,
+      false,
+    );
+    const port = cmdLine.split('--app-port=')[1]?.split('"')[0] ?? ``;
+    const token = cmdLine.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
+    const urlWithAuth = `https://riot:${token}@127.0.0.1:${port}`;
+
+    return {
+      port,
+      token,
+      urlWithAuth,
+    };
+  } catch (err) {
+    console.error(`[cmd] `, err);
+    return null;
+  }
+};
+
 export class LcuWatcher {
   private evBus: IEventBus | null = null;
   private request!: Got;
@@ -96,10 +139,16 @@ export class LcuWatcher {
   }
 
   public startAuthTask = () => {
-    clearInterval(this.getAuthTask!);
+    clearTimeout(this.getAuthTask!);
 
-    this.getAuthTask = setInterval(() => {
-      this.getAuthFromCmd();
+    this.getAuthTask = setTimeout(async () => {
+      try {
+        await this.getAuthFromCmd();
+      } catch (e) {
+        console.error(`[watcher] [getAuthTask]`, e);
+      } finally {
+        this.startAuthTask();
+      }
     }, 2000);
   };
 
@@ -119,23 +168,19 @@ export class LcuWatcher {
 
   public getAuthFromCmd = async () => {
     try {
-      const stdout = await execCmd(
-        `Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'" | Select CommandLine | ConvertTo-Json`,
-        true,
-      );
-      const cmdLine = (JSON.parse(stdout) ?? {}).CommandLine ?? ``;
-      const appPort = cmdLine.split('--app-port=')[1]?.split('"')[0] ?? ``;
-      const remotingAuthToken = cmdLine.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
-      let lcuURL = `https://riot:${remotingAuthToken}@127.0.0.1:${appPort}`;
+      const cmdRet = await Promise.all([getAuthFromPs(), getAuthFromCmd()]);
+      const { port: appPort, token: remotingAuthToken, urlWithAuth: lcuURL } =
+        cmdRet.filter(Boolean)[0] ?? {};
 
       if (appPort && remotingAuthToken) {
         if (lcuURL !== this.lcuURL) {
-          this.lcuURL = lcuURL;
+          this.lcuURL = lcuURL ?? ``;
           console.info(this.lcuURL);
         }
 
-        clearInterval(this.getAuthTask!);
+        clearTimeout(this.getAuthTask!);
         clearInterval(this.checkLcuStatusTask!);
+
         this.request = got.extend({
           prefixUrl: this.lcuURL,
         });

@@ -52,9 +52,11 @@ export default function Import() {
     dispatch(updateFetchingSource(selectedSources));
 
     if (!keepOld) {
-      await window.bridge.file.removeFolderContent(`${lolDir}/Game/Config/Champions`).then(() => {
-        toaster.positive(t(`removed outdated items`), {});
-      });
+      await Promise.all([
+        window.bridge.file.removeFolderContent(`${lolDir}/Game/Config/Champions`),
+        window.bridge.file.removeFolderContent(`${lolDir}/Config/Champions`),
+      ]);
+      toaster.positive(t(`removed outdated items`), {});
     }
 
     const { itemMap } = store;

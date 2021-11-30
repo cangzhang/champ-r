@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import http from 'src/service/http';
 import { SourceQQ, ISourceItem, DefaultSourceList } from 'src/share/constants/sources';
+import { NPM_MIRROR, CDN_PREFIX } from 'src/service/data-source/cdn-service';
 
 const CHECK_INTV = 5 * 60 * 1000;
-const VersionUrl = `https://registry.npm.taobao.org/@champ-r/source-list`;
-const DevVersionUrl = `https://registry.npm.taobao.org/@champ-r/source-list.dev`;
+const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list`;
+const DevVersionUrl = `${NPM_MIRROR}/@champ-r/source-list.dev`;
 const getLatestList = (version: string, isDev: boolean) =>
-  `https://cdn.jsdelivr.net/npm/@champ-r/source-list${
-    isDev ? '.dev' : ''
-  }@${version}/index.json?_${Date.now()}`;
+  `${CDN_PREFIX}/source-list${isDev ? '.dev' : ''}@${version}/index.json?_${Date.now()}`;
 
 const ENABLED_TEST_CHANNEL = Boolean(process.env.IS_DEV || process.env.ENABLED_TEST_CHANNEL);
 

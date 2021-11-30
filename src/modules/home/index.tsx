@@ -104,11 +104,17 @@ export default function Home({ onDirChange = _noop }: IProps) {
         LolQQ.getLolVersion().then((v) => {
           dispatch(updateDataSourceVersion(sourceList[0].label, v));
         }),
-        ...instances.current.map((i) =>
-          i.getPkgInfo().then(({ sourceVersion }) => {
-            dispatch(updateDataSourceVersion(i.pkgName, sourceVersion));
-          }),
-        ),
+        ...instances.current.map((i) => {
+          if (window.bridge.appConfig.get(`alwaysRequestLatestVersion`)) {
+            return i.getPkgInfo().then(({ sourceVersion }) => {
+              dispatch(updateDataSourceVersion(i.pkgName, sourceVersion));
+            });
+          }
+
+          return i.getPkgInfoFromJsdelivr().then((ver) => {
+            dispatch(updateDataSourceVersion(i.pkgName, ver));
+          });
+        }),
       ]),
     [dispatch, sourceList],
   );

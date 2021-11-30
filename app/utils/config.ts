@@ -21,5 +21,6 @@ export const appConfig = new Store({
     },
     sourceList: DefaultSourceList,
     lolDirHasCJKChar: false,
+    alwaysRequestLatestVersion: false,
   },
 });
