@@ -32,7 +32,7 @@ const fetchLatestVersionFromMirror = () => {
         index: requestIdx,
         subscribers: [],
       };
-      const data: any = await http.get(`${url}?t=${Date.now()}`);
+      const data: any = await http.get(url);
       req.done = true;
       req.lastTime = Date.now();
       req.result = data[`dist-tags`].latest;
@@ -69,7 +69,7 @@ export default class SourceProto {
   static getPkgInfo = async (npmUrl: string, cdnUrl: string) => {
     try {
       const version = await fetchLatestVersionFromCdn(npmUrl);
-      const data: IPkgInfo = await http.get(`${cdnUrl}@${version}/package.json?${Date.now()}`);
+      const data: IPkgInfo = await http.get(`${cdnUrl}@${version}/package.json`);
       return data;
     } catch (err) {
       console.error(err);

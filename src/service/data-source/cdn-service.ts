@@ -66,7 +66,7 @@ export default class CdnService extends SourceProto {
     try {
       const version = await fetchLatestVersionFromCdn(this.tNpmUrl);
       const data: { [key: string]: IChampionInfo } = await http.get(
-        `${this.cdnUrl}@${version}/index.json?${Date.now()}`,
+        `${this.cdnUrl}@${version}/index.json`,
         {
           cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
         },
@@ -84,7 +84,7 @@ export default class CdnService extends SourceProto {
     try {
       const version = await fetchLatestVersionFromCdn(this.tNpmUrl);
       const data: IChampionCdnDataItem[] = await http.get(
-        `${this.cdnUrl}@${version}/${champion}.json?${Date.now()}`,
+        `${this.cdnUrl}@${version}/${champion}.json`,
         {
           cancelToken: new CancelToken(this.setCancelHook($identity)),
         },

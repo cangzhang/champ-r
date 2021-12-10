@@ -7,7 +7,7 @@ const CHECK_INTV = 5 * 60 * 1000;
 const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list`;
 const DevVersionUrl = `${NPM_MIRROR}/@champ-r/source-list.dev`;
 const getLatestList = (version: string, isDev: boolean) =>
-  `${CDN_PREFIX}/source-list${isDev ? '.dev' : ''}@${version}/index.json?_${Date.now()}`;
+  `${CDN_PREFIX}/source-list${isDev ? '.dev' : ''}@${version}/index.json`;
 
 const ENABLED_TEST_CHANNEL = Boolean(process.env.IS_DEV || process.env.ENABLED_TEST_CHANNEL);
 
@@ -19,9 +19,7 @@ export default function UseSourceList() {
 
   const setupTask = async () => {
     try {
-      const data: any = await http.get(
-        (ENABLED_TEST_CHANNEL ? DevVersionUrl : VersionUrl) + `?_${Date.now()}`,
-      );
+      const data: any = await http.get(ENABLED_TEST_CHANNEL ? DevVersionUrl : VersionUrl);
       const version = data[`dist-tags`][`latest`];
       const url = getLatestList(version, ENABLED_TEST_CHANNEL);
       const rawList: ISourceItem[] = await http.get(url);
