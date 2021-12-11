@@ -29,8 +29,7 @@ jobs:
       run: |
         (Get-Content -path .\electron-builder.yml -raw) -replace '{{IDENTITY_NAME}}',$env:IDENTITY_NAME | set-content -path electron-builder.yml
         (Get-Content -path .\electron-builder.yml -raw) -replace '{{PUBLISHER}}',$env:PUBLISHER | set-content -path electron-builder.yml
-        $sha = (git rev-parse --short HEAD)
-        yarn install --silent
+        $sha = ${{github.sha}}.substring(0, 7)
         $env:SHORT_SHA=$sha; yarn build:ci
 
     - name: Move artifacts
@@ -39,7 +38,7 @@ jobs:
       run: |
         $sha = (git rev-parse --short HEAD)
         md -Name ./dist/artifacts -Force
-        Copy-Item ./dist/*.exe -Destination ./dist/artifacts/
+        Copy-Item ./dist/*.exe,./dist/*.appx -Destination ./dist/artifacts/
         $file = Get-ChildItem -Path ./dist/artifacts/ -Filter "*.exe" | select-object -first 1
         $newName = "$($file.BaseName).$($sha)$($file.Extension)"
         Rename-Item -Path $file.FullName -NewName $newName
