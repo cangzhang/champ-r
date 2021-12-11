@@ -10,3 +10,4 @@ lib/
 .merlin
 *.bs.js
 .bsb.lock
+electron-builder.env

@@ -18,22 +18,14 @@ jobs:
         node-version: '14'
         cache: 'npm'
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
-    - uses: actions/cache@v2
-      id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
-
     - name: Build & release
+      shell: pwsh
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      shell: pwsh
+        IDENTITY_NAME: ${{ secrets.IDENTITY_NAME }}
+        PUBLISHER: ${{ secrets.PUBLISHER }}
       run: |
+        "IDENTITY_NAME=$env:IDENTITY_NAME `nPUBLISHER=$env:PUBLISHER" | set-content -path .\electron-builder.env
         $sha = (git rev-parse --short HEAD)
         yarn --silent
         $env:SHORT_SHA=$sha; yarn release

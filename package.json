@@ -2,7 +2,7 @@
   "name": "champ-r",
   "version": "1.1.14",
   "license": "MIT",
-  "description": "Get champion builds & runes for lol.",
+  "description": "Make champion builds and runes for lol",
   "productName": "ChampR",
   "repository": {
     "type": "git",
@@ -19,7 +19,7 @@
     "prepare": "husky install",
     "postinstall": "cross-env electron-builder install-app-deps && patch-package",
     "clean:main": "npx rimraf build/",
-    "compile:main": "tsc -p app/",
+    "compile:main": "tsc -p app/ && yarn copy:appx",
     "start:electron": "nodemon --exec \"yarn clean:main && yarn compile:main && run-electron build/main.js --inspect=5858\"",
     "start:react": "cross-env BROWSER=none NODE_ENV=development node scripts/start.js",
     "start": "concurrently \"yarn start:react\" \"wait-on http://localhost:3000 && yarn start:electron\"",
@@ -31,13 +31,13 @@
     "build:local-dir": "cross-env yarn build:react && yarn dist:local-dir",
     "build:ci": "yarn modify:version && cross-env BUILD_IN_CI=true yarn build:react && yarn dist:local",
     "build": "cross-env yarn build:react && yarn dist",
-    "b": "cross-env TEST_CHANNEL=true yarn build:local",
+    "b": "cross-env yarn build:local",
     "bl": "cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true yarn build:local",
     "bld": "cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true yarn build:local-dir",
-    "release": "yarn build",
     "pack": "electron-builder --dir",
     "lint": "eslint --fix",
-    "modify:version": "node scripts/modify-build-version.js"
+    "modify:version": "node scripts/modify-build-version.js",
+    "copy:appx": "npx copyfiles -f resources/* build/appx"
   },
   "dependencies": {
     "axios": "^0.21.4",
@@ -107,6 +107,7 @@
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "compression-webpack-plugin": "^3.1.0",
     "concurrently": "^5.0.2",
+    "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",
     "css-loader": "3.2.0",
     "dotenv": "8.2.0",
@@ -175,28 +176,6 @@
     "development": [
       "last 1 chrome version"
     ]
-  },
-  "build": {
-    "appId": "com.al.champ-r",
-    "files": [
-      "build/**/*",
-      "!build/**/*.{jpg,jpeg,png}",
-      "package.json"
-    ],
-    "extraResources": [
-      "./resources/**"
-    ],
-    "win": {
-      "icon": "./resources/app-icon.png",
-      "requestedExecutionLevel": "requireAdministrator"
-    },
-    "nsis": {
-      "perMachine": true
-    },
-    "publish": {
-      "provider": "github",
-      "releaseType": "release"
-    }
   },
   "lint-staged": {
     "{app,src,config,interfaces,scripts}/**/*.{ts,tsx,js,json,css,scss,md}": [
