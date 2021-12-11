@@ -29,8 +29,9 @@ jobs:
       run: |
         (Get-Content -path .\electron-builder.yml -raw) -replace '{{IDENTITY_NAME}}',$env:IDENTITY_NAME | set-content -path electron-builder.yml
         (Get-Content -path .\electron-builder.yml -raw) -replace '{{PUBLISHER}}',$env:PUBLISHER | set-content -path electron-builder.yml
-        $sha = ${{github.sha}}.substring(0, 7)
-        $env:SHORT_SHA=$sha; yarn build:ci
+        $env:SHORT_SHA="${{ github.sha }}".substring(0, 7)
+        yarn --silent
+        yarn build:ci
 
     - name: Move artifacts
       id: vars

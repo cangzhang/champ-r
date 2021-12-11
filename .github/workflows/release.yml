@@ -25,10 +25,11 @@ jobs:
         IDENTITY_NAME: ${{ secrets.IDENTITY_NAME }}
         PUBLISHER: ${{ secrets.PUBLISHER }}
       run: |
-        "IDENTITY_NAME=$env:IDENTITY_NAME `nPUBLISHER=$env:PUBLISHER" | set-content -path .\electron-builder.env
-        $sha = (git rev-parse --short HEAD)
+        (Get-Content -path .\electron-builder.yml -raw) -replace '{{IDENTITY_NAME}}',$env:IDENTITY_NAME | set-content -path electron-builder.yml
+        (Get-Content -path .\electron-builder.yml -raw) -replace '{{PUBLISHER}}',$env:PUBLISHER | set-content -path electron-builder.yml
+        $env:SHORT_SHA="${{ github.sha }}".substring(0, 7)
         yarn --silent
-        $env:SHORT_SHA=$sha; yarn release
+        yarn build
 
     - name: Move artifacts
       id: vars
