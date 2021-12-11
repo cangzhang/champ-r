@@ -28,6 +28,7 @@ jobs:
         (Get-Content -path .\electron-builder.yml -raw) -replace '{{IDENTITY_NAME}}',$env:IDENTITY_NAME | set-content -path electron-builder.yml
         (Get-Content -path .\electron-builder.yml -raw) -replace '{{PUBLISHER}}',$env:PUBLISHER | set-content -path electron-builder.yml
         $env:SHORT_SHA="${{ github.sha }}".substring(0, 7)
+        echo "::set-output name=shortSha::$($env:SHORT_SHA)"
         yarn --silent
         yarn build
 
@@ -47,7 +48,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: ChampR-installer
+        name: ChampR-installer-${{ github.sha }}
         path: "./dist/artifacts"
 
 #    - name: Create Release

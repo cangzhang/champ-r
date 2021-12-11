@@ -37,7 +37,7 @@ jobs:
       id: vars
       shell: pwsh
       run: |
-        $sha = (git rev-parse --short HEAD)
+        $sha = "${{ github.sha }}".substring(0, 7)
         md -Name ./dist/artifacts -Force
         Copy-Item ./dist/*.exe -Destination ./dist/artifacts/
         Copy-Item ./dist/*.appx -Destination ./dist/artifacts/
@@ -49,5 +49,5 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: ${{ steps.vars.outputs.fileName }}
+        name: ChampR-${{ github.sha }}
         path: "./dist/artifacts"
