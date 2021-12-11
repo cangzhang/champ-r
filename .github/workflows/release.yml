@@ -35,9 +35,10 @@ jobs:
       id: vars
       shell: pwsh
       run: |
-        $sha = (git rev-parse --short HEAD)
+        $sha = "${{ github.sha }}".substring(0, 7)
         md -Name ./dist/artifacts -Force
         Copy-Item ./dist/*.exe -Destination ./dist/artifacts/
+        Copy-Item ./dist/*.appx -Destination ./dist/artifacts/
         $file = Get-ChildItem -Path ./dist/artifacts/ -Filter "*.exe" | select-object -first 1
         $newName = "$($file.BaseName).$($sha)$($file.Extension)"
         Rename-Item -Path $file.FullName -NewName $newName
