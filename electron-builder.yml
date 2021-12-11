@@ -2,25 +2,25 @@ appId: com.al.champ-r
 directories:
   buildResources: build
 files:
-- build/**/*
-- "!build/**/*.{jpg,jpeg,png}"
-- package.json
+  - build/**/*
+  - "!build/**/*.{jpg,jpeg,png}"
+  - package.json
 extraResources:
-- "./resources/**"
+  - "./resources/**"
 win:
   icon: "./resources/StoreLogo.png"
   requestedExecutionLevel: requireAdministrator
   target:
-  - nsis
-  - appx
+    - nsis
+    - appx
 appx:
-  identityName: {env.IDENTITY_NAME}
-  publisher: {env.PUBLISHER}
+  identityName: "{{IDENTITY_NAME}}"
+  publisher: "{{PUBLISHER}}"
   publisherDisplayName: ChampR
   applicationId: ChampR
   languages:
-  - en-US
-  - zh-CN
+    - en-US
+    - zh-CN
   backgroundColor: "#FFFFFF"
 nsis:
   perMachine: true
