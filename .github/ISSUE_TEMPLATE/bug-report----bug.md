@@ -1,21 +1,19 @@
 ---
-name: Bug report 报告 bug
+name: 反馈
 about: Create a report to help us improve
 title: ''
-labels: bug
 assignees: ''
 
 ---
 
-**Describe the bug 详细描述**
-A clear and concise description of what the bug is.
+> **对于 bug 报告, 如未填充以下内容, 将不予回复, 并于 1 天之内关闭**
 
-**Screenshots or screen record 截图或录屏**
-If applicable, add screenshots to help explain your problem.
+### 详细描述(问题是什么/如何复现)
 
-**Desktop (please complete the following information) 系统环境:**
- - OS: [e.g. iOS]
- - Version [e.g. 22]
+### 截图/录屏
 
-**Additional context 附加信息**
-Add any other context about the problem here.
+### 系统版本
+ 例如: Windows 10, 1809
+
+### 附加信息
+
