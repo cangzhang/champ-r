@@ -1,5 +1,5 @@
 ---
-name: 反馈
+name: 我遇到了问题, 需要帮助
 about: Create a report to help us improve
 title: ''
 assignees: ''
