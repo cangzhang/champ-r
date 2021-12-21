@@ -3,7 +3,7 @@ import _noop from 'lodash/noop';
 
 import http, { CancelToken } from 'src/service/http';
 import { addFetched, addFetching } from 'src/share/actions';
-import SourceProto, { fetchLatestVersionFromCdn } from './source-proto';
+import SourceProto from './source-proto';
 import {
   IChampionCdnDataItem,
   IRuneItem,
