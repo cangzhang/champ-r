@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import http from 'src/service/http';
-import { SourceQQ, ISourceItem, DefaultSourceList } from 'src/share/constants/sources';
+import { SourceQQ, ISourceItem } from 'src/share/constants/sources';
 import { NPM_MIRROR, CDN_PREFIX } from 'src/service/data-source/cdn-service';
 
 const CHECK_INTV = 5 * 60 * 1000;
@@ -13,7 +13,9 @@ const ENABLED_TEST_CHANNEL = Boolean(process.env.IS_DEV || process.env.ENABLED_T
 
 export default function UseSourceList() {
   const [loading, setLoading] = useState(true);
-  const [sourceList, setSourceList] = useState<ISourceItem[]>(DefaultSourceList);
+  const [sourceList, setSourceList] = useState<ISourceItem[]>(
+    window.bridge.appConfig.get(`sourceList`),
+  );
 
   const worker = useRef<number>();
 

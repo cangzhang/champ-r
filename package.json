@@ -122,7 +122,6 @@
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "3.0.0",
-    "fibers": "^5.0.0",
     "file-loader": "4.3.0",
     "html-webpack-plugin": "4.0.0-beta.5",
     "husky": "^7.0.0",

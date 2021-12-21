@@ -42,7 +42,7 @@ export default function Import() {
     [key: string]: SourceProto;
   }>({});
 
-  const importFromSources = useCallback(async () => {
+  const importFromSources = async () => {
     const { selectedSources, keepOld, fetched } = store;
 
     setLoading(true);
@@ -119,7 +119,7 @@ export default function Import() {
     } finally {
       setLoading(false);
     }
-  }, [store]);
+  };
 
   const stop = () => {
     setLoading(false);

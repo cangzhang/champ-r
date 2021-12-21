@@ -134,7 +134,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
     return () => {
       clearInterval(versionTasker.current);
     };
-  }, [fetchVersion]);
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     // persist user preference
