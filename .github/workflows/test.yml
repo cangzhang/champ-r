@@ -3,11 +3,11 @@ name: 😼 Test Build
 on:
   push:
     branches:
-      - master
+      - main
       - build
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   # This workflow contains a single job called "build"
