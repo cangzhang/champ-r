@@ -254,9 +254,9 @@ function registerMainListeners() {
     popupWindow.setPosition(x, y);
   });
 
-  ipcMain.on(`app-sha`, (_ev, data) => {
-    console.info(`app sha is ${data.sha}`);
-  });
+  // ipcMain.on(`app-sha`, (_ev, data) => {
+  //   console.info(`app sha is ${data.sha}`);
+  // });
 
   ipcMain.on(`updateLolDir`, async (_ev, { lolDir }) => {
     console.info(`lolDir is ${lolDir}`);

@@ -143,7 +143,7 @@ export class LcuWatcher {
 
     this.getAuthTask = setTimeout(async () => {
       try {
-        await this.getAuthFromCmd();
+        await this.getAuth();
       } catch (e) {
         console.error(`[watcher] [getAuthTask]`, e);
       } finally {
@@ -166,7 +166,7 @@ export class LcuWatcher {
     }, 4000);
   };
 
-  public getAuthFromCmd = async () => {
+  public getAuth = async () => {
     try {
       const cmdRet = await Promise.all([getAuthFromPs(), getAuthFromCmd()]);
       const { port: appPort, token: remotingAuthToken, urlWithAuth: lcuURL } =
@@ -201,13 +201,14 @@ export class LcuWatcher {
 
     this.watchChampSelectTask = setInterval(async () => {
       try {
+        await this.getSummonerId();
         const ret: IChampionSelectRespData = await this.request
           .get(`lol-champ-select/v1/session`)
           .json();
         this.onSelectChampion(ret);
       } catch (_err) {
         clearInterval(this.watchChampSelectTask!);
-        this.getAuthFromCmd();
+        this.getAuth();
         this.hidePopup();
       }
     }, 2000);
