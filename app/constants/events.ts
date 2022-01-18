@@ -13,6 +13,7 @@ export enum LcuMessageType {
 export enum LcuEvent {
   SelectedChampion = `SELECTED_CHAMPION`,
   MatchedStartedOrTerminated = `MATCH_STARTED_OR_TERMINATED`,
+  OnAuthUpdate = `ON_AUTH_UPDATE`,
 }
 
 export enum GamePhase {

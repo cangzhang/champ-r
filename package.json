@@ -73,7 +73,7 @@
     "styletron-engine-atomic": "^1.4.7",
     "styletron-react": "^6.0.1",
     "use-immer": "^0.6.0",
-    "ws": "^8.2.2"
+    "ws": "^8.4.2"
   },
   "devDependencies": {
     "@babel/core": "7.7.4",

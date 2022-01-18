@@ -27,6 +27,7 @@ import { appConfig } from './utils/config';
 import { ifIsCNServer, LcuWatcher } from './utils/lcu';
 import { LanguageList, LanguageSet } from './constants/langs';
 import { LcuEvent } from './constants/events';
+import { LcuWsClient } from './utils/ws';
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
@@ -447,6 +448,7 @@ function registerUpdater() {
   }
 
   lcuWatcher = new LcuWatcher();
+  const lcuWs = new LcuWsClient(lcuWatcher);
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();

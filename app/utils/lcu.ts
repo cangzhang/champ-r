@@ -14,7 +14,6 @@ import {
 import { appConfig } from './config';
 import { GamePhase, LcuEvent, LcuMessageType } from '../constants/events';
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const cjk_charset = cjk();
 
 export async function ifIsCNServer(dir: string) {
@@ -61,25 +60,18 @@ export async function parseAuthInfo(p: string): Promise<ILcuAuth> {
   }
 }
 
-export enum WsWatchEvent {
-  Add = `ADD`,
-  Change = `CHANGE`,
-  Unlink = `UNLINK`,
-  Init = `INIT`,
-}
-
 interface IBusListener {
   event: LcuEvent;
   fn: Function;
   once: boolean;
 }
 
-interface IEventBus {
+export interface IEventBus {
   emit: (ev: string, data?: any) => void;
   listeners: IBusListener[];
 }
 
-const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
+export const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
   try {
     const stdout = await execCmd(
       `Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'" | Select CommandLine | ConvertTo-Json`,
@@ -101,7 +93,7 @@ const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
   }
 };
 
-const getAuthFromCmd = async (): Promise<ILcuAuth | null> => {
+export const getAuthFromCmd = async (): Promise<ILcuAuth | null> => {
   try {
     const cmdLine = await execCmd(
       `wmic PROCESS WHERE name='LeagueClientUx.exe' GET commandline`,
@@ -123,7 +115,7 @@ const getAuthFromCmd = async (): Promise<ILcuAuth | null> => {
 };
 
 export class LcuWatcher {
-  private evBus: IEventBus | null = null;
+  public evBus: IEventBus | null = null;
   private request!: Got;
 
   private auth: ILcuAuth | null = null;
@@ -160,8 +152,8 @@ export class LcuWatcher {
         await this.getSummonerId();
       } catch (err) {
         console.info(`[watcher] lcu is not active,`, err.message);
-        clearInterval(this.checkLcuStatusTask!);
-        this.startAuthTask();
+        // clearInterval(this.checkLcuStatusTask!);
+        // this.startAuthTask();
       }
     }, 4000);
   };
@@ -176,6 +168,7 @@ export class LcuWatcher {
         if (lcuURL !== this.lcuURL) {
           this.lcuURL = lcuURL ?? ``;
           console.info(this.lcuURL);
+          this.evBus?.emit(LcuEvent.OnAuthUpdate, `riot:${remotingAuthToken}@127.0.0.1:${appPort}`);
         }
 
         clearTimeout(this.getAuthTask!);
@@ -185,11 +178,11 @@ export class LcuWatcher {
           prefixUrl: this.lcuURL,
         });
 
-        this.startCheckLcuStatusTask();
-        this.watchChampSelect();
+        // this.startCheckLcuStatusTask();
+        // this.watchChampSelect();
       } else {
         console.warn(`[watcher] fetch lcu status failed`);
-        this.hidePopup();
+        // this.hidePopup();
       }
     } catch (err) {
       console.warn(`[watcher] [cmd] lcu is not active`, err.message);
@@ -207,26 +200,31 @@ export class LcuWatcher {
           .json();
         this.onSelectChampion(ret);
       } catch (_err) {
-        clearInterval(this.watchChampSelectTask!);
-        this.getAuth();
-        this.hidePopup();
+        // clearInterval(this.watchChampSelectTask!);
+        // this.getAuth();
+        // this.hidePopup();
       }
     }, 2000);
   };
 
   public getSummonerId = async () => {
-    const ret: { summonerId: number } = await this.request
-      .get(`lol-chat/v1/me`, {
-        timeout: {
-          request: 3500,
-        },
-      })
-      .json();
+    try {
+      const ret: { summonerId: number } = await this.request
+        .get(`lol-chat/v1/me`, {
+          timeout: {
+            request: 3500,
+          },
+        })
+        .json();
 
-    const summonerId = ret?.summonerId ?? 0;
-    if (summonerId !== this.summonerId) {
-      console.info(`[watcher] lcu status changed`);
-      this.summonerId = summonerId;
+      const summonerId = ret?.summonerId ?? 0;
+      if (summonerId !== this.summonerId) {
+        console.info(`[watcher] lcu status changed`);
+        this.summonerId = summonerId;
+      }
+    } catch (err) {
+      // console.log(err);
+      return Promise.resolve();
     }
   };
 
@@ -249,21 +247,27 @@ export class LcuWatcher {
     return championId;
   };
 
-  public onSelectChampion = (data: IChampionSelectRespData) => {
-    // console.log(data);
-    const { myTeam = [], actions = [], timer, localPlayerCellId } = data;
-    if (timer?.phase === GamePhase.GameStarting || this.summonerId <= 0 || myTeam.length === 0) {
-      // match started or ended
-      this.hidePopup();
-      return;
-    }
-
-    let championId;
+  public getChampionIdFromLcuData = (data: IChampionSelectRespData) => {
+    const { myTeam = [], actions = [], localPlayerCellId } = data;
+    let championId: number;
     championId = this.findChampionIdFromMyTeam(myTeam, localPlayerCellId);
     if (championId === 0) {
       championId = this.findChampionIdFromActions(actions, localPlayerCellId);
     }
 
+    return championId;
+  };
+
+  public onSelectChampion = (data: IChampionSelectRespData) => {
+    // console.log(data);
+    const { myTeam = [], timer } = data;
+    if (timer?.phase === GamePhase.GameStarting || this.summonerId <= 0 || myTeam.length === 0) {
+      // match started or ended
+      // this.hidePopup();
+      return;
+    }
+
+    const championId = this.getChampionIdFromLcuData(data);
     if (championId > 0) {
       console.info(`[watcher] picked champion ${championId}`);
       this.evBus!.emit(LcuEvent.SelectedChampion, {
