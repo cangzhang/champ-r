@@ -26,7 +26,6 @@ jobs:
         $sha = (git rev-parse --short HEAD)
         npm i -g yarn
         yarn set version berry
-        yarn config set network-timeout 300000
         yarn install --silent
         $env:SHORT_SHA=$sha; yarn build:ci
 
