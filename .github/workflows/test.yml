@@ -24,6 +24,7 @@ jobs:
     - name: Build
       run: |
         $sha = (git rev-parse --short HEAD)
+        yarn config set network-timeout 300000
         yarn install --silent
         $env:SHORT_SHA=$sha; yarn build:ci
 

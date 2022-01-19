@@ -23,6 +23,7 @@ jobs:
       shell: pwsh
       run: |
         $sha = (git rev-parse --short HEAD)
+        yarn config set network-timeout 300000
         yarn --silent
         $env:SHORT_SHA=$sha; yarn release
 
