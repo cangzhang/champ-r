@@ -201,5 +201,6 @@
     "{app,src,config,interfaces,scripts}/**/*.{ts,tsx,js,json,css,scss,md}": [
       "prettier --write"
     ]
-  }
+  },
+  "packageManager": "yarn@3.1.1"
 }
