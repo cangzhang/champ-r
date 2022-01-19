@@ -32,6 +32,25 @@ export class LcuWsClient {
 
     ws.on(`message`, this.onLcuMessage);
 
+    ws.on(`error`, (_e) => {
+      let wsURL = url;
+      if (wsURL != this.watcher?.wsURL) {
+        wsURL = this.watcher?.wsURL ?? ``;
+      }
+
+      if (!wsURL) {
+        console.log(`[ws] closed`);
+        this.ws?.close();
+        this.ws = null;
+        return;
+      }
+
+      let task = setTimeout(() => {
+        this.createWsClient(wsURL);
+        clearTimeout(task);
+      }, 3 * 1000);
+    });
+
     this.ws = ws;
   };
 

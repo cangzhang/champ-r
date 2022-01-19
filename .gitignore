@@ -10,3 +10,11 @@ lib/
 .merlin
 *.bs.js
 .bsb.lock
+
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

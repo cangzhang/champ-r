@@ -121,6 +121,7 @@ export class LcuWatcher {
   private auth: ILcuAuth | null = null;
   private summonerId = 0;
   private lcuURL = ``;
+  public wsURL = ``;
   private getAuthTask: NodeJS.Timeout | null = null;
   private checkLcuStatusTask: NodeJS.Timeout | null = null;
   private watchChampSelectTask: NodeJS.Timeout | null = null;
@@ -168,7 +169,8 @@ export class LcuWatcher {
         if (lcuURL !== this.lcuURL) {
           this.lcuURL = lcuURL ?? ``;
           console.info(this.lcuURL);
-          this.evBus?.emit(LcuEvent.OnAuthUpdate, `riot:${remotingAuthToken}@127.0.0.1:${appPort}`);
+          this.wsURL = `riot:${remotingAuthToken}@127.0.0.1:${appPort}`;
+          this.evBus?.emit(LcuEvent.OnAuthUpdate, this.wsURL);
         }
 
         clearTimeout(this.getAuthTask!);
