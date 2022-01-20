@@ -42,6 +42,7 @@ export class LcuWsClient {
         console.log(`[ws] closed`);
         this.ws?.close();
         this.ws = null;
+        this.watcher?.hidePopup();
         return;
       }
 
