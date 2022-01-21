@@ -3,9 +3,9 @@ import http from 'src/service/http';
 import { SourceQQ, ISourceItem } from 'src/share/constants/sources';
 import { NPM_MIRROR, CDN_PREFIX } from 'src/service/data-source/cdn-service';
 
-const CHECK_INTV = 5 * 60 * 1000;
-const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list`;
-const DevVersionUrl = `${NPM_MIRROR}/@champ-r/source-list.dev`;
+const CHECK_INTV = 2 * 60 * 1000;
+const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list/latest`;
+const DevVersionUrl = `${NPM_MIRROR}/@champ-r/source-list.dev/latest`;
 const getLatestList = (version: string, isDev: boolean) =>
   `${CDN_PREFIX}/source-list${isDev ? '.dev' : ''}@${version}/index.json`;
 

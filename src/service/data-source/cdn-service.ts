@@ -13,7 +13,6 @@ import {
 
 export const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
 export const T_NPM_PREFIX = `https://registry.npmmirror.com/@champ-r`;
-// export const NPM_MIRROR = `https://registry.npm.taobao.org`
 export const NPM_MIRROR = `https://registry.npmmirror.com`;
 
 const Stages = {
@@ -44,29 +43,29 @@ export default class CdnService extends SourceProto {
   public cdnUrl = ``;
   public tNpmUrl = ``;
   public version = ``;
+  public sourceVersion = ``;
 
   constructor(public pkgName = ``, public dispatch = _noop) {
     super();
-    this.cdnUrl = `${CDN_PREFIX}/${pkgName}`;
-    this.tNpmUrl = `${T_NPM_PREFIX}/${pkgName}`;
+    this.cdnUrl = `${CDN_PREFIX}/${pkgName}/latest`;
+    this.tNpmUrl = `${T_NPM_PREFIX}/${pkgName}/latest`;
   }
 
   public getPkgInfo = () => SourceProto.getPkgInfo(this.tNpmUrl, this.cdnUrl);
 
-  public getPkgInfoFromJsdelivr = async () => {
-    try {
-      const info: any = await http.get(`${this.cdnUrl}@latest/package.json`);
-      return info.sourceVersion;
-    } catch (err) {
-      console.error(err);
-      return Promise.resolve(`latest`);
+  public getSourceVersion = async () => {
+    if (!this.sourceVersion) {
+      await this.getLatestPkgVer();
     }
+
+    return this.sourceVersion;
   };
 
-  public getLatestPkgVerFromJsdelivr = async () => {
+  public getLatestPkgVer = async () => {
     try {
-      const info: any = await http.get(`${this.cdnUrl}@latest/package.json`);
+      const info: any = await http.get(this.tNpmUrl);
       this.version = info.version;
+      this.sourceVersion = info.sourceVersion;
       return info.version;
     } catch (err) {
       console.error(err);
@@ -77,7 +76,7 @@ export default class CdnService extends SourceProto {
   public getChampionList = async () => {
     try {
       if (!this.version) {
-        this.version = await this.getLatestPkgVerFromJsdelivr();
+        this.version = await this.getLatestPkgVer();
       }
 
       const data: { [key: string]: IChampionInfo } = await http.get(
@@ -98,7 +97,7 @@ export default class CdnService extends SourceProto {
   public getChampionDataFromCdn = async (champion: string, $identity: string = ``) => {
     try {
       if (!this.version) {
-        this.version = await this.getLatestPkgVerFromJsdelivr();
+        this.version = await this.getLatestPkgVer();
       }
 
       const data: IChampionCdnDataItem[] = await http.get(

@@ -111,7 +111,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
             });
           }
 
-          return i.getPkgInfoFromJsdelivr().then((ver) => {
+          return i.getSourceVersion().then((ver) => {
             dispatch(updateDataSourceVersion(i.pkgName, ver));
           });
         }),
