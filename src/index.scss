@@ -1,4 +1,6 @@
-@import '~normalize.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 ::-webkit-scrollbar {
   width: 10px;

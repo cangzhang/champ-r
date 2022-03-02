@@ -83,6 +83,7 @@ module.exports = function (webpackEnv) {
         loader: require.resolve('css-loader'),
         options: cssOptions,
       },
+      'postcss-loader',
     ].filter(Boolean);
     if (preProcessor) {
       loaders.push(
@@ -91,7 +92,8 @@ module.exports = function (webpackEnv) {
           options: {
             sourceMap: isEnvProduction && shouldUseSourceMap,
           },
-        }, {
+        },
+        {
           loader: require.resolve(preProcessor),
           options: {
             sourceMap: true,
