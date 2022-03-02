@@ -57,7 +57,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
     try {
       const { canceled, filePaths = [] }: any = await createIpcPromise(`openSelectFolderDialog`);
       if (canceled) {
-        return Promise.reject({ canceled });
+        return;
       }
 
       if (!filePaths) {
@@ -67,7 +67,6 @@ export default function Home({ onDirChange = _noop }: IProps) {
       setLolDir(dir);
     } catch (err) {
       console.error(err.message);
-      return Promise.reject(null);
     }
   };
 

@@ -50,12 +50,6 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    setTimeout(() => {
-      window.bridge.sendMessage(`app-sha`, { sha: process.env.HEAD });
-    }, 5 * 1000);
-  }, []);
-
-  useEffect(() => {
     window.bridge.sendMessage(`request-for-auth-config`);
     window.bridge.on(`got-auth`, (data: any) => {
       console.log(`got auth`, data);

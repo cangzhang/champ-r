@@ -255,10 +255,6 @@ function registerMainListeners() {
     popupWindow.setPosition(x, y);
   });
 
-  // ipcMain.on(`app-sha`, (_ev, data) => {
-  //   console.info(`app sha is ${data.sha}`);
-  // });
-
   ipcMain.on(`updateLolDir`, async (_ev, { lolDir }) => {
     console.info(`lolDir is ${lolDir}`);
     appConfig.set(`lolDir`, lolDir);
@@ -273,15 +269,15 @@ function registerMainListeners() {
   });
 
   ipcMain.on(`openSelectFolderDialog`, async (_, { jobId }: any) => {
-    const data = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-    mainWindow?.webContents.send(`openSelectFolderDialog:done:${jobId}`, {
-      ...data,
-      jobId,
-    });
-
-    // if (!data.canceled) {
-    //   lcuWatcher?.changeDir(data.filePaths[0]);
-    // }
+    try {
+      const data = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+      mainWindow?.webContents.send(`openSelectFolderDialog:done:${jobId}`, {
+        ...data,
+        jobId,
+      });
+    } catch (e) {
+      mainWindow?.webContents.send(`openSelectFolderDialog:reject:${jobId}`, e);
+    }
   });
 
   ipcMain.on(`quit-app`, () => {
