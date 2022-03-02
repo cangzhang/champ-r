@@ -12,7 +12,7 @@ import {
   IPerkPage,
 } from '@interfaces/commonTypes';
 import { appConfig } from './config';
-import { GamePhase, LcuEvent, LcuMessageType } from '../constants/events';
+import { GamePhase, LcuEvent } from '../constants/events';
 
 const cjk_charset = cjk();
 
