@@ -41,6 +41,7 @@ type IFetchResult =
 
 export default class CdnService extends SourceProto {
   public cdnUrl = ``;
+  public cdnPrefix = ``;
   public tNpmUrl = ``;
   public version = ``;
   public sourceVersion = ``;
@@ -48,6 +49,7 @@ export default class CdnService extends SourceProto {
   constructor(public pkgName = ``, public dispatch = _noop) {
     super();
     this.cdnUrl = `${CDN_PREFIX}/${pkgName}/latest`;
+    this.cdnPrefix = `${CDN_PREFIX}/${pkgName}`;
     this.tNpmUrl = `${T_NPM_PREFIX}/${pkgName}/latest`;
   }
 
@@ -80,7 +82,7 @@ export default class CdnService extends SourceProto {
       }
 
       const data: { [key: string]: IChampionInfo } = await http.get(
-        `${this.cdnUrl}@${this.version}/index.json`,
+        `${this.cdnPrefix}@${this.version}/index.json`,
         {
           cancelToken: new CancelToken(this.setCancelHook(`fetch-champion-list`)),
         },
@@ -101,7 +103,7 @@ export default class CdnService extends SourceProto {
       }
 
       const data: IChampionCdnDataItem[] = await http.get(
-        `${this.cdnUrl}@${this.version}/${champion}.json`,
+        `${this.cdnPrefix}@${this.version}/${champion}.json`,
         {
           cancelToken: new CancelToken(this.setCancelHook($identity)),
         },
