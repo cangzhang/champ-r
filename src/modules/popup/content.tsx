@@ -115,6 +115,9 @@ export function Content() {
       (i as CdnService)
         .getRunesFromCDN(champ.id)
         .then((result) => {
+          if (!result) {
+            return;
+          }
           setPerkList((draft) => {
             draft[idx] = result;
           });

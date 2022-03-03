@@ -1627,6 +1627,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.15.4":
+  version: 7.17.2
+  resolution: "@babel/runtime@npm:7.17.2"
+  dependencies:
+    regenerator-runtime: ^0.13.4
+  checksum: a48702d271ecc59c09c397856407afa29ff980ab537b3da58eeee1aeaa0f545402d340a1680c9af58aec94dfdcbccfb6abb211991b74686a86d03d3f6956cacd
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.15.4, @babel/template@npm:^7.4.0, @babel/template@npm:^7.7.4, @babel/template@npm:^7.8.6":
   version: 7.15.4
   resolution: "@babel/template@npm:7.15.4"
@@ -4051,6 +4060,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios-retry@npm:^3.2.4":
+  version: 3.2.4
+  resolution: "axios-retry@npm:3.2.4"
+  dependencies:
+    "@babel/runtime": ^7.15.4
+    is-retry-allowed: ^2.2.0
+  checksum: 2a917a87cce979955f0f3b8c66e77e45913ae9ce39419028d9966af4d55eac8d7d8ab03d39bd864f62f8af48197b3e3938cef310cd5d85caab6b53b2d49e22ac
+  languageName: node
+  linkType: hard
+
 "axios@npm:^0.21.4":
   version: 0.21.4
   resolution: "axios@npm:0.21.4"
@@ -5230,6 +5249,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^2.8.0
     "@typescript-eslint/parser": ^2.8.0
     axios: ^0.21.4
+    axios-retry: ^3.2.4
     babel-eslint: 10.0.3
     babel-jest: ^24.9.0
     babel-loader: 8.0.6
@@ -5317,7 +5337,7 @@ __metadata:
     styletron-react: ^6.0.1
     terser-webpack-plugin: 2.2.1
     ts-pnp: 1.1.5
-    typescript: ^4.4.3
+    typescript: 4.6.2
     url-loader: 2.3.0
     use-immer: ^0.6.0
     wait-on: ^4.0.0
@@ -10802,6 +10822,13 @@ __metadata:
   version: 1.2.0
   resolution: "is-retry-allowed@npm:1.2.0"
   checksum: 50d700a89ae31926b1c91b3eb0104dbceeac8790d8b80d02f5c76d9a75c2056f1bb24b5268a8a018dead606bddf116b2262e5ac07401eb8b8783b266ed22558d
+  languageName: node
+  linkType: hard
+
+"is-retry-allowed@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "is-retry-allowed@npm:2.2.0"
+  checksum: 3d1103a9290b5d03626756a41054844633eac78bc5d3e3a95b13afeae94fa3cfbcf7f0b5520d83f75f48a25ce7b142fdbac4217dc4b0630f3ea55e866ec3a029
   languageName: node
   linkType: hard
 
@@ -18272,23 +18299,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.4.3":
-  version: 4.4.3
-  resolution: "typescript@npm:4.4.3"
+"typescript@npm:4.6.2":
+  version: 4.6.2
+  resolution: "typescript@npm:4.6.2"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 05823f21796d450531a7e4ab299715d38fd9ded0e4ce7400876053f4b5166ca3dde7a68cecfe72d9086039f03c0b6edba36516fb10ed83c5837d9600532ea4c2
+  checksum: 8a44ed7e6f6c4cb1ebe8cf236ecda2fb119d84dcf0fbd77e707b2dfea1bbcfc4e366493a143513ce7f57203c75da9d4e20af6fe46de89749366351046be7577c
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>":
-  version: 4.4.3
-  resolution: "typescript@patch:typescript@npm%3A4.4.3#~builtin<compat/typescript>::version=4.4.3&hash=bda367"
+"typescript@patch:typescript@4.6.2#~builtin<compat/typescript>":
+  version: 4.6.2
+  resolution: "typescript@patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 33a916819907e819430802c50405f18c187448d678696a81545f494a7ec16207f8c15340c945df62109bd1d951091a9f15f3d2eb931a3c889f962c8509017697
+  checksum: 40b493a71747fb89fa70df104e2c4a5e284b43750af5bea024090a5261cefa387f7a9372411b13030f7bf5555cee4275443d08805642ae5c74ef76740854a4c7
   languageName: node
   linkType: hard
 
