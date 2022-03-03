@@ -4,14 +4,12 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import { Button, KIND as BtnKind, SIZE as BtnSize } from 'baseui/button';
-import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
-import { Tag, VARIANT } from 'baseui/tag';
+import { Button as OldBtn, KIND as BtnKind, SIZE as BtnSize } from 'baseui/button';
 import { ArrowRight } from 'baseui/icon';
 import { useSnackbar, DURATION } from 'baseui/snackbar';
 import { Alert as AlertIcon } from 'baseui/icon';
 
-import { Tooltip as Tip, ActionIcon, Divider } from '@mantine/core';
+import { Tooltip as Tip, ActionIcon, Divider, Button, List, Checkbox, Badge } from '@mantine/core';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
@@ -179,30 +177,15 @@ export default function Home({ onDirChange = _noop }: IProps) {
             <InformationCircleIcon />
           </ActionIcon>
         </Tip>
-        <Tag
-          closeable={Boolean(lolDir)}
-          kind='accent'
+
+        <Button
+          className={s.selectFolder}
           onClick={onSelectDir}
-          onActionClick={clearFolder}
-          overrides={{
-            Root: {
-              style: () => ({
-                minWidth: 0,
-                maxWidth: `calc(100vw - 14em)`,
-                paddingTop: `2px`,
-              }),
-            },
-            Text: {
-              style: ({ $theme }) => ({
-                fontSize: $theme.sizing.scale550,
-                flexGrow: 1,
-                maxWidth: `unset`,
-                alignSelf: `flex-start`,
-              }),
-            },
-          }}>
+          variant='outline'
+          size={'xs'}
+          radius={'md'}>
           {lolDir || t('click here to select')}
-        </Tag>
+        </Button>
       </div>
 
       <Divider
@@ -212,68 +195,32 @@ export default function Home({ onDirChange = _noop }: IProps) {
         variant='dashed'
       />
 
-      <div className={s.sources}>
+      <List className={s.sources} icon={<></>}>
         {sourceList.map((v) => {
           const { isAram, isURF } = v;
           const sourceVer = store.dataSourceVersions[v.value];
 
           return (
-            <Checkbox
-              key={v.value}
-              checked={selectedSources.includes(v.label)}
-              onChange={onCheck(v.label)}
-              overrides={{
-                Root: {
-                  style: ({ $theme }) => ({
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: '3em',
-                    boxShadow: `0px 1px 0 ${$theme.colors.borderTransparent}`,
-                    minHeight: `48px`,
-                  }),
-                },
-                Checkmark: {
-                  style: ({ $checked, $theme }) => ({
-                    // borderColor: $checked
-                    //   ? $theme.colors.positive
-                    //   : $theme.colors.backgroundNegative,
-                    backgroundColor: $checked
-                      ? $theme.colors.positive
-                      : $theme.colors.backgroundAlwaysLight,
-                  }),
-                },
-                Label: {
-                  style: ({ $theme }) => ({
-                    fontSize: $theme.sizing.scale600,
-                    textTransform: `uppercase`,
-                    display: `flex`,
-                    alignItems: `center`,
-                  }),
-                },
-              }}>
-              {v.label}
-              {sourceVer && (
-                <Tag closeable={false} variant={VARIANT.outlined} kind='warning'>
-                  {sourceVer}
-                </Tag>
-              )}
-              {isAram && (
-                <Tag closeable={false} variant={VARIANT.light} kind='positive'>
-                  {t(`aram`)}
-                </Tag>
-              )}
-              {isURF && (
-                <Tag closeable={false} variant={VARIANT.light} kind='positive'>
-                  {t(`urf`)}
-                </Tag>
-              )}
-            </Checkbox>
+            <List.Item key={v.value}>
+              <Checkbox
+                label={
+                  <div className={s.sourceItem}>
+                    {v.label}
+                    {sourceVer && <Badge>{sourceVer}</Badge>}
+                    {isAram && <Badge>{t(`aram`)}</Badge>}
+                    {isURF && <Badge>{t(`urf`)}</Badge>}
+                  </div>
+                }
+                checked={selectedSources.includes(v.label)}
+                onChange={onCheck(v.label)}
+              />
+            </List.Item>
           );
         })}
-      </div>
+      </List>
 
       <div className={s.control}>
-        <Button
+        <OldBtn
           overrides={{
             BaseButton: {
               style: ({ $theme, $disabled }) => {
@@ -294,53 +241,17 @@ export default function Home({ onDirChange = _noop }: IProps) {
           startEnhancer={() => <ArrowRight size={24} />}
           onClick={startImport}>
           {t(`import now`)}
-        </Button>
+        </OldBtn>
 
         <Checkbox
-          // className={s.keepOld}
-          labelPlacement={LABEL_PLACEMENT.right}
-          checkmarkType={STYLE_TYPE.toggle_round}
           checked={store.keepOld}
           onChange={toggleKeepOldItems}
-          overrides={{
-            Root: {
-              style: () => ({
-                // ...$theme.borders.border100,
-                display: 'flex',
-                alignSelf: 'flex-end',
-                marginLeft: '2ex',
-                marginBottom: '0.8ex',
-              }),
-            },
-            Checkmark: {
-              style: ({ $checked, $theme }) => ({
-                backgroundColor: $checked ? $theme.colors.positive : '#ffffff',
-              }),
-            },
-            ToggleTrack: {
-              style: ({ $theme }) => {
-                return {
-                  backgroundColor: $theme.colors.backgroundLightAccent,
-                };
-              },
-            },
-            Toggle: {
-              style: ({ $theme, $checked }) => {
-                return {
-                  // Outline: `${$theme.colors.warning200} solid`,
-                  backgroundColor: $checked
-                    ? $theme.colors.borderPositive
-                    : $theme.colors.backgroundLightAccent,
-                };
-              },
-            },
-          }}>
-          {t('keep old items')}
-        </Checkbox>
+          label={<div>{t('keep old items')}</div>}
+        />
       </div>
 
       <div>
-        <Button
+        <OldBtn
           kind={BtnKind.secondary}
           size={BtnSize.compact}
           onClick={resetPopupPosition}
@@ -353,7 +264,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
             },
           }}>
           {t(`reset popup position`)}
-        </Button>
+        </OldBtn>
 
         {(process.env.IS_DEV || process.env.SHOW_POPUP_TRIGGER === `true`) && (
           <button
