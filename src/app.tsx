@@ -6,6 +6,8 @@ import { Provider as StyletronProvider } from 'styletron-react';
 import { LightTheme, BaseProvider } from 'baseui';
 import { SnackbarProvider, PLACEMENT } from 'baseui/snackbar';
 
+import { MantineProvider } from '@mantine/core';
+
 import AppContext from 'src/share/context';
 import appReducer, { initialState, init } from 'src/share/reducer';
 import { setLolVersion, updateItemMap } from 'src/share/actions';
@@ -69,20 +71,22 @@ const App = () => {
                 }),
               },
             }}>
-            <Router>
-              <Toolbar />
-              <Switch>
-                <Route exact path={'/'}>
-                  <Home />
-                </Route>
-                <Route path={`/import`}>
-                  <Import />
-                </Route>
-                <Route path={`/settings`}>
-                  <Settings />
-                </Route>
-              </Switch>
-            </Router>
+            <MantineProvider>
+              <Router>
+                <Toolbar />
+                <Switch>
+                  <Route exact path={'/'}>
+                    <Home />
+                  </Route>
+                  <Route path={`/import`}>
+                    <Import />
+                  </Route>
+                  <Route path={`/settings`}>
+                    <Settings />
+                  </Route>
+                </Switch>
+              </Router>
+            </MantineProvider>
             <Footer />
           </SnackbarProvider>
         </BaseProvider>

@@ -2,19 +2,17 @@ import _noop from 'lodash/noop';
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import { CornerDownRight } from 'react-feather';
-import { useStyletron } from 'baseui';
 import { Button, KIND as BtnKind, SIZE as BtnSize } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
-import { StatefulTooltip as Tooltip } from 'baseui/tooltip';
 import { Tag, VARIANT } from 'baseui/tag';
 import { ArrowRight } from 'baseui/icon';
-import { H6 } from 'baseui/typography';
 import { useSnackbar, DURATION } from 'baseui/snackbar';
 import { Alert as AlertIcon } from 'baseui/icon';
+
+import { Tooltip as Tip, ActionIcon, Divider } from '@mantine/core';
+import { InformationCircleIcon } from '@heroicons/react/solid';
 
 import { updateConfig, updateDataSourceVersion } from 'src/share/actions';
 import { ChampionKeys } from 'src/share/constants/champions';
@@ -33,7 +31,6 @@ interface IProps {
 }
 
 export default function Home({ onDirChange = _noop }: IProps) {
-  const [css, theme] = useStyletron();
   const { enqueue, dequeue } = useSnackbar();
   const history = useHistory();
   const { t } = useTranslation();
@@ -170,7 +167,18 @@ export default function Home({ onDirChange = _noop }: IProps) {
       </h1>
 
       <div className={s.info}>
-        {t(`lol folder is`)}
+        <Tip
+          className={s.folderTip}
+          label={
+            <div
+              dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }}
+            />
+          }>
+          {t(`lol folder is`)}
+          <ActionIcon color={`gray`} variant='transparent' size={20}>
+            <InformationCircleIcon />
+          </ActionIcon>
+        </Tip>
         <Tag
           closeable={Boolean(lolDir)}
           kind='accent'
@@ -193,33 +201,18 @@ export default function Home({ onDirChange = _noop }: IProps) {
               }),
             },
           }}>
-          <Tooltip content={lolDir && t(`click here to re-select`)}>
-            {lolDir || t('click here to select')}
-          </Tooltip>
+          {lolDir || t('click here to select')}
         </Tag>
       </div>
-      <code
-        className={cn(
-          s.folderTip,
-          css({
-            backgroundColor: theme.colors.backgroundLightWarning,
-            borderRadius: theme.borders.radius300,
-          }),
-        )}>
-        <CornerDownRight size={`1.6em`} color={`#43BF75`} />
-        <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }} />
-      </code>
+
+      <Divider
+        className={s.sourceTitle}
+        label={<span className={s.desc} dangerouslySetInnerHTML={{ __html: t(`data sources`) }} />}
+        labelPosition='center'
+        variant='dashed'
+      />
 
       <div className={s.sources}>
-        <H6 margin={`0 0 1ex 0`} color={theme.colors.borderInverseOpaque}>
-          <div
-            className={s.sourceTitle}
-            dangerouslySetInnerHTML={{
-              __html: t(`data sources`),
-            }}
-          />
-        </H6>
-
         {sourceList.map((v) => {
           const { isAram, isURF } = v;
           const sourceVer = store.dataSourceVersions[v.value];

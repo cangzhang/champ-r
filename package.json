@@ -40,6 +40,9 @@
     "modify:version": "node scripts/modify-build-version.js"
   },
   "dependencies": {
+    "@heroicons/react": "^1.0.6",
+    "@mantine/core": "^3.6.13",
+    "@mantine/hooks": "^3.6.13",
     "axios": "^0.21.4",
     "axios-retry": "^3.2.4",
     "baseui": "9.116.0",

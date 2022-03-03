@@ -7,6 +7,7 @@
   display: flex;
   flex-direction: column;
   padding: 1em;
+  user-select: none;
 
   .title {
     margin-bottom: 1.6rem;
@@ -30,20 +31,7 @@
 
   .folder-tip {
     display: flex;
-    align-self: flex-start;
     align-items: center;
-    height: 2.4em;
-    margin-bottom: 1em;
-    padding: 0.2em 1em;
-    line-height: 2.4em;
-
-    color: #000000;
-    font-weight: 500;
-    font-size: 1.2ex;
-
-    svg {
-      margin-right: 1em;
-    }
   }
 
   .champions {
@@ -78,13 +66,17 @@
   .sources {
     display: flex;
     flex-direction: column;
-    margin-top: 1.4ex;
     overflow-y: auto;
     max-height: 270px;
+  }
 
-    .source-title {
-      font-family: -apple-system, BlinkMacSystemFont, PingFang SC, Hiragino Sans GB, Microsoft YaHei,
-        helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, Arial, sans-serif;
+  .source-title {
+    margin: 0 10%;
+    font-family: -apple-system, BlinkMacSystemFont, PingFang SC, Hiragino Sans GB, Microsoft YaHei,
+      helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, Arial, sans-serif;
+
+    .desc {
+      font-size: 3ex;
 
       > strong {
         position: relative;

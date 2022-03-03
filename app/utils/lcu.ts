@@ -73,13 +73,24 @@ export interface IEventBus {
   listeners: IBusListener[];
 }
 
-const outFilename = `${nanoid()}.txt`;
-const cmdOutFile = path.join(os.tmpdir(), outFilename);
+const makeCmdOutFilePath = () => path.join(os.tmpdir(), `ChampR_${nanoid()}.tmp`);
+
+let cmdOutFile = makeCmdOutFilePath();
+const prepareCmdOutFile = async () => {
+  try {
+    await fs.access(cmdOutFile, fsConstants.R_OK | fsConstants.W_OK);
+    await fs.stat(cmdOutFile);
+  } catch (e) {
+    cmdOutFile = makeCmdOutFilePath();
+    await fs.writeFile(cmdOutFile, ``);
+  }
+};
 
 export const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
   try {
+    await prepareCmdOutFile();
     await execCmd(
-      `Start-Process powershell -WindowStyle hidden -Verb runAs -ArgumentList "(Get-CimInstance Win32_Process -Filter \""name = 'LeagueClientUx.exe'\"").CommandLine | out-file -encoding utf8 -force ${cmdOutFile}"`,
+      `Start-Process powershell -WindowStyle hidden -Verb runAs -ArgumentList "(Get-CimInstance Win32_Process -Filter \\""name = 'LeagueClientUx.exe'\\"").CommandLine | out-file -encoding utf8 -force ${cmdOutFile}"`,
       true,
     );
     const buffer = await fs.readFile(cmdOutFile);

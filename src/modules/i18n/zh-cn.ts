@@ -33,7 +33,7 @@ export default {
     'restart app': `重新打开 ChampR`,
     aram: `大乱斗`,
     urf: `无限火力`,
-    'data sources': `请选择<strong>装备数据源</strong>:`,
+    'data sources': `请选择<strong>装备数据源</strong>`,
     'import failed': `导入失败`,
     'import failed list': `未成功导入`,
     fulfilled: `成功`,
