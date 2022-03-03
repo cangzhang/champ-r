@@ -1,3 +1,4 @@
+import os from 'os';
 import { promises as fs, constants as fsConstants } from 'fs';
 import * as path from 'path';
 import cjk from 'cjk-regex';
@@ -12,7 +13,8 @@ import {
   IPerkPage,
 } from '@interfaces/commonTypes';
 import { appConfig } from './config';
-import { GamePhase, LcuEvent, LcuMessageType } from '../constants/events';
+import { GamePhase, LcuEvent } from '../constants/events';
+import { nanoid } from 'nanoid';
 
 const cjk_charset = cjk();
 
@@ -71,15 +73,23 @@ export interface IEventBus {
   listeners: IBusListener[];
 }
 
+const outFilename = `${nanoid()}.txt`;
+const cmdOutFile = path.join(os.tmpdir(), outFilename);
+
 export const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
   try {
-    const stdout = await execCmd(
-      `Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'" | Select CommandLine | ConvertTo-Json`,
+    await execCmd(
+      `Start-Process powershell -WindowStyle hidden -Verb runAs -ArgumentList "(Get-CimInstance Win32_Process -Filter \""name = 'LeagueClientUx.exe'\"").CommandLine | out-file -encoding utf8 -force ${cmdOutFile}"`,
       true,
     );
-    const cmdLine = (JSON.parse(stdout) ?? {}).CommandLine ?? ``;
-    const port = cmdLine.split('--app-port=')[1]?.split('"')[0] ?? ``;
-    const token = cmdLine.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
+    const buffer = await fs.readFile(cmdOutFile);
+    const stdout = buffer.toString();
+    if (!stdout.trim().length) {
+      return null;
+    }
+
+    const port = stdout.split('--app-port=')[1]?.split('"')[0] ?? ``;
+    const token = stdout.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
     const urlWithAuth = `https://riot:${token}@127.0.0.1:${port}`;
 
     return {
