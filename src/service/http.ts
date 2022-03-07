@@ -13,15 +13,6 @@ axios.interceptors.response.use(
   },
 );
 
-axios.interceptors.request.use((config) => {
-  config.params = {
-    ...(config.params ?? {}),
-    _: +Date.now(),
-  };
-
-  return config;
-});
-
 export const CancelToken = axios.CancelToken;
 
 export default axios;

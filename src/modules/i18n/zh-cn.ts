@@ -50,5 +50,6 @@ export default {
     'pin/unpin': `置顶/取消置顶`,
     'reset popup position': `重置天赋弹窗位置`,
     done: `已完成`,
+    'mirror server': `使用国内服务器获取数据`,
   },
 };

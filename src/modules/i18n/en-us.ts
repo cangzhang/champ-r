@@ -50,5 +50,6 @@ export default {
     'pin/unpin': `Pin/Unpin`,
     'reset popup position': `Reset popup window position`,
     done: `Done`,
+    'mirror server': `Fetch resources with CN mirror server`,
   },
 };

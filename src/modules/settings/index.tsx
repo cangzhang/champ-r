@@ -39,6 +39,7 @@ export default function Settings() {
   const [ignoreSystemScale, setIgnoreSystemScale] = useState(
     window.bridge.appConfig.get(`ignoreSystemScale`),
   );
+  const [enableChinaCDN, toggleCNServer] = useState(window.bridge.appConfig.get(`enableChinaCDN`));
 
   const recorder = useRef(false);
 
@@ -55,6 +56,12 @@ export default function Settings() {
     window.bridge.appConfig.set(`ignoreSystemScale`, e.currentTarget.checked);
     window.bridge.sendMessage(`popup:reset-position`);
     recorder.current = true;
+  };
+
+  const onToggleServer = (e: FormEvent<HTMLInputElement>) => {
+    const { checked } = e.currentTarget;
+    toggleCNServer(checked);
+    window.bridge.appConfig.set(`enableChinaCDN`, checked);
   };
 
   useEffect(() => {
@@ -111,11 +118,38 @@ export default function Settings() {
               return {
                 fontSize: $theme.typography.ParagraphMedium,
                 fontWeight: 600,
+                marginRight: `auto`,
               };
             },
           },
         }}>
         {t(`ignore system scale`)}
+      </Checkbox>
+
+      <Checkbox
+        checked={enableChinaCDN}
+        checkmarkType={STYLE_TYPE.toggle_round}
+        onChange={onToggleServer}
+        overrides={{
+          Root: {
+            style: () => ({
+              height: `48px`,
+              display: `flex`,
+              alignItems: `center`,
+              marginTop: `1em`,
+            }),
+          },
+          Label: {
+            style: ({ $theme }) => {
+              return {
+                fontSize: $theme.typography.ParagraphMedium,
+                fontWeight: 600,
+                marginRight: `auto`,
+              };
+            },
+          },
+        }}>
+        {t(`mirror server`)}
       </Checkbox>
 
       <div className={s.ctrlBtns}>

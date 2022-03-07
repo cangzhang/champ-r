@@ -1,6 +1,7 @@
 import { nanoid as uuid } from 'nanoid';
 import _noop from 'lodash/noop';
 import axiosRetry from 'axios-retry';
+import cheerio from 'cheerio';
 
 import http, { CancelToken } from 'src/service/http';
 import { addFetched, addFetching } from 'src/share/actions';
@@ -17,6 +18,7 @@ export const CHINA_CDN_PREFIX = `https://npm.elemecdn.com/@champ-r`;
 
 export const T_NPM_PREFIX = `https://registry.npmmirror.com/@champ-r`;
 export const NPM_MIRROR = `https://registry.npmmirror.com`;
+export const T_NPM_WEB_URL_PREFIX = `https://npmmirror.com/package/@champ-r`;
 
 export const getCDNPrefix = (enableChinaCDN = false) =>
   enableChinaCDN ? CHINA_CDN_PREFIX : CDN_PREFIX;
@@ -58,12 +60,12 @@ export default class CdnService extends SourceProto {
   public tNpmUrl = ``;
   public version = ``;
   public sourceVersion = ``;
+  public webUrl = ``;
 
   constructor(public pkgName = ``, public dispatch = _noop) {
     super();
-    // this.cdnUrl = `${cdnPrefix}/${pkgName}/latest`;
-    // this.cdnPrefix = `${cdnPrefix}/${pkgName}`;
     this.tNpmUrl = `${T_NPM_PREFIX}/${pkgName}/latest`;
+    this.webUrl = `${T_NPM_WEB_URL_PREFIX}/${pkgName}`;
   }
 
   get cdnPrefix() {
@@ -90,8 +92,10 @@ export default class CdnService extends SourceProto {
 
   public getLatestPkgVer = async () => {
     try {
-      const info: any = await http.get(this.tNpmUrl);
-      this.version = info.version;
+      const html: string = await http.get(this.webUrl);
+      const $ = cheerio.load(html);
+      this.version = $(`.pack-ver img`).attr(`title`) ?? ``;
+      const info: any = await http.get(`${T_NPM_PREFIX}/${this.pkgName}/${this.version}`);
       this.sourceVersion = info.sourceVersion;
       return info.version;
     } catch (err) {
