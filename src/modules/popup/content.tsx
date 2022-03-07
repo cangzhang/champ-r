@@ -124,6 +124,9 @@ export function Content() {
         })
         .catch((err) => {
           console.error(err);
+          setPerkList((draft) => {
+            draft[idx] = err.status;
+          });
         });
     });
   }, [championId, championMap, setPerkList]);
@@ -172,10 +175,12 @@ export function Content() {
     togglePinned((p) => !p);
   };
 
-  const renderList = (list: IRuneItem[] = [], isAramMode = false) => {
-    const shouldShowList = list.length && championDetail && list[0].alias === championDetail.id;
+  const renderList = (list: IRuneItem[] | number, isAramMode = false) => {
+    if (list === 404) {
+      return <div className={s.noData}>{t(`no data`)}</div>;
+    }
 
-    if (!shouldShowList) {
+    if (!championDetail || !(list as IRuneItem[]).length) {
       return <Loading className={s.listLoading} />;
     }
 
@@ -184,7 +189,7 @@ export function Content() {
         style={{
           height: `calc(100vh - 5em)`,
         }}>
-        {list.map((p, idx) => (
+        {(list as IRuneItem[]).map((p, idx) => (
           <PerkShowcase
             key={`${championId}-${idx}`}
             idx={idx}

@@ -51,5 +51,6 @@ export default {
     'reset popup position': `重置天赋弹窗位置`,
     done: `已完成`,
     'mirror server': `使用国内服务器获取数据`,
+    'no data': `暂无数据`,
   },
 };

@@ -191,6 +191,8 @@ function persistPopUpBounds(w: BrowserWindow) {
 let lastChampion = 0;
 
 async function onShowPopup(data: IPopupEventData) {
+  if (data.noCache) lastChampion = 0;
+
   if (!data.championId || lastChampion === data.championId) {
     return;
   }

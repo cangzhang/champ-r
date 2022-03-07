@@ -150,6 +150,7 @@ export interface IChampionSelectRespData {
 
 export interface IPopupEventData {
   championId: number;
+  noCache?: boolean;
 }
 
 export interface IPerkPage {

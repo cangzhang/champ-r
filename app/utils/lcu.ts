@@ -90,7 +90,7 @@ export const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
   try {
     await prepareCmdOutFile();
     await execCmd(
-      `Start-Process powershell -WindowStyle hidden -Verb runAs -ArgumentList "(Get-CimInstance Win32_Process -Filter \\""name = 'LeagueClientUx.exe'\\"").CommandLine | out-file -encoding utf8 -force ${cmdOutFile}"`,
+      `Start-Process powershell -WindowStyle hidden -Verb runAs -ArgumentList "-noprofile (Get-CimInstance Win32_Process -Filter \\""name = 'LeagueClientUx.exe'\\"").CommandLine | out-file -encoding utf8 -force ${cmdOutFile}"`,
       true,
     );
     const buffer = await fs.readFile(cmdOutFile);

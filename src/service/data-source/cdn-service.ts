@@ -92,7 +92,7 @@ export default class CdnService extends SourceProto {
 
   public getLatestPkgVer = async () => {
     try {
-      const html: string = await http.get(this.webUrl);
+      const html: string = await http.get(`${this.webUrl}?_=${Date.now()}`);
       const $ = cheerio.load(html);
       this.version = $(`.pack-ver img`).attr(`title`) ?? ``;
       const info: any = await http.get(`${T_NPM_PREFIX}/${this.pkgName}/${this.version}`);
@@ -141,7 +141,7 @@ export default class CdnService extends SourceProto {
     } catch (err) {
       const { response } = err;
       if (response.status === 404) {
-        return null;
+        return response;
       }
 
       console.log(err.response.status, err.response.headers);
@@ -161,10 +161,11 @@ export default class CdnService extends SourceProto {
       );
 
       const data = await this.getChampionDataFromCdn(champion);
-      if (!data) {
+
+      if (!data || data.status >= 400) {
         return Promise.resolve(null);
       }
-      const tasks = data.reduce((t, i) => {
+      const tasks = (data as IChampionCdnDataItem[]).reduce((t, i) => {
         const { position, itemBuilds } = i;
         const pStr = position ? `${position} - ` : ``;
         itemBuilds.forEach((k, idx) => {
@@ -204,10 +205,14 @@ export default class CdnService extends SourceProto {
     try {
       const $id = uuid();
       const data = await this.getChampionDataFromCdn(alias, $id);
-      if (!data) {
-        return null;
+      if (!data || data.status >= 400) {
+        return Promise.reject(data);
       }
-      return data.reduce((arr, i) => arr.concat(i.runes), [] as IRuneItem[]);
+
+      return (data as IChampionCdnDataItem[]).reduce(
+        (arr, i) => arr.concat(i.runes),
+        [] as IRuneItem[],
+      );
     } catch (err) {
       console.error(err.message, err.stack);
       return Promise.reject(err);

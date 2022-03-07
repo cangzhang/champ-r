@@ -369,7 +369,15 @@ export default function Home({ onDirChange = _noop }: IProps) {
               const championId = ChampionKeys[Math.floor(Math.random() * ChampionKeys.length)];
               window.bridge.sendMessage(`showPopup`, {
                 championId,
+                noCache: true,
               });
+
+              setTimeout(() => {
+                window.bridge.sendMessage(`showPopup`, {
+                  championId: 72,
+                  noCache: true,
+                });
+              }, 1500);
             }}>
             show popup
           </button>
