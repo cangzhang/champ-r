@@ -1,4 +1,4 @@
-'use strict';
+
 
 const path = require('path');
 const fs = require('fs');
@@ -82,8 +82,10 @@ module.exports = {
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
   popupHtml: resolveApp('public/popup.html'),
+  statisticsHtml: resolveApp('public/statistics.html'),
   appIndexJs: resolveModule(resolveApp, 'src/index'),
   popupIndexJs: resolveModule(resolveApp, 'src/popup.index'),
+  statisticsIndexJs: resolveModule(resolveApp, 'src/statistics.index'),
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
   appTsConfig: resolveApp('tsconfig.json'),

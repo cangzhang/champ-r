@@ -57,6 +57,7 @@ if (ignoreSystemScale) {
 // Prevent window from being garbage collected
 let mainWindow: BrowserWindow | null;
 let popupWindow: BrowserWindow | null;
+let statisticsWindow: BrowserWindow | null;
 let tray = null;
 let lcuWatcher: LcuWatcher | null = null;
 
@@ -91,6 +92,7 @@ const createMainWindow = async () => {
     // For multiple windows store them in an array
     mainWindow = null;
     popupWindow = null;
+    statisticsWindow = null;
   });
 
   await win.loadURL(
@@ -144,6 +146,52 @@ const createPopupWindow = async () => {
   return popup;
 };
 
+const createStatisticsWindow = async () => {
+  const [mX, mY] = mainWindow!.getPosition();
+  const curDisplay = screen.getDisplayNearestPoint({
+    x: mX,
+    y: mY,
+  });
+
+  const statisticsConfig = appConfig.get(`statistics`);
+  const statistics = new BrowserWindow({
+    show: false,
+    frame: false,
+    resizable: true,
+    fullscreenable: false,
+
+    skipTaskbar: statisticsConfig.alwaysOnTop,
+    alwaysOnTop: statisticsConfig.alwaysOnTop,
+    width: statisticsConfig.width || 400,
+    height: statisticsConfig.height || 650,
+    x: curDisplay.bounds.width / 2 + 201,
+    y: curDisplay.workAreaSize.height / 2 - 325,
+    webPreferences,
+  });
+
+  statistics.on(
+    `move`,
+    _debounce(() => persistStatisticsBounds(statistics), 1000),
+  );
+
+  statistics.on(
+    `resize`,
+    _debounce(() => persistStatisticsBounds(statistics), 1000),
+  );
+
+  statistics.on('closed', () => {
+    statisticsWindow = null;
+  });
+
+  await statistics.loadURL(
+    isDev
+      ? `http://127.0.0.1:3000/statistics.html`
+      : `file://${path.join(__dirname, 'statistics.html')}`,
+  );
+
+  return statistics;
+};
+
 // Prevent multiple instances of the app
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -162,6 +210,7 @@ app.on('second-instance', () => {
 app.on(`quit`, () => {
   mainWindow = null;
   popupWindow = null;
+  statisticsWindow = null;
 });
 
 app.on('window-all-closed', () => {
@@ -186,6 +235,18 @@ function persistPopUpBounds(w: BrowserWindow) {
   appConfig.set(`popup.y`, y);
   appConfig.set(`popup.width`, width);
   appConfig.set(`popup.height`, height);
+}
+
+function persistStatisticsBounds(w: BrowserWindow) {
+  if (!w) {
+    return;
+  }
+
+  const { x, y, width, height } = w.getBounds();
+  appConfig.set(`statistics.x`, x);
+  appConfig.set(`statistics.y`, y);
+  appConfig.set(`statistics.width`, width);
+  appConfig.set(`statistics.height`, height);
 }
 
 let lastChampion = 0;
@@ -220,9 +281,41 @@ async function onShowPopup(data: IPopupEventData) {
   }, 300);
 }
 
+async function onShowStatistics(data: IPopupEventData) {
+  if (!data.championId || lastChampion === data.championId) {
+    return;
+  }
+
+  lastChampion = data.championId;
+  if (!statisticsWindow) {
+    statisticsWindow = await createStatisticsWindow();
+  }
+
+  // popupWindow.setAlwaysOnTop(true);
+  statisticsWindow.show();
+  // popupWindow.setAlwaysOnTop(false);
+  // app.focus();
+  statisticsWindow.focus();
+
+  const task = setInterval(() => {
+    if (!statisticsWindow!.isVisible()) {
+      return;
+    }
+
+    statisticsWindow!.webContents.send(`for-statistics`, {
+      championId: data.championId,
+    });
+    clearInterval(task);
+  }, 300);
+}
+
 function registerMainListeners() {
   ipcMain.on(`toggle-main-window`, () => {
     toggleMainWindow();
+  });
+
+  ipcMain.on(`toggle-statistics-window`, () => {
+    toggleStatisticsWindow();
   });
 
   ipcMain.on(`restart-app`, () => {
@@ -238,6 +331,16 @@ function registerMainListeners() {
     popupWindow.setSkipTaskbar(next);
 
     appConfig.set(`popup.alwaysOnTop`, next);
+  });
+
+  ipcMain.on(`statistics:toggle-always-on-top`, () => {
+    if (!statisticsWindow) return;
+
+    const next = !statisticsWindow.isAlwaysOnTop();
+    statisticsWindow.setAlwaysOnTop(next);
+    statisticsWindow.setSkipTaskbar(next);
+
+    appConfig.set(`statistics.alwaysOnTop`, next);
   });
 
   ipcMain.on(`popup:reset-position`, () => {
@@ -286,6 +389,10 @@ function registerMainListeners() {
     app.quit();
   });
 
+  ipcMain.on(`quit-statistics`, () => {
+    statisticsWindow?.close();
+  });
+
   ipcMain.on(`applyRunePage`, async (_ev, data: IRuneItem & { jobId: string }) => {
     try {
       await lcuWatcher?.applyRunePage(data);
@@ -302,6 +409,10 @@ function registerMainListeners() {
   ipcMain.on(`showPopup`, (_ev, data: IPopupEventData) => {
     onShowPopup(data);
   });
+
+  ipcMain.on(`showStatistics`, (_ev, data: IPopupEventData) => {
+    onShowStatistics(data);
+  });
 }
 
 function toggleMainWindow() {
@@ -316,6 +427,21 @@ function toggleMainWindow() {
   } else {
     mainWindow.hide();
     mainWindow.setSkipTaskbar(true);
+  }
+}
+
+function toggleStatisticsWindow() {
+  if (!statisticsWindow) {
+    return;
+  }
+
+  const visible = statisticsWindow.isVisible();
+  if (!visible) {
+    statisticsWindow.show();
+    statisticsWindow.setSkipTaskbar(false);
+  } else {
+    statisticsWindow.hide();
+    statisticsWindow.setSkipTaskbar(true);
   }
 }
 

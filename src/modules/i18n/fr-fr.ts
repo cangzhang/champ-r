@@ -18,6 +18,7 @@ export default {
     minimize: `Réduire`,
     close: `Fermer`,
     settings: `Paramètres`,
+    statistics: `Statistiques`,
     'display language': `Langue d'affichage`,
     'select language': `Sélectionner une langue`,
     'removed outdated items': `Anciens objets supprimés`,

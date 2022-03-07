@@ -18,6 +18,7 @@ export default {
     minimize: `最小化`,
     close: `退出`,
     settings: `设置`,
+    statistics: `英雄数据`,
     'display language': `显示语言`,
     'select language': `选择`,
     'removed outdated items': `已移除旧出装文件`,

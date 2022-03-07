@@ -18,6 +18,7 @@ export default {
     minimize: `Minimize`,
     close: `Close`,
     settings: `Settings`,
+    statistics: `Statistics`,
     'display language': `Display language`,
     'select language': `Select language`,
     'removed outdated items': `Removed outdated items`,
