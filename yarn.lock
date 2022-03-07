@@ -5259,7 +5259,7 @@ __metadata:
     bfj: ^7.0.2
     camelcase: ^5.3.1
     case-sensitive-paths-webpack-plugin: 2.2.0
-    cheerio: ^1.0.0-rc.3
+    cheerio: ^1.0.0-rc.10
     chokidar: ^3.5.2
     cjk-regex: ^2.0.1
     classnames: ^2.3.1
@@ -5375,7 +5375,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cheerio@npm:^1.0.0-rc.3":
+"cheerio@npm:^1.0.0-rc.10":
   version: 1.0.0-rc.10
   resolution: "cheerio@npm:1.0.0-rc.10"
   dependencies:
