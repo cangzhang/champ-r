@@ -1,5 +1,6 @@
 {
   "ext": "js,ts,json",
+  "delay": 1500,
   "watch": [
     "app/",
     "tsconfig.json",

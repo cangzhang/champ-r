@@ -18,3 +18,14 @@ export async function execCmd(command: string, powershell = true) {
     return Promise.reject(error);
   }
 }
+
+export async function hasPwsh() {
+  try {
+    const stdout = await execCmd(`where powershell`, false);
+    console.log(`powershell:`, stdout);
+    return true;
+  } catch {
+    console.info('cannot find `powershell`');
+    return false;
+  }
+}

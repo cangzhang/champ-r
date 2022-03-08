@@ -28,6 +28,7 @@ import { ifIsCNServer, LcuWatcher } from './utils/lcu';
 import { LanguageList, LanguageSet } from './constants/langs';
 import { LcuEvent } from './constants/events';
 import { LcuWsClient } from './utils/ws';
+import { hasPwsh } from './utils/cmd';
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
@@ -445,7 +446,8 @@ function registerUpdater() {
     }
   }
 
-  lcuWatcher = new LcuWatcher();
+  const pwsh = await hasPwsh();
+  lcuWatcher = new LcuWatcher(pwsh);
   const lcuWs = new LcuWsClient(lcuWatcher);
 
   mainWindow = await createMainWindow();

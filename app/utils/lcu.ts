@@ -146,13 +146,16 @@ export class LcuWatcher {
   private getAuthTask: NodeJS.Timeout | null = null;
   private checkLcuStatusTask: NodeJS.Timeout | null = null;
   private watchChampSelectTask: NodeJS.Timeout | null = null;
+  private withPwsh = false;
 
-  constructor() {
+  constructor(withPwsh: boolean) {
+    this.withPwsh = withPwsh;
+
     this.initListener();
     this.startAuthTask();
   }
 
-  public startAuthTask = () => {
+  public startAuthTask = async () => {
     clearTimeout(this.getAuthTask!);
 
     this.getAuthTask = setTimeout(async () => {
@@ -182,9 +185,8 @@ export class LcuWatcher {
 
   public getAuth = async () => {
     try {
-      const cmdRet = await Promise.all([getAuthFromPs(), getAuthFromCmd()]);
-      const { port: appPort, token: remotingAuthToken, urlWithAuth: lcuURL } =
-        cmdRet.filter(Boolean)[0] ?? {};
+      const cmdRet = this.withPwsh ? await getAuthFromPs() : await getAuthFromCmd();
+      const { port: appPort, token: remotingAuthToken, urlWithAuth: lcuURL } = cmdRet ?? {};
 
       if (appPort && remotingAuthToken) {
         if (lcuURL !== this.lcuURL) {
