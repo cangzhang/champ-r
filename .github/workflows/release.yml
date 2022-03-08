@@ -46,24 +46,24 @@ jobs:
         name: ChampR-installer
         path: "./dist/artifacts"
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
-        draft: false
-        prerelease: false
+    # - name: Create Release
+    #   id: create_release
+    #   uses: actions/create-release@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     tag_name: ${{ github.ref }}
+    #     release_name: ${{ github.ref }}
+    #     draft: false
+    #     prerelease: false
 
-    - name: Upload Release Assets
-      id: upload_release_assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/artifacts/${{ steps.vars.outputs.fileName }}
-        asset_name: ${{ steps.vars.outputs.fileName }}
-        asset_content_type: application/vnd.microsoft.portable-executable
+    # - name: Upload Release Assets
+    #   id: upload_release_assets
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #     asset_path: ./dist/artifacts/${{ steps.vars.outputs.fileName }}
+    #     asset_name: ${{ steps.vars.outputs.fileName }}
+    #     asset_content_type: application/vnd.microsoft.portable-executable
