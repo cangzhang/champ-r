@@ -7,7 +7,7 @@ import _noop from 'lodash/noop';
 import http, { CancelToken } from 'src/service/http';
 import { parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
 import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
-import { SourceQQ } from 'src/share/constants/sources';
+import { SOURCE_QQ_STR, SourceQQ } from 'src/share/constants/sources';
 
 import SourceProto from './source-proto';
 
@@ -85,6 +85,7 @@ export default class LolQQ extends SourceProto {
     this.lolDir = lolDir;
     this.itemMap = itemMap;
     this.dispatch = dispatch;
+    this.pkgName = SOURCE_QQ_STR;
   }
 
   static getLolVersion = async () => {

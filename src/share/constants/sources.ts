@@ -1,4 +1,4 @@
-const Lolqq = 'lol.qq.com';
+export const SOURCE_QQ_STR = 'lol.qq.com';
 
 export const QQServicePrefix = `https://game.gtimg.cn`;
 
@@ -29,8 +29,8 @@ const DefaultExtraPkgs: ISourceItem[] = [
 ];
 
 export const SourceQQ: ISourceItem = {
-  label: Lolqq,
-  value: Lolqq,
+  label: SOURCE_QQ_STR,
+  value: SOURCE_QQ_STR,
 };
 
 export const DefaultSourceList: ISourceItem[] = [SourceQQ, ...DefaultExtraPkgs];

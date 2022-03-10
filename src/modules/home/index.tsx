@@ -103,7 +103,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
     () =>
       Promise.allSettled([
         LolQQ.getLolVersion().then((v) => {
-          dispatch(updateDataSourceVersion(sourceList[0].label, v));
+          dispatch(updateDataSourceVersion(SourceQQ.label, v));
         }),
         ...instances.current.map((i) => {
           if (window.bridge.appConfig.get(`alwaysRequestLatestVersion`)) {
@@ -117,7 +117,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
           });
         }),
       ]),
-    [dispatch, sourceList],
+    [dispatch],
   );
 
   const onReorderSources = (result: DropResult) => {
