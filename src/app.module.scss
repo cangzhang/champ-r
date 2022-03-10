@@ -78,9 +78,9 @@
   .sources {
     display: flex;
     flex-direction: column;
-    margin-top: 1.4ex;
+    //margin-top: 1.4ex;
     overflow-y: auto;
-    max-height: 270px;
+    max-height: 250px;
 
     .source-title {
       font-family: -apple-system, BlinkMacSystemFont, PingFang SC, Hiragino Sans GB, Microsoft YaHei,
@@ -113,8 +113,8 @@
 
   .control {
     display: flex;
-    margin-top: 3ex;
-    margin-bottom: 2ex;
+    margin-top: 1ex;
+    margin-bottom: 1ex;
 
     .import {
       width: 10em;

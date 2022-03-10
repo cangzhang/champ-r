@@ -4,6 +4,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { useHistory } from 'react-router-dom';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 import { CornerDownRight } from 'react-feather';
 import { useStyletron } from 'baseui';
@@ -22,7 +23,7 @@ import AppContext from 'src/share/context';
 import LolQQ from 'src/service/data-source/lol-qq';
 import CdnService from 'src/service/data-source/cdn-service';
 
-import useSourceList from './useSourceList';
+import { useSourceList } from './useSourceList';
 
 import s from 'src/app.module.scss';
 import logo from 'src/assets/app-icon.webp';
@@ -42,7 +43,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
   const versionTasker = useRef<number>();
   const instances = useRef<CdnService[]>([]);
 
-  const { loading: fetchingSources, sourceList } = useSourceList();
+  const { loading: fetchingSources, sourceList, setSourceList } = useSourceList();
   const [selectedSources, toggleSource] = useState<string[]>(
     window.bridge.appConfig.get(`selectedSources`) ?? [],
   );
@@ -117,6 +118,26 @@ export default function Home({ onDirChange = _noop }: IProps) {
       ]),
     [dispatch, sourceList],
   );
+
+  const onReorderSources = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination) {
+      return;
+    }
+
+    const newList = sourceList.map((i, idx) => {
+      if (idx === source.index) {
+        return sourceList[destination.index];
+      }
+
+      if (idx === destination.index) {
+        return sourceList[source.index];
+      }
+
+      return i;
+    });
+    setSourceList(newList);
+  };
 
   useEffect(() => {
     // exclude the `qq` source
@@ -210,74 +231,89 @@ export default function Home({ onDirChange = _noop }: IProps) {
         <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }} />
       </code>
 
-      <div className={s.sources}>
-        <H6 margin={`0 0 1ex 0`} color={theme.colors.borderInverseOpaque}>
-          <div
-            className={s.sourceTitle}
-            dangerouslySetInnerHTML={{
-              __html: t(`data sources`),
-            }}
-          />
-        </H6>
+      <H6 margin={`0 0 1ex 0`} color={theme.colors.borderInverseOpaque}>
+        <div
+          className={s.sourceTitle}
+          dangerouslySetInnerHTML={{
+            __html: t(`data sources`),
+          }}
+        />
+      </H6>
+      <DragDropContext onDragEnd={onReorderSources}>
+        <Droppable droppableId={`droppable`}>
+          {(provided, snapshot) => (
+            <div {...provided.droppableProps} ref={provided.innerRef} className={s.sources}>
+              {sourceList.map((v, idx) => {
+                const { isAram, isURF } = v;
+                const sourceVer = store.dataSourceVersions[v.value];
 
-        {sourceList.map((v) => {
-          const { isAram, isURF } = v;
-          const sourceVer = store.dataSourceVersions[v.value];
-
-          return (
-            <Checkbox
-              key={v.value}
-              checked={selectedSources.includes(v.label)}
-              onChange={onCheck(v.label)}
-              overrides={{
-                Root: {
-                  style: ({ $theme }) => ({
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: '3em',
-                    boxShadow: `0px 1px 0 ${$theme.colors.borderTransparent}`,
-                    minHeight: `48px`,
-                  }),
-                },
-                Checkmark: {
-                  style: ({ $checked, $theme }) => ({
-                    // borderColor: $checked
-                    //   ? $theme.colors.positive
-                    //   : $theme.colors.backgroundNegative,
-                    backgroundColor: $checked
-                      ? $theme.colors.positive
-                      : $theme.colors.backgroundAlwaysLight,
-                  }),
-                },
-                Label: {
-                  style: ({ $theme }) => ({
-                    fontSize: $theme.sizing.scale600,
-                    textTransform: `uppercase`,
-                    display: `flex`,
-                    alignItems: `center`,
-                  }),
-                },
-              }}>
-              {v.label}
-              {sourceVer && (
-                <Tag closeable={false} variant={VARIANT.outlined} kind='warning'>
-                  {sourceVer}
-                </Tag>
-              )}
-              {isAram && (
-                <Tag closeable={false} variant={VARIANT.light} kind='positive'>
-                  {t(`aram`)}
-                </Tag>
-              )}
-              {isURF && (
-                <Tag closeable={false} variant={VARIANT.light} kind='positive'>
-                  {t(`urf`)}
-                </Tag>
-              )}
-            </Checkbox>
-          );
-        })}
-      </div>
+                return (
+                  <Draggable key={v.value} draggableId={v.value} index={idx}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}>
+                        <Checkbox
+                          key={v.value}
+                          checked={selectedSources.includes(v.label)}
+                          onChange={onCheck(v.label)}
+                          overrides={{
+                            Root: {
+                              style: ({ $theme }) => ({
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: '3em',
+                                boxShadow: `0px 1px 0 ${$theme.colors.borderTransparent}`,
+                                minHeight: `48px`,
+                              }),
+                            },
+                            Checkmark: {
+                              style: ({ $checked, $theme }) => ({
+                                // borderColor: $checked
+                                //   ? $theme.colors.positive
+                                //   : $theme.colors.backgroundNegative,
+                                backgroundColor: $checked
+                                  ? $theme.colors.positive
+                                  : $theme.colors.backgroundAlwaysLight,
+                              }),
+                            },
+                            Label: {
+                              style: ({ $theme }) => ({
+                                fontSize: $theme.sizing.scale600,
+                                textTransform: `uppercase`,
+                                display: `flex`,
+                                alignItems: `center`,
+                              }),
+                            },
+                          }}>
+                          {v.label}
+                          {sourceVer && (
+                            <Tag closeable={false} variant={VARIANT.outlined} kind='warning'>
+                              {sourceVer}
+                            </Tag>
+                          )}
+                          {isAram && (
+                            <Tag closeable={false} variant={VARIANT.light} kind='positive'>
+                              {t(`aram`)}
+                            </Tag>
+                          )}
+                          {isURF && (
+                            <Tag closeable={false} variant={VARIANT.light} kind='positive'>
+                              {t(`urf`)}
+                            </Tag>
+                          )}
+                        </Checkbox>
+                      </div>
+                    )}
+                  </Draggable>
+                );
+              })}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
       <div className={s.control}>
         <Button

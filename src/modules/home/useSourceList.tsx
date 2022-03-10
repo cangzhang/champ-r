@@ -3,15 +3,11 @@ import http from 'src/service/http';
 import { SourceQQ, ISourceItem } from 'src/share/constants/sources';
 import { NPM_MIRROR, CDN_PREFIX } from 'src/service/data-source/cdn-service';
 
-const CHECK_INTV = 2 * 60 * 1000;
+const CHECK_INTV = 30 * 60 * 1000;
 const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list/latest`;
-const DevVersionUrl = `${NPM_MIRROR}/@champ-r/source-list.dev/latest`;
-const getLatestList = (version: string, isDev: boolean) =>
-  `${CDN_PREFIX}/source-list${isDev ? '.dev' : ''}@${version}/index.json`;
+const getLatestList = (version: string) => `${CDN_PREFIX}/source-list@${version}/index.json`;
 
-const ENABLED_TEST_CHANNEL = Boolean(process.env.IS_DEV || process.env.ENABLED_TEST_CHANNEL);
-
-export default function UseSourceList() {
+export function useSourceList() {
   const [loading, setLoading] = useState(true);
   const [sourceList, setSourceList] = useState<ISourceItem[]>(
     window.bridge.appConfig.get(`sourceList`),
@@ -21,12 +17,11 @@ export default function UseSourceList() {
 
   const setupTask = async () => {
     try {
-      const data: any = await http.get(ENABLED_TEST_CHANNEL ? DevVersionUrl : VersionUrl);
+      const data: any = await http.get(VersionUrl);
       const version = data[`dist-tags`][`latest`];
-      const url = getLatestList(version, ENABLED_TEST_CHANNEL);
+      const url = getLatestList(version);
       const rawList: ISourceItem[] = await http.get(url);
       const list = [SourceQQ, ...rawList];
-      window.bridge.appConfig.set(`sourceList`, list);
       setSourceList(list);
     } catch (_) {}
   };
@@ -45,8 +40,13 @@ export default function UseSourceList() {
     };
   }, []);
 
+  useEffect(() => {
+    window.bridge.appConfig.set(`sourceList`, sourceList);
+  }, [sourceList]);
+
   return {
     loading,
     sourceList,
+    setSourceList,
   };
 }
