@@ -22,6 +22,7 @@ import { ChampionKeys } from 'src/share/constants/champions';
 import AppContext from 'src/share/context';
 import LolQQ from 'src/service/data-source/lol-qq';
 import CdnService from 'src/service/data-source/cdn-service';
+import { SourceQQ } from 'src/share/constants/sources';
 
 import { useSourceList } from './useSourceList';
 
@@ -141,7 +142,9 @@ export default function Home({ onDirChange = _noop }: IProps) {
 
   useEffect(() => {
     // exclude the `qq` source
-    instances.current = sourceList.slice(1).map((s) => new CdnService(s.value, dispatch));
+    instances.current = sourceList
+      .filter((i) => i.value !== SourceQQ.value)
+      .map((s) => new CdnService(s.value, dispatch));
   }, [sourceList, dispatch]);
 
   useEffect(() => {

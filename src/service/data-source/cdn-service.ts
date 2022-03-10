@@ -149,7 +149,7 @@ export default class CdnService extends SourceProto {
     }
   };
 
-  public genItemBuilds = async (champion: string, lolDir: string) => {
+  public genItemBuilds = async (champion: string, lolDir: string, sortrank: number) => {
     try {
       const $identity = uuid();
       this.dispatch(
@@ -175,7 +175,7 @@ export default class CdnService extends SourceProto {
             position,
             fileName: `[${this.pkgName.toUpperCase()}] ${pStr}${champion}-${idx + 1}`,
           };
-          t = t.concat(window.bridge.file.saveToFile(lolDir, file));
+          t = t.concat(window.bridge.file.saveToFile(lolDir, file, true, sortrank));
         });
 
         return t;
@@ -219,11 +219,11 @@ export default class CdnService extends SourceProto {
     }
   };
 
-  public importFromCdn = async (lolDir: string) => {
+  public importFromCdn = async (lolDir: string, index = 0) => {
     try {
       const championMap = await this.getChampionList();
       const tasks = Object.keys(championMap).map((champion) =>
-        this.genItemBuilds(champion, lolDir),
+        this.genItemBuilds(champion, lolDir, index + 1),
       );
       const r = await Promise.allSettled(tasks);
       const result = r.reduce(

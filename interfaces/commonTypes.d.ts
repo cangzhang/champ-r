@@ -59,6 +59,7 @@ export interface IChampionBuild {
   champion: string;
   position: string;
   blocks: IBuildBlock[];
+  sortrank?: number;
 }
 
 export interface IChampionCdnDataItem {

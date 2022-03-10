@@ -12,7 +12,7 @@ import { StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import { Select } from 'baseui/select';
 import { useStyletron } from 'baseui';
 
-import { ISourceItem, QQChampionAvatarPrefix } from 'src/share/constants/sources';
+import { ISourceItem, QQChampionAvatarPrefix, SourceQQ } from 'src/share/constants/sources';
 
 import LolQQ from 'src/service/data-source/lol-qq';
 import CdnService from 'src/service/data-source/cdn-service';
@@ -74,7 +74,7 @@ export function Content() {
   );
   const instances = useRef([
     new LolQQ(),
-    ...sourceList.slice(1).map((p) => new CdnService(p.value)),
+    ...sourceList.filter((i) => i.value !== SourceQQ.value).map((p) => new CdnService(p.value)),
   ]); // exclude the `qq` source
 
   useEffect(() => {
