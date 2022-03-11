@@ -8,12 +8,13 @@ const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list/latest`;
 const getLatestList = (version: string) => `${CDN_PREFIX}/source-list@${version}/index.json`;
 
 function mergeList(sourceList: ISourceItem[], rawList: ISourceItem[]) {
-  let list: ISourceItem[] = [];
   const newItems = rawList.filter((i) => sourceList.every((j) => j.value !== i.value));
   const deletedItems = sourceList
     .filter((i) => i.value !== SourceQQ.value)
     .filter((i) => rawList.every((j) => j.value !== i.value));
-  list = list.filter((i) => deletedItems.filter((j) => j.value !== i.value)).concat(newItems);
+  const list = sourceList
+    .filter((i) => deletedItems.every((j) => j.value !== i.value))
+    .concat(newItems);
   return list;
 }
 
@@ -52,7 +53,7 @@ export function useSourceList() {
     return () => {
       clearInterval(worker.current);
     };
-  }, []);
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     window.bridge.appConfig.set(`sourceList`, sourceList);

@@ -117,7 +117,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
           });
         }),
       ]),
-    [dispatch, sourceList],
+    [dispatch],
   );
 
   const onReorderSources = (result: DropResult) => {
@@ -318,7 +318,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
                               {t(`urf`)}
                             </Tag>
                           )}
-                          <Move className={s.move} size={20} />
+                          <Move className={s.move} size={18} />
                         </Checkbox>
                       </div>
                     )}
