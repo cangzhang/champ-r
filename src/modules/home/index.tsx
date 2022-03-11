@@ -6,7 +6,7 @@ import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
-import { CornerDownRight } from 'react-feather';
+import { CornerDownRight, Move } from 'react-feather';
 import { useStyletron } from 'baseui';
 import { Button, KIND as BtnKind, SIZE as BtnSize } from 'baseui/button';
 import { Checkbox, STYLE_TYPE, LABEL_PLACEMENT } from 'baseui/checkbox';
@@ -117,7 +117,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
           });
         }),
       ]),
-    [dispatch],
+    [dispatch, sourceList],
   );
 
   const onReorderSources = (result: DropResult) => {
@@ -125,18 +125,29 @@ export default function Home({ onDirChange = _noop }: IProps) {
     if (!destination) {
       return;
     }
+    if (destination.index === source.index) {
+      return;
+    }
 
-    const newList = sourceList.map((i, idx) => {
-      if (idx === source.index) {
-        return sourceList[destination.index];
-      }
+    let newList;
+    if (destination.index > source.index) {
+      newList = [
+        ...sourceList
+          .slice(0, destination.index + 1)
+          .filter((i) => i.value !== sourceList[source.index].value),
+        sourceList[source.index],
+        ...sourceList.slice(destination.index + 1),
+      ];
+    } else {
+      newList = [
+        ...sourceList.slice(0, destination.index),
+        sourceList[source.index],
+        ...sourceList
+          .slice(destination.index)
+          .filter((i) => i.value !== sourceList[source.index].value),
+      ];
+    }
 
-      if (idx === destination.index) {
-        return sourceList[source.index];
-      }
-
-      return i;
-    });
     setSourceList(newList);
   };
 
@@ -157,7 +168,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
     return () => {
       clearInterval(versionTasker.current);
     };
-  }, []); // eslint-disable-line
+  }, [sourceList]); // eslint-disable-line
 
   useEffect(() => {
     // persist user preference
@@ -283,9 +294,10 @@ export default function Home({ onDirChange = _noop }: IProps) {
                             },
                             Label: {
                               style: ({ $theme }) => ({
-                                fontSize: $theme.sizing.scale600,
+                                fontSize: $theme.sizing.scale550,
                                 textTransform: `uppercase`,
                                 display: `flex`,
+                                flex: 1,
                                 alignItems: `center`,
                               }),
                             },
@@ -306,6 +318,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
                               {t(`urf`)}
                             </Tag>
                           )}
+                          <Move className={s.move} size={20} />
                         </Checkbox>
                       </div>
                     )}

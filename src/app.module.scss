@@ -103,6 +103,16 @@
         }
       }
     }
+
+    .move {
+      margin-left: auto;
+      margin-right: 1em;
+      color: #cbcbcb;
+
+      &:hover {
+        cursor: move;
+      }
+    }
   }
 
   .folder-first {
