@@ -63,12 +63,13 @@ export default function Import() {
     let lolqqTask = _noop;
 
     if (selectedSources.includes(SourceQQ.label)) {
+      const idx = sourceList.findIndex((i) => i.label === SourceQQ.label);
       const instance = new LolQQImporter(lolDir, itemMap, dispatch);
       workers.current[SourceQQ.label] = instance;
 
       lolqqTask = () =>
         instance
-          .import()
+          .import(idx + 1)
           .then(() => {
             toaster.positive(`[${SourceQQ.label.toUpperCase()}] ${t(`completed`)}`, {});
             dispatch(importBuildSucceed(SourceQQ.label));
@@ -85,36 +86,37 @@ export default function Import() {
           });
     }
 
-    const tasks = sourceList
-      .filter((i) => i.value !== SourceQQ.value)
-      .map((p, index) => {
-        // exclude the `qq` source
-        if (!selectedSources.includes(p.label)) {
-          return Promise.resolve();
-        }
+    const tasks = sourceList.map((p, index) => {
+      if (p.value === SourceQQ.value) {
+        return Promise.resolve();
+      }
+      // exclude the `qq` source
+      if (!selectedSources.includes(p.label)) {
+        return Promise.resolve();
+      }
 
-        const instance = new CdnService(p.value, dispatch);
-        workers.current[p.label] = instance;
-        return instance
-          .importFromCdn(lolDir, index)
-          .then((result) => {
-            const { rejected } = result;
-            if (!rejected.length) {
-              toaster.positive(`[${p.label.toUpperCase()}] ${t(`completed`)}`, {});
-              dispatch(importBuildSucceed(p.label));
-            }
-          })
-          .catch((err) => {
-            if (err.message.includes(`Error: Cancel`)) {
-              setCancel(cancelled.concat(p.label));
-              toaster.warning(`${t(`cancelled`)}: ${p.label}`, {});
-            } else {
-              dispatch(importBuildFailed(p.label));
-              toaster.negative(`${t(`import failed`)}: ${p.label}`, {});
-              console.error(err);
-            }
-          });
-      });
+      const instance = new CdnService(p.value, dispatch);
+      workers.current[p.label] = instance;
+      return instance
+        .importFromCdn(lolDir, index)
+        .then((result) => {
+          const { rejected } = result;
+          if (!rejected.length) {
+            toaster.positive(`[${p.label.toUpperCase()}] ${t(`completed`)}`, {});
+            dispatch(importBuildSucceed(p.label));
+          }
+        })
+        .catch((err) => {
+          if (err.message.includes(`Error: Cancel`)) {
+            setCancel(cancelled.concat(p.label));
+            toaster.warning(`${t(`cancelled`)}: ${p.label}`, {});
+          } else {
+            dispatch(importBuildFailed(p.label));
+            toaster.negative(`${t(`import failed`)}: ${p.label}`, {});
+            console.error(err);
+          }
+        });
+    });
 
     try {
       await Promise.all([...tasks, lolqqTask()]);

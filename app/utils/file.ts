@@ -52,16 +52,15 @@ export const saveToFile = async (
   desDir: string,
   data: IChampionBuild,
   stripProps = true,
-  sortrank = 1,
+  sortrank: number,
 ): Promise<IFileResult | Error> => {
   try {
     const appendGameToDir = appConfig.get(`appendGameToDir`);
     const hasCjkChar = appConfig.get(`lolDirHasCJKChar`);
 
-    const tencentFile = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
-    const riotFile = `${desDir}/Config/Champions/${data.champion}/Recommended/${data.fileName}.json`;
+    const tencentFile = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${sortrank}-${data.fileName}.json`;
+    const riotFile = `${desDir}/Config/Champions/${data.champion}/Recommended/${sortrank}-${data.fileName}.json`;
     const content = stripProps ? _pick(data, ItemSetProps) : data;
-    content.sortrank = sortrank;
 
     await Promise.all([
       fse.outputFile(tencentFile, JSON.stringify(content, null, 4)),

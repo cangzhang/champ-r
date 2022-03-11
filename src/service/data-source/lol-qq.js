@@ -276,10 +276,8 @@ export default class LolQQ extends SourceProto {
     return result;
   };
 
-  import = async () => {
+  import = async (index) => {
     const { lolDir, itemMap, dispatch } = this;
-    const sortRank =
-      window.bridge.appConfig.get(`sourceList`).findIndex((i) => i.value === SourceQQ.value) ?? 1;
 
     try {
       const [{ version, hero: championList }, positionMap = {}] = await Promise.all([
@@ -306,7 +304,7 @@ export default class LolQQ extends SourceProto {
         return res.concat(block);
       }, []);
 
-      const fileTasks = items.map((i) => window.bridge.file.saveToFile(lolDir, i, sortRank));
+      const fileTasks = items.map((i) => window.bridge.file.saveToFile(lolDir, i, true, index));
       const result = await Promise.all(fileTasks);
 
       dispatch(fetchSourceDone(SourceQQ.label));
