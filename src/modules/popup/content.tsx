@@ -78,16 +78,18 @@ export function Content() {
   ]); // exclude the `qq` source
 
   useEffect(() => {
-    (instances.current[1] as CdnService).getChampionList().then((data) => {
-      const champMap = makeChampMap(data);
-      setChampionMap(champMap);
+    (instances.current.filter((i) => i.pkgName !== SourceQQ.value)[0] as CdnService)
+      .getChampionList()
+      .then((data) => {
+        const champMap = makeChampMap(data);
+        setChampionMap(champMap);
 
-      window.bridge.on('for-popup', ({ championId: id }: { championId: number }) => {
-        if (id) {
-          setChampionId(id);
-        }
+        window.bridge.on('for-popup', ({ championId: id }: { championId: number }) => {
+          if (id) {
+            setChampionId(id);
+          }
+        });
       });
-    });
   }, []);
 
   useEffect(() => {
@@ -101,14 +103,18 @@ export function Content() {
     }
     setChampionDetail(champ);
 
-    (instances.current[0] as LolQQ).getChampionPerks(champ.key, champ.id).then((result) => {
+    let qq = instances.current.find((i) => i.pkgName === SourceQQ.value);
+    (qq as LolQQ).getChampionPerks(champ.key, champ.id).then((result) => {
       setPerkList((draft) => {
-        draft[0] = result;
+        const index = instances.current.findIndex((i) => i.pkgName === SourceQQ.value);
+        if (index >= 0) {
+          draft[index] = result;
+        }
       });
     });
 
     instances.current.forEach((i, idx) => {
-      if (idx === 0) {
+      if (i.pkgName === SourceQQ.value) {
         return;
       }
 
@@ -211,7 +217,7 @@ export function Content() {
       return <Loading className={s.loading} />;
     }
 
-    const tabIdx = sourceList.findIndex((i) => i.value === activeTab[0].value);
+    const tabIdx = instances.current.findIndex((i) => i.pkgName === activeTab[0].value);
     return (
       <div className={s.main}>
         {championDetail && (
