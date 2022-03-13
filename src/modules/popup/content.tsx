@@ -186,7 +186,7 @@ export function Content() {
     window.bridge.sendMessage(`hidePopup`);
   };
 
-  const renderList = (list: IRuneItem[] | number, isAramMode = false) => {
+  const renderList = (list: IRuneItem[] | number, isAramMode = false, isUrf = false) => {
     if (list === 404) {
       return <div className={s.noData}>{t(`no data`)}</div>;
     }
@@ -205,6 +205,7 @@ export function Content() {
             key={`${championId}-${idx}`}
             idx={idx}
             isAramMode={isAramMode}
+            isUrfMode={isUrf}
             perk={p}
             onApply={() => apply(p)}
             onMouseEnter={showPreview}
@@ -293,7 +294,9 @@ export function Content() {
         )}
 
         {perkList[tabIdx] && (
-          <div className={s.list}>{renderList(perkList[tabIdx], source?.isAram)}</div>
+          <div className={s.list}>
+            {renderList(perkList[tabIdx], source?.isAram, source?.isURF)}
+          </div>
         )}
       </div>
     );

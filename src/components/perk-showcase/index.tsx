@@ -11,7 +11,8 @@ import { IRuneItem } from '@interfaces/commonTypes';
 import { MainStyleIds } from 'src/share/constants/runes';
 
 interface IProps {
-  isAramMode: boolean;
+  isAramMode?: boolean;
+  isUrfMode?: boolean;
   onMouseEnter: (perk: IRuneItem, el: HTMLDivElement | null) => void;
   onMouseLeave: () => any;
   perk: IRuneItem;
@@ -22,6 +23,7 @@ interface IProps {
 export default function PerkShowcase({
   perk,
   isAramMode = false,
+  isUrfMode = false,
   onApply,
   onMouseEnter = _noop,
   onMouseLeave = _noop,
@@ -33,11 +35,21 @@ export default function PerkShowcase({
 
   const shouldShowStatistics = perk.winRate?.length > 0 && perk.pickCount > 0;
 
+  const displayPosition = (position = ``) => {
+    if (isAramMode) {
+      return t(`aram`);
+    }
+    if (isUrfMode) {
+      return t(`urf`);
+    }
+    return t(position.toLowerCase());
+  };
+
   return (
     <div
       className={s.item}
       ref={el}
-      onMouseEnter={(ev) => onMouseEnter(perk, el.current)}
+      onMouseEnter={() => onMouseEnter(perk, el.current)}
       onMouseLeave={onMouseLeave}>
       <div className={s.preview}>
         <div className={cn(s.primary, s[`r-${primaryStyleId}`])} />
@@ -46,9 +58,7 @@ export default function PerkShowcase({
       </div>
 
       <div className={s.desc}>
-        <div className={s.name}>
-          {isAramMode ? `${t(`aram`)}` : `${t(perk.position.toLowerCase())}`}
-        </div>
+        <div className={s.name}>{displayPosition(perk.position)}</div>
         {shouldShowStatistics && (
           <div className={s.detail}>
             <span className={s.pick}>
