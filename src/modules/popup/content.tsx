@@ -311,7 +311,7 @@ export function Content() {
           },
           blank: {
             icon: <Smile size={16} />,
-            duration: 100 * 1000,
+            duration: 5 * 1000,
             style: {
               backgroundColor: theme.colors.backgroundInverseSecondary,
               color: theme.colors.contentInversePrimary,
