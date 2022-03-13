@@ -424,12 +424,12 @@ export default function Home({ onDirChange = _noop }: IProps) {
                 noCache: true,
               });
 
-              setTimeout(() => {
-                window.bridge.sendMessage(`showPopup`, {
-                  championId: 72,
-                  noCache: true,
-                });
-              }, 1500);
+              // setTimeout(() => {
+              //   window.bridge.sendMessage(`showPopup`, {
+              //     championId: 72,
+              //     noCache: true,
+              //   });
+              // }, 1500);
             }}>
             show popup
           </button>

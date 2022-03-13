@@ -45,6 +45,38 @@ body {
   left: calc(50vw - 18px);
 }
 
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  width: 38px;
+  margin-left: 1rem;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  background-color: #ffffff;
+  border-radius: 50%;
+  //box-shadow: rgb(0 0 0 / 2%) 0 1px 3px 0;
+  border: unset;
+  transition: all 0.3s ease 0s;
+
+  &:hover {
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: rgb(0 0 0 / 10%) 0 4px 12px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+}
+
+.waiting .close {
+  margin-left: unset;
+  position: fixed;
+  top: calc(40vh + 58px);
+  left: 50vw;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
 .list-loading {
   margin: 8em auto;
 }

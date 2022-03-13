@@ -52,5 +52,6 @@ export default {
     done: `Done`,
     'mirror server': `Fetch resources with CN mirror server`,
     'no data': `No Data.`,
+    hide: `Hide`,
   },
 };

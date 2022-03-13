@@ -303,6 +303,10 @@ function registerMainListeners() {
   ipcMain.on(`showPopup`, (_ev, data: IPopupEventData) => {
     onShowPopup(data);
   });
+
+  ipcMain.on(`hidePopup`, () => {
+    popupWindow?.hide();
+  });
 }
 
 function toggleMainWindow() {

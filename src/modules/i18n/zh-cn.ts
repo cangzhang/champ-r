@@ -52,5 +52,6 @@ export default {
     done: `已完成`,
     'mirror server': `使用国内服务器获取数据`,
     'no data': `暂无数据`,
+    hide: `隐藏`,
   },
 };

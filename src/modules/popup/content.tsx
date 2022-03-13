@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useImmer } from 'use-immer';
 
 import toast, { Toaster } from 'react-hot-toast';
-import { Check, Smile } from 'react-feather';
+import { Check, Smile, X } from 'react-feather';
 import { styled } from 'styletron-react';
 import { StatefulPopover, TRIGGER_TYPE } from 'baseui/popover';
 import { Select } from 'baseui/select';
@@ -151,6 +151,7 @@ export function Content() {
 
   const apply = async (perk: IRuneItem) => {
     try {
+      console.log(`apply perk:`, perk.name);
       await createIpcPromise(`applyRunePage`, perk);
       console.info(`[popup] applied selected perk`);
       toast.dismiss();
@@ -179,6 +180,10 @@ export function Content() {
   const toggleAlwaysOnTop = () => {
     window.bridge.sendMessage(`popup:toggle-always-on-top`);
     togglePinned((p) => !p);
+  };
+
+  const onClose = () => {
+    window.bridge.sendMessage(`hidePopup`);
   };
 
   const renderList = (list: IRuneItem[] | number, isAramMode = false) => {
@@ -214,10 +219,20 @@ export function Content() {
 
   const renderContent = () => {
     if (!championMap || !perkList[0].length) {
-      return <Loading className={s.loading} />;
+      return (
+        <div className={s.waiting}>
+          <Loading className={s.loading} />
+          <button className={s.close} onClick={onClose}>
+            <X size={26} color={`#EA4C89`} />
+          </button>
+        </div>
+      );
     }
 
-    const tabIdx = instances.current.findIndex((i) => i.pkgName === activeTab[0].value);
+    const pkgName = activeTab[0].value;
+    const tabIdx = instances.current.findIndex((i) => i.pkgName === pkgName);
+    const source = sourceList.find((i) => i.value === pkgName);
+
     return (
       <div className={s.main}>
         {championDetail && (
@@ -268,11 +283,17 @@ export function Content() {
                 },
               }}
             />
+
+            <StatefulPopover content={t(`hide`)} triggerType={TRIGGER_TYPE.hover}>
+              <button className={s.close} onClick={onClose}>
+                <X size={26} color={`#EA4C89`} />
+              </button>
+            </StatefulPopover>
           </div>
         )}
 
         {perkList[tabIdx] && (
-          <div className={s.list}>{renderList(perkList[tabIdx], sourceList[tabIdx].isAram)}</div>
+          <div className={s.list}>{renderList(perkList[tabIdx], source?.isAram)}</div>
         )}
       </div>
     );
