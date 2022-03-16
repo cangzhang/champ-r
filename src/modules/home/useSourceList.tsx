@@ -4,8 +4,7 @@ import { SourceQQ, ISourceItem } from 'src/share/constants/sources';
 import { NPM_MIRROR, CDN_PREFIX } from 'src/service/data-source/cdn-service';
 
 const CHECK_INTV = 30 * 60 * 1000;
-const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list/latest`;
-const getLatestList = (version: string) => `${CDN_PREFIX}/source-list@${version}/index.json`;
+const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list.dev/latest`;
 
 function mergeList(sourceList: ISourceItem[], rawList: ISourceItem[]) {
   const newItems = rawList.filter((i) => sourceList.every((j) => j.value !== i.value));
@@ -28,13 +27,8 @@ export function useSourceList() {
 
   const setupTask = async () => {
     try {
-      const data: { version: string } = await http.get(VersionUrl);
-      const version = data[`version`];
-      const url = getLatestList(version);
-
-      const rawList: ISourceItem[] = await http.get(url);
-      let list = mergeList(sourceList, [SourceQQ, ...rawList]);
-
+      const data: any = await http.get(VersionUrl);
+      let list = mergeList(sourceList, [SourceQQ, ...data.sources]);
       setSourceList(list);
     } catch (err) {
       console.error(err);
