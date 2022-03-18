@@ -4,7 +4,7 @@ import { SourceQQ, ISourceItem } from 'src/share/constants/sources';
 import { NPM_MIRROR } from 'src/service/data-source/cdn-service';
 
 const CHECK_INTV = 30 * 60 * 1000;
-const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list/latest`;
+const VersionUrl = `${NPM_MIRROR}/@champ-r/source-list${process.env.IS_DEV ? '.dev' : ''}/latest`;
 
 function mergeList(sourceList: ISourceItem[], rawList: ISourceItem[]) {
   const newItems = rawList.filter((i) => sourceList.every((j) => j.value !== i.value));
