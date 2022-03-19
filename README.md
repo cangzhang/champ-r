@@ -24,6 +24,8 @@ Yet another League of Legends helper.
 - 😎 Multiple data sources for **Summoner's Rift** & **ARAM**
   - `op.gg`
   - `lolalytics.com`
+  - `u.gg`
+  - `champion.gg`
   - `murderbridge.com`
   - `101.qq.com`
   - ...
