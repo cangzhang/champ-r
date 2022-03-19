@@ -27,7 +27,7 @@ export function useSourceList() {
 
   const setupTask = async () => {
     try {
-      const data: any = await http.get(VersionUrl);
+      const data: any = await http.get(`${VersionUrl}?_${+Date.now()}`);
       let list = mergeList(sourceList, [SourceQQ, ...data.sources]);
       setSourceList(list);
     } catch (err) {
