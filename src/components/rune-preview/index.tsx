@@ -4,35 +4,34 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
 
-import { MainRuneMap, SubRuneMap, FragmentMap } from 'src/share/constants/runes';
+import { FragmentMap } from 'src/share/constants/runes';
 import { IRuneItem, ICSSProperties, ICoordinate } from '@interfaces/commonTypes';
+import { RuneRoot, RuneSlot } from 'src/types';
 
 interface IProps {
   perk: IRuneItem | null;
   coordinate: ICoordinate;
+  runes: RuneRoot[];
 }
 
-export default function RunePreview({ perk, coordinate }: IProps) {
+export default function RunePreview({ perk, coordinate, runes }: IProps) {
   const { primaryStyleId = 0, subStyleId = 0, selectedPerkIds } = perk ?? {
     primaryStyleId: 0,
     subStyleId: 0,
     selectedPerkIds: [],
   };
-  const mainIds = MainRuneMap[primaryStyleId];
-  const subIds = SubRuneMap[subStyleId];
+  const mainSlot = runes.find((i) => i.id === primaryStyleId);
+  const subSlot = runes.find((i) => i.id === subStyleId);
 
   const renderRow = (isFragment = false) => {
-    const selectedFIds = selectedPerkIds.slice(-3);
     const showAllRunes = window.innerWidth >= 380;
 
-    return (ids: number[], idx: number) => {
+    return (slot: RuneSlot, idx: number) => {
       return (
         <div className={s.row} key={idx}>
-          {ids.map((id) => {
+          {slot.runes.map(({ id, icon }) => {
             let selected = (selectedPerkIds as number[]).includes(id);
             if (isFragment) {
-              const selectedFId = selectedFIds[idx];
-              selected = ids.includes(selectedFId) && id === selectedFId;
             }
 
             if (!selected && !showAllRunes) {
@@ -40,7 +39,10 @@ export default function RunePreview({ perk, coordinate }: IProps) {
             }
 
             return (
-              <div key={id} className={cn(s.runeImg, s[`rune-${id}`], selected && s.selected)} />
+              // <div key={id} className={cn(s.runeImg, s[`rune-${id}`], selected && s.selected)} />
+              <div key={id} className={cn(s.runeImg, selected && s.selected)}>
+                <img src={`https://ddragon.leagueoflegends.com/cdn/img/${icon}`} alt='' />
+              </div>
             );
           })}
         </div>
@@ -66,9 +68,9 @@ export default function RunePreview({ perk, coordinate }: IProps) {
     <div style={style} className={cn(s.main, up && s.up)}>
       <span className={cn(s.bot, s.triangle)} />
       <span className={cn(s.top, s.triangle)} />
-      <div className={s.col}>{mainIds.map(renderRow())}</div>
-      <div className={s.col}>{subIds.map(renderRow())}</div>
-      <div className={cn(s.col, s.fragment)}>{FragmentMap.map(renderRow(true))}</div>
+      <div className={s.col}>{mainSlot?.slots.map(renderRow())}</div>
+      <div className={s.col}>{subSlot?.slots.map(renderRow())}</div>
+      {/*<div className={cn(s.col, s.fragment)}>{FragmentMap.map(renderRow(true))}</div>*/}
     </div>,
     document.querySelector(`#popup`) as HTMLDivElement,
   );

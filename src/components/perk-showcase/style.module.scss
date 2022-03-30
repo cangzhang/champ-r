@@ -46,6 +46,7 @@
           color: #2764f1;
         }
       }
+
       .win {
         .value {
           color: #21a453;
@@ -92,106 +93,23 @@
     background-repeat: no-repeat;
 
     &.big {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin: 0 0.6ex;
       background-color: #000000;
+
+      img {
+        height: 40px;
+        width: 40px;
+      }
     }
 
     &.sub,
     &.primary {
       height: 24px;
       width: 24px;
-    }
-
-    &.r-8000 {
-      background-image: url('~src/assets/runes/8000.png');
-    }
-
-    &.r-8008 {
-      background-image: url('~src/assets/runes/8008.png');
-    }
-
-    &.r-8021 {
-      background-image: url('~src/assets/runes/8021.png');
-    }
-
-    &.r-8112 {
-      background-image: url('~src/assets/runes/8112.png');
-    }
-
-    &.r-8128 {
-      background-image: url('~src/assets/runes/8128.png');
-    }
-
-    &.r-8214 {
-      background-image: url('~src/assets/runes/8214.png');
-    }
-
-    &.r-8230 {
-      background-image: url('~src/assets/runes/8230.png');
-    }
-
-    &.r-8351 {
-      background-image: url('~src/assets/runes/8351.png');
-    }
-
-    &.r-8360 {
-      background-image: url('~src/assets/runes/8360.png');
-    }
-
-    &.r-8369 {
-      background-image: url('~src/assets/runes/8369.png');
-    }
-
-    &.r-8437 {
-      background-image: url('~src/assets/runes/8437.png');
-    }
-
-    &.r-8465 {
-      background-image: url('~src/assets/runes/8465.png');
-    }
-
-    &.r-8005 {
-      background-image: url('~src/assets/runes/8005.png');
-    }
-
-    &.r-8010 {
-      background-image: url('~src/assets/runes/8010.png');
-    }
-
-    &.r-8100 {
-      background-image: url('~src/assets/runes/8100.png');
-    }
-
-    &.r-8124 {
-      background-image: url('~src/assets/runes/8124.png');
-    }
-
-    &.r-8200 {
-      background-image: url('~src/assets/runes/8200.png');
-    }
-
-    &.r-8229 {
-      background-image: url('~src/assets/runes/8229.png');
-    }
-
-    &.r-8300 {
-      background-image: url('~src/assets/runes/8300.png');
-    }
-
-    &.r-8358 {
-      background-image: url('~src/assets/runes/8358.png');
-    }
-
-    &.r-8400 {
-      background-image: url('~src/assets/runes/8400.png');
-    }
-
-    &.r-8439 {
-      background-image: url('~src/assets/runes/8439.png');
-    }
-
-    &.r-9923 {
-      background-image: url('~src/assets/runes/9923.png');
+      display: flex;
     }
   }
 }

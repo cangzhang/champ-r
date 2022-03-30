@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Zap } from 'react-feather';
 
 import { IRuneItem } from '@interfaces/commonTypes';
-import { MainStyleIds } from 'src/share/constants/runes';
+import { Rune, RuneRoot } from 'src/types';
 
 interface IProps {
   isAramMode?: boolean;
@@ -18,10 +18,12 @@ interface IProps {
   perk: IRuneItem;
   onApply: () => any;
   idx?: number;
+  runes: RuneRoot[];
 }
 
 export default function PerkShowcase({
   perk,
+  runes,
   isAramMode = false,
   isUrfMode = false,
   onApply,
@@ -29,9 +31,13 @@ export default function PerkShowcase({
   onMouseLeave = _noop,
 }: IProps) {
   const [t] = useTranslation();
-  const { primaryStyleId, subStyleId, selectedPerkIds } = perk;
-  const pId = selectedPerkIds.find((i) => MainStyleIds[primaryStyleId].includes(+i));
   const el = useRef(null);
+
+  const { primaryStyleId, subStyleId, selectedPerkIds } = perk;
+  const bigRune = runes.find((i) => i.id === primaryStyleId);
+  const subRune = runes.find((i) => i.id === subStyleId);
+  const priRunes: Rune[] = bigRune?.slots[0].runes ?? [];
+  const priRune = priRunes.find((i) => selectedPerkIds.includes(i.id));
 
   const shouldShowStatistics = perk.winRate?.length > 0 && perk.pickCount > 0;
 
@@ -52,9 +58,15 @@ export default function PerkShowcase({
       onMouseEnter={() => onMouseEnter(perk, el.current)}
       onMouseLeave={onMouseLeave}>
       <div className={s.preview}>
-        <div className={cn(s.primary, s[`r-${primaryStyleId}`])} />
-        <div className={cn(s[`r-${pId}`], s.big)} />
-        <div className={cn(s.sub, s[`r-${subStyleId}`])} />
+        <div className={cn(s.primary)}>
+          <img src={`https://ddragon.leagueoflegends.com/cdn/img/${priRune?.icon}`} alt='' />
+        </div>
+        <div className={cn(s.big)}>
+          <img src={`https://ddragon.leagueoflegends.com/cdn/img/${bigRune?.icon}`} alt='' />
+        </div>
+        <div className={cn(s.sub)}>
+          <img src={`https://ddragon.leagueoflegends.com/cdn/img/${subRune?.icon}`} alt='' />
+        </div>
       </div>
 
       <div className={s.desc}>

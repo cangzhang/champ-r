@@ -1,6 +1,6 @@
 import s from './style.module.scss';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useTranslation } from 'react-i18next';
 import { useImmer } from 'use-immer';
@@ -25,6 +25,8 @@ import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
 import { IChampionInfo, IRuneItem, ICoordinate } from '@interfaces/commonTypes';
 import { makeChampMap } from './utils';
 import { createIpcPromise } from 'src/service/ipc';
+import { RuneRoot } from 'src/types';
+import http from 'src/service/http';
 
 const Pin = styled(`button`, () => ({
   margin: `0 2ex 0 0`,
@@ -57,6 +59,7 @@ export function Content() {
   const [, theme] = useStyletron();
   const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
 
+  const [runes, setRunes] = useState<RuneRoot[]>([]);
   const [activeTab, setActiveTab] = useState<ISourceItem[]>(getInitTab());
   const [perkList, setPerkList] = useImmer<IRuneItem[][]>([[], [], []]);
   const [championMap, setChampionMap] = useState<{ [key: string]: IChampionInfo }>();
@@ -76,6 +79,17 @@ export function Content() {
     new LolQQ(),
     ...sourceList.filter((i) => i.value !== SourceQQ.value).map((p) => new CdnService(p.value)),
   ]); // exclude the `qq` source
+
+  const fetchRunes = useCallback(async () => {
+    try {
+      const r: RuneRoot[] = await http.get(
+        `https://ddragon.leagueoflegends.com/cdn/12.6.1/data/en_US/runesReforged.json`,
+      );
+      setRunes(r);
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
 
   useEffect(() => {
     (instances.current.filter((i) => i.pkgName !== SourceQQ.value)[0] as CdnService)
@@ -136,6 +150,10 @@ export function Content() {
         });
     });
   }, [championId, championMap, setPerkList]);
+
+  useEffect(() => {
+    fetchRunes();
+  }, [fetchRunes]);
 
   useEffect(() => {
     window.bridge.appConfig.set(`perkTab`, activeTab);
@@ -207,13 +225,14 @@ export function Content() {
             isAramMode={isAramMode}
             isUrfMode={isUrf}
             perk={p}
+            runes={runes}
             onApply={() => apply(p)}
             onMouseEnter={showPreview}
             onMouseLeave={hidePreview}
           />
         ))}
 
-        <RunePreview perk={curPerk} coordinate={coordinate} />
+        <RunePreview perk={curPerk} coordinate={coordinate} runes={runes} />
       </Scrollbars>
     );
   };
