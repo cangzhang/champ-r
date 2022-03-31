@@ -18,3 +18,15 @@ export interface Rune {
   shortDesc: string;
   longDesc: string;
 }
+
+export interface ShardSlot {
+  key: string;
+  shards: Shard[];
+}
+
+export interface Shard {
+  id: number;
+  tooltip_desc: string;
+  img: string;
+  name: string;
+}

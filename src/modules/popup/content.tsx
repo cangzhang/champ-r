@@ -257,6 +257,12 @@ export function Content() {
       <div className={s.main}>
         {championDetail && (
           <div className={s.drag}>
+            <StatefulPopover content={t(`hide`)} triggerType={TRIGGER_TYPE.hover}>
+              <button className={s.close} onClick={onClose}>
+                <X size={26} color={`#EA4C89`} />
+              </button>
+            </StatefulPopover>
+
             <StatefulPopover content={t(`pin/unpin`)} triggerType={TRIGGER_TYPE.hover}>
               <Pin onClick={toggleAlwaysOnTop}>
                 <PinBtn $pinned={pinned} />
@@ -303,12 +309,6 @@ export function Content() {
                 },
               }}
             />
-
-            <StatefulPopover content={t(`hide`)} triggerType={TRIGGER_TYPE.hover}>
-              <button className={s.close} onClick={onClose}>
-                <X size={26} color={`#EA4C89`} />
-              </button>
-            </StatefulPopover>
           </div>
         )}
 

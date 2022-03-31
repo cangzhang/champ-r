@@ -4,9 +4,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
 
-import { FragmentMap } from 'src/share/constants/runes';
 import { IRuneItem, ICSSProperties, ICoordinate } from '@interfaces/commonTypes';
 import { RuneRoot, RuneSlot } from 'src/types';
+import { ShardIds } from 'src/share/constants/runes';
 
 interface IProps {
   perk: IRuneItem | null;
@@ -23,7 +23,7 @@ export default function RunePreview({ perk, coordinate, runes }: IProps) {
   const mainSlot = runes.find((i) => i.id === primaryStyleId);
   const subSlot = runes.find((i) => i.id === subStyleId);
 
-  const renderRow = (isFragment = false) => {
+  const renderRuneSlot = (isFragment = false) => {
     const showAllRunes = window.innerWidth >= 380;
 
     return (slot: RuneSlot, idx: number) => {
@@ -50,6 +50,12 @@ export default function RunePreview({ perk, coordinate, runes }: IProps) {
     };
   };
 
+  const renderShards = () => {
+    const shards = selectedPerkIds.filter((i) => ShardIds.includes(i));
+
+    return <div className={s.shardCol}>{shards.join(', ')}</div>;
+  };
+
   const left = coordinate.width / 2;
   const total = coordinate.y + coordinate.height;
   const up = total > window.innerHeight - 160;
@@ -68,9 +74,10 @@ export default function RunePreview({ perk, coordinate, runes }: IProps) {
     <div style={style} className={cn(s.main, up && s.up)}>
       <span className={cn(s.bot, s.triangle)} />
       <span className={cn(s.top, s.triangle)} />
-      <div className={s.col}>{mainSlot?.slots.map(renderRow())}</div>
-      <div className={s.col}>{subSlot?.slots.map(renderRow())}</div>
-      {/*<div className={cn(s.col, s.fragment)}>{FragmentMap.map(renderRow(true))}</div>*/}
+      <div className={s.col}>{mainSlot?.slots.map(renderRuneSlot())}</div>
+      <div className={s.col}>{subSlot?.slots.map(renderRuneSlot())}</div>
+      {renderShards()}
+      {/*<div className={cn(s.col, s.fragment)}>{FragmentMap.map(renderRuneSlot(true))}</div>*/}
     </div>,
     document.querySelector(`#popup`) as HTMLDivElement,
   );
