@@ -79,3 +79,8 @@ yarn start
 ```console
 yarn build:local
 ```
+
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/cangzhang/champ-r.svg)](https://starchart.cc/cangzhang/champ-r)
