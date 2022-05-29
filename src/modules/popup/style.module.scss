@@ -33,6 +33,10 @@ body {
     width: 2rem;
     border-radius: 50%;
   }
+
+  button {
+    margin-right: 10px;
+  }
 }
 
 .item {
@@ -51,7 +55,6 @@ body {
   justify-content: center;
   height: 38px;
   width: 38px;
-  margin-left: 1rem;
   cursor: pointer;
   box-sizing: border-box;
 

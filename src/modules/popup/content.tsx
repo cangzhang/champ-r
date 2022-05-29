@@ -244,6 +244,12 @@ export function Content() {
               </Pin>
             </StatefulPopover>
 
+            <StatefulPopover content={t(`hide`)} triggerType={TRIGGER_TYPE.hover}>
+              <button className={s.close} onClick={onClose}>
+                <X size={26} color={`#EA4C89`} />
+              </button>
+            </StatefulPopover>
+
             <img
               key={championDetail.id}
               className={s.avatar}
@@ -284,12 +290,6 @@ export function Content() {
                 },
               }}
             />
-
-            <StatefulPopover content={t(`hide`)} triggerType={TRIGGER_TYPE.hover}>
-              <button className={s.close} onClick={onClose}>
-                <X size={26} color={`#EA4C89`} />
-              </button>
-            </StatefulPopover>
           </div>
         )}
 

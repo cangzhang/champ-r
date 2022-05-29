@@ -1,7 +1,6 @@
 import { nanoid as uuid } from 'nanoid';
 import _noop from 'lodash/noop';
 import axiosRetry from 'axios-retry';
-import cheerio from 'cheerio';
 
 import http, { CancelToken } from 'src/service/http';
 import { addFetched, addFetching } from 'src/share/actions';
@@ -13,12 +12,11 @@ import {
   IChampionInfo,
 } from '@interfaces/commonTypes';
 
-export const CDN_PREFIX = `https://cdn.jsdelivr.net/npm/@champ-r`;
+export const CDN_PREFIX = `https://unpkg.com/@champ-r`;
 export const CHINA_CDN_PREFIX = `https://npm.elemecdn.com/@champ-r`;
 
-export const T_NPM_PREFIX = `https://registry.npmmirror.com/@champ-r`;
-export const NPM_MIRROR = `https://registry.npmmirror.com`;
-export const T_NPM_WEB_URL_PREFIX = `https://npmmirror.com/package/@champ-r`;
+export const T_NPM_PREFIX = `https://mirrors.cloud.tencent.com/npm/@champ-r`;
+export const NPM_MIRROR = `https://mirrors.cloud.tencent.com/npm`;
 
 export const getCDNPrefix = (enableChinaCDN = false) =>
   enableChinaCDN ? CHINA_CDN_PREFIX : CDN_PREFIX;
@@ -60,12 +58,11 @@ export default class CdnService extends SourceProto {
   public tNpmUrl = ``;
   public version = ``;
   public sourceVersion = ``;
-  public webUrl = ``;
+  // public webUrl = ``;
 
   constructor(public pkgName = ``, public dispatch = _noop) {
     super();
     this.tNpmUrl = `${T_NPM_PREFIX}/${pkgName}/latest`;
-    this.webUrl = `${T_NPM_WEB_URL_PREFIX}/${pkgName}`;
   }
 
   get cdnPrefix() {
@@ -92,12 +89,11 @@ export default class CdnService extends SourceProto {
 
   public getLatestPkgVer = async () => {
     try {
-      const html: string = await http.get(`${this.webUrl}?_=${Date.now()}`);
-      const $ = cheerio.load(html);
-      this.version = $(`.pack-ver img`).attr(`title`) ?? ``;
-      const info: any = await http.get(`${T_NPM_PREFIX}/${this.pkgName}/${this.version}`);
-      this.sourceVersion = info.sourceVersion;
-      return info.version;
+      const data: { version: string; sourceVersion: string } = await http.get(
+        `${this.tNpmUrl}?_=${Date.now()}`,
+      );
+      this.sourceVersion = data.sourceVersion;
+      return data.version;
     } catch (err) {
       console.error(err);
       return Promise.resolve(`latest`);
