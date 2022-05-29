@@ -22,6 +22,7 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       shell: pwsh
       run: |
+        set NODE_OPTIONS=--openssl-legacy-provider
         $sha = (git rev-parse --short HEAD)
         npm i -g yarn
         yarn set version berry
