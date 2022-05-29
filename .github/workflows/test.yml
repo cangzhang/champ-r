@@ -19,16 +19,13 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
       with:
-        node-version: '16.10.0'
+        node-version: '16'
 
     - name: Build
       run: |
-        set NODE_OPTIONS=--openssl-legacy-provider
         $sha = (git rev-parse --short HEAD)
-        npm i -g yarn
-        yarn set version berry
-        yarn install --silent
-        $env:SHORT_SHA=$sha; yarn build:ci
+        npm install
+        $env:SHORT_SHA=$sha; npm run build:ci
 
     - name: Move artifacts
       id: vars

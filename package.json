@@ -17,27 +17,28 @@
   "main": "build/main.js",
   "scripts": {
     "prepare": "husky install",
-    "postinstall": "cross-env electron-builder install-app-deps && patch-package",
+    "postinstall": "npx cross-env electron-builder install-app-deps && patch-package",
     "clean:main": "npx rimraf build/",
     "compile:main": "tsc -p app/",
-    "start:electron": "nodemon --exec \"yarn clean:main && yarn compile:main && run-electron build/main.js --inspect=5858\"",
-    "start:react": "cross-env BROWSER=none NODE_ENV=development node scripts/start.js",
-    "start": "concurrently \"yarn start:react\" \"wait-on http://localhost:3000 && yarn start:electron\"",
-    "dist:local": "cross-env yarn compile:main && electron-builder --win --x64 -p never",
-    "dist:local-dir": "cross-env yarn compile:main && electron-builder --win --x64 -p never --dir",
-    "dist": "cross-env yarn compile:main && electron-builder --win --x64 -p always",
+    "start:electron": "nodemon --exec \"npm run clean:main && npm run compile:main && run-electron build/main.js --inspect=5858\"",
+    "start:react": "npx cross-env BROWSER=none NODE_ENV=development node scripts/start.js",
+    "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:3000 && npm run start:electron\"",
+    "dist:local": "npx cross-env npm run compile:main && electron-builder --win --x64 -p never",
+    "dist:local-dir": "npx cross-env npm run compile:main && electron-builder --win --x64 -p never --dir",
+    "dist": "npx cross-env npm run compile:main && electron-builder --win --x64 -p always",
     "build:react": "node scripts/build.js",
-    "build:local": "cross-env yarn build:react && yarn dist:local",
-    "build:local-dir": "cross-env yarn build:react && yarn dist:local-dir",
-    "build:ci": "yarn modify:version && cross-env BUILD_IN_CI=true yarn build:react && yarn dist:local",
-    "build": "cross-env yarn build:react && yarn dist",
-    "b": "cross-env TEST_CHANNEL=true yarn build:local",
-    "bl": "cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true yarn build:local",
-    "bld": "cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true yarn build:local-dir",
-    "release": "yarn build",
+    "build:local": "npx cross-env npm run build:react && npm run dist:local",
+    "build:local-dir": "npx cross-env npm run build:react && npm run dist:local-dir",
+    "build:ci": "npm run modify:version && npx cross-env BUILD_IN_CI=true npm run build:react && npm run dist:local",
+    "build": "npx cross-env npm run build:react && npm run dist",
+    "b": "npx cross-env TEST_CHANNEL=true npm run build:local",
+    "bl": "npx cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true npm run build:local",
+    "bld": "npx cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true npm run build:local-dir",
+    "release": "npm run build",
     "pack": "electron-builder --dir",
     "lint": "eslint --fix",
-    "modify:version": "node scripts/modify-build-version.js"
+    "modify:version": "node scripts/modify-build-version.js",
+    "test": "echo 0"
   },
   "dependencies": {
     "axios": "^0.21.4",
@@ -140,7 +141,6 @@
     "optimize-css-assets-webpack-plugin": "5.0.3",
     "patch-package": "^6.4.7",
     "pnp-webpack-plugin": "1.5.0",
-    "postinstall-postinstall": "^2.1.0",
     "prettier": "2.0.5",
     "react-app-polyfill": "^1.0.5",
     "react-dev-utils": "^11.0.4",
@@ -205,5 +205,5 @@
       "prettier --write"
     ]
   },
-  "packageManager": "yarn@3.2.0"
+  "packageManager": "npm run@3.2.0"
 }

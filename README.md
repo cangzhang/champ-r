@@ -59,25 +59,24 @@ Check https://github.com/cangzhang/champ-r/wiki/FAQ
 
 ### Prerequisite
 
-- [Node.js](https://nodejs.org/en/) >= 10
-- [yarn](https://classic.yarnpkg.com/lang/en/)
+- [Node.js](https://nodejs.org/en/) >= 14
 
 ### Install dependencies
 
 ```console
-yarn
+npm install
 ```
 
 ### Start
 
 ```console
-yarn start
+npm run start
 ```
 
 ### Build
 
 ```console
-yarn build:local
+npm run build:local
 ```
 
 
