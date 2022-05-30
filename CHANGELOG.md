@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.2
+- change: replace cdn urls
+- minor style update
+
 ## v1.2.1
 - change: disable cache for fetching source list.
 
