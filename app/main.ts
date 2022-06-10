@@ -474,6 +474,12 @@ function registerUpdater() {
   registerUpdater();
 
   await makeTray();
+
+  if (appConfig.get(`startMinimized`)) {
+    mainWindow.hide();
+    mainWindow.setSkipTaskbar(true);
+  }
+
   const userId = await getMachineId();
 
   console.log(`userId: ${userId}`);
