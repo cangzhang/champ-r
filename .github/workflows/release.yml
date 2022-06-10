@@ -23,7 +23,7 @@ jobs:
       shell: pwsh
       run: |
         $sha = (git rev-parse --short HEAD)
-        npm install
+        npm ci
         $env:SHORT_SHA=$sha; npm run release
 
     - name: Move artifacts

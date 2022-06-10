@@ -29,7 +29,7 @@
     "build:react": "node scripts/build.js",
     "build:local": "npx cross-env npm run build:react && npm run dist:local",
     "build:local-dir": "npx cross-env npm run build:react && npm run dist:local-dir",
-    "build:ci": "npm run modify:version && npx cross-env BUILD_IN_CI=true npm run build:react && npm run dist:local",
+    "build:ci": "npm run modify:version && npm run build:react && npm run dist:local",
     "build": "npx cross-env npm run build:react && npm run dist",
     "b": "npx cross-env TEST_CHANNEL=true npm run build:local",
     "bl": "npx cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true npm run build:local",
@@ -83,7 +83,6 @@
     "@babel/helper-builder-react-jsx": "^7.15.4",
     "@babel/helper-builder-react-jsx-experimental": "^7.12.11",
     "@babel/plugin-transform-react-jsx": "^7.14.9",
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@svgr/webpack": "^5.5.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -204,6 +203,5 @@
     "{app,src,config,interfaces,scripts}/**/*.{ts,tsx,js,json,css,scss,md}": [
       "prettier --write"
     ]
-  },
-  "packageManager": "npm run@3.2.0"
+  }
 }

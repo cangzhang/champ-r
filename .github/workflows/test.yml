@@ -23,9 +23,9 @@ jobs:
 
     - name: Build
       run: |
+        npm ci
         $sha = (git rev-parse --short HEAD)
-        npm install
-        $env:SHORT_SHA=$sha; npm run build:ci
+        $env:BUILD_IN_CI=true; $env:SHORT_SHA=$sha; npm run build:ci
 
     - name: Move artifacts
       id: vars
