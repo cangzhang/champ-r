@@ -23,5 +23,6 @@ export const appConfig = new Store({
     lolDirHasCJKChar: false,
     alwaysRequestLatestVersion: false,
     enableChinaCDN: false,
+    startMinimized: false,
   },
 });

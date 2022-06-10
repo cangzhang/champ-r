@@ -30,6 +30,7 @@ export default {
     applied: `Runes appliquées avec succès`,
     'please specify lol dir': `Veuillez d'abord spécifier le répertoire où se trouve LOL.`,
     'ignore system scale': `Ignorer l'échelle du système (redémarrage requis)`,
+    'start minimized': `Réduire en icône sur la barre après lancement`,
     'restart app': `Redémarrer ChampR`,
     aram: `ARAM`,
     'data sources': `<strong>Sources de données:</strong>`,

@@ -40,6 +40,7 @@ export default function Settings() {
     window.bridge.appConfig.get(`ignoreSystemScale`),
   );
   const [enableChinaCDN, toggleCNServer] = useState(window.bridge.appConfig.get(`enableChinaCDN`));
+  const [startMinimized, setStartMinimized] = useState(window.bridge.appConfig.get(`startMinimized`));
 
   const recorder = useRef(false);
 
@@ -63,6 +64,12 @@ export default function Settings() {
     toggleCNServer(checked);
     window.bridge.appConfig.set(`enableChinaCDN`, checked);
   };
+
+  const onStartMinimized = (e: FormEvent<HTMLInputElement>) => {
+    const { checked } = e.currentTarget;
+    setStartMinimized(checked);
+    window.bridge.appConfig.set(`startMinimized`, checked);
+  }
 
   useEffect(() => {
     const lang = _get(values, `0.value`, sysLang);
@@ -150,6 +157,32 @@ export default function Settings() {
           },
         }}>
         {t(`mirror server`)}
+      </Checkbox>
+
+      <Checkbox
+        checked={startMinimized}
+        checkmarkType={STYLE_TYPE.toggle_round}
+        onChange={onStartMinimized}
+        overrides={{
+          Root: {
+            style: () => ({
+              height: `48px`,
+              display: `flex`,
+              alignItems: `center`,
+              marginTop: `1em`,
+            }),
+          },
+          Label: {
+            style: ({ $theme }) => {
+              return {
+                fontSize: $theme.typography.ParagraphMedium,
+                fontWeight: 600,
+                marginRight: `auto`,
+              };
+            },
+          },
+        }}>
+        {t(`start minimized`)}
       </Checkbox>
 
       <div className={s.ctrlBtns}>
