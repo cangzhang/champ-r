@@ -20,12 +20,16 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '16'
+    - uses: pnpm/action-setup@v2.2.2
+      with:
+        version: 'latest'
 
     - name: Build
       run: |
-        npm ci
         $sha = (git rev-parse --short HEAD)
-        $env:BUILD_IN_CI=true; $env:SHORT_SHA=$sha; npm run build:ci
+        echo 'node-linker=hoisted' > .npmrc # make it work with electron
+        pnpm i --frozen-lockfile
+        $env:SHORT_SHA=$sha; pnpm run build:ci
 
     - name: Move artifacts
       id: vars
