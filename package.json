@@ -20,21 +20,21 @@
     "postinstall": "npx cross-env electron-builder install-app-deps && patch-package",
     "clean:main": "npx rimraf build/",
     "compile:main": "tsc -p app/",
-    "start:electron": "nodemon --exec \"npm run clean:main && npm run compile:main && run-electron build/main.js --inspect=5858\"",
+    "start:electron": "nodemon --exec \"pnpm run clean:main && pnpm run compile:main && run-electron build/main.js --inspect=5858\"",
     "start:react": "npx cross-env BROWSER=none NODE_ENV=development node scripts/start.js",
-    "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:3000 && npm run start:electron\"",
-    "dist:local": "npx cross-env npm run compile:main && electron-builder --win --x64 -p never",
-    "dist:local-dir": "npx cross-env npm run compile:main && electron-builder --win --x64 -p never --dir",
-    "dist": "npx cross-env npm run compile:main && electron-builder --win --x64 -p always",
+    "start": "concurrently \"pnpm run start:react\" \"wait-on http://localhost:3000 && pnpm run start:electron\"",
+    "dist:local": "npx cross-env pnpm run compile:main && electron-builder --win --x64 -p never",
+    "dist:local-dir": "npx cross-env pnpm run compile:main && electron-builder --win --x64 -p never --dir",
+    "dist": "npx cross-env pnpm run compile:main && electron-builder --win --x64 -p always",
     "build:react": "node scripts/build.js",
-    "build:local": "npx cross-env npm run build:react && npm run dist:local",
-    "build:local-dir": "npx cross-env npm run build:react && npm run dist:local-dir",
-    "build:ci": "npm run modify:version && npx cross-env BUILD_IN_CI=true npm run build:react && npm run dist:local",
-    "build": "npx cross-env npm run build:react && npm run dist",
-    "b": "npx cross-env TEST_CHANNEL=true npm run build:local",
-    "bl": "npx cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true npm run build:local",
-    "bld": "npx cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true npm run build:local-dir",
-    "release": "npm run build",
+    "build:local": "npx cross-env pnpm run build:react && pnpm run dist:local",
+    "build:local-dir": "npx cross-env pnpm run build:react && pnpm run dist:local-dir",
+    "build:ci": "pnpm run modify:version && npx cross-env BUILD_IN_CI=true pnpm run build:react && pnpm run dist:local",
+    "build": "npx cross-env pnpm run build:react && pnpm run dist",
+    "b": "npx cross-env TEST_CHANNEL=true pnpm run build:local",
+    "bl": "npx cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true pnpm run build:local",
+    "bld": "npx cross-env SHOW_POPUP_TRIGGER=true TEST_CHANNEL=true pnpm run build:local-dir",
+    "release": "pnpm run build",
     "pack": "electron-builder --dir",
     "lint": "eslint --fix",
     "modify:version": "node scripts/modify-build-version.js",
@@ -204,6 +204,5 @@
     "{app,src,config,interfaces,scripts}/**/*.{ts,tsx,js,json,css,scss,md}": [
       "prettier --write"
     ]
-  },
-  "packageManager": "npm run@3.2.0"
+  }
 }

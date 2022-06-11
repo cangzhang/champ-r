@@ -20,12 +20,14 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '16'
+    - uses: pnpm/action-setup@v2.2.2
 
     - name: Build
       run: |
         $sha = (git rev-parse --short HEAD)
-        npm install
-        $env:SHORT_SHA=$sha; npm run build:ci
+        echo 'node-linker=hoisted' > .npmrc
+        pnpm i
+        $env:SHORT_SHA=$sha; pnpm run build:ci
 
     - name: Move artifacts
       id: vars

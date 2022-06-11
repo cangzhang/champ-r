@@ -70,13 +70,13 @@ npm install
 ### Start
 
 ```console
-npm run start
+pnpm run start
 ```
 
 ### Build
 
 ```console
-npm run build:local
+pnpm run build:local
 ```
 
 
