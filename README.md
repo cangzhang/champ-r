@@ -39,7 +39,7 @@ https://github.com/cangzhang/champ-r/releases
 ### Import builds
 
 1. Run ChampR as **administrator**
-1. Choose the installation folder of League of Lengends
+1. Choose the **installation folder** of League of Legends
 1. Select data sources
 1. Hit `Import` button
 1. You can find them in the shop menu when playing game
@@ -47,7 +47,7 @@ https://github.com/cangzhang/champ-r/releases
 ### Apply Runes
 
 1. Run ChampR as **administrator**
-1. Choose the installation folder of League of Lengends
+1. Choose the **installation folder** of League of Legends
 1. Start pvp game, the rune popup would show in the screen
 1. Press `Apply` icon
 
@@ -64,7 +64,7 @@ Check https://github.com/cangzhang/champ-r/wiki/FAQ
 ### Install dependencies
 
 ```console
-npm install
+pnpm install
 ```
 
 ### Start
