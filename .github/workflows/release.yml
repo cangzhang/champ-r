@@ -17,6 +17,8 @@ jobs:
       with:
         node-version: '16'
     - uses: pnpm/action-setup@v2.2.2
+      with:
+        version: 'latest'
 
     - name: Build & release
       env:
