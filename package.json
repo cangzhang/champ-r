@@ -41,6 +41,8 @@
     "test": "echo Skipped test"
   },
   "dependencies": {
+    "@types/react": "17.0.11",
+    "@types/react-dom": "17.0.11",
     "axios": "^0.21.4",
     "axios-retry": "^3.2.4",
     "baseui": "9.116.0",
@@ -83,11 +85,8 @@
     "@babel/helper-builder-react-jsx": "^7.15.4",
     "@babel/helper-builder-react-jsx-experimental": "^7.12.11",
     "@babel/plugin-transform-react-jsx": "^7.14.9",
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
+    "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@svgr/webpack": "^5.5.0",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
     "@types/cheerio": "^0.22.28",
     "@types/classnames": "^2.2.11",
     "@types/lodash": "^4.14.168",
