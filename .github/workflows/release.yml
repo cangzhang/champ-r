@@ -26,8 +26,8 @@ jobs:
       shell: pwsh
       run: |
         $sha = (git rev-parse --short HEAD)
-        echo 'node-linker=hoisted' > .npmrc
-        pnpm i
+        echo 'node-linker=hoisted' > .npmrc # make it work with electron
+        pnpm i --frozen-lockfile
         $env:SHORT_SHA=$sha; pnpm run release
 
     - name: Move artifacts
