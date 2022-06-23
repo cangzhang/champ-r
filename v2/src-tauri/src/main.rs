@@ -3,24 +3,37 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
+use tauri::{CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowBuilder, WindowUrl};
+use tauri::Manager;
 
 pub mod commands;
 
 fn main() {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let toggle_rune = CustomMenuItem::new("toggleRuneWindow", "Toggle");
-    let menu = Menu::new()
-        .add_submenu(Submenu::new("Quit", Menu::new().add_item(quit)))
-        .add_submenu(Submenu::new("Control", Menu::new().add_item(toggle_rune)));
+    let tray_menu = SystemTrayMenu::new()
+        .add_item(CustomMenuItem::new("toggle_window", "Toggle"))
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(CustomMenuItem::new("quit", "Quit").accelerator("CmdOrControl+Q"));
 
     let context = tauri::generate_context!();
-    let app = tauri::Builder::default()
-        .menu(menu)
-        .on_menu_event(|ev| {
-            match ev.menu_item_id() {
-                "toggleRuneWindow" => {
-                    format!("toggle rune window");
+    let _app = tauri::Builder::default()
+        .setup(|_app| {
+            Ok(())
+        })
+        .system_tray(SystemTray::new().with_menu(tray_menu))
+        .on_system_tray_event(move |app_handle, event| {
+            match event {
+                SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
+                    "toggle_window" => {
+                        let rune_window = WindowBuilder::new(
+                            app_handle,
+                            "rune",
+                            WindowUrl::App("rune.html".into()),
+                        ).build().unwrap();
+                        rune_window.set_title("Rune Case");
+                    }
+                    _ => {
+                        println!("{}", id.as_str());
+                    }
                 }
                 _ => {}
             }

@@ -17,13 +17,14 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <button onClick={onCall}>hello there</button>
+    <section className="App">
+      <div className="App-header">
+        <h1>HOME</h1>
+        <button onClick={onCall}>say hello</button>
         <button onClick={onToggleWindow}>show window</button>
-      </header>
+      </div>
       <div>{str}</div>
-    </div>
+    </section>
   );
 }
 
