@@ -3,10 +3,10 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
-use tauri::{CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowBuilder, WindowUrl};
-use tauri::Manager;
+use tauri::{CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 
 pub mod commands;
+pub mod rune_window;
 
 fn main() {
     let tray_menu = SystemTrayMenu::new()
@@ -24,12 +24,7 @@ fn main() {
             match event {
                 SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
                     "toggle_window" => {
-                        let rune_window = WindowBuilder::new(
-                            app_handle,
-                            "rune",
-                            WindowUrl::App("rune.html".into()),
-                        ).build().unwrap();
-                        rune_window.set_title("Rune Case");
+                        let _ = rune_window::toggle_rune_window(app_handle);
                     }
                     _ => {
                         println!("{}", id.as_str());
