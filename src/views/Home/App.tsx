@@ -7,13 +7,13 @@ function App() {
   const [str, setStr] = useState(``);
 
   const onCall = () => {
-    invoke(`greeting`, {name: 'al'}).then((ret) => {
+    invoke(`greeting`, { name: 'al' }).then((ret) => {
       setStr(ret as string);
     });
   }
 
   const onToggleWindow = () => {
-      invoke(`show_popup`);
+    invoke(`emit_msg`);
   }
 
   return (
