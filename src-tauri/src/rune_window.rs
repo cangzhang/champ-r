@@ -1,8 +1,9 @@
 use tauri::{AppHandle, Manager, WindowBuilder, WindowUrl};
 
-pub fn toggle_rune_window(app_handle: &AppHandle) {
+pub fn toggle(app_handle: &AppHandle) {
     let w = app_handle.get_window("rune");
     if let Some(w) = w {
+        println!("rune existed");
         let v = w.is_visible().unwrap();
         if v {
             let _ = w.hide();
@@ -16,6 +17,10 @@ pub fn toggle_rune_window(app_handle: &AppHandle) {
         app_handle,
         "rune",
         WindowUrl::App("rune.html".into()),
-    ).build().unwrap();
-    let _ = w.set_title("Rune Case");
+    )
+    .title("Rune")
+    .build()
+    .unwrap();
+    
+    println!("rune created");
 }

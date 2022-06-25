@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api';
+import { emit, listen } from '@tauri-apps/api/event'
 
 import './App.css';
 
@@ -13,6 +14,7 @@ function App() {
   }
 
   const onToggleWindow = () => {
+    // emit("event-name", { message: 'emit' })
     invoke(`emit_msg`);
   }
 
