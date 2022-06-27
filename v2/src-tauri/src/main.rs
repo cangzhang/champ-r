@@ -24,27 +24,10 @@ fn main() {
     let context = tauri::generate_context!();
     let _app = tauri::Builder::default()
         .setup(|app| {
-            let main_window = app.get_window("main").unwrap();
             let handle = app.handle();
-
-            std::thread::spawn(move || {
-                let _ = tauri::WindowBuilder::new(
-                    &handle,
-                    "rune",
-                    tauri::WindowUrl::App("rune.html".into()),
-                )
-                .visible(false)
-                .build();
-            });
-
-            let _id = main_window.listen("toggle_rune-global", move |event| {
+            let _id = app.listen_global("toggle_rune-global", move |event| {
                 println!("global listener, payload {:?}", event.payload().unwrap());
-                // let w = app.get_window("main").unwrap();
-                // if w.is_visible().unwrap() {
-                //     w.hide();
-                // } else {
-                //     w.show();
-                // }
+                rune_window::toggle(&handle);
             });
 
             Ok(())
