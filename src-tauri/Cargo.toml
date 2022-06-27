@@ -1,11 +1,11 @@
 [package]
-name = "app"
+name = "champr"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
+description = "Another League of Legends helper"
+authors = ["Al Cheung<cangzan@gmail.com>"]
+license = "LGPL"
 repository = ""
-default-run = "app"
+default-run = "champr"
 edition = "2021"
 rust-version = "1.57"
 
