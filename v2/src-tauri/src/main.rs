@@ -9,6 +9,8 @@ use tauri::{
 
 pub mod commands;
 pub mod rune_window;
+pub mod builds;
+pub mod web;
 
 #[derive(Clone, serde::Serialize)]
 pub struct Payload {
