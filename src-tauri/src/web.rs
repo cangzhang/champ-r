@@ -71,3 +71,24 @@ pub async fn fetch_champ_list(version: &String) -> anyhow::Result<ChampListResp>
     let data = resp.json::<ChampListResp>().await?;
     Ok(data)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn fetch_latest_champs() {
+        let v = match fetch_lol_latest_version().await {
+            Ok(v) => v,
+            Err(e) => panic!("get latest lol version error, {:?}", e),
+        };
+
+        match fetch_champ_list(&v).await {
+            Ok(resp) => {
+                println!("{:?}", resp);
+                println!("Total: {:?}, version: {:?}", resp.data.len(), resp.version);
+            }
+            Err(e) => panic!("get champ list error, {:?}", e),
+        };
+    }
+}
