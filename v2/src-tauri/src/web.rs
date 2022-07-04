@@ -69,7 +69,98 @@ pub async fn fetch_champ_list(version: &String) -> anyhow::Result<ChampListResp>
     );
     let resp = reqwest::get(url).await?;
     let data = resp.json::<ChampListResp>().await?;
+
     Ok(data)
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChampData {
+    pub index: u32,
+    pub id: String,
+    pub version: String,
+    pub official_version: String,
+    pub timestamp: u64,
+    pub alias: String,
+    pub name: String,
+    pub position: String,
+    pub skills: Option<Vec<String>>,
+    pub spells: Option<Vec<String>>,
+    pub item_builds: Vec<ItemBuild>,
+    pub runes: Vec<Rune>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ItemBuild {
+    pub title: String,
+    pub associated_maps: Vec<u32>,
+    pub associated_champions: Vec<u32>,
+    pub blocks: Vec<Block>,
+    pub map: String,
+    pub mode: String,
+    // pub preferred_item_slots: Vec<Value>,
+    pub sortrank: u32,
+    pub started_from: String,
+    #[serde(rename = "type")]
+    pub type_field: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Block {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub items: Option<Vec<Item>>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Item {
+    pub id: String,
+    pub count: u64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Rune {
+    pub alias: String,
+    pub name: String,
+    pub position: String,
+    pub pick_count: u64,
+    pub win_rate: String,
+    pub primary_style_id: u32,
+    pub sub_style_id: u32,
+    pub selected_perk_ids: Vec<u32>,
+    pub score: f64,
+}
+
+pub async fn fetch_champ_file(
+    source: &String,
+    version: &String,
+    champ_name: &String,
+) -> anyhow::Result<Option<Vec<ChampData>>> {
+    let url = format!(
+        "{cdn}/{source}@{version}/{champ_name}.json",
+        cdn = CDN_UNPKG,
+        source = source,
+        version = version,
+        champ_name = champ_name,
+    );
+    println!("fetching champ file {}", &url);
+
+    let resp = reqwest::get(&url).await?;
+    if !resp.status().is_success() {
+        println!("fetch champ file failed, {} {}", &source, &champ_name);
+    }
+
+    match resp.json::<Vec<ChampData>>().await {
+        Ok(data) => Ok(Some(data)),
+        Err(e) => {
+            println!("failed {}, {:?}", url, e.to_string());
+            Ok(None)
+        }
+    }
 }
 
 #[cfg(test)]
