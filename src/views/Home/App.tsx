@@ -14,8 +14,11 @@ function App() {
   }
 
   const onToggleWindow = () => {
-    // emit("event-name", { message: 'emit' })
-    invoke(`emit_msg`);
+    invoke(`toggle_rune_window`);
+  }
+
+  const applyBuilds = () => {
+    invoke(`apply_builds_from_sources`, { sources: [`op.gg-aram`], keep_old: false });
   }
 
   return (
@@ -24,6 +27,7 @@ function App() {
         <h1>HOME</h1>
         <button onClick={onCall}>say hello</button>
         <button onClick={onToggleWindow}>show window</button>
+        <button onClick={applyBuilds}>Apply</button>
       </div>
       <div>{str}</div>
     </section>

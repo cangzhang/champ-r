@@ -7,9 +7,9 @@ use tauri::{
     CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
 
+pub mod builds;
 pub mod commands;
 pub mod rune_window;
-pub mod builds;
 pub mod web;
 
 #[derive(Clone, serde::Serialize)]
@@ -20,6 +20,7 @@ pub struct Payload {
 fn main() {
     let tray_menu = SystemTrayMenu::new()
         .add_item(CustomMenuItem::new("toggle_window", "Toggle"))
+        .add_item(CustomMenuItem::new("apply_builds", "Apply Builds"))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("quit", "Quit").accelerator("CmdOrControl+Q"));
 
@@ -40,6 +41,14 @@ fn main() {
                 "toggle_window" => {
                     let _ = rune_window::toggle(app_handle);
                 }
+                "apply_builds" => {
+                    println!("[tray] apply builds");
+                    builds::apply_builds(
+                        vec!["op.gg-aram".to_string()],
+                        "../.cdn_files".to_string(),
+                        false,
+                    );
+                }
                 _ => {
                     println!("{}", id.as_str());
                 }
@@ -48,7 +57,8 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::greeting,
-            commands::emit_msg,
+            commands::toggle_rune_window,
+            commands::apply_builds_from_sources,
         ])
         .run(context)
         .expect("error while running tauri application");
