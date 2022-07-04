@@ -19,7 +19,9 @@ pub async fn apply_builds(
     dir: String,
     keep_old: bool,
 ) -> anyhow::Result<Vec<(bool, String, String)>> {
-    let path_exists = std::path::Path::new(&dir).exists();
+    let dir_path = std::path::Path::new(&dir);
+    println!("dir: {:?}", dir_path);
+    let path_exists = dir_path.exists();
     if path_exists && !keep_old {
         tokio::fs::remove_dir_all(dir.clone()).await?;
         println!("[builds] emptied dir: {}", dir);
