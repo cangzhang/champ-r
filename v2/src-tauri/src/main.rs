@@ -43,15 +43,13 @@ fn main() {
                 }
                 "apply_builds" => {
                     println!("[tray] apply builds");
-                    std::thread::spawn(|| {
-                        async_std::task::block_on(async {
-                            let _ = builds::apply_builds(
-                                vec!["op.gg-aram".to_string()],
-                                "../.cdn_files".to_string(),
-                                false,
-                            )
-                            .await;
-                        });
+                    async_std::task::spawn(async {
+                        let _ = builds::apply_builds(
+                            vec!["op.gg-aram".to_string()],
+                            "../.cdn_files".to_string(),
+                            false,
+                        )
+                        .await;
                     });
                 }
                 _ => {
