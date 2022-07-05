@@ -43,14 +43,11 @@ fn main() {
                 }
                 "apply_builds" => {
                     println!("[tray] apply builds");
-                    async_std::task::spawn(async {
-                        let _ = builds::apply_builds(
-                            vec!["op.gg-aram".to_string()],
-                            "../.cdn_files".to_string(),
-                            false,
-                        )
-                        .await;
-                    });
+                    crate::builds::spawn_apply_task(
+                        vec!["op.gg-aram".to_string()],
+                        "../.cdn_files".to_string(),
+                        false,
+                    )
                 }
                 _ => {
                     println!("{}", id.as_str());
