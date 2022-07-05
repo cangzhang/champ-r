@@ -11,8 +11,12 @@ pub fn toggle_rune_window(window: Window) {
 }
 
 #[tauri::command]
-pub fn apply_builds_from_sources(sources: Vec<&str>, keep_old: bool) {
-    println!("get ready to apply builds...");
-    let sources = sources.iter().map(|i| i.to_string()).collect();
-    let _ = crate::builds::apply_builds(sources, "../.cdn_files".to_string(), keep_old);
+pub fn apply_builds_from_sources(sources: Vec<String>, keep_old: bool) {
+    async_std::task::spawn(async move {
+        println!(
+            "[browser commands] get ready to apply builds. sources: {:?}, keepOld: {:?}",
+            &sources, keep_old
+        );
+        let _ = crate::builds::apply_builds(sources, "../.cdn_files".to_string(), keep_old).await;
+    });
 }

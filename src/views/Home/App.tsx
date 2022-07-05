@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api';
-import { emit, listen } from '@tauri-apps/api/event'
 
 import './App.css';
 
@@ -18,16 +17,16 @@ function App() {
   }
 
   const applyBuilds = () => {
-    invoke(`apply_builds_from_sources`, { sources: [`op.gg-aram`], keep_old: false });
+    invoke(`apply_builds_from_sources`, { sources: ["op.gg-aram"], keepOld: false });
   }
 
   return (
     <section className="App">
       <div className="App-header">
         <h1>HOME</h1>
-        <button onClick={onCall}>say hello</button>
-        <button onClick={onToggleWindow}>show window</button>
-        <button onClick={applyBuilds}>Apply</button>
+        <button onClick={onCall}>Say Hello</button>
+        <button onClick={onToggleWindow}>Toggle Window</button>
+        <button onClick={applyBuilds}>Apply Builds</button>
       </div>
       <div>{str}</div>
     </section>
