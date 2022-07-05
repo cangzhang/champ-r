@@ -17,7 +17,7 @@ function App() {
   }
 
   const applyBuilds = () => {
-    invoke(`apply_builds_from_sources`, { sources: ["op.gg-aram"], keepOld: false });
+    invoke(`apply_builds_from_sources`, { sources: ["op.gg-aram"], dir: "../.cdn_files", keepOld: false });
   }
 
   return (

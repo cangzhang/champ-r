@@ -99,6 +99,12 @@ pub async fn apply_builds(
     Ok(results)
 }
 
+pub fn spawn_apply_task(sources: Vec<String>, dir: String, keep_old: bool) {
+    async_std::task::spawn(async move {
+        let _ = apply_builds(sources, dir, keep_old).await;
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
