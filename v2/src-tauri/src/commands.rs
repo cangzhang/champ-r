@@ -1,3 +1,5 @@
+use tauri::Manager;
+
 #[tauri::command]
 pub fn greeting(name: &str) -> String {
     format!("Hello {}", name)
@@ -9,6 +11,13 @@ pub fn toggle_rune_window(window: tauri::Window) {
 }
 
 #[tauri::command]
-pub fn apply_builds_from_sources(sources: Vec<String>, dir: String, keep_old: bool) {
-    crate::builds::spawn_apply_task(sources, dir, keep_old);
+pub fn apply_builds_from_sources(
+    app_handle: tauri::AppHandle,
+    sources: Vec<String>,
+    dir: String,
+    keep_old: bool,
+) {
+    let w = app_handle.get_window("main").unwrap();
+    println!("{}", w.label());
+    crate::builds::spawn_apply_task(sources, dir, keep_old, &w);
 }

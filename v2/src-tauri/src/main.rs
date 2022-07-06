@@ -43,10 +43,12 @@ fn main() {
                 }
                 "apply_builds" => {
                     println!("[tray] apply builds");
+                    let w = app_handle.get_window("main").unwrap();
                     crate::builds::spawn_apply_task(
                         vec!["op.gg-aram".to_string()],
                         "../.cdn_files".to_string(),
                         false,
+                        &w,
                     )
                 }
                 _ => {

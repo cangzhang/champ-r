@@ -18,6 +18,7 @@ pub async fn apply_builds(
     sources: Vec<String>,
     dir: String,
     keep_old: bool,
+    window: Option<&tauri::Window>,
 ) -> anyhow::Result<Vec<(bool, String, String)>> {
     let dir_path = std::path::Path::new(&dir);
     println!("dir: {:?}", dir_path);
@@ -65,14 +66,27 @@ pub async fn apply_builds(
                             idx = idx,
                             iidx = iidx
                         );
-                        match save_build(p, build).await {
+                        let r = match save_build(p, build).await {
                             Ok(_) => {
                                 tx.send((true, source.clone(), champ_name.clone())).unwrap();
+                                true
                             }
                             Err(e) => {
                                 println!("save err: {:?}", e);
                                 tx.send((false, source.clone(), champ_name.clone()))
                                     .unwrap();
+                                false
+                            }
+                        };
+                        match window {
+                            Some(w) => {
+                                let _ = w.emit(
+                                    "apply_build_result",
+                                    (r, source.clone(), champ_name.clone()),
+                                );
+                            }
+                            _ => {
+                                println!("window not defined, skipped emitting.");
                             }
                         }
                     }
@@ -99,9 +113,10 @@ pub async fn apply_builds(
     Ok(results)
 }
 
-pub fn spawn_apply_task(sources: Vec<String>, dir: String, keep_old: bool) {
+pub fn spawn_apply_task(sources: Vec<String>, dir: String, keep_old: bool, window: &tauri::Window) {
+    let w = window.clone();
     async_std::task::spawn(async move {
-        let _ = apply_builds(sources, dir, keep_old).await;
+        let _ = apply_builds(sources, dir, keep_old, Some(&w)).await;
     });
 }
 
@@ -125,7 +140,7 @@ mod tests {
             sources, keep_old
         );
 
-        match apply_builds(sources, folder, keep_old).await {
+        match apply_builds(sources, folder, keep_old, None).await {
             Ok(_) => {
                 println!("all set");
             }
