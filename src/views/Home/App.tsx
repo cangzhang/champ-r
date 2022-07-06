@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api';
+import { emit, listen } from '@tauri-apps/api/event'
 
 import './App.css';
 
@@ -19,6 +20,12 @@ function App() {
   const applyBuilds = () => {
     invoke(`apply_builds_from_sources`, { sources: ["op.gg-aram"], dir: "../.cdn_files", keepOld: false });
   }
+
+  useEffect(() => {
+    listen("apply_build_result", ev => {
+      console.log(ev.payload);
+    });
+  }, [])
 
   return (
     <section className="App">
