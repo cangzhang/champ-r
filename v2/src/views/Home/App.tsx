@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api';
-import { appWindow } from '@tauri-apps/api/window'
+import { listen } from '@tauri-apps/api/event'
 
 import './App.css';
 
@@ -41,7 +41,7 @@ function App() {
         await unlistener.current();
       }
 
-      unlistener.current = await appWindow.listen("apply_build_result", ev => {
+      unlistener.current = await listen("apply_build_result", ev => {
         console.log(ev.payload);
         updateResult(ev.payload as Array<any>);
       });
