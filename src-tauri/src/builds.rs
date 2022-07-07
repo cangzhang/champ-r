@@ -14,6 +14,10 @@ pub async fn save_build(path: String, data: &web::ItemBuild) -> anyhow::Result<(
     Ok(())
 }
 
+pub fn make_id() -> String {
+    uuid::Uuid::new_v4().to_string()
+}
+
 pub async fn apply_builds(
     sources: Vec<String>,
     dir: String,
@@ -26,6 +30,12 @@ pub async fn apply_builds(
     if path_exists && !keep_old {
         tokio::fs::remove_dir_all(dir.clone()).await?;
         println!("[builds] emptied dir: {}", dir);
+        match window {
+            Some(w) => {
+                let _ = w.emit("apply_build_result", vec!["emptied_lol_builds_dir".to_string(), make_id()]);
+            }
+            _ => {}
+        }
     }
 
     let lol_ver = web::fetch_lol_latest_version().await?;
@@ -53,11 +63,29 @@ pub async fn apply_builds(
                 if data.len() == 0 {
                     tx.send((false, source.clone(), champ_name.clone()))
                         .unwrap();
-                    println!("apply failed: {} {}", &source, &champ_name)
+                    match window {
+                        Some(w) => {
+                            let _ = w.emit(
+                                "apply_build_result",
+                                (false, source.clone(), champ_name.clone(), make_id()),
+                            );
+                        }
+                        _ => {}
+                    }
+                    println!("apply failed: {} {}", &source, &champ_name);
                 }
 
                 for (idx, i) in data.iter().enumerate() {
                     for (iidx, build) in i.item_builds.iter().enumerate() {
+                        match window {
+                            Some(w) => {
+                                let _ = w.emit(
+                                    "apply_build_result",
+                                    ("ready_to_fetch".to_string(), source.clone(), champ_name.clone(), make_id()),
+                                );
+                            }
+                            _ => {}
+                        }
                         let p = format!(
                             "{path}/{champ_name}/{source}-{champ_name}-{idx}-{iidx}.json",
                             path = path,
@@ -82,7 +110,7 @@ pub async fn apply_builds(
                             Some(w) => {
                                 let _ = w.emit(
                                     "apply_build_result",
-                                    (r, source.clone(), champ_name.clone()),
+                                    (r, source.clone(), champ_name.clone(), make_id()),
                                 );
                             }
                             _ => {
@@ -127,10 +155,10 @@ mod tests {
     #[tokio::test]
     async fn save_build() {
         let sources = vec![
-            // "op.gg-aram".to_string(),
-            "op.gg".to_string(),
+            "op.gg-aram".to_string(),
+            // "op.gg".to_string(),
             // "lolalytics".to_string(),
-            // "lolalytics-aram".to_string(),
+            "lolalytics-aram".to_string(),
         ];
         let folder = "../.cdn_files".to_string();
         let keep_old = false;
