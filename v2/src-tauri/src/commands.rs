@@ -18,6 +18,5 @@ pub fn apply_builds_from_sources(
     keep_old: bool,
 ) {
     let w = app_handle.get_window("main").unwrap();
-    println!("{}", w.label());
     crate::builds::spawn_apply_task(sources, dir, keep_old, &w);
 }
