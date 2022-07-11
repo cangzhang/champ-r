@@ -23,23 +23,16 @@ tokio = { version = "1", features = ["full"] }
 futures = "0.3"
 anyhow = "1.0"
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
+rand = "0.8.5"
 
 [dependencies.serde_with]
 version = "1.11.0"
 features = ["json"]
 
-[dependencies.uuid]
-version = "1.1"
-features = [
-    "v4",                # Lets you generate random UUIDs
-    "fast-rng",          # Use a faster (but still sufficiently random) RNG
-    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
-]
-
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
-default = [ "custom-protocol" ]
+default = ["custom-protocol"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
-custom-protocol = [ "tauri/custom-protocol" ]
+custom-protocol = ["tauri/custom-protocol"]
