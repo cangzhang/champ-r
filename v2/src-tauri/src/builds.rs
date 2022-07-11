@@ -1,7 +1,16 @@
 use futures::StreamExt;
 use std::io::Write;
+use rand::Rng;
 
 use crate::web;
+
+pub fn make_id() -> String {
+    rand::thread_rng()
+        .sample_iter(&rand::distributions::Alphanumeric)
+        .take(30)
+        .map(char::from)
+        .collect()
+}
 
 pub async fn save_build(path: String, data: &web::ItemBuild) -> anyhow::Result<()> {
     let path = std::path::Path::new(&path);
@@ -12,10 +21,6 @@ pub async fn save_build(path: String, data: &web::ItemBuild) -> anyhow::Result<(
     let buf = serde_json::to_string(&data)?;
     f.write_all(&buf[..].as_bytes())?;
     Ok(())
-}
-
-pub fn make_id() -> String {
-    uuid::Uuid::new_v4().to_string()
 }
 
 pub async fn apply_builds(
@@ -138,6 +143,17 @@ pub async fn apply_builds(
     }
 
     println!("all {}", results.len());
+    match window {
+        Some(w) => {
+            let _ = w.emit(
+                "apply_build_result",
+                ("finished", make_id()),
+            );
+        }
+        _ => {
+            println!("window not defined, skipped emitting.");
+        }
+    }
     Ok(results)
 }
 
