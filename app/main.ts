@@ -58,7 +58,7 @@ if (ignoreSystemScale) {
 // Prevent window from being garbage collected
 let mainWindow: BrowserWindow | null;
 let popupWindow: BrowserWindow | null;
-let tray = null;
+let tray: Tray | null = null;
 let lcuWatcher: LcuWatcher | null = null;
 
 const webPreferences = {
@@ -72,6 +72,8 @@ const webPreferences = {
 };
 
 const createMainWindow = async () => {
+  const startMinimized = appConfig.get(`startMinimized`, false);
+
   const win = new BrowserWindow({
     title: app.name,
     center: true,
@@ -84,12 +86,18 @@ const createMainWindow = async () => {
   });
 
   win.on('ready-to-show', () => {
+    if (startMinimized) {
+      console.log(`started ChampR minimized`);
+      win.setSkipTaskbar(true);
+      return;
+    }
+
     win.show();
   });
 
   win.on('closed', () => {
     // Dereference the window
-    // For multiple windows store them in an array
+    // For multiple windows, store them in an array
     mainWindow = null;
     popupWindow = null;
   });
@@ -324,7 +332,11 @@ function toggleMainWindow() {
   }
 }
 
-function makeTray() {
+interface ITrayOptions {
+  minimized?: boolean;
+}
+
+function makeTray({ minimized = false }: ITrayOptions) {
   const iconPath = path.join(
     isDev ? `${__dirname}/../` : process.resourcesPath,
     'resources/app-icon.png',
@@ -352,6 +364,14 @@ function makeTray() {
     },
   ]);
   tray.setContextMenu(contextMenu);
+
+  if (minimized) {
+    tray.displayBalloon({
+      icon: iconPath,
+      title: `ChampR`,
+      content: `ChampR started minimized`,
+    });
+  }
 }
 
 async function getMachineId() {
@@ -449,6 +469,7 @@ function registerUpdater() {
       appConfig.set(`appLang`, LanguageSet.enUS);
     }
   }
+  const minimized = appConfig.get(`startMinimized`, false);
 
   const pwsh = await hasPwsh();
   lcuWatcher = new LcuWatcher(pwsh);
@@ -473,12 +494,7 @@ function registerUpdater() {
   registerMainListeners();
   registerUpdater();
 
-  await makeTray();
-
-  if (appConfig.get(`startMinimized`)) {
-    mainWindow.hide();
-    mainWindow.setSkipTaskbar(true);
-  }
+  await makeTray({ minimized });
 
   const userId = await getMachineId();
 
