@@ -21,7 +21,6 @@ import {
   importBuildSucceed,
 } from 'src/share/actions';
 import LolQQImporter from 'src/service/data-source/lol-qq';
-import CdnService from 'src/service/data-source/cdn-service';
 
 import AppContext from 'src/share/context';
 import WaitingList from 'src/components/waiting-list';
@@ -95,27 +94,8 @@ export default function Import() {
         return Promise.resolve();
       }
 
-      const instance = new CdnService(p.value, dispatch);
-      workers.current[p.label] = instance;
-      return instance
-        .importFromCdn(lolDir, index)
-        .then((result) => {
-          const { rejected } = result;
-          if (!rejected.length) {
-            toaster.positive(`[${p.label.toUpperCase()}] ${t(`completed`)}`, {});
-            dispatch(importBuildSucceed(p.label));
-          }
-        })
-        .catch((err) => {
-          if (err.message.includes(`Error: Cancel`)) {
-            setCancel(cancelled.concat(p.label));
-            toaster.warning(`${t(`cancelled`)}: ${p.label}`, {});
-          } else {
-            dispatch(importBuildFailed(p.label));
-            toaster.negative(`${t(`import failed`)}: ${p.label}`, {});
-            console.error(err);
-          }
-        });
+      window.bridge.sendMessage(`PrepareSourceData`, p.value);
+      return Promise.resolve();
     });
 
     try {

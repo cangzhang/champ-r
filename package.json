@@ -41,8 +41,6 @@
     "test": "echo Skipped test"
   },
   "dependencies": {
-    "@types/react": "17.0.11",
-    "@types/react-dom": "17.0.11",
     "axios": "^0.21.4",
     "axios-retry": "^3.2.4",
     "baseui": "9.116.0",
@@ -77,6 +75,7 @@
     "react-router-dom": "^5.1.2",
     "styletron-engine-atomic": "^1.4.7",
     "styletron-react": "^6.0.1",
+    "tar": "^6.1.11",
     "use-immer": "^0.6.0",
     "ws": "^8.4.2"
   },
@@ -90,12 +89,15 @@
     "@types/cheerio": "^0.22.28",
     "@types/classnames": "^2.2.11",
     "@types/lodash": "^4.14.168",
+    "@types/react": "17.0.11",
     "@types/react-beautiful-dnd": "^13.1.2",
     "@types/react-custom-scrollbars": "^4.0.7",
+    "@types/react-dom": "17.0.11",
     "@types/react-router-dom": "^5.1.7",
     "@types/styletron-engine-atomic": "^1.1.0",
     "@types/styletron-react": "^5.0.2",
     "@types/styletron-standard": "^2.0.1",
+    "@types/tar": "^6.1.1",
     "@types/webpack": "^5.28.0",
     "@types/ws": "^8.2.0",
     "@typescript-eslint/eslint-plugin": "^2.8.0",

@@ -2,6 +2,9 @@ import path from 'path';
 import _debounce from 'lodash/debounce';
 import osLocale from 'os-locale';
 import { machineId } from 'node-machine-id';
+import tar from 'tar';
+import got from 'got';
+import fse from 'fs-extra';
 
 import {
   app,
@@ -18,10 +21,10 @@ import { autoUpdater } from 'electron-updater';
 import contextMenu from 'electron-context-menu';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
+
 import electronLogger from 'electron-log';
 
 import { IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
-
 import { initLogger } from './utils/logger';
 import { appConfig } from './utils/config';
 import { ifIsCNServer, LcuWatcher } from './utils/lcu';
@@ -29,6 +32,7 @@ import { LanguageList, LanguageSet } from './constants/langs';
 import { LcuEvent } from './constants/events';
 import { LcuWsClient } from './utils/ws';
 import { hasPwsh } from './utils/cmd';
+import { bufferToStream } from './utils/file'
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
@@ -314,6 +318,34 @@ function registerMainListeners() {
 
   ipcMain.on(`hidePopup`, () => {
     popupWindow?.hide();
+  });
+
+  ipcMain.on(`PrepareSourceData`, async (_ev, source) => {
+    let url = `https://registry.npmjs.com/@champ-r/${source}/latest`;
+    let cwd = `.npm/${source}/`;
+
+    try {
+      let { dist: { tarball } } = await got(url, {
+        responseType: `json`,
+      }).json();
+      console.log(`[npm] downloading tarball for ${source}`);
+      let { body } = await got(tarball, {
+        responseType: 'buffer',
+      });
+      console.log(`[npm] tarball downloaded, ${source}`);
+      let s = bufferToStream(body);
+      await fse.ensureDir(cwd);
+      console.log(`[npm] extracting to ${cwd}`);
+      s.pipe(
+        tar.x({
+          strip: 1,
+          C: cwd,
+        }),
+      )
+      console.log(`[npm] extracted to ${cwd}`);
+    } catch (e) {
+      console.error(e);
+    }
   });
 }
 

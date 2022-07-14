@@ -3,6 +3,7 @@ import fse from 'fs-extra';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { TextDecoder, TextEncoder } from 'util';
+import { Readable } from 'stream';
 
 import { IChampionBuild, IFileResult } from '@interfaces/commonTypes';
 import { appConfig } from './config';
@@ -158,3 +159,12 @@ export const getLcuToken = async (dirPath: string) => {
     return [null, null, null];
   }
 };
+
+export function bufferToStream(b: Buffer) {
+  return new Readable({
+    read() {
+      this.push(Buffer.from(b));
+      this.push(null);
+    },
+  });
+}
