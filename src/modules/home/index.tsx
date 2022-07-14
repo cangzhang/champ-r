@@ -90,9 +90,9 @@ export default function Home({ onDirChange = _noop }: IProps) {
     dispatch(updateConfig(`selectedSources`, res));
   };
 
-  const startImport = () => {
-    history.push(`/import`);
-  };
+  const startImport = useCallback(() => {
+    history.push(`/import?source=${selectedSources.join(`,`)}`);
+  }, [selectedSources, history]);
 
   const resetPopupPosition = () => {
     window.bridge.sendMessage(`popup:reset-position`);
