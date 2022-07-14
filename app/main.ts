@@ -1,5 +1,5 @@
 import path from 'path';
-import _debounce from 'lodash/debounce';
+import debounce from 'lodash/debounce';
 import osLocale from 'os-locale';
 import { machineId } from 'node-machine-id';
 import tar from 'tar';
@@ -33,6 +33,7 @@ import { LcuEvent } from './constants/events';
 import { LcuWsClient } from './utils/ws';
 import { hasPwsh } from './utils/cmd';
 import { bufferToStream, getAllFileContent, saveToFile, updateDirStats } from './utils/file';
+import { sleep } from './utils/index';
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
@@ -138,12 +139,12 @@ const createPopupWindow = async () => {
 
   popup.on(
     `move`,
-    _debounce(() => persistPopUpBounds(popup), 1000),
+    debounce(() => persistPopUpBounds(popup), 1000),
   );
 
   popup.on(
     `resize`,
-    _debounce(() => persistPopUpBounds(popup), 1000),
+    debounce(() => persistPopUpBounds(popup), 1000),
   );
 
   popup.on('closed', () => {
@@ -340,30 +341,33 @@ function registerMainListeners() {
       s.pipe(
         tar.x({
           strip: 1,
-          C: cwd,
+          cwd,
         }),
       );
       console.log(`[npm] extracted to ${cwd}`);
+      await sleep(3000);
       await updateDirStats(cwd);
       let files = await getAllFileContent(cwd);
-      files.forEach(i => {
-        const { position, itemBuilds } = i;
-        const pStr = position ? `${position} - ` : ``;
-        itemBuilds.forEach((k, idx) => {
-          let champion = i.alias;
-          const file = {
-            ...k,
-            champion,
-            position,
-            fileName: `[${source.toUpperCase()}] ${pStr}${champion}-${idx + 1}`,
-          };
-          saveToFile(lolDir, file, true, 0).then((result) => {
-            if (result instanceof Error) {
-              console.error(`failed: `, champion, position);
-              return;
-            }
+      files.forEach(arr => {
+        arr.forEach(i => {
+          const { position, itemBuilds } = i;
+          const pStr = position ? `${position} - ` : ``;
+          itemBuilds.forEach((k, idx) => {
+            let champion = i.alias;
+            const file = {
+              ...k,
+              champion,
+              position,
+              fileName: `[${source.toUpperCase()}] ${pStr}${champion}-${idx + 1}`,
+            };
+            saveToFile(lolDir, file, true, 0).then((result) => {
+              if (result instanceof Error) {
+                console.error(`failed: `, champion, position);
+                return;
+              }
 
-            console.log(`done: `, champion, position);
+              console.log(`done: `, champion, position);
+            });
           });
         });
       });

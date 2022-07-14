@@ -191,21 +191,20 @@ export async function updateDirStats(dir: string) {
       ret[name] = mtime;
     }
     await fse.writeJSON(path.join(dir, '.stats'), ret);
-    console.log(`[npm] updated file stats`);
+    console.log(`[npm] updated file stats, ${arr.length} files`);
     return ret;
   } catch (e) {
     console.error(e);
   }
 }
 
-export async function getAllFileContent(dir: string): Promise<IChampionCdnDataItem[]> {
+export async function getAllFileContent(dir: string): Promise<IChampionCdnDataItem[][]> {
   try {
     let files = await fs.readdir(dir);
-    let tasks = files.map(f => {
+    let tasks = files.filter(i => i !== `index.json` && i !== `package.json` && i.endsWith(`.json`)).map(f => {
       return fse.readJSON(path.join(dir, f));
     });
-    let arr = await Promise.all(tasks);
-    return arr;
+    return await Promise.all(tasks);
   } catch (e) {
     console.error(e);
     return Promise.reject(e);
