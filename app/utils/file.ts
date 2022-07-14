@@ -1,6 +1,6 @@
-import _pick from 'lodash/pick';
+import pick from 'lodash/pick';
 import fse from 'fs-extra';
-import { promises as fs } from 'fs';
+import fs_, { promises as fs } from 'fs';
 import * as path from 'path';
 import { TextDecoder, TextEncoder } from 'util';
 import { Readable } from 'stream';
@@ -61,7 +61,7 @@ export const saveToFile = async (
 
     const tencentFile = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${sortrank}-${data.fileName}.json`;
     const riotFile = `${desDir}/Config/Champions/${data.champion}/Recommended/${sortrank}-${data.fileName}.json`;
-    const content = stripProps ? _pick(data, ItemSetProps) : data;
+    const content = stripProps ? pick(data, ItemSetProps) : data;
 
     await Promise.all([
       fse.outputFile(tencentFile, JSON.stringify(content, null, 4)),
@@ -167,4 +167,33 @@ export function bufferToStream(b: Buffer) {
       this.push(null);
     },
   });
+}
+
+export async function updateDirStats(dir: string) {
+  try {
+    let files = await fs.readdir(dir);
+    let tasks = files.map(f => {
+      return new Promise((resolve) => {
+        fs_.stat(path.join(dir, f), (err, stats) => {
+          if (err) {
+            resolve([f, 0]);
+            return;
+          }
+
+          resolve([f, stats.mtime.getTime()]);
+        });
+      });
+    });
+    let arr = await Promise.all(tasks);
+    let ret: { [f: string]: number } = {};
+    for (let i of arr) {
+      const [name, mtime] = i as [string, number];
+      ret[name] = mtime;
+    }
+    await fse.writeJSON(path.join(dir, '.stats'), ret);
+    console.log(`[npm] updated file stats`);
+    return ret;
+  } catch (e) {
+    console.error(e);
+  }
 }

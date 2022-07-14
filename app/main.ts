@@ -32,7 +32,7 @@ import { LanguageList, LanguageSet } from './constants/langs';
 import { LcuEvent } from './constants/events';
 import { LcuWsClient } from './utils/ws';
 import { hasPwsh } from './utils/cmd';
-import { bufferToStream } from './utils/file'
+import { bufferToStream, updateDirStats } from './utils/file';
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
@@ -343,6 +343,7 @@ function registerMainListeners() {
         }),
       )
       console.log(`[npm] extracted to ${cwd}`);
+      await updateDirStats(cwd);
     } catch (e) {
       console.error(e);
     }
