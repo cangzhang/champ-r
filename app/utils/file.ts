@@ -5,7 +5,7 @@ import * as path from 'path';
 import { TextDecoder, TextEncoder } from 'util';
 import { Readable } from 'stream';
 
-import { IChampionBuild, IFileResult } from '@interfaces/commonTypes';
+import { IChampionBuild, IChampionCdnDataItem, IFileResult } from '@interfaces/commonTypes';
 import { appConfig } from './config';
 
 const ItemSetProps = [
@@ -195,5 +195,19 @@ export async function updateDirStats(dir: string) {
     return ret;
   } catch (e) {
     console.error(e);
+  }
+}
+
+export async function getAllFileContent(dir: string): Promise<IChampionCdnDataItem[]> {
+  try {
+    let files = await fs.readdir(dir);
+    let tasks = files.map(f => {
+      return fse.readJSON(path.join(dir, f));
+    });
+    let arr = await Promise.all(tasks);
+    return arr;
+  } catch (e) {
+    console.error(e);
+    return Promise.reject(e);
   }
 }

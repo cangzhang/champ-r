@@ -32,7 +32,7 @@ import { LanguageList, LanguageSet } from './constants/langs';
 import { LcuEvent } from './constants/events';
 import { LcuWsClient } from './utils/ws';
 import { hasPwsh } from './utils/cmd';
-import { bufferToStream, updateDirStats } from './utils/file';
+import { bufferToStream, getAllFileContent, saveToFile, updateDirStats } from './utils/file';
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
@@ -323,6 +323,7 @@ function registerMainListeners() {
   ipcMain.on(`PrepareSourceData`, async (_ev, source) => {
     let url = `https://registry.npmjs.com/@champ-r/${source}/latest`;
     let cwd = `.npm/${source}/`;
+    let lolDir = appConfig.get(`lolDir`);
 
     try {
       let { dist: { tarball } } = await got(url, {
@@ -341,9 +342,31 @@ function registerMainListeners() {
           strip: 1,
           C: cwd,
         }),
-      )
+      );
       console.log(`[npm] extracted to ${cwd}`);
       await updateDirStats(cwd);
+      let files = await getAllFileContent(cwd);
+      files.forEach(i => {
+        const { position, itemBuilds } = i;
+        const pStr = position ? `${position} - ` : ``;
+        itemBuilds.forEach((k, idx) => {
+          let champion = i.alias;
+          const file = {
+            ...k,
+            champion,
+            position,
+            fileName: `[${source.toUpperCase()}] ${pStr}${champion}-${idx + 1}`,
+          };
+          saveToFile(lolDir, file, true, 0).then((result) => {
+            if (result instanceof Error) {
+              console.error(`failed: `, champion, position);
+              return;
+            }
+
+            console.log(`done: `, champion, position);
+          });
+        });
+      });
     } catch (e) {
       console.error(e);
     }
