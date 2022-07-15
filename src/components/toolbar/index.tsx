@@ -1,7 +1,7 @@
 import s from './style.module.scss';
 
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import { StatefulTooltip } from 'baseui/tooltip';
@@ -9,7 +9,7 @@ import { Settings, Minimize2, X } from 'react-feather';
 
 const Toolbar = () => {
   const [t] = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const onHide = () => {
     window.bridge.sendMessage(`toggle-main-window`);
@@ -27,7 +27,7 @@ const Toolbar = () => {
       </StatefulTooltip>
 
       <StatefulTooltip accessibilityType={'tooltip'} content={t(`settings`)}>
-        <span className={s.icon} onClick={() => history.replace(`/settings`)}>
+        <span className={s.icon} onClick={() => navigate(`/settings`, { replace: true })}>
           <Settings size={16} />
         </span>
       </StatefulTooltip>

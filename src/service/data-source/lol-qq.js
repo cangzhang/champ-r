@@ -1,5 +1,5 @@
 import { nanoid as uuid } from 'nanoid';
-import _get from 'lodash/get';
+import get from 'lodash/get';
 import _find from 'lodash/find';
 import _orderBy from 'lodash/orderBy';
 import _noop from 'lodash/noop';
@@ -197,9 +197,9 @@ export default class LolQQ extends SourceProto {
     const { championLane } = data;
 
     const result = positions.reduce((res, position) => {
-      const coreItemsObj = _get(championLane, `${position}.core3itemjson`, []);
+      const coreItemsObj = get(championLane, `${position}.core3itemjson`, []);
       const rawBlocks = parseJson(coreItemsObj);
-      const shoeItemsObj = _get(championLane, `${position}.shoesjson`, []);
+      const shoeItemsObj = get(championLane, `${position}.shoesjson`, []);
       const rawShoes = parseJson(shoeItemsObj);
 
       const coreItemSet = Object.values(rawBlocks).reduce((itemSet, i) => {
@@ -212,7 +212,7 @@ export default class LolQQ extends SourceProto {
         return shoes.add(shoeId);
       }, new Set());
 
-      const startItemsObj = _get(championLane, `${position}.itemoutjson`, []);
+      const startItemsObj = get(championLane, `${position}.itemoutjson`, []);
       const rawStarters = parseJson(startItemsObj);
       const starterItemSet = Object.values(rawStarters).reduce((obj, i) => {
         const ids = i.itemid.split(`&`).map((i) => +i);

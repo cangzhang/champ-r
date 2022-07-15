@@ -234,6 +234,10 @@ async function onShowPopup(data: IPopupEventData) {
   }, 300);
 }
 
+function updateStatusForMainWindowWebView(data: any) {
+  mainWindow?.webContents.send(`apply_builds_process`, data);
+}
+
 function registerMainListeners() {
   ipcMain.on(`toggle-main-window`, () => {
     toggleMainWindow();
@@ -330,11 +334,23 @@ function registerMainListeners() {
       let { dist: { tarball } } = await got(url, {
         responseType: `json`,
       }).json();
+      updateStatusForMainWindowWebView({
+        source,
+        msg: `Fetched metadata for ${source}`,
+      });
       console.log(`[npm] downloading tarball for ${source}`);
+      updateStatusForMainWindowWebView({
+        source,
+        msg: `Downloading tarball for ${source}`,
+      });
       let { body } = await got(tarball, {
         responseType: 'buffer',
       });
       console.log(`[npm] tarball downloaded, ${source}`);
+      updateStatusForMainWindowWebView({
+        source,
+        msg: `Downloaded tarball for ${source}`,
+      });
       let s = bufferToStream(body);
       await fse.ensureDir(cwd);
       console.log(`[npm] extracting to ${cwd}`);
@@ -345,9 +361,14 @@ function registerMainListeners() {
         }),
       );
       console.log(`[npm] extracted to ${cwd}`);
+      updateStatusForMainWindowWebView({
+        source,
+        msg: `Extracted data for ${source}`,
+      });
       await sleep(3000);
       await updateDirStats(cwd);
       let files = await getAllFileContent(cwd);
+      let tasks: any[] = [];
       files.forEach(arr => {
         arr.forEach(i => {
           const { position, itemBuilds } = i;
@@ -360,19 +381,39 @@ function registerMainListeners() {
               position,
               fileName: `[${source.toUpperCase()}] ${pStr}${champion}-${idx + 1}`,
             };
-            saveToFile(lolDir, file, true, 0).then((result) => {
-              if (result instanceof Error) {
-                console.error(`failed: `, champion, position);
-                return;
-              }
+            let task = saveToFile(lolDir, file, true, 0)
+              .then((result) => {
+                if (result instanceof Error) {
+                  console.error(`failed: `, champion, position);
+                  return;
+                }
 
-              console.log(`done: `, champion, position);
-            });
+                console.log(`done: `, champion, position);
+                updateStatusForMainWindowWebView({
+                  source,
+                  champion,
+                  position,
+                  msg: `[${source}] Applied builds for ${position ? champion + `@` + position : champion}`,
+                });
+              });
+            tasks.push(task);
           });
         });
       });
+      await Promise.all(tasks);
+      updateStatusForMainWindowWebView({
+        source,
+        finished: true,
+        msg: `[${source}] Finished.`,
+      });
     } catch (e) {
-      console.error(e);
+      console.error(source, e);
+      updateStatusForMainWindowWebView({
+        source,
+        error: true,
+        e,
+        msg: `[${source}] Something went wrong`,
+      });
     }
   });
 }

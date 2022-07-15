@@ -1,7 +1,7 @@
 import _noop from 'lodash/noop';
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
@@ -37,7 +37,7 @@ interface IProps {
 export default function Home({ onDirChange = _noop }: IProps) {
   const [css, theme] = useStyletron();
   const { enqueue, dequeue } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const { store, dispatch } = useContext(AppContext);
@@ -91,8 +91,8 @@ export default function Home({ onDirChange = _noop }: IProps) {
   };
 
   const startImport = useCallback(() => {
-    history.push(`/import?source=${selectedSources.join(`,`)}`);
-  }, [selectedSources, history]);
+    navigate(`/import?sources=${selectedSources.join(`,`)}&keepOld=${store.keepOld}`);
+  }, [selectedSources, navigate, store.keepOld]);
 
   const resetPopupPosition = () => {
     window.bridge.sendMessage(`popup:reset-position`);
