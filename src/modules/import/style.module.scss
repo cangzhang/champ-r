@@ -45,7 +45,7 @@
 
 .progress {
   height: 300px;
-  overflow: clip;
+  overflow: hidden overlay;
   display: flex;
   flex-direction: column;
   align-items: center;
