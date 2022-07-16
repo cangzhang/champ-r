@@ -85,7 +85,7 @@ export default class LolQQ extends SourceProto {
     this.itemMap = itemMap;
     this.pkgName = SOURCE_QQ_STR;
     this.emitter = emitter;
-    this.source = `101.qq.com`;
+    this.source = `lol.qq.com`;
   }
 
   static getLolVersion = async () => {

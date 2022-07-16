@@ -1,12 +1,12 @@
 import s from './style.module.scss';
 
-import _noop from 'lodash/noop';
-import React, { useContext, useState, useRef, useEffect } from 'react';
+import noop from 'lodash/noop';
+import React, { useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import cn from 'classnames';
 import { toast, Toaster } from 'react-hot-toast';
-import { Button } from '@nextui-org/react';
+import { Button, Loading, Spacer } from '@nextui-org/react';
 
 import { ISourceItem, SourceQQ } from 'src/share/constants/sources';
 import LolQQImporter from 'src/service/data-source/lol-qq';
@@ -29,13 +29,16 @@ export function Import() {
     [key: string]: SourceProto;
   }>({});
 
-  const importFromSources = async () => {
+  let sources = (searchParams.get(`sources`) ?? ``).split(`,`) ?? [];
+
+  const importFromSources = useCallback(async () => {
     let sources = (searchParams.get(`sources`) ?? ``).split(`,`) ?? [];
     let keepOld = searchParams.get(`keepOld`);
 
-    if (!sources) {
+    if (!sources?.length) {
       return;
     }
+    setResult({});
 
     if (!keepOld) {
       await Promise.all([
@@ -46,7 +49,7 @@ export function Import() {
     }
 
     const { itemMap } = store;
-    let lolqqTask = _noop;
+    let lolqqTask = noop;
 
     if (sources.includes(SourceQQ.value)) {
       const idx = sourceList.findIndex((i) => i.value === SourceQQ.value);
@@ -75,13 +78,12 @@ export function Import() {
       await Promise.all([...tasks, lolqqTask()]);
     } finally {
     }
-  };
+  }, [searchParams, lolDir]); // eslint-disable-line
 
   useEffect(() => {
     function updateMessage(msg: string) {
-      setMessages(p => [...p, msg]);
+      setMessages(p => [msg, ...p]);
     }
-
     function showToast({ finished, source, error }: { finished: boolean, source: string, error: boolean }) {
       if (finished) {
         toast.success(`[${source.toUpperCase()}] Applied successfully`);
@@ -97,8 +99,7 @@ export function Import() {
         toast.success(`[${source.toUpperCase()}] Something went wrong`);
       }
     }
-
-    window.bridge.on(`apply_builds_process`, (ev: any) => {
+    function handler(ev: any) {
       if (ids.current.includes(ev.id)) {
         return;
       }
@@ -106,28 +107,34 @@ export function Import() {
       ids.current.push(ev.id);
       updateMessage(ev.data.msg);
       showToast(ev.data);
-    });
-    emitter.on(`apply_builds_process`, (ev) => {
-      if (ids.current.includes(ev.id)) {
-        return;
-      }
+    }
 
-      ids.current.push(ev.id);
-      updateMessage(ev.data.msg);
-      showToast(ev.data);
-    });
+    window.bridge.on(`apply_builds_process`, handler);
+    emitter.on(`apply_builds_process`, handler);
 
     return () => {
-      emitter.off(`apply_builds_process`, updateMessage);
+      emitter.off(`apply_builds_process`, handler);
+      window.bridge.removeListener(`apply_builds_process`, handler);
     };
-  }, []);
+  }, [emitter]); // eslint-disable-line
 
   useEffect(() => {
     importFromSources();
-  }, [searchParams]);
+  }, [importFromSources]); // eslint-disable-line
+
+  const keys = Object.keys(result);
+  let allDone = sources.length > 0
+    && keys.length === sources.length
+    && keys.every(k => sources.includes(k))
+    && keys.every(k => result[k].finished || result[k].error);
 
   return (
     <div className={cn(s.import)}>
+      {!allDone && <>
+        <Loading type="points" size="lg"/>
+        <Spacer/>
+      </>}
+      {allDone && <i className={cn(`bx bxs-flag-checkered bx-lg bx-tada`, s.done)} />}
       <div className={s.progress}>
         {messages.map((s, idx) => (
           <div key={idx}>{s}</div>

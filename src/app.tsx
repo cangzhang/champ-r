@@ -57,10 +57,10 @@ const App = () => {
     });
   }, []);
 
-  const contextValue = useMemo(() => ({ store, dispatch, emitter }), [store, dispatch]);
+  const value = useMemo(() => ({ store, dispatch, emitter }), [store, dispatch]);
 
   return (
-    <AppContext.Provider value={contextValue}>
+    <AppContext.Provider value={value}>
       <StyletronProvider value={engine}>
         <BaseProvider theme={LightTheme}>
           <SnackbarProvider
