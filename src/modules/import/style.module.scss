@@ -1,8 +1,9 @@
 .import {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   margin-top: 4em;
-
   font-weight: 400;
 
   &.ing {
@@ -47,8 +48,11 @@
 }
 
 .progress {
-  height: 500px;
-  overflow: auto;
+  height: 300px;
+  overflow: hidden auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 @keyframes pop {

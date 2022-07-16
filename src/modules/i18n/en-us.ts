@@ -13,6 +13,7 @@ export default {
     stop: `Stop`,
     restart: 'Restart',
     cancel: 'Cancel',
+    back: `Back`,
     'back to home': 'Back to home',
     fetching: 'FETCHING',
     minimize: `Minimize`,

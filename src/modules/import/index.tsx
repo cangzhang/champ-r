@@ -1,43 +1,29 @@
-/* eslint react-hooks/exhaustive-deps: 0 */
 import s from './style.module.scss';
 
 import _noop from 'lodash/noop';
-
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import cn from 'classnames';
 import { toast, Toaster } from 'react-hot-toast';
-
-// import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home } from 'react-feather';
-// import { useStyletron } from 'baseui';
-// import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
-// import { Button } from 'baseui/button';
+import { Button } from '@nextui-org/react';
 
 import { ISourceItem, SourceQQ } from 'src/share/constants/sources';
-// import {
-//   prepareReimport,
-//   updateFetchingSource,
-//   importBuildFailed,
-//   importBuildSucceed,
-// } from 'src/share/actions';
 import LolQQImporter from 'src/service/data-source/lol-qq';
-
 import AppContext from 'src/share/context';
-// import WaitingList from 'src/components/waiting-list';
 import SourceProto from 'src/service/data-source/source-proto';
 
 export function Import() {
-  // const navigate = useNavigate();
-  // const [, theme] = useStyletron();
+  const navigate = useNavigate();
   const [t] = useTranslation();
   const lolDir = window.bridge.appConfig.get(`lolDir`);
   const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
   const ids = useRef<string[]>([]);
   const { store, emitter } = useContext(AppContext);
+  let [searchParams] = useSearchParams();
 
   const [messages, setMessages] = useState<string[]>([]);
-  let [searchParams] = useSearchParams();
+  const [result, setResult] = useState<{ [k: string]: { finished: boolean; error: boolean; } }>({});
 
   const workers = useRef<{
     [key: string]: SourceProto;
@@ -96,10 +82,20 @@ export function Import() {
       setMessages(p => [...p, msg]);
     }
 
-    function showToast({ finished, source }: { finished: boolean, source: string }) {
-      if (!finished) return;
-
-      toast.success(`[${source.toUpperCase()}] Applied`);
+    function showToast({ finished, source, error }: { finished: boolean, source: string, error: boolean }) {
+      if (finished) {
+        toast.success(`[${source.toUpperCase()}] Applied successfully`);
+        setResult(p => ({
+          ...p,
+          [source]: {
+            finished,
+            error,
+          },
+        }));
+      }
+      if (error) {
+        toast.success(`[${source.toUpperCase()}] Something went wrong`);
+      }
     }
 
     window.bridge.on(`apply_builds_process`, (ev: any) => {
@@ -112,6 +108,11 @@ export function Import() {
       showToast(ev.data);
     });
     emitter.on(`apply_builds_process`, (ev) => {
+      if (ids.current.includes(ev.id)) {
+        return;
+      }
+
+      ids.current.push(ev.id);
       updateMessage(ev.data.msg);
       showToast(ev.data);
     });
@@ -132,6 +133,8 @@ export function Import() {
           <div key={idx}>{s}</div>
         ))}
       </div>
+
+      <Button className={s.back} flat color="secondary" auto onClick={() => navigate(`/`)}>{t(`back to home`)}</Button>
 
       <Toaster
         position="bottom-center"

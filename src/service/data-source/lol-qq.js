@@ -315,6 +315,12 @@ export default class LolQQ extends SourceProto {
       })
       return result;
     } catch (error) {
+      this.emit({
+        error: true,
+        e: error,
+        msg: `[${this.source}] Something went wrong`,
+        source: this.source,
+      })
       throw new Error(error);
     }
   };
