@@ -12,6 +12,7 @@ import { ISourceItem, SourceQQ } from 'src/share/constants/sources';
 import LolQQImporter from 'src/service/data-source/lol-qq';
 import AppContext from 'src/share/context';
 import SourceProto from 'src/service/data-source/source-proto';
+import { createIpcPromise } from 'src/service/ipc';
 
 export function Import() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export function Import() {
 
   const importFromSources = useCallback(async () => {
     let sources = (searchParams.get(`sources`) ?? ``).split(`,`) ?? [];
-    let keepOld = searchParams.get(`keepOld`);
+    let keepOld = searchParams.get(`keepOld`) === `true`;
 
     if (!sources?.length) {
       return;
@@ -41,11 +42,10 @@ export function Import() {
     setResult({});
 
     if (!keepOld) {
-      await Promise.all([
-        window.bridge.file.removeFolderContent(`${lolDir}/Game/Config/Champions`),
-        window.bridge.file.removeFolderContent(`${lolDir}/Config/Champions`),
-      ]);
-      toast.success(t(`removed outdated items`));
+      await createIpcPromise(`EmptyBuildsFolder`);
+      toast.success(t(`removed outdated items`), {
+        duration: 3000,
+      });
     }
 
     const { itemMap } = store;
@@ -86,7 +86,8 @@ export function Import() {
     }
     function showToast({ finished, source, error }: { finished: boolean, source: string, error: boolean }) {
       if (finished) {
-        toast.success(`[${source.toUpperCase()}] Applied successfully`);
+        let text = `[${source.toUpperCase()}] Applied successfully`
+        toast.success(text, { id: text, duration: 3000 });
         setResult(p => ({
           ...p,
           [source]: {
@@ -96,7 +97,9 @@ export function Import() {
         }));
       }
       if (error) {
-        toast.success(`[${source.toUpperCase()}] Something went wrong`);
+        toast.error(`[${source.toUpperCase()}] Something went wrong`, {
+          duration: 3000,
+        });
       }
     }
     function handler(ev: any) {

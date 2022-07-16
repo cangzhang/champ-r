@@ -32,7 +32,7 @@ import { LanguageList, LanguageSet } from './constants/langs';
 import { LcuEvent } from './constants/events';
 import { LcuWsClient } from './utils/ws';
 import { hasPwsh } from './utils/cmd';
-import { bufferToStream, getAllFileContent, saveToFile, updateDirStats } from './utils/file';
+import { bufferToStream, getAllFileContent, removeFolderContent, saveToFile, updateDirStats } from './utils/file';
 import { sleep } from './utils/index';
 import { nanoid } from 'nanoid';
 
@@ -238,7 +238,7 @@ async function onShowPopup(data: IPopupEventData) {
 function updateStatusForMainWindowWebView(data: any) {
   mainWindow?.webContents.send(`apply_builds_process`, {
     data,
-    id: nanoid()
+    id: nanoid(),
   });
 }
 
@@ -419,6 +419,15 @@ function registerMainListeners() {
         msg: `[${source}] Something went wrong`,
       });
     }
+  });
+
+  ipcMain.on(`EmptyBuildsFolder`, async (_ev, { jobId }) => {
+    let lolDir = appConfig.get(`lolDir`);
+    await Promise.all([
+      removeFolderContent(`${lolDir}/Game/Config/Champions`),
+      removeFolderContent(`${lolDir}/Config/Champions`),
+    ]);
+    mainWindow?.webContents.send(`EmptyBuildsFolder:done:${jobId}`);
   });
 }
 
