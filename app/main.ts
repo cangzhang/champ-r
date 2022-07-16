@@ -34,6 +34,7 @@ import { LcuWsClient } from './utils/ws';
 import { hasPwsh } from './utils/cmd';
 import { bufferToStream, getAllFileContent, saveToFile, updateDirStats } from './utils/file';
 import { sleep } from './utils/index';
+import { nanoid } from 'nanoid';
 
 const isMac = process.platform === 'darwin';
 const isDev = process.env.IS_DEV_MODE === `true`;
@@ -235,7 +236,10 @@ async function onShowPopup(data: IPopupEventData) {
 }
 
 function updateStatusForMainWindowWebView(data: any) {
-  mainWindow?.webContents.send(`apply_builds_process`, data);
+  mainWindow?.webContents.send(`apply_builds_process`, {
+    data,
+    id: nanoid()
+  });
 }
 
 function registerMainListeners() {

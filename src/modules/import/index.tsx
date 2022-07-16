@@ -7,19 +7,20 @@ import React, { useContext, useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import cn from 'classnames';
+import { toast, Toaster } from 'react-hot-toast';
 
 // import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home } from 'react-feather';
 // import { useStyletron } from 'baseui';
-import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
+// import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
 // import { Button } from 'baseui/button';
 
 import { ISourceItem, SourceQQ } from 'src/share/constants/sources';
-import {
-  prepareReimport,
-  updateFetchingSource,
-  importBuildFailed,
-  importBuildSucceed,
-} from 'src/share/actions';
+// import {
+//   prepareReimport,
+//   updateFetchingSource,
+//   importBuildFailed,
+//   importBuildSucceed,
+// } from 'src/share/actions';
 import LolQQImporter from 'src/service/data-source/lol-qq';
 
 import AppContext from 'src/share/context';
@@ -32,12 +33,11 @@ export function Import() {
   const [t] = useTranslation();
   const lolDir = window.bridge.appConfig.get(`lolDir`);
   const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
+  const ids = useRef<string[]>([]);
+  const { store, emitter } = useContext(AppContext);
 
-  const [msgs, setMsgs] = useState<string[]>([]);
+  const [messages, setMessages] = useState<string[]>([]);
   let [searchParams] = useSearchParams();
-
-  const { store, dispatch } = useContext(AppContext);
-  const [loading, setLoading] = useState(false);
 
   const workers = useRef<{
     [key: string]: SourceProto;
@@ -51,42 +51,25 @@ export function Import() {
       return;
     }
 
-    console.log(sources);
-    return;
-
-    setLoading(true);
     if (!keepOld) {
       await Promise.all([
         window.bridge.file.removeFolderContent(`${lolDir}/Game/Config/Champions`),
         window.bridge.file.removeFolderContent(`${lolDir}/Config/Champions`),
       ]);
-      toaster.positive(t(`removed outdated items`), {});
+      toast.success(t(`removed outdated items`));
     }
 
     const { itemMap } = store;
     let lolqqTask = _noop;
 
     if (sources.includes(SourceQQ.value)) {
-      const idx = sourceList.findIndex((i) => i.label === SourceQQ.label);
-      const instance = new LolQQImporter(lolDir, itemMap, dispatch);
-      workers.current[SourceQQ.label] = instance;
+      const idx = sourceList.findIndex((i) => i.value === SourceQQ.value);
+      const instance = new LolQQImporter(lolDir, itemMap, emitter);
+      workers.current[SourceQQ.value] = instance;
 
       lolqqTask = () =>
         instance
-          .import(idx + 1)
-          .then(() => {
-            toaster.positive(`[${SourceQQ.label.toUpperCase()}] ${t(`completed`)}`, {});
-            dispatch(importBuildSucceed(SourceQQ.label));
-          })
-          .catch((err) => {
-            if (err.message.includes(`Error: Cancel`)) {
-              toaster.warning(`${t(`cancelled`)}: ${SourceQQ.label}`, {});
-            } else {
-              dispatch(importBuildFailed(SourceQQ.label));
-              toaster.negative(`${t(`import failed`)}: ${SourceQQ.label}`, {});
-              console.error(err);
-            }
-          });
+          .import(idx + 1);
     }
 
     const tasks = sourceList.map((p, index) => {
@@ -105,29 +88,55 @@ export function Import() {
     try {
       await Promise.all([...tasks, lolqqTask()]);
     } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    window.bridge.on(`apply_builds_process`, (data: any) => {
-      setMsgs(p => [...p, data.msg]);
+    function updateMessage(msg: string) {
+      setMessages(p => [...p, msg]);
+    }
+
+    function showToast({ finished, source }: { finished: boolean, source: string }) {
+      if (!finished) return;
+
+      toast.success(`[${source.toUpperCase()}] Applied`);
+    }
+
+    window.bridge.on(`apply_builds_process`, (ev: any) => {
+      if (ids.current.includes(ev.id)) {
+        return;
+      }
+
+      ids.current.push(ev.id);
+      updateMessage(ev.data.msg);
+      showToast(ev.data);
     });
+    emitter.on(`apply_builds_process`, (ev) => {
+      updateMessage(ev.data.msg);
+      showToast(ev.data);
+    });
+
+    return () => {
+      emitter.off(`apply_builds_process`, updateMessage);
+    };
   }, []);
 
   useEffect(() => {
-    console.log(searchParams.get(`sources`));
     importFromSources();
   }, [searchParams]);
 
   return (
-    <div className={cn(s.import, loading && s.ing)}>
-      <div>
-        {msgs.map(s => (
-          <div>{s}</div>
+    <div className={cn(s.import)}>
+      <div className={s.progress}>
+        {messages.map((s, idx) => (
+          <div key={idx}>{s}</div>
         ))}
       </div>
-      <ToasterContainer autoHideDuration={1500} placement={PLACEMENT.bottom}/>
+
+      <Toaster
+        position="bottom-center"
+        reverseOrder={false}
+      />
     </div>
   );
 }

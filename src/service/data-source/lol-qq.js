@@ -1,12 +1,11 @@
-import { nanoid as uuid } from 'nanoid';
+import { nanoid, nanoid as uuid } from 'nanoid';
 import get from 'lodash/get';
-import _find from 'lodash/find';
-import _orderBy from 'lodash/orderBy';
-import _noop from 'lodash/noop';
+import find from 'lodash/find';
+import orderBy from 'lodash/orderBy';
 
 import http, { CancelToken } from 'src/service/http';
 import { parseJson, isDifferentStyleId, getStyleId, strToPercent } from 'src/service/utils';
-import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
+// import { addFetched, addFetching, fetchSourceDone } from 'src/share/actions';
 import { SOURCE_QQ_STR, SourceQQ } from 'src/share/constants/sources';
 
 import SourceProto from './source-proto';
@@ -80,12 +79,13 @@ export const getItemList = async () => {
 };
 
 export default class LolQQ extends SourceProto {
-  constructor(lolDir = '', itemMap = {}, dispatch = _noop) {
+  constructor(lolDir = '', itemMap = {}, emitter) {
     super();
     this.lolDir = lolDir;
     this.itemMap = itemMap;
-    this.dispatch = dispatch;
     this.pkgName = SOURCE_QQ_STR;
+    this.emitter = emitter;
+    this.source = `101.qq.com`;
   }
 
   static getLolVersion = async () => {
@@ -148,29 +148,21 @@ export default class LolQQ extends SourceProto {
           return result.concat(vals);
         }, []);
 
-        const sorted = _orderBy(pData, (i) => i.igamecnt, [`desc`]);
+        const sorted = orderBy(pData, (i) => i.igamecnt, [`desc`]);
         const pages = sorted.slice(0, 2).map((i) => makePerkData(i, alias, position));
 
         return res.concat(pages);
       }, []);
-      return _orderBy(perks, `pickCount`, [`desc`]);
+      return orderBy(perks, `pickCount`, [`desc`]);
     } catch (e) {
       throw new Error(e);
     }
   };
 
-  getChampionDetail = (champions, dispatch) => async (id) => {
+  getChampionDetail = (champions) => async (id) => {
     try {
-      const { alias } = _find(champions, { heroId: id });
+      const { alias } = find(champions, { heroId: id });
       const $identity = uuid();
-
-      dispatch(
-        addFetching({
-          $identity,
-          champion: alias.toLowerCase(),
-          source: SourceQQ.label,
-        }),
-      );
 
       const apiUrl = API.detail(id);
       const code = await http.get(apiUrl, {
@@ -179,13 +171,10 @@ export default class LolQQ extends SourceProto {
         }),
       });
 
-      dispatch(
-        addFetched({
-          $identity,
-        }),
-      );
-
       const data = parseCode(code);
+      this.emit({
+        msg: `[${this.source}] Fetched data for ${alias}`,
+      });
       return data.list;
     } catch (error) {
       throw new Error(error);
@@ -217,7 +206,7 @@ export default class LolQQ extends SourceProto {
       const starterItemSet = Object.values(rawStarters).reduce((obj, i) => {
         const ids = i.itemid.split(`&`).map((i) => +i);
         ids.forEach((id) => {
-          const price = (_find(itemMap, { itemId: `${id}` }) || { price: 0 }).price;
+          const price = (find(itemMap, { itemId: `${id}` }) || { price: 0 }).price;
           obj[id] = {
             price: +price,
             id,
@@ -234,7 +223,7 @@ export default class LolQQ extends SourceProto {
         id: `${id}`,
         count: 1,
       }));
-      const sortedStarters = _orderBy(Object.values(starterItemSet), (i) => i.price, [`desc`]);
+      const sortedStarters = orderBy(Object.values(starterItemSet), (i) => i.price, [`desc`]);
       const starterItems = sortedStarters.map(({ id }) => ({
         id: `${id}`,
         count: 1,
@@ -269,15 +258,24 @@ export default class LolQQ extends SourceProto {
         blocks,
         position,
       });
-
+      this.emit({
+        msg: `[${this.source}] Applied builds for ${alias}@${position}`,
+      });
       return res.concat(item);
     }, []);
 
     return result;
   };
 
+  emit = (data) => {
+    this.emitter.emit(`apply_builds_process`, {
+      id: nanoid(),
+      data,
+    })
+  }
+
   import = async (index) => {
-    const { lolDir, itemMap, dispatch } = this;
+    const { lolDir, itemMap } = this;
 
     try {
       const [{ version, hero: championList }, positionMap = {}] = await Promise.all([
@@ -285,14 +283,18 @@ export default class LolQQ extends SourceProto {
         this.getChampionPositions(),
       ]);
 
+      this.emit({
+        msg: `[${this.source}] Fetched metadata`,
+      });
+
       const championIds = Object.keys(positionMap);
-      const tasks = championIds.map(this.getChampionDetail(championList, dispatch));
+      const tasks = championIds.map(this.getChampionDetail(championList));
       const detailList = await Promise.all(tasks);
 
       const items = detailList.reduce((res, item, idx) => {
         const id = championIds[idx];
         const positions = Object.keys(positionMap[id]);
-        const champion = _find(championList, { heroId: id });
+        const champion = find(championList, { heroId: id });
 
         const block = this.makeItem({
           data: item,
@@ -306,9 +308,11 @@ export default class LolQQ extends SourceProto {
 
       const fileTasks = items.map((i) => window.bridge.file.saveToFile(lolDir, i, true, index));
       const result = await Promise.all(fileTasks);
-
-      dispatch(fetchSourceDone(SourceQQ.label));
-
+      this.emit({
+        finished: true,
+        msg: `[${this.source}] Finished`,
+        source: this.source,
+      })
       return result;
     } catch (error) {
       throw new Error(error);

@@ -1,5 +1,6 @@
 import React, { useReducer, useMemo, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import mitt from 'mitt';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
@@ -18,10 +19,10 @@ import { Import } from 'src/modules/import';
 import Settings from 'src/modules/settings';
 
 const engine = new Styletron();
+const emitter = mitt();
 
 const App = () => {
   const [store, dispatch] = useReducer(appReducer, initialState, init);
-  const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
 
   useEffect(() => {
     const getVerAndItems = async () => {
@@ -55,6 +56,8 @@ const App = () => {
       console.log(`got auth`, data);
     });
   }, []);
+
+  const contextValue = useMemo(() => ({ store, dispatch, emitter }), [store, dispatch]);
 
   return (
     <AppContext.Provider value={contextValue}>
