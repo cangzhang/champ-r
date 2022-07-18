@@ -15,7 +15,7 @@ import { LanguageList, LanguageSet } from './constants/langs';
 import { LcuEvent } from './constants/events';
 import { LcuWsClient } from './utils/ws';
 import { hasPwsh } from './utils/cmd';
-import { getChampionList, getMachineId, isDev } from './utils/index';
+import { getChampionList, getMachineId, isDev } from './utils';
 import { registerMainListeners } from './listeners';
 import { makeTray } from './tray';
 import { checkUpdates, registerUpdater } from './updater';

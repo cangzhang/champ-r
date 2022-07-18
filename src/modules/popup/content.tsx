@@ -118,7 +118,7 @@ export function Content() {
   const apply = async (perk: IRuneItem) => {
     try {
       console.log(`apply perk:`, perk.name);
-      await createIpcPromise(`applyRunePage`, perk);
+      await window.bridge.invoke(`ApplyRunePage`, perk);
       console.info(`[popup] applied selected perk`);
       toast.dismiss();
       toast.success(t(`applied`));

@@ -42,7 +42,7 @@ export function Import() {
     setResult({});
 
     if (!keepOld) {
-      await createIpcPromise(`EmptyBuildsFolder`);
+      await window.bridge.invoke(`EmptyBuildsFolder`);
       toast.success(t(`removed outdated items`), {
         duration: 3000,
       });

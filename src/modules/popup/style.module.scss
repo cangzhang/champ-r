@@ -8,6 +8,10 @@ body {
   user-select: none;
 }
 
+:global(#popup) {
+  height: 100vh;
+}
+
 .list {
   display: flex;
   flex-direction: column;
@@ -47,6 +51,8 @@ body {
   position: fixed;
   top: 40vh;
   left: calc(50vw - 18px);
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
 }
 
 .close {

@@ -57,7 +57,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
 
   const onSelectDir = async () => {
     try {
-      const { canceled, filePaths = [] }: any = await createIpcPromise(`openSelectFolderDialog`);
+      const { canceled, filePaths = [] }: any = await window.bridge.invoke(`OpenSelectFolderDialog`);
       if (canceled) {
         return;
       }

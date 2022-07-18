@@ -93,15 +93,12 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
     ifIsCNServer(lolDir);
   });
 
-  ipcMain.on(`openSelectFolderDialog`, async (_, { jobId }: any) => {
+  ipcMain.handle(`OpenSelectFolderDialog`, async () => {
     try {
-      const data = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-      mainWindow?.webContents.send(`openSelectFolderDialog:done:${jobId}`, {
-        ...data,
-        jobId,
-      });
+      let data = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+      return data;
     } catch (e) {
-      mainWindow?.webContents.send(`openSelectFolderDialog:reject:${jobId}`, e);
+      return Promise.reject(e);
     }
   });
 
@@ -109,16 +106,16 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
     app.quit();
   });
 
-  ipcMain.on(`applyRunePage`, async (_ev, data: IRuneItem & { jobId: string }) => {
+  ipcMain.handle(`ApplyRunePage`, async (_ev, data: IRuneItem & { jobId: string }) => {
     try {
       await lcuWatcher?.applyRunePage(data);
-      popupWindow!.webContents.send(`applyRunePage:done:${data.jobId}`);
+      return true;
     } catch (err) {
-      console.error(`[main] apply perk failed: `, err.message);
-    } finally {
       if (isDev) {
-        popupWindow!.webContents.send(`applyRunePage:done:${data.jobId}`);
+        return Promise.resolve(true);
       }
+
+      return Promise.reject(err);
     }
   });
 
@@ -222,22 +219,23 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
     }
   });
 
-  ipcMain.on(`EmptyBuildsFolder`, async (_ev, { jobId }) => {
+  ipcMain.handle(`EmptyBuildsFolder`, async () => {
     let lolDir = appConfig.get(`lolDir`);
     await Promise.all([
       removeFolderContent(`${lolDir}/Game/Config/Champions`),
       removeFolderContent(`${lolDir}/Config/Champions`),
     ]);
-    mainWindow?.webContents.send(`EmptyBuildsFolder:done:${jobId}`);
+    return Promise.resolve();
   });
 
   ipcMain.handle(`MakeRuneData`, async (_ev, { source, championId }) => {
-    console.log(source, championId);
+    console.log(`[main/MakeRuneData]`, source, championId);
     let c = getChampionInfo(championId);
     return Promise.resolve(c);
   });
 
   ipcMain.handle(`GetChampionInfo`, async (_ev, championId) => {
+    console.log(`[main/GetChampionInfo]`, championId);
     let c = getChampionInfo(championId);
     return Promise.resolve(c);
   });
