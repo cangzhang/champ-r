@@ -4,7 +4,7 @@ import tar from 'tar';
 import { nanoid } from 'nanoid';
 import { app, dialog, ipcMain, screen } from 'electron';
 
-import { IChampionMap, IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
+import { IChampionCdnDataItem, IChampionInfo, IChampionMap, IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
 import { appConfig } from './utils/config';
 import { ifIsCNServer, LcuWatcher } from './utils/lcu';
 import { bufferToStream, getAllFileContent, removeFolderContent, saveToFile, updateDirStats } from './utils/file';
@@ -12,6 +12,7 @@ import { getChampionList, isDev, sleep } from './utils';
 import { onShowPopup } from './main';
 
 import BrowserWindow = Electron.BrowserWindow;
+import path from 'path';
 
 export function toggleMainWindow(mainWindow: BrowserWindow | null) {
   if (!mainWindow) {
@@ -36,12 +37,20 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
     });
   }
 
-  async function getChampionInfo(key: string | number) {
+  async function getChampionInfo(key: string | number): Promise<IChampionInfo | null> {
     if (!championMap) {
       championMap = await getChampionList();
     }
 
-    return Object.values(championMap).find(i => i.key === `${key}`);
+    return Object.values(championMap).find(i => i.key === `${key}`) ?? null;
+  }
+
+  async function getRunesFromLocal(cwd: string, alias: string = ``) {
+    let data: IChampionCdnDataItem[] = await fse.readJSON(path.join(cwd, `${alias}.json`));
+    let runes: IRuneItem[] = data.reduce((ret, item) => {
+      return [...ret, ...item.runes];
+    }, [] as IRuneItem[]);
+    return runes;
   }
 
   ipcMain.on(`toggle-main-window`, () => {
@@ -129,13 +138,14 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
 
   ipcMain.on(`ApplySourceBuilds`, async (_ev, source) => {
     let url = `https://registry.npmmirror.com/@champ-r/${source}/latest`;
-    let cwd = `.npm/${source}/`;
+    let cwd = `.npm/${source}`;
     let lolDir = appConfig.get(`lolDir`);
 
     try {
-      let { dist: { tarball } } = await got(url, {
+      let { dist: { tarball }, version } = await got(url, {
         responseType: `json`,
       }).json();
+      // cwd += `_${version}/`;
       updateStatusForMainWindowWebView({
         source,
         msg: `Fetched metadata for ${source}`,
@@ -168,7 +178,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
         msg: `Extracted data for ${source}`,
       });
       await sleep(3000);
-      await updateDirStats(cwd);
+      await updateDirStats(cwd, version);
       let files = await getAllFileContent(cwd);
       let tasks: any[] = [];
       files.forEach(arr => {
@@ -228,15 +238,61 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
     return Promise.resolve();
   });
 
-  ipcMain.handle(`MakeRuneData`, async (_ev, { source, championId }) => {
-    console.log(`[main/MakeRuneData]`, source, championId);
+  ipcMain.handle(`GetChampionInfo`, async (_ev, championId) => {
+    console.log(`[main/GetChampionInfo]`, championId);
     let c = getChampionInfo(championId);
     return Promise.resolve(c);
   });
 
-  ipcMain.handle(`GetChampionInfo`, async (_ev, championId) => {
-    console.log(`[main/GetChampionInfo]`, championId);
-    let c = getChampionInfo(championId);
+  ipcMain.handle(`MakeRuneData`, async (_ev, { source, championId }) => {
+    console.log(`[main/MakeRuneData]`, source, championId);
+    let url = `https://registry.npmmirror.com/@champ-r/${source}/latest`;
+    let cwd = `.npm/${source}/`;
+
+    let c = await getChampionInfo(championId);
+    try {
+      let { dist: { tarball }, version } = await got(url, {
+        responseType: `json`,
+      }).json();
+
+      let shouldUpdate = false;
+      let statsFilePath = path.join(cwd, `.stats`);
+      try {
+        await fse.pathExists(statsFilePath);
+        let stats = await fse.readJSON(statsFilePath);
+        if (stats?.version !== version) {
+          shouldUpdate = true;
+        }
+      } catch (e) {
+        console.log(`[main/getSourceStats]`, e);
+        shouldUpdate = true;
+      }
+      if (!shouldUpdate) {
+        return await getRunesFromLocal(cwd, c?.id);
+      }
+
+      console.log(`[npm] downloading tarball for ${source}`);
+      let { body } = await got(tarball, {
+        responseType: 'buffer',
+      });
+      console.log(`[npm] tarball downloaded, ${source}`);
+      let s = bufferToStream(body);
+      await fse.ensureDir(cwd);
+      console.log(`[npm] extracting to ${cwd}`);
+      s.pipe(
+        tar.x({
+          strip: 1,
+          cwd,
+        }),
+      );
+      console.log(`[npm] extracted to ${cwd}`);
+      await sleep(2000);
+      await updateDirStats(cwd, version);
+      return await getRunesFromLocal(cwd, c?.id);
+    } catch (e) {
+      console.error(source, e);
+    }
+
     return Promise.resolve(c);
   });
 }

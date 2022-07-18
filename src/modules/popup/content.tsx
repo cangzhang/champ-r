@@ -21,7 +21,6 @@ import RunePreview from 'src/components/rune-preview';
 import Loading from 'src/components/loading-spinner';
 import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
 import { IChampionInfo, IRuneItem, ICoordinate } from '@interfaces/commonTypes';
-import { createIpcPromise } from 'src/service/ipc';
 
 const Pin = styled(`button`, () => ({
   margin: `0 2ex 0 0`,
@@ -55,7 +54,7 @@ export function Content() {
   const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
 
   const [activeTab, setActiveTab] = useState<ISourceItem[]>(getInitTab());
-  const [perkList, setPerkList] = useImmer<{ [k: string]: IRuneItem[] }>({});
+  const [perkMap, setPerkMap] = useImmer<{ [k: string]: IRuneItem[] }>({});
   const [championId, setChampionId] = useState<number | string>('');
   const [championDetail, setChampionDetail] = useState<IChampionInfo | null>(null);
   const [curPerk, setCurPerk] = useState<IRuneItem | null>(null);
@@ -84,24 +83,26 @@ export function Content() {
       return;
     }
 
-    if (source === SourceQQ.value) {
-      window.bridge.invoke(`GetChampionInfo`, championId).then(c => {
-        setChampionDetail(c);
+    window.bridge.invoke(`GetChampionInfo`, championId).then(c => {
+      setChampionDetail(c);
 
+      if (source === SourceQQ.value) {
         qqInstance.current?.getChampionPerks(c.key, c.id)
           .then((result) => {
-            setPerkList((draft) => {
+            setPerkMap((draft) => {
               draft[SourceQQ.value] = result;
             });
           });
-      });
-      return;
-    }
+        return;
+      }
 
-    window.bridge.invoke(`MakeRuneData`, { source, championId }).then(ret => {
-      console.log(ret);
+      window.bridge.invoke(`MakeRuneData`, { source, championId }).then(ret => {
+        setPerkMap(d => {
+          d[source] = ret;
+        });
+      });
     });
-  }, [championId, source, setPerkList]);
+  }, [championId, source, setPerkMap]);
 
   useEffect(() => {
     window.bridge.appConfig.set(`perkTab`, activeTab);
@@ -187,7 +188,7 @@ export function Content() {
   const renderContent = () => {
     const pkgName = activeTab[0].value;
     const source = sourceList.find((i) => i.value === pkgName);
-    const availablePerks = perkList[pkgName] ?? [];
+    const availablePerks = perkMap[pkgName] ?? [];
     if (!availablePerks.length) {
       return (
         <div className={s.waiting}>

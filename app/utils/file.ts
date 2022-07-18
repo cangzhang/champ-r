@@ -169,7 +169,7 @@ export function bufferToStream(b: Buffer) {
   });
 }
 
-export async function updateDirStats(dir: string) {
+export async function updateDirStats(dir: string, version: string = ``) {
   try {
     let files = await fs.readdir(dir);
     let tasks = files.map(f => {
@@ -185,7 +185,9 @@ export async function updateDirStats(dir: string) {
       });
     });
     let arr = await Promise.all(tasks);
-    let ret: { [f: string]: number } = {};
+    let ret: { [f: string]: number | string } = {
+      version,
+    };
     for (let i of arr) {
       const [name, mtime] = i as [string, number];
       ret[name] = mtime;

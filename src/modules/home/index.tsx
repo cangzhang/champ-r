@@ -28,7 +28,6 @@ import { useSourceList } from './useSourceList';
 
 import s from 'src/app.module.scss';
 import logo from 'src/assets/app-icon.webp';
-import { createIpcPromise } from 'src/service/ipc';
 
 interface IProps {
   onDirChange?: (p: string) => void;

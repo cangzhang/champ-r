@@ -12,7 +12,6 @@ import { ISourceItem, SourceQQ } from 'src/share/constants/sources';
 import LolQQImporter from 'src/service/data-source/lol-qq';
 import AppContext from 'src/share/context';
 import SourceProto from 'src/service/data-source/source-proto';
-import { createIpcPromise } from 'src/service/ipc';
 
 export function Import() {
   const navigate = useNavigate();
@@ -132,7 +131,7 @@ export function Import() {
       {allDone && <i className={cn(`bx bxs-flag-checkered bx-lg bx-tada`, s.done)} />}
       <div className={s.progress}>
         {messages.map((s, idx) => (
-          <div key={idx}>{s}</div>
+          <code key={idx}>{s}</code>
         ))}
       </div>
 
