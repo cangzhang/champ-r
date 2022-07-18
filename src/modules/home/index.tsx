@@ -91,8 +91,11 @@ export default function Home({ onDirChange = _noop }: IProps) {
   };
 
   const startImport = useCallback(() => {
-    navigate(`/import?sources=${selectedSources.join(`,`)}&keepOld=${store.keepOld}`);
-  }, [selectedSources, navigate, store.keepOld]);
+    let values = sourceList.map(i => {
+      return selectedSources.includes(i.label) ? i.value : ''
+    }).filter(Boolean);
+    navigate(`/import?sources=${values.join(`,`)}&keepOld=${store.keepOld}`);
+  }, [selectedSources, navigate, store.keepOld, sourceList]);
 
   const resetPopupPosition = () => {
     window.bridge.sendMessage(`popup:reset-position`);

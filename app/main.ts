@@ -249,7 +249,7 @@ let lastChampion = 0;
 
   const pwsh = await hasPwsh();
   lcuWatcher = new LcuWatcher(pwsh);
-  const lcuWs = new LcuWsClient(lcuWatcher);
+  const _lcuWs = new LcuWsClient(lcuWatcher);
 
   mainWindow = await createMainWindow();
   popupWindow = await createPopupWindow();

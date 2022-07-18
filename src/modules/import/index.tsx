@@ -61,16 +61,8 @@ export function Import() {
           .import(idx + 1);
     }
 
-    const tasks = sourceList.map((p, index) => {
-      if (p.value === SourceQQ.value) {
-        return Promise.resolve();
-      }
-      // exclude the `qq` source
-      if (!sources.includes(p.value)) {
-        return Promise.resolve();
-      }
-
-      window.bridge.sendMessage(`PrepareSourceData`, p.value);
+    let tasks = sources.filter(i => i !== SourceQQ.value).map(i => {
+      window.bridge.sendMessage(`PrepareSourceData`, i);
       return Promise.resolve();
     });
 
@@ -144,7 +136,7 @@ export function Import() {
         ))}
       </div>
 
-      <Button className={s.back} flat color="secondary" auto onClick={() => navigate(`/`)}>{t(`back to home`)}</Button>
+      <Button className={s.back} flat color="secondary" auto onPress={() => navigate(`/`)}>{t(`back to home`)}</Button>
 
       <Toaster
         position="bottom-center"

@@ -123,7 +123,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
   });
 
   ipcMain.on(`PrepareSourceData`, async (_ev, source) => {
-    let url = `https://registry.npmjs.com/@champ-r/${source}/latest`;
+    let url = `https://registry.npmmirror.com/@champ-r/${source}/latest`;
     let cwd = `.npm/${source}/`;
     let lolDir = appConfig.get(`lolDir`);
 
@@ -185,7 +185,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
                   return;
                 }
 
-                console.log(`done: `, champion, position);
+                console.log(`Done: `, champion, position, source);
                 updateStatusForMainWindowWebView({
                   source,
                   champion,
