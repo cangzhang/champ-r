@@ -291,8 +291,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
       return await getRunesFromLocal(cwd, c?.id);
     } catch (e) {
       console.error(source, e);
+      return [];
     }
-
-    return Promise.resolve(c);
   });
 }
