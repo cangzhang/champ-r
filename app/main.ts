@@ -2,22 +2,12 @@ import path from 'path';
 import debounce from 'lodash/debounce';
 import osLocale from 'os-locale';
 
-import {
-  app,
-  BrowserWindow,
-  Menu,
-  ipcMain,
-  screen,
-  Tray,
-  nativeImage,
-  nativeTheme,
-  dialog,
-} from 'electron';
+import { app, BrowserWindow, Menu, nativeTheme, screen, Tray } from 'electron';
 import contextMenu from 'electron-context-menu';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 
-import { IPopupEventData } from '@interfaces/commonTypes';
+import { IChampionMap, IPopupEventData } from '@interfaces/commonTypes';
 import { initLogger } from './utils/logger';
 import { appConfig } from './utils/config';
 import { LcuWatcher } from './utils/lcu';
@@ -25,7 +15,7 @@ import { LanguageList, LanguageSet } from './constants/langs';
 import { LcuEvent } from './constants/events';
 import { LcuWsClient } from './utils/ws';
 import { hasPwsh } from './utils/cmd';
-import { getMachineId, isDev } from './utils/index';
+import { getChampionList, getMachineId, isDev } from './utils/index';
 import { registerMainListeners } from './listeners';
 import { makeTray } from './tray';
 import { checkUpdates, registerUpdater } from './updater';
@@ -227,6 +217,7 @@ function persistPopUpBounds(w: BrowserWindow) {
 }
 
 let lastChampion = 0;
+let championMap: IChampionMap = {};
 
 (async () => {
   console.log(`ChampR starting, app version ${app.getVersion()}.`);
@@ -267,7 +258,8 @@ let lastChampion = 0;
     }
   });
 
-  registerMainListeners(mainWindow, popupWindow, lcuWatcher);
+  championMap = await getChampionList();
+  registerMainListeners(mainWindow, popupWindow, lcuWatcher, championMap);
   registerUpdater(mainWindow);
   await makeTray({ minimized }, tray, mainWindow);
 

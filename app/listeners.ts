@@ -4,11 +4,11 @@ import tar from 'tar';
 import { nanoid } from 'nanoid';
 import { app, dialog, ipcMain, screen } from 'electron';
 
-import { IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
+import { IChampionMap, IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
 import { appConfig } from './utils/config';
 import { ifIsCNServer, LcuWatcher } from './utils/lcu';
 import { bufferToStream, getAllFileContent, removeFolderContent, saveToFile, updateDirStats } from './utils/file';
-import { isDev, sleep } from './utils';
+import { getChampionList, isDev, sleep } from './utils';
 import { onShowPopup } from './main';
 
 import BrowserWindow = Electron.BrowserWindow;
@@ -28,12 +28,20 @@ export function toggleMainWindow(mainWindow: BrowserWindow | null) {
   }
 }
 
-export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: BrowserWindow, lcuWatcher: LcuWatcher) {
+export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: BrowserWindow, lcuWatcher: LcuWatcher, championMap: IChampionMap) {
   function updateStatusForMainWindowWebView(data: any) {
     mainWindow?.webContents.send(`apply_builds_process`, {
       data,
       id: nanoid(),
     });
+  }
+
+  async function getChampionInfo(key: string | number) {
+    if (!championMap) {
+      championMap = await getChampionList();
+    }
+
+    return Object.values(championMap).find(i => i.key === `${key}`);
   }
 
   ipcMain.on(`toggle-main-window`, () => {
@@ -122,7 +130,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
     popupWindow?.hide();
   });
 
-  ipcMain.on(`PrepareSourceData`, async (_ev, source) => {
+  ipcMain.on(`ApplySourceBuilds`, async (_ev, source) => {
     let url = `https://registry.npmmirror.com/@champ-r/${source}/latest`;
     let cwd = `.npm/${source}/`;
     let lolDir = appConfig.get(`lolDir`);
@@ -221,5 +229,16 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
       removeFolderContent(`${lolDir}/Config/Champions`),
     ]);
     mainWindow?.webContents.send(`EmptyBuildsFolder:done:${jobId}`);
+  });
+
+  ipcMain.handle(`MakeRuneData`, async (_ev, { source, championId }) => {
+    console.log(source, championId);
+    let c = getChampionInfo(championId);
+    return Promise.resolve(c);
+  });
+
+  ipcMain.handle(`GetChampionInfo`, async (_ev, championId) => {
+    let c = getChampionInfo(championId);
+    return Promise.resolve(c);
   });
 }

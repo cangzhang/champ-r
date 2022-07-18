@@ -1,5 +1,8 @@
 import { machineId } from 'node-machine-id';
+import got from 'got';
+
 import { appConfig } from './config';
+import { IChampionMap } from '@interfaces/commonTypes';
 
 export function sleep(ms: number) {
   return new Promise((resolve) => {
@@ -19,3 +22,21 @@ export async function getMachineId() {
 }
 
 export const isDev = process.env.IS_DEV_MODE === `true`;
+
+export async function getChampionList() {
+  try {
+    let [v] = await got(`https://ddragon.leagueoflegends.com/api/versions.json`, {
+      responseType: 'json',
+      resolveBodyOnly: true,
+    });
+    console.log(`[main/getChampionList] latest official version is ${v}`);
+    let body: any = await got(`https://ddragon.leagueoflegends.com/cdn/${v}/data/en_US/champion.json`, {
+      responseType: `json`,
+      resolveBodyOnly: true,
+    });
+    return body.data as IChampionMap;
+  } catch (e) {
+    console.log(`[main/getChampionList] error`, e)
+    return {} as IChampionMap;
+  }
+}

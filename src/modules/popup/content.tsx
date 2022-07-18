@@ -15,15 +15,12 @@ import { useStyletron } from 'baseui';
 import { ISourceItem, QQChampionAvatarPrefix, SourceQQ } from 'src/share/constants/sources';
 
 import LolQQ from 'src/service/data-source/lol-qq';
-import CdnService from 'src/service/data-source/cdn-service';
 
 import PerkShowcase from 'src/components/perk-showcase';
 import RunePreview from 'src/components/rune-preview';
 import Loading from 'src/components/loading-spinner';
 import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
-
 import { IChampionInfo, IRuneItem, ICoordinate } from '@interfaces/commonTypes';
-import { makeChampMap } from './utils';
 import { createIpcPromise } from 'src/service/ipc';
 
 const Pin = styled(`button`, () => ({
@@ -58,8 +55,7 @@ export function Content() {
   const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
 
   const [activeTab, setActiveTab] = useState<ISourceItem[]>(getInitTab());
-  const [perkList, setPerkList] = useImmer<IRuneItem[][]>([[], [], []]);
-  const [championMap, setChampionMap] = useState<{ [key: string]: IChampionInfo }>();
+  const [perkList, setPerkList] = useImmer<{ [k: string]: IRuneItem[] }>({});
   const [championId, setChampionId] = useState<number | string>('');
   const [championDetail, setChampionDetail] = useState<IChampionInfo | null>(null);
   const [curPerk, setCurPerk] = useState<IRuneItem | null>(null);
@@ -72,70 +68,40 @@ export function Content() {
   const [pinned, togglePinned] = useState(
     window.bridge.appConfig.get(`popup.alwaysOnTop`) as boolean,
   );
-  const instances = useRef([
-    new LolQQ(),
-    ...sourceList.filter((i) => i.value !== SourceQQ.value).map((p) => new CdnService(p.value)),
-  ]); // exclude the `qq` source
+  const qqInstance = useRef(new LolQQ());
+  const source = activeTab[0].value;
 
   useEffect(() => {
-    (instances.current.filter((i) => i.pkgName !== SourceQQ.value)[0] as CdnService)
-      .getChampionList()
-      .then((data) => {
-        const champMap = makeChampMap(data);
-        setChampionMap(champMap);
-
-        window.bridge.on('for-popup', ({ championId: id }: { championId: number }) => {
-          if (id) {
-            setChampionId(id);
-          }
-        });
-      });
+    window.bridge.on('for-popup', ({ championId: id }: { championId: number }) => {
+      if (id) {
+        setChampionId(id);
+      }
+    });
   }, []);
 
   useEffect(() => {
-    if (!championId || !championMap) return;
-
-    const champ = championMap[championId];
-    if (!champ) {
-      setChampionId(0);
-      setChampionDetail(null);
+    if (!championId) {
       return;
     }
-    setChampionDetail(champ);
 
-    let qq = instances.current.find((i) => i.pkgName === SourceQQ.value);
-    (qq as LolQQ).getChampionPerks(champ.key, champ.id).then((result) => {
-      setPerkList((draft) => {
-        const index = instances.current.findIndex((i) => i.pkgName === SourceQQ.value);
-        if (index >= 0) {
-          draft[index] = result;
-        }
+    if (source === SourceQQ.value) {
+      window.bridge.invoke(`GetChampionInfo`, championId).then(c => {
+        setChampionDetail(c);
+
+        qqInstance.current?.getChampionPerks(c.key, c.id)
+          .then((result) => {
+            setPerkList((draft) => {
+              draft[SourceQQ.value] = result;
+            });
+          });
       });
-    });
+      return;
+    }
 
-    instances.current.forEach((i, idx) => {
-      if (i.pkgName === SourceQQ.value) {
-        return;
-      }
-
-      (i as CdnService)
-        .getRunesFromCDN(champ.id)
-        .then((result) => {
-          if (!result) {
-            return;
-          }
-          setPerkList((draft) => {
-            draft[idx] = result;
-          });
-        })
-        .catch((err) => {
-          console.error(err);
-          setPerkList((draft) => {
-            draft[idx] = err.status;
-          });
-        });
+    window.bridge.invoke(`MakeRuneData`, { source, championId }).then(ret => {
+      console.log(ret);
     });
-  }, [championId, championMap, setPerkList]);
+  }, [championId, source, setPerkList]);
 
   useEffect(() => {
     window.bridge.appConfig.set(`perkTab`, activeTab);
@@ -192,7 +158,7 @@ export function Content() {
     }
 
     if (!championDetail || !(list as IRuneItem[]).length) {
-      return <Loading className={s.listLoading} />;
+      return <Loading className={s.listLoading}/>;
     }
 
     return (
@@ -213,26 +179,25 @@ export function Content() {
           />
         ))}
 
-        <RunePreview perk={curPerk} coordinate={coordinate} />
+        <RunePreview perk={curPerk} coordinate={coordinate}/>
       </Scrollbars>
     );
   };
 
   const renderContent = () => {
-    if (!championMap || !perkList[0].length) {
+    const pkgName = activeTab[0].value;
+    const source = sourceList.find((i) => i.value === pkgName);
+    const availablePerks = perkList[pkgName] ?? [];
+    if (!availablePerks.length) {
       return (
         <div className={s.waiting}>
-          <Loading className={s.loading} />
+          <Loading className={s.loading}/>
           <button className={s.close} onClick={onClose}>
-            <X size={26} color={`#EA4C89`} />
+            <X size={26} color={`#EA4C89`}/>
           </button>
         </div>
       );
     }
-
-    const pkgName = activeTab[0].value;
-    const tabIdx = instances.current.findIndex((i) => i.pkgName === pkgName);
-    const source = sourceList.find((i) => i.value === pkgName);
 
     return (
       <div className={s.main}>
@@ -240,13 +205,13 @@ export function Content() {
           <div className={s.drag}>
             <StatefulPopover content={t(`pin/unpin`)} triggerType={TRIGGER_TYPE.hover}>
               <Pin onClick={toggleAlwaysOnTop}>
-                <PinBtn $pinned={pinned} />
+                <PinBtn $pinned={pinned}/>
               </Pin>
             </StatefulPopover>
 
             <StatefulPopover content={t(`hide`)} triggerType={TRIGGER_TYPE.hover}>
               <button className={s.close} onClick={onClose}>
-                <X size={26} color={`#EA4C89`} />
+                <X size={26} color={`#EA4C89`}/>
               </button>
             </StatefulPopover>
 
@@ -293,9 +258,9 @@ export function Content() {
           </div>
         )}
 
-        {perkList[tabIdx] && (
+        {availablePerks.length > 0 && (
           <div className={s.list}>
-            {renderList(perkList[tabIdx], source?.isAram, source?.isURF)}
+            {renderList(availablePerks, source?.isAram, source?.isURF)}
           </div>
         )}
       </div>
@@ -306,14 +271,14 @@ export function Content() {
     <div>
       {renderContent()}
       <Toaster
-        position='bottom-center'
+        position="bottom-center"
         toastOptions={{
           style: {
             borderRadius: theme.borders.radius300,
             ...theme.typography.ParagraphSmall,
           },
           blank: {
-            icon: <Smile size={16} />,
+            icon: <Smile size={16}/>,
             duration: 5 * 1000,
             style: {
               backgroundColor: theme.colors.backgroundInverseSecondary,
@@ -321,7 +286,7 @@ export function Content() {
             },
           },
           success: {
-            icon: <Check />,
+            icon: <Check/>,
             style: {
               backgroundColor: theme.colors.backgroundPositive,
               color: theme.colors.backgroundPrimary,

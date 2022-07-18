@@ -62,7 +62,7 @@ export function Import() {
     }
 
     let tasks = sources.filter(i => i !== SourceQQ.value).map(i => {
-      window.bridge.sendMessage(`PrepareSourceData`, i);
+      window.bridge.sendMessage(`ApplySourceBuilds`, i);
       return Promise.resolve();
     });
 
