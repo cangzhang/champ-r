@@ -258,8 +258,7 @@ let championMap: IChampionMap = {};
     }
   });
 
-  championMap = await getChampionList();
-  registerMainListeners(mainWindow, popupWindow, lcuWatcher, championMap);
+  registerMainListeners(mainWindow, popupWindow, lcuWatcher);
   registerUpdater(mainWindow);
   await makeTray({ minimized }, tray, mainWindow);
 

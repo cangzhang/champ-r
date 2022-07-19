@@ -29,7 +29,9 @@ export function toggleMainWindow(mainWindow: BrowserWindow | null) {
   }
 }
 
-export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: BrowserWindow, lcuWatcher: LcuWatcher, championMap: IChampionMap) {
+export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: BrowserWindow, lcuWatcher: LcuWatcher) {
+  let championMap: IChampionMap = {};
+
   function updateStatusForMainWindowWebView(data: any) {
     mainWindow?.webContents.send(`apply_builds_process`, {
       data,
@@ -38,7 +40,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
   }
 
   async function getChampionInfo(key: string | number): Promise<IChampionInfo | null> {
-    if (!championMap) {
+    if (Object.keys(championMap).length === 0) {
       championMap = await getChampionList();
     }
 
