@@ -1,11 +1,10 @@
 .import {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  margin-top: 6em;
-
-  &.ing {
-    margin-top: 3em;
-  }
+  margin-top: 4em;
+  font-weight: 400;
 
   .back {
     display: flex;
@@ -42,6 +41,24 @@
       font-weight: normal;
     }
   }
+}
+
+.progress {
+  height: 300px;
+  overflow: hidden overlay;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem 10px;
+  text-align: center;
+  font-size: 14px;
+  user-select: text;
+}
+
+.done {
+  display: flex;
+  margin: 0 auto !important;
+  color: #0072f5;
 }
 
 @keyframes pop {

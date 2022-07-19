@@ -159,3 +159,26 @@ export interface IPerkPage {
   isDeletable: boolean;
   id: number;
 }
+
+export interface IChampionImage {
+  full: string;
+  sprite: string;
+  group: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface IChampionInfo {
+  version: string;
+  id: string;
+  key: string;
+  name: string;
+  title: string;
+  image: IChampionImage;
+}
+
+export interface IChampionMap {
+  [k: string]: IChampionInfo;
+}

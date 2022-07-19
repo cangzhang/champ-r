@@ -10,6 +10,9 @@ export const bridge = {
   sendMessage: (channel: string, data?: any) => {
     ipcRenderer.send(channel, data);
   },
+  invoke: async (channel: string, data?: any) => {
+    return await ipcRenderer.invoke(channel, data);
+  },
   on: (channel: string, callback: Function) => {
     ipcRenderer.on(channel, (_, data) => callback(data));
   },

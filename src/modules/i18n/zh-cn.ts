@@ -13,6 +13,7 @@ export default {
     stop: `终止`,
     restart: '重新开始',
     cancel: '取消',
+    back: `返回`,
     'back to home': '回到主界面',
     fetching: '拉取中',
     minimize: `最小化`,

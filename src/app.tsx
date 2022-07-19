@@ -1,5 +1,6 @@
 import React, { useReducer, useMemo, useEffect } from 'react';
-import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import mitt from 'mitt';
 
 import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
@@ -14,14 +15,14 @@ import { getItemList, getLolVer } from 'src/service/data-source/lol-qq';
 import Footer from 'src/components/footer';
 import Toolbar from 'src/components/toolbar';
 import Home from 'src/modules/home';
-import Import from 'src/modules/import';
+import { Import } from 'src/modules/import';
 import Settings from 'src/modules/settings';
 
 const engine = new Styletron();
+const emitter = mitt();
 
 const App = () => {
   const [store, dispatch] = useReducer(appReducer, initialState, init);
-  const contextValue = useMemo(() => ({ store, dispatch }), [store, dispatch]);
 
   useEffect(() => {
     const getVerAndItems = async () => {
@@ -56,8 +57,10 @@ const App = () => {
     });
   }, []);
 
+  const value = useMemo(() => ({ store, dispatch, emitter }), [store, dispatch]);
+
   return (
-    <AppContext.Provider value={contextValue}>
+    <AppContext.Provider value={value}>
       <StyletronProvider value={engine}>
         <BaseProvider theme={LightTheme}>
           <SnackbarProvider
@@ -70,20 +73,14 @@ const App = () => {
               },
             }}>
             <Router>
-              <Toolbar />
-              <Switch>
-                <Route exact path={'/'}>
-                  <Home />
-                </Route>
-                <Route path={`/import`}>
-                  <Import />
-                </Route>
-                <Route path={`/settings`}>
-                  <Settings />
-                </Route>
-              </Switch>
+              <Toolbar/>
+              <Routes>
+                <Route path={`/import`} element={<Import/>}/>
+                <Route path={`/settings`} element={<Settings/>}/>
+                <Route path={'/'} element={<Home/>}/>
+              </Routes>
             </Router>
-            <Footer />
+            <Footer/>
           </SnackbarProvider>
         </BaseProvider>
       </StyletronProvider>

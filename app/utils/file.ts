@@ -1,10 +1,11 @@
-import _pick from 'lodash/pick';
+import pick from 'lodash/pick';
 import fse from 'fs-extra';
-import { promises as fs } from 'fs';
+import fs_, { promises as fs } from 'fs';
 import * as path from 'path';
 import { TextDecoder, TextEncoder } from 'util';
+import { Readable } from 'stream';
 
-import { IChampionBuild, IFileResult } from '@interfaces/commonTypes';
+import { IChampionBuild, IChampionCdnDataItem, IFileResult } from '@interfaces/commonTypes';
 import { appConfig } from './config';
 
 const ItemSetProps = [
@@ -60,7 +61,7 @@ export const saveToFile = async (
 
     const tencentFile = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${sortrank}-${data.fileName}.json`;
     const riotFile = `${desDir}/Config/Champions/${data.champion}/Recommended/${sortrank}-${data.fileName}.json`;
-    const content = stripProps ? _pick(data, ItemSetProps) : data;
+    const content = stripProps ? pick(data, ItemSetProps) : data;
 
     await Promise.all([
       fse.outputFile(tencentFile, JSON.stringify(content, null, 4)),
@@ -158,3 +159,56 @@ export const getLcuToken = async (dirPath: string) => {
     return [null, null, null];
   }
 };
+
+export function bufferToStream(b: Buffer) {
+  return new Readable({
+    read() {
+      this.push(Buffer.from(b));
+      this.push(null);
+    },
+  });
+}
+
+export async function updateDirStats(dir: string, version: string = ``) {
+  try {
+    let files = await fs.readdir(dir);
+    let tasks = files.map(f => {
+      return new Promise((resolve) => {
+        fs_.stat(path.join(dir, f), (err, stats) => {
+          if (err) {
+            resolve([f, 0]);
+            return;
+          }
+
+          resolve([f, stats.mtime.getTime()]);
+        });
+      });
+    });
+    let arr = await Promise.all(tasks);
+    let ret: { [f: string]: number | string } = {
+      version,
+    };
+    for (let i of arr) {
+      const [name, mtime] = i as [string, number];
+      ret[name] = mtime;
+    }
+    await fse.writeJSON(path.join(dir, '.stats'), ret);
+    console.log(`[npm] updated file stats, ${arr.length} files`);
+    return ret;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function getAllFileContent(dir: string): Promise<IChampionCdnDataItem[][]> {
+  try {
+    let files = await fs.readdir(dir);
+    let tasks = files.filter(i => i !== `index.json` && i !== `package.json` && i.endsWith(`.json`)).map(f => {
+      return fse.readJSON(path.join(dir, f));
+    });
+    return await Promise.all(tasks);
+  } catch (e) {
+    console.error(e);
+    return Promise.reject(e);
+  }
+}

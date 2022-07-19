@@ -1,7 +1,7 @@
 import _noop from 'lodash/noop';
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import cn from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
@@ -28,7 +28,6 @@ import { useSourceList } from './useSourceList';
 
 import s from 'src/app.module.scss';
 import logo from 'src/assets/app-icon.webp';
-import { createIpcPromise } from 'src/service/ipc';
 
 interface IProps {
   onDirChange?: (p: string) => void;
@@ -37,7 +36,7 @@ interface IProps {
 export default function Home({ onDirChange = _noop }: IProps) {
   const [css, theme] = useStyletron();
   const { enqueue, dequeue } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const { store, dispatch } = useContext(AppContext);
@@ -57,7 +56,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
 
   const onSelectDir = async () => {
     try {
-      const { canceled, filePaths = [] }: any = await createIpcPromise(`openSelectFolderDialog`);
+      const { canceled, filePaths = [] }: any = await window.bridge.invoke(`OpenSelectFolderDialog`);
       if (canceled) {
         return;
       }
@@ -90,9 +89,12 @@ export default function Home({ onDirChange = _noop }: IProps) {
     dispatch(updateConfig(`selectedSources`, res));
   };
 
-  const startImport = () => {
-    history.push(`/import`);
-  };
+  const startImport = useCallback(() => {
+    let values = sourceList.map(i => {
+      return selectedSources.includes(i.label) ? i.value : ''
+    }).filter(Boolean);
+    navigate(`/import?sources=${values.join(`,`)}&keepOld=${store.keepOld}`);
+  }, [selectedSources, navigate, store.keepOld, sourceList]);
 
   const resetPopupPosition = () => {
     window.bridge.sendMessage(`popup:reset-position`);

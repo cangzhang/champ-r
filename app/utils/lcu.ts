@@ -152,7 +152,11 @@ export class LcuWatcher {
     this.withPwsh = withPwsh;
 
     this.initListener();
-    this.startAuthTask();
+    if (os.platform() === `win32`) {
+      this.startAuthTask();
+    } else {
+      console.log(`[ChampR] not running on MS Windows, skipped running cmd.`);
+    }
   }
 
   public startAuthTask = async () => {

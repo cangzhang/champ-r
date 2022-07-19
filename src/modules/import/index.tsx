@@ -1,232 +1,146 @@
-/* eslint react-hooks/exhaustive-deps: 0 */
 import s from './style.module.scss';
 
-import _noop from 'lodash/noop';
-
-import React, { useCallback, useContext, useEffect, useState, useRef, useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
+import noop from 'lodash/noop';
+import React, { useContext, useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import cn from 'classnames';
-
-import { PauseCircle, RefreshCw, CheckCircle, XCircle, Home } from 'react-feather';
-import { useStyletron } from 'baseui';
-import { toaster, ToasterContainer, PLACEMENT } from 'baseui/toast';
-import { Button } from 'baseui/button';
+import { toast, Toaster } from 'react-hot-toast';
+import { Button, Loading, Spacer } from '@nextui-org/react';
 
 import { ISourceItem, SourceQQ } from 'src/share/constants/sources';
-import {
-  prepareReimport,
-  updateFetchingSource,
-  importBuildFailed,
-  importBuildSucceed,
-} from 'src/share/actions';
 import LolQQImporter from 'src/service/data-source/lol-qq';
-import CdnService from 'src/service/data-source/cdn-service';
-
 import AppContext from 'src/share/context';
-import WaitingList from 'src/components/waiting-list';
 import SourceProto from 'src/service/data-source/source-proto';
 
-export default function Import() {
-  const history = useHistory();
-  const [, theme] = useStyletron();
+export function Import() {
+  const navigate = useNavigate();
   const [t] = useTranslation();
   const lolDir = window.bridge.appConfig.get(`lolDir`);
   const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
+  const ids = useRef<string[]>([]);
+  const { store, emitter } = useContext(AppContext);
+  let [searchParams] = useSearchParams();
 
-  const { store, dispatch } = useContext(AppContext);
-  const [loading, setLoading] = useState(false);
-  const [cancelled, setCancel] = useState<string[]>([]);
+  const [messages, setMessages] = useState<string[]>([]);
+  const [result, setResult] = useState<{ [k: string]: { finished: boolean; error: boolean; } }>({});
 
   const workers = useRef<{
     [key: string]: SourceProto;
   }>({});
 
-  const importFromSources = async () => {
-    const { selectedSources, keepOld, fetched } = store;
+  let sources = (searchParams.get(`sources`) ?? ``).split(`,`) ?? [];
 
-    setLoading(true);
-    if (fetched.length) {
-      dispatch(prepareReimport());
+  const importFromSources = useCallback(async () => {
+    let sources = (searchParams.get(`sources`) ?? ``).split(`,`) ?? [];
+    let keepOld = searchParams.get(`keepOld`) === `true`;
+
+    if (!sources?.length) {
+      return;
     }
-    dispatch(updateFetchingSource(selectedSources));
+    setResult({});
 
     if (!keepOld) {
-      await Promise.all([
-        window.bridge.file.removeFolderContent(`${lolDir}/Game/Config/Champions`),
-        window.bridge.file.removeFolderContent(`${lolDir}/Config/Champions`),
-      ]);
-      toaster.positive(t(`removed outdated items`), {});
+      await window.bridge.invoke(`EmptyBuildsFolder`);
+      toast.success(t(`removed outdated items`), {
+        duration: 3000,
+      });
     }
 
     const { itemMap } = store;
-    let lolqqTask = _noop;
+    let lolqqTask = noop;
 
-    if (selectedSources.includes(SourceQQ.label)) {
-      const idx = sourceList.findIndex((i) => i.label === SourceQQ.label);
-      const instance = new LolQQImporter(lolDir, itemMap, dispatch);
-      workers.current[SourceQQ.label] = instance;
+    if (sources.includes(SourceQQ.value)) {
+      const idx = sourceList.findIndex((i) => i.value === SourceQQ.value);
+      const instance = new LolQQImporter(lolDir, itemMap, emitter);
+      workers.current[SourceQQ.value] = instance;
 
       lolqqTask = () =>
         instance
-          .import(idx + 1)
-          .then(() => {
-            toaster.positive(`[${SourceQQ.label.toUpperCase()}] ${t(`completed`)}`, {});
-            dispatch(importBuildSucceed(SourceQQ.label));
-          })
-          .catch((err) => {
-            if (err.message.includes(`Error: Cancel`)) {
-              setCancel(cancelled.concat(SourceQQ.label));
-              toaster.warning(`${t(`cancelled`)}: ${SourceQQ.label}`, {});
-            } else {
-              dispatch(importBuildFailed(SourceQQ.label));
-              toaster.negative(`${t(`import failed`)}: ${SourceQQ.label}`, {});
-              console.error(err);
-            }
-          });
+          .import(idx + 1);
     }
 
-    const tasks = sourceList.map((p, index) => {
-      if (p.value === SourceQQ.value) {
-        return Promise.resolve();
-      }
-      // exclude the `qq` source
-      if (!selectedSources.includes(p.label)) {
-        return Promise.resolve();
-      }
-
-      const instance = new CdnService(p.value, dispatch);
-      workers.current[p.label] = instance;
-      return instance
-        .importFromCdn(lolDir, index)
-        .then((result) => {
-          const { rejected } = result;
-          if (!rejected.length) {
-            toaster.positive(`[${p.label.toUpperCase()}] ${t(`completed`)}`, {});
-            dispatch(importBuildSucceed(p.label));
-          }
-        })
-        .catch((err) => {
-          if (err.message.includes(`Error: Cancel`)) {
-            setCancel(cancelled.concat(p.label));
-            toaster.warning(`${t(`cancelled`)}: ${p.label}`, {});
-          } else {
-            dispatch(importBuildFailed(p.label));
-            toaster.negative(`${t(`import failed`)}: ${p.label}`, {});
-            console.error(err);
-          }
-        });
+    let tasks = sources.filter(i => i !== SourceQQ.value).map(i => {
+      window.bridge.sendMessage(`ApplySourceBuilds`, i);
+      return Promise.resolve();
     });
 
     try {
       await Promise.all([...tasks, lolqqTask()]);
     } finally {
-      setLoading(false);
     }
-  };
-
-  const stop = () => {
-    setLoading(false);
-    setCancel(Object.keys(workers.current));
-
-    const ins = Object.values(workers.current);
-    ins.map((i) => i.cancel());
-  };
-
-  const restart = () => {
-    importFromSources();
-  };
-
-  const userCancelled = useMemo(() => cancelled.length > 0, [cancelled]);
-
-  const renderStatus = () => {
-    if (loading) {
-      return (
-        <>
-          <WaitingList />
-          {/* @ts-ignore */}
-          <Button className={s.back} onClick={stop}>
-            {t(`stop`)}
-          </Button>
-        </>
-      );
-    }
-
-    if (userCancelled) {
-      return (
-        <>
-          <PauseCircle size={128} color={theme.colors.contentWarning} />
-          <Button
-            // @ts-ignore
-            className={s.back}
-            /* @ts-ignore */
-            startEnhancer={<RefreshCw title={'Restart'} />}
-            onClick={restart}
-            overrides={{
-              BaseButton: {
-                style: ({ $theme }) => {
-                  return {
-                    backgroundColor: $theme.colors.contentPositive,
-                  };
-                },
-              },
-            }}>
-            {t(`restart`)}
-          </Button>
-          <Button
-            // @ts-ignore
-            className={s.back}
-            // @ts-ignore
-            startEnhancer={<XCircle title={'Homepage'} />}
-            onClick={backToHome}
-            overrides={{
-              BaseButton: {
-                style: ({ $theme }) => {
-                  return {
-                    backgroundColor: $theme.colors.negative,
-                  };
-                },
-              },
-            }}>
-            {t(`cancel`)}
-          </Button>
-        </>
-      );
-    }
-
-    const failed = store.importPage.fail.length > 0;
-
-    // @ts-ignore
-    return (
-      <>
-        {!failed && <CheckCircle size={128} color={theme.colors.contentPositive} />}
-        {failed && (
-          <div className={s.failed}>
-            {t(`rejected`)}: {store.importPage.fail.join(`, `)}
-          </div>
-        )}
-        {/* @ts-ignore */}
-        <Button className={s.back} onClick={backToHome} startEnhancer={<Home title={`Home`} />}>
-          {t(`back to home`)}
-        </Button>
-      </>
-    );
-  };
-
-  const backToHome = useCallback(() => history.replace(`/`), []);
+  }, [searchParams, lolDir]); // eslint-disable-line
 
   useEffect(() => {
-    if (!store.itemMap && !process.env.IS_DEV) {
-      return history.replace('/');
+    function updateMessage(msg: string) {
+      setMessages(p => [msg, ...p]);
+    }
+    function showToast({ finished, source, error }: { finished: boolean, source: string, error: boolean }) {
+      if (finished) {
+        let text = `[${source.toUpperCase()}] Applied successfully`
+        toast.success(text, { id: text, duration: 3000 });
+        setResult(p => ({
+          ...p,
+          [source]: {
+            finished,
+            error,
+          },
+        }));
+      }
+      if (error) {
+        toast.error(`[${source.toUpperCase()}] Something went wrong`, {
+          duration: 3000,
+        });
+      }
+    }
+    function handler(ev: any) {
+      if (ids.current.includes(ev.id)) {
+        return;
+      }
+
+      ids.current.push(ev.id);
+      updateMessage(ev.data.msg);
+      showToast(ev.data);
     }
 
+    window.bridge.on(`apply_builds_process`, handler);
+    emitter.on(`apply_builds_process`, handler);
+
+    return () => {
+      emitter.off(`apply_builds_process`, handler);
+      window.bridge.removeListener(`apply_builds_process`, handler);
+    };
+  }, [emitter]); // eslint-disable-line
+
+  useEffect(() => {
     importFromSources();
-  }, []);
+  }, [importFromSources]); // eslint-disable-line
+
+  const keys = Object.keys(result);
+  let allDone = sources.length > 0
+    && keys.length === sources.length
+    && keys.every(k => sources.includes(k))
+    && keys.every(k => result[k].finished || result[k].error);
 
   return (
-    <div className={cn(s.import, loading && s.ing)}>
-      {renderStatus()}
-      <ToasterContainer autoHideDuration={1500} placement={PLACEMENT.bottom} />
+    <div className={cn(s.import)}>
+      {!allDone && <>
+        <Loading type="points" size="lg"/>
+        <Spacer/>
+      </>}
+      {allDone && <i className={cn(`bx bxs-flag-checkered bx-lg bx-tada`, s.done)} />}
+      <div className={s.progress}>
+        {messages.map((s, idx) => (
+          <code key={idx}>{s}</code>
+        ))}
+      </div>
+
+      <Button className={s.back} flat color="secondary" auto onPress={() => navigate(`/`)}>{t(`back to home`)}</Button>
+
+      <Toaster
+        position="bottom-center"
+        reverseOrder={false}
+      />
     </div>
   );
 }

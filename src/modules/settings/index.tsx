@@ -3,7 +3,7 @@ import s from './style.module.scss';
 
 import _get from 'lodash/get';
 import React, { useEffect, useState, useRef, FormEvent } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import { Select } from 'baseui/select';
@@ -33,7 +33,7 @@ const getLangItem = (value: string) => LangList.find((i) => i.value === value);
 
 export default function Settings() {
   const [t, i18n] = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const sysLang = window.bridge.appConfig.get(`appLang`);
   const [values, setLangValues] = useState<ILangItem[]>([getLangItem(sysLang) ?? LangList[0]]);
   const [ignoreSystemScale, setIgnoreSystemScale] = useState(
@@ -186,7 +186,7 @@ export default function Settings() {
       </Checkbox>
 
       <div className={s.ctrlBtns}>
-        <Button onClick={() => history.replace(`/`)}>{t(`back to home`)}</Button>
+        <Button onClick={() => navigate(`/`, { replace: true })}>{t(`back to home`)}</Button>
         {recorder.current && <Button onClick={restartApp}>{t(`restart app`)}</Button>}
       </div>
     </div>

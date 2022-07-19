@@ -1,17 +1,16 @@
 @import '~normalize.css';
+@import '~boxicons/css/boxicons.min.css';
 
 ::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #666;
-  border-radius: 20px;
+  width: 5px;
 }
 
 ::-webkit-scrollbar-track {
   background: #ddd;
-  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #666;
 }
 
 html {
