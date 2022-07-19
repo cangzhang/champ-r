@@ -139,7 +139,8 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
   });
 
   ipcMain.on(`ApplySourceBuilds`, async (_ev, source) => {
-    let url = `https://registry.npmmirror.com/@champ-r/${source}/latest`;
+    let registry = appConfig.get(`npmRegistry`, `https://registry.npmmirror.com`);
+    let url = `${registry}/@champ-r/${source}/latest`;
     let cwd = `.npm/${source}`;
     let lolDir = appConfig.get(`lolDir`);
 
@@ -248,7 +249,8 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
 
   ipcMain.handle(`MakeRuneData`, async (_ev, { source, championId }) => {
     console.log(`[main/MakeRuneData]`, source, championId);
-    let url = `https://registry.npmmirror.com/@champ-r/${source}/latest`;
+    let registry = appConfig.get(`npmRegistry`, `https://registry.npmmirror.com`);
+    let url = `${registry}/@champ-r/${source}/latest`;
     let cwd = `.npm/${source}/`;
 
     let c = await getChampionInfo(championId);

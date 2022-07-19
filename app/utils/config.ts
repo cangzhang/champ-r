@@ -24,5 +24,6 @@ export const appConfig = new Store({
     alwaysRequestLatestVersion: false,
     enableChinaCDN: false,
     startMinimized: false,
+    npmRegistry: `https://registry.npmmirror.com`,
   },
 });
