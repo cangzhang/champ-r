@@ -80,6 +80,6 @@ pnpm run build:local
 ```
 
 
-## Stargazers over time
+## Star History
 
-[![Stargazers over time](https://starchart.cc/cangzhang/champ-r.svg)](https://starchart.cc/cangzhang/champ-r)
+[![Star History Chart](https://api.star-history.com/svg?repos=cangzhang/champ-r&type=Date)](https://star-history.com/#cangzhang/champ-r&Date)
