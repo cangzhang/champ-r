@@ -1,4 +1,3 @@
-
 # ChampR
 
 [![](https://img.shields.io/github/v/release/cangzhang/champ-r?label=LATEST%20VERSION&style=for-the-badge)](https://github.com/cangzhang/champ-r/releases/latest)
@@ -11,11 +10,9 @@ Yet another League of Legends helper.
 
 > ❤ Special thanks to [JetBrains](https://www.jetbrains.com/?from=champ-r) for sponsoring opensource license to this project.
 
-<svg width="1200" height="600" xmlns="http://www.w3.org/2000/svg">
-<image href="https://user-images.githubusercontent.com/1357073/180357424-36edd450-a3b9-42ab-9e68-e60fb5f43bb8.png" x="0" y="0"  width="300"/>
-<image href="https://user-images.githubusercontent.com/1357073/180357492-776dae3a-8ad2-4f92-bb6b-999b521bae4d.png" x="310" y="0"  width="300"/>
-<image href="https://user-images.githubusercontent.com/1357073/180359086-f479afdf-e3db-481f-a4fc-28a43452d25c.png" x="620" y="0"  width="300"/>
-</svg>
+|                                                                   Home                                                                   |                                                                   Import Builds                                                                  |                                                                   Apply Runes                                                                   |
+|:----------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------:|
+| <img src="https://user-images.githubusercontent.com/1357073/180357424-36edd450-a3b9-42ab-9e68-e60fb5f43bb8.png" width="220" alt="home"/> | <img src="https://user-images.githubusercontent.com/1357073/180357492-776dae3a-8ad2-4f92-bb6b-999b521bae4d.png" width="220" alt="import builds"/> | <img src="https://user-images.githubusercontent.com/1357073/180359086-f479afdf-e3db-481f-a4fc-28a43452d25c.png" width="220" alt="apply runes"/> |
 
 ## Features
 
@@ -27,13 +24,13 @@ Yet another League of Legends helper.
     - 🇫🇷 `French`
 - ℹ️ Update notifier
 - 😎 Multiple data sources for **Summoner's Rift** & **ARAM**
-  - `op.gg`
-  - `lolalytics.com`
-  - `u.gg`
-  - `champion.gg`
-  - `murderbridge.com`
-  - `101.qq.com`
-  - ...
+    - `op.gg`
+    - `lolalytics.com`
+    - `u.gg`
+    - `champion.gg`
+    - `murderbridge.com`
+    - `101.qq.com`
+    - ...
 
 ## Download
 
@@ -83,7 +80,6 @@ pnpm run start
 ```console
 pnpm run build:local
 ```
-
 
 ## Star History
 
