@@ -1,16 +1,19 @@
+
 # ChampR
 
 [![](https://img.shields.io/github/v/release/cangzhang/champ-r?label=LATEST%20VERSION&style=for-the-badge)](https://github.com/cangzhang/champ-r/releases/latest)
 [![](https://img.shields.io/github/downloads/cangzhang/champ-r/total?style=for-the-badge)](https://github.com/cangzhang/champ-r/releases)
 [![](https://img.shields.io/github/workflow/status/cangzhang/champ-r/release?style=for-the-badge&color=65C0A3)](https://github.com/cangzhang/champ-r/actions)
 
-<img src="https://user-images.githubusercontent.com/1357073/119595829-bc218680-be10-11eb-8e06-cb47902a7d11.png" height="400" /> <img src="https://user-images.githubusercontent.com/1357073/119310086-da1ca900-bca1-11eb-9d1e-73cae2b36c0c.png" height="400" />
-
 Yet another League of Legends helper.
 
 [App icon](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
 
 > ❤️ Special thanks to [JetBrains](https://www.jetbrains.com/?from=champ-r) for sponsoring opensource license to this project.
+
+<img src="https://user-images.githubusercontent.com/1357073/180357424-36edd450-a3b9-42ab-9e68-e60fb5f43bb8.png" height="400" style="margin-right: 10px;" alt=""/>
+<img src="https://user-images.githubusercontent.com/1357073/180357492-776dae3a-8ad2-4f92-bb6b-999b521bae4d.png" height="400" style="margin-right: 10px;" alt=""/>
+<img src="https://user-images.githubusercontent.com/1357073/180357805-49900e9d-30c2-4379-8ebb-3bea20f96823.png" height="400" alt=""/>
 
 ## Features
 
