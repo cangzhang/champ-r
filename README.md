@@ -9,11 +9,13 @@ Yet another League of Legends helper.
 
 [App icon](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
 
-> ❤️ Special thanks to [JetBrains](https://www.jetbrains.com/?from=champ-r) for sponsoring opensource license to this project.
+> ❤ Special thanks to [JetBrains](https://www.jetbrains.com/?from=champ-r) for sponsoring opensource license to this project.
 
-<img src="https://user-images.githubusercontent.com/1357073/180357424-36edd450-a3b9-42ab-9e68-e60fb5f43bb8.png" height="400" style="margin-right: 10px;" alt=""/>
-<img src="https://user-images.githubusercontent.com/1357073/180357492-776dae3a-8ad2-4f92-bb6b-999b521bae4d.png" height="400" style="margin-right: 10px;" alt=""/>
-<img src="https://user-images.githubusercontent.com/1357073/180357805-49900e9d-30c2-4379-8ebb-3bea20f96823.png" height="400" alt=""/>
+<svg width="1200" height="600" xmlns="http://www.w3.org/2000/svg">
+<image href="https://user-images.githubusercontent.com/1357073/180357424-36edd450-a3b9-42ab-9e68-e60fb5f43bb8.png" x="0" y="0"  width="300"/>
+<image href="https://user-images.githubusercontent.com/1357073/180357492-776dae3a-8ad2-4f92-bb6b-999b521bae4d.png" x="310" y="0"  width="300"/>
+<image href="https://user-images.githubusercontent.com/1357073/180359086-f479afdf-e3db-481f-a4fc-28a43452d25c.png" x="620" y="0"  width="300"/>
+</svg>
 
 ## Features
 
