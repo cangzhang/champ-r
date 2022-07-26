@@ -7,7 +7,7 @@ import contextMenu from 'electron-context-menu';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 
-import { IChampionMap, IPopupEventData } from '@interfaces/commonTypes';
+import { IPopupEventData } from '@interfaces/commonTypes';
 import { initLogger } from './utils/logger';
 import { appConfig } from './utils/config';
 import { LcuWatcher } from './utils/lcu';
@@ -217,52 +217,55 @@ function persistPopUpBounds(w: BrowserWindow) {
 }
 
 let lastChampion = 0;
-let championMap: IChampionMap = {};
 
 (async () => {
-  console.log(`ChampR starting, app version ${app.getVersion()}.`);
+  try {
+    console.log(`ChampR starting, app version ${app.getVersion()}.`);
 
-  await app.whenReady();
-  Menu.setApplicationMenu(null);
+    await app.whenReady();
+    Menu.setApplicationMenu(null);
 
-  let locale = await osLocale();
-  let appLang = appConfig.get(`appLang`);
-  console.info(`System locale is ${locale}, app lang is ${appLang || 'unset'}`);
+    let locale = await osLocale();
+    let appLang = appConfig.get(`appLang`);
+    console.info(`System locale is ${locale}, app lang is ${appLang || 'unset'}`);
 
-  if (!appLang) {
-    if (LanguageList.includes(locale)) {
-      appConfig.set(`appLang`, locale);
-    } else {
-      appConfig.set(`appLang`, LanguageSet.enUS);
-    }
-  }
-  const minimized = appConfig.get(`startMinimized`, false);
-
-  const pwsh = await hasPwsh();
-  lcuWatcher = new LcuWatcher(pwsh);
-  const _lcuWs = new LcuWsClient(lcuWatcher);
-
-  mainWindow = await createMainWindow();
-  popupWindow = await createPopupWindow();
-
-  lcuWatcher.addListener(LcuEvent.SelectedChampion, (data: IPopupEventData) => {
-    onShowPopup(data);
-  });
-  lcuWatcher.addListener(LcuEvent.MatchedStartedOrTerminated, () => {
-    if (popupWindow) {
-      lastChampion = 0;
-      const isVisible = popupWindow.isVisible();
-      if (isVisible) {
-        popupWindow.hide();
+    if (!appLang) {
+      if (LanguageList.includes(locale)) {
+        appConfig.set(`appLang`, locale);
+      } else {
+        appConfig.set(`appLang`, LanguageSet.enUS);
       }
     }
-  });
+    const minimized = appConfig.get(`startMinimized`, false);
 
-  registerMainListeners(mainWindow, popupWindow, lcuWatcher);
-  registerUpdater(mainWindow);
-  await makeTray({ minimized }, tray, mainWindow);
+    const pwsh = await hasPwsh();
+    lcuWatcher = new LcuWatcher(pwsh);
+    const _lcuWs = new LcuWsClient(lcuWatcher);
 
-  const userId = await getMachineId();
-  console.log(`userId: ${userId}`);
-  await checkUpdates();
+    mainWindow = await createMainWindow();
+    popupWindow = await createPopupWindow();
+
+    lcuWatcher.addListener(LcuEvent.SelectedChampion, (data: IPopupEventData) => {
+      onShowPopup(data);
+    });
+    lcuWatcher.addListener(LcuEvent.MatchedStartedOrTerminated, () => {
+      if (popupWindow) {
+        lastChampion = 0;
+        const isVisible = popupWindow.isVisible();
+        if (isVisible) {
+          popupWindow.hide();
+        }
+      }
+    });
+
+    registerMainListeners(mainWindow, popupWindow, lcuWatcher);
+    registerUpdater(mainWindow);
+    await makeTray({ minimized }, tray, mainWindow);
+
+    const userId = await getMachineId();
+    console.log(`userId: ${userId}`);
+    await checkUpdates();
+  } catch (e) {
+    console.error(e);
+  }
 })();
