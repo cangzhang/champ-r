@@ -1,6 +1,10 @@
 # Changelog
 
+## v1.3.1
+- change: downgrade electron to latest v13 for legacy Windows 10 users. (#195)
+
 ## v1.3.0
+- feat: start ChampR minimized. (#182, @ningbowang)
 - feat: resolve data by downloading tarballs
 - chore: upgrade `electron`
 
