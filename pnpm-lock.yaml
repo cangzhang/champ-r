@@ -43,7 +43,7 @@ specifiers:
   css-loader: 3.2.0
   dotenv: 8.2.0
   dotenv-expand: 5.1.0
-  electron: 14.2.9
+  electron: 13.6.9
   electron-builder: 22.11.7
   electron-context-menu: 3.1.1
   electron-debug: 3.2.0
@@ -194,7 +194,7 @@ devDependencies:
   css-loader: 3.2.0_webpack@4.44.2
   dotenv: 8.2.0
   dotenv-expand: 5.1.0
-  electron: 14.2.9
+  electron: 13.6.9
   electron-builder: 22.11.7
   eslint: 6.8.0
   eslint-config-react-app: 5.2.1_elzs5f2qpsatvzuvs45cocdt2m
@@ -7047,8 +7047,8 @@ packages:
       new-github-issue-url: 0.2.1
     dev: false
 
-  /electron/14.2.9:
-    resolution: {integrity: sha512-7LdJFmqVzO9NLKO0hwOwPA6Kv4GSybGMcej8f2q7fVT4O8mIfL9oo/v4axVjVWm0+58ROQtHv8hYnnAs3ygG0Q==}
+  /electron/13.6.9:
+    resolution: {integrity: sha512-Es/sBy85NIuqsO9MW41PUCpwIkeinlTQ7g0ainfnmRAM2rmog3GBxVCaoV5dzEjwTF7TKG1Yr/E7Z3qHmlfWAg==}
     engines: {node: '>= 8.6'}
     hasBin: true
     requiresBuild: true
@@ -9737,7 +9737,7 @@ packages:
     dev: true
 
   /json-buffer/3.0.0:
-    resolution: {integrity: sha1-Wx85evx11ne96Lz8Dkfh+aPZqJg=}
+    resolution: {integrity: sha512-CuUqjv0FUZIdXkHPI8MezCnFCdaTAacej1TZYulLoAg1h/PhwkdXFN4V/gzY4g+fMBCOV2xF+rp7t2XD2ns/NQ==}
     dev: true
 
   /json-buffer/3.0.1:

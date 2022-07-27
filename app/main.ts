@@ -94,6 +94,7 @@ export async function createMainWindow() {
   await win.loadURL(
     isDev ? 'http://127.0.0.1:3000' : `file://${path.join(__dirname, 'index.html')}`,
   );
+  mainWindow = win;
 
   return win;
 }
@@ -138,6 +139,7 @@ export async function createPopupWindow() {
   await popup.loadURL(
     isDev ? `http://127.0.0.1:3000/popup.html` : `file://${path.join(__dirname, 'popup.html')}`,
   );
+  popupWindow = popup;
 
   return popup;
 }
@@ -242,8 +244,11 @@ let lastChampion = 0;
     lcuWatcher = new LcuWatcher(pwsh);
     const _lcuWs = new LcuWsClient(lcuWatcher);
 
+    console.log(`creating main window...`);
     mainWindow = await createMainWindow();
+    console.log(`created main window...`);
     popupWindow = await createPopupWindow();
+    console.log(`created popup window...`);
 
     lcuWatcher.addListener(LcuEvent.SelectedChampion, (data: IPopupEventData) => {
       onShowPopup(data);
