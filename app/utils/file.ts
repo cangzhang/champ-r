@@ -193,7 +193,7 @@ export async function updateDirStats(dir: string, version: string = ``) {
       ret[name] = mtime;
     }
     await fse.writeJSON(path.join(dir, '.stats'), ret);
-    console.log(`[npm] updated file stats, ${arr.length} files`);
+    console.log(`[npm] updated file stats, ${arr.length} files in ${dir}`);
     return ret;
   } catch (e) {
     console.error(e);
