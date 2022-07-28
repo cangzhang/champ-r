@@ -9,14 +9,14 @@ interface ITrayOptions {
   minimized?: boolean;
 }
 
-export function makeTray({ minimized = false }: ITrayOptions, tray: Tray | null, mainWindow: BrowserWindow) {
+export function makeTray({ minimized = false }: ITrayOptions, mainWindow: BrowserWindow) {
   const iconPath = path.join(
     isDev ? `${__dirname}/../` : process.resourcesPath,
     'resources/app-icon.png',
   );
   const icon = nativeImage.createFromPath(iconPath).resize({ width: 24, height: 24 });
 
-  tray = new Tray(icon);
+  let tray = new Tray(icon);
   // tray.setIgnoreDoubleClickEvents(true)
   tray.setToolTip('ChampR');
   tray.on(`click`, () => {
@@ -45,4 +45,6 @@ export function makeTray({ minimized = false }: ITrayOptions, tray: Tray | null,
       content: `ChampR started minimized`,
     });
   }
+
+  return tray
 }

@@ -265,7 +265,7 @@ let lastChampion = 0;
 
     registerMainListeners(mainWindow, popupWindow, lcuWatcher);
     registerUpdater(mainWindow);
-    await makeTray({ minimized }, tray, mainWindow);
+    tray = await makeTray({ minimized }, mainWindow);
 
     const userId = await getMachineId();
     console.log(`userId: ${userId}`);
