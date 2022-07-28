@@ -8,7 +8,7 @@ Yet another League of Legends helper.
 
 [App icon](https://www.flaticon.com/free-icon/dog_2767976), credits to [flaticon.com](https://www.flaticon.com/).
 
-> ❤ Special thanks to [JetBrains](https://www.jetbrains.com/?from=champ-r) for sponsoring opensource license to this project.
+> ❤ Special thanks to [JetBrains](https://www.jetbrains.com/?from=champ-r) for sponsoring an open source license for this project.
 
 |                                                                   Home                                                                   |                                                                   Import Builds                                                                  |                                                                   Apply Runes                                                                   |
 |:----------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------:|
@@ -43,15 +43,15 @@ https://github.com/cangzhang/champ-r/releases
 1. Run ChampR as **administrator**
 1. Choose the **installation folder** of League of Legends
 1. Select data sources
-1. Hit `Import` button
+1. Hit the `Import` button
 1. You can find them in the shop menu when playing game
 
 ### Apply Runes
 
 1. Run ChampR as **administrator**
 1. Choose the **installation folder** of League of Legends
-1. Start pvp game, the rune popup would show in the screen
-1. Press `Apply` icon
+1. Start the pvp game, and the rune popup would show on the screen
+1. Press the `Apply` icon
 
 ## FAQ
 
