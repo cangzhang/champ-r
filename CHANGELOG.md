@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.2
+- fix: tray not showing.
+
 ## v1.3.1
 - change: downgrade electron to latest v13 for legacy Windows 10 users. (#195)
 
