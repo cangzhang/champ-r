@@ -9,6 +9,7 @@ specifiers:
   '@pmmmwh/react-refresh-webpack-plugin': 0.5.7
   '@svgr/webpack': ^5.5.0
   '@types/cheerio': ^0.22.28
+  '@types/fs-extra': ^9.0.13
   '@types/lodash': ^4.14.168
   '@types/react': 17.0.11
   '@types/react-beautiful-dnd': ^13.1.2
@@ -168,6 +169,7 @@ devDependencies:
   '@pmmmwh/react-refresh-webpack-plugin': 0.5.7_fel6x4eao6jxekwem7tarrz3ja
   '@svgr/webpack': 5.5.0
   '@types/cheerio': 0.22.30
+  '@types/fs-extra': 9.0.13
   '@types/lodash': 4.14.175
   '@types/react': 17.0.11
   '@types/react-beautiful-dnd': 13.1.2
@@ -4279,10 +4281,10 @@ packages:
     resolution: {integrity: sha512-pS9/cR4/TnNZVAHZECiSvvwTBzbwblj7KBBZkMKDG57nibq0I1XY8zAaYeHFdlYTyrRcz9JUXbAqJKezya7UFQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
+      7zip-bin: 5.1.1
       '@develar/schema-utils': 2.6.5
       '@electron/universal': 1.0.5
       '@malept/flatpak-bundler': 0.4.0
-      7zip-bin: 5.1.1
       async-exit-hook: 2.0.1
       bluebird-lst: 1.0.9
       builder-util: 22.11.7
@@ -5134,9 +5136,9 @@ packages:
   /builder-util/22.11.7:
     resolution: {integrity: sha512-ihqUe5ey82LM9qqQe0/oIcaSm9w+B9UjcsWJZxJliTBsbU+sErOpDFpHW+sim0veiTF/EIcGUh9HoduWw+l9FA==}
     dependencies:
+      7zip-bin: 5.1.1
       '@types/debug': 4.1.7
       '@types/fs-extra': 9.0.13
-      7zip-bin: 5.1.1
       app-builder-bin: 3.5.13
       bluebird-lst: 1.0.9
       builder-util-runtime: 8.7.7
