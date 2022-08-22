@@ -11,6 +11,7 @@ pub mod builds;
 pub mod commands;
 pub mod rune_window;
 pub mod web;
+pub mod cmd;
 
 #[derive(Clone, serde::Serialize)]
 pub struct Payload {
