@@ -35,6 +35,12 @@ function App() {
     setResult(r => [...r, payload])
   }, []);
 
+  const getLcuAuth = () => {
+    invoke(`get_lcu_auth`).then(authUrl => {
+      console.log(`authUrl: ${authUrl}`);
+    });
+  }
+
   useEffect(() => {
     async function startRadio() {
       if (unlistener.current) {
@@ -65,6 +71,7 @@ function App() {
         <button onClick={onCall}>Say Hello</button>
         <button onClick={onToggleWindow}>Toggle Window</button>
         <button onClick={applyBuilds}>Apply Builds</button>
+        <button onClick={getLcuAuth}>LCU Auth</button>
       </div>
       <div>{str}</div>
       <div style={{ height: 200, overflow: `auto`, width: 700 }}>

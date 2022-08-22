@@ -62,6 +62,7 @@ fn main() {
             commands::greeting,
             commands::toggle_rune_window,
             commands::apply_builds_from_sources,
+            commands::get_lcu_auth,
         ])
         .run(context)
         .expect("error while running tauri application");

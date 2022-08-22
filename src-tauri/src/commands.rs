@@ -20,3 +20,8 @@ pub fn apply_builds_from_sources(
     let w = app_handle.get_window("main").unwrap();
     crate::builds::spawn_apply_task(sources, dir, keep_old, &w);
 }
+
+#[tauri::command]
+pub fn get_lcu_auth() -> String {
+    crate::cmd::get_commandline()
+}
