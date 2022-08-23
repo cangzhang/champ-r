@@ -32,7 +32,7 @@ pub fn get_commandline() -> (String, bool) {
             println!("[cmd] perhaps LCU is not running.");
             (String::from(""), false)
         }
-    }    
+    }
 }
 
 // #[cfg(not(target_os = "windows"))]
@@ -45,9 +45,7 @@ pub fn update_lcu_state(state: tauri::State<'_, crate::state::GlobalState>) {
     let mut state_guard = state.0.lock().unwrap();
     let (_auth_url, s) = get_commandline();
     state_guard.set_lcu_running_state(s);
-    *state_guard = crate::state::InnerState {
-        is_lcu_running: s,
-    }
+    *state_guard = crate::state::InnerState { is_lcu_running: s }
 }
 
 #[cfg(test)]

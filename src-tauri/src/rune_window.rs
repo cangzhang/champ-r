@@ -11,16 +11,16 @@ pub fn toggle(app_handle: &AppHandle) {
             } else {
                 w.show().unwrap();
             }
-    
+
             return ();
         }
 
         let _w = WindowBuilder::new(&handle, "rune", WindowUrl::App("rune.html".into()))
-        .title("Rune")
-        .position(400., 400.)
-        .inner_size(400., 540.)
-        .skip_taskbar(true)
-        .build()
-        .unwrap();
+            .title("Rune")
+            .position(400., 400.)
+            .inner_size(400., 540.)
+            .skip_taskbar(true)
+            .build()
+            .unwrap();
     });
 }

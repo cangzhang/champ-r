@@ -36,7 +36,10 @@ fn main() {
                 rune_window::toggle(&handle);
             });
 
-            println!("init app state: {:?}", app.state::<state::GlobalState>().0.lock().unwrap());
+            println!(
+                "init app state: {:?}",
+                app.state::<state::GlobalState>().0.lock().unwrap()
+            );
             crate::cmd::update_lcu_state(app.state());
             Ok(())
         })

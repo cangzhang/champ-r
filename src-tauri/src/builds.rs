@@ -1,6 +1,6 @@
 use futures::StreamExt;
-use std::io::Write;
 use rand::Rng;
+use std::io::Write;
 
 use crate::web;
 
@@ -37,7 +37,10 @@ pub async fn apply_builds(
         println!("[builds] emptied dir: {}", dir);
         match window {
             Some(w) => {
-                let _ = w.emit("apply_build_result", vec!["emptied_lol_builds_dir".to_string(), make_id()]);
+                let _ = w.emit(
+                    "apply_build_result",
+                    vec!["emptied_lol_builds_dir".to_string(), make_id()],
+                );
             }
             _ => {}
         }
@@ -86,7 +89,12 @@ pub async fn apply_builds(
                             Some(w) => {
                                 let _ = w.emit(
                                     "apply_build_result",
-                                    ("ready_to_fetch".to_string(), source.clone(), champ_name.clone(), make_id()),
+                                    (
+                                        "ready_to_fetch".to_string(),
+                                        source.clone(),
+                                        champ_name.clone(),
+                                        make_id(),
+                                    ),
                                 );
                             }
                             _ => {}
@@ -145,10 +153,7 @@ pub async fn apply_builds(
     println!("all {}", results.len());
     match window {
         Some(w) => {
-            let _ = w.emit(
-                "apply_build_result",
-                ("finished", make_id()),
-            );
+            let _ = w.emit("apply_build_result", ("finished", make_id()));
         }
         _ => {
             println!("window not defined, skipped emitting.");
