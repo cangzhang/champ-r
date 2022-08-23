@@ -22,6 +22,9 @@ pub fn apply_builds_from_sources(
 }
 
 #[tauri::command]
-pub fn get_lcu_auth() -> String {
-    crate::cmd::get_commandline()
+pub fn get_lcu_auth(state: tauri::State<'_, crate::state::GlobalState>) -> String {
+    let (auth_url, _done) = crate::cmd::get_commandline();
+    let s = state.0.lock().unwrap();
+    println!("[command] {:?}", s);
+    auth_url
 }

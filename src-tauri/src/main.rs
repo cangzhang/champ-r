@@ -8,10 +8,11 @@ use tauri::{
 };
 
 pub mod builds;
+pub mod cmd;
 pub mod commands;
 pub mod rune_window;
+pub mod state;
 pub mod web;
-pub mod cmd;
 
 #[derive(Clone, serde::Serialize)]
 pub struct Payload {
@@ -27,6 +28,7 @@ fn main() {
 
     let context = tauri::generate_context!();
     let _app = tauri::Builder::default()
+        .manage(state::GlobalState::init())
         .setup(|app| {
             let handle = app.handle();
             let _id = app.listen_global("toggle_rune-global", move |event| {
@@ -34,6 +36,8 @@ fn main() {
                 rune_window::toggle(&handle);
             });
 
+            println!("init app state: {:?}", app.state::<state::GlobalState>().0.lock().unwrap());
+            crate::cmd::update_lcu_state(app.state());
             Ok(())
         })
         .system_tray(SystemTray::new().with_menu(tray_menu))

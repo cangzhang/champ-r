@@ -6,7 +6,7 @@ pub fn make_auth_url(token: &String, port: &String) -> String {
 }
 
 // #[cfg(target_os = "windows")]
-pub fn get_commandline() -> String {
+pub fn get_commandline() -> (String, bool) {
     let cmd_str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'" | Select-Object -ExpandProperty CommandLine"#;
     let port_regexp = regex::Regex::new(r"--app-port=\d+").unwrap();
     let token_regexp = regex::Regex::new(r"--remoting-auth-token=\w+").unwrap();
@@ -18,22 +18,37 @@ pub fn get_commandline() -> String {
         .print_commands(false)
         .build();
     let output = ps.run(&cmd_str).unwrap();
-    let stdout = output.stdout().unwrap();
-    println!("stdout: {}", &stdout);
-
-    let port_match = port_regexp.find(&stdout).unwrap();
-    let port = port_match.as_str().replace(APP_PORT_KEY, "");
-    let token_match = token_regexp.find(&stdout).unwrap();
-    let token = token_match.as_str().replace(TOKEN_KEY, "");
-    let auth_url = make_auth_url(&port, &token);
-    println!("auth url: {}", &auth_url);
-    auth_url
+    match output.stdout() {
+        Some(stdout) => {
+            let port_match = port_regexp.find(&stdout).unwrap();
+            let port = port_match.as_str().replace(APP_PORT_KEY, "");
+            let token_match = token_regexp.find(&stdout).unwrap();
+            let token = token_match.as_str().replace(TOKEN_KEY, "");
+            let auth_url = make_auth_url(&port, &token);
+            println!("[cmd] auth url: {}", &auth_url);
+            (auth_url, true)
+        }
+        None => {
+            println!("[cmd] perhaps LCU is not running.");
+            (String::from(""), false)
+        }
+    }    
 }
 
 // #[cfg(not(target_os = "windows"))]
-// pub fn get_commandline() {
+// pub fn get_commandline() -> String {
 //     println!("[cmd::get_commandline] not implemented");
+//     String::from("_")
 // }
+
+pub fn update_lcu_state(state: tauri::State<'_, crate::state::GlobalState>) {
+    let mut state_guard = state.0.lock().unwrap();
+    let (_auth_url, s) = get_commandline();
+    state_guard.set_lcu_running_state(s);
+    *state_guard = crate::state::InnerState {
+        is_lcu_running: s,
+    }
+}
 
 #[cfg(test)]
 mod tests {
