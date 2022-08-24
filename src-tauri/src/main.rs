@@ -40,7 +40,7 @@ fn main() {
                 "init app state: {:?}",
                 app.state::<state::GlobalState>().0.lock().unwrap()
             );
-            crate::cmd::update_lcu_state(app.state());
+            cmd::update_lcu_state(app.state());
             Ok(())
         })
         .system_tray(SystemTray::new().with_menu(tray_menu))
@@ -52,7 +52,7 @@ fn main() {
                 "apply_builds" => {
                     println!("[tray] apply builds");
                     let w = app_handle.get_window("main").unwrap();
-                    crate::builds::spawn_apply_task(
+                    builds::spawn_apply_task(
                         vec!["op.gg-aram".to_string()],
                         "../.cdn_files".to_string(),
                         false,
