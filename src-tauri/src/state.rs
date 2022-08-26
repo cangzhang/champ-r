@@ -3,6 +3,7 @@ use std::sync::Mutex;
 #[derive(Clone, serde::Serialize, Default, Debug)]
 pub struct InnerState {
     pub is_lcu_running: bool,
+    pub auth_url: String,
 }
 
 impl InnerState {
@@ -13,6 +14,7 @@ impl InnerState {
     pub fn init() -> Self {
         Self {
             is_lcu_running: false,
+            auth_url: String::new(),
         }
     }
 }

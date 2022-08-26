@@ -409,6 +409,7 @@ dependencies = [
  "anyhow",
  "async-std",
  "futures",
+ "lazy_static",
  "powershell_script",
  "rand 0.8.5",
  "regex",
@@ -419,6 +420,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tokio",
+ "tokio-js-set-interval",
 ]
 
 [[package]]
@@ -3425,6 +3427,16 @@ dependencies = [
  "socket2",
  "tokio-macros",
  "winapi",
+]
+
+[[package]]
+name = "tokio-js-set-interval"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df01ec7e47dfcee440ef0c06c11cc4aa5f18d3b944864d7371372d7c1558c73f"
+dependencies = [
+ "lazy_static",
+ "tokio",
 ]
 
 [[package]]

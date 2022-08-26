@@ -40,7 +40,7 @@ fn main() {
                 "init app state: {:?}",
                 app.state::<state::GlobalState>().0.lock().unwrap()
             );
-            cmd::update_lcu_state(app.state());
+            cmd::start_lcu_task(app.state());
             Ok(())
         })
         .system_tray(SystemTray::new().with_menu(tray_menu))
