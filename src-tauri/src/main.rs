@@ -13,6 +13,7 @@ pub mod commands;
 pub mod rune_window;
 pub mod state;
 pub mod web;
+pub mod ws;
 
 #[derive(Clone, serde::Serialize)]
 pub struct Payload {
@@ -40,6 +41,7 @@ fn main() {
                 "init app state: {:?}",
                 app.state::<state::GlobalState>().0.lock().unwrap()
             );
+
             cmd::start_lcu_task(app.state());
             Ok(())
         })

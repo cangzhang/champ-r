@@ -11,7 +11,7 @@ pub fn make_auth_url(token: &String, port: &String) -> String {
 lazy_static! {
     static ref PORT_REGEXP: regex::Regex = regex::Regex::new(r"--app-port=\d+").unwrap();
     static ref TOKEN_REGEXP: regex::Regex =
-        regex::Regex::new(r"--remoting-auth-token=\w+").unwrap();
+        regex::Regex::new(r"--remoting-auth-token=\S+").unwrap();
 }
 
 // #[cfg(target_os = "windows")]
@@ -28,9 +28,12 @@ pub fn get_commandline() -> (String, bool) {
             let port_match = PORT_REGEXP.find(&stdout).unwrap();
             let port = port_match.as_str().replace(APP_PORT_KEY, "");
             let token_match = TOKEN_REGEXP.find(&stdout).unwrap();
-            let token = token_match.as_str().replace(TOKEN_KEY, "");
-            let auth_url = make_auth_url(&port, &token);
-            println!("[cmd] auth url: {}", &auth_url);
+            let token = token_match
+                .as_str()
+                .replace(TOKEN_KEY, "")
+                .replace("\\", "")
+                .replace("\"", "");
+            let auth_url = make_auth_url(&token, &port);
             (auth_url, true)
         }
         None => {
@@ -62,9 +65,8 @@ pub fn start_lcu_task(state: tauri::State<'_, crate::state::GlobalState>) {
         let _id = tokio_js_set_interval::set_interval!(
             move || {
                 let ret = get_commandline();
-                println!("[lcu task] {:?}", ret);
                 let tx = tx.clone();
-                let _r =  tx.send(ret); // TODO! `sending on closed channel` error
+                let _r = tx.send(ret); // TODO! `sending on closed channel` error
             },
             3000
         );
@@ -76,11 +78,23 @@ pub fn start_lcu_task(state: tauri::State<'_, crate::state::GlobalState>) {
     };
     let mut state_guard = state.0.lock().unwrap();
     state_guard.set_lcu_running_state(running);
-    *state_guard = crate::state::InnerState {
-        is_lcu_running: running,
-        auth_url,
-    };
+    let updated = state_guard.update_auth_url(&auth_url);
     println!("[interval task] update inner state.");
+
+    if !updated {
+        return;
+    }
+
+    async_std::task::spawn(async move {
+        let mut url = String::from("wss://");
+        url.push_str(&auth_url);
+        let _ = crate::ws::start_client(&url).await;
+    });
+
+    // *state_guard = crate::state::InnerState {
+    //     is_lcu_running: running,
+    //     auth_url,
+    // };
 }
 
 #[cfg(test)]

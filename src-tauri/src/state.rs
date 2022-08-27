@@ -11,6 +11,16 @@ impl InnerState {
         self.is_lcu_running = s;
     }
 
+    pub fn update_auth_url(&mut self, url: &String) -> bool {
+        if self.auth_url.eq(url) {
+            return false;
+        }
+
+        self.auth_url = url.to_string();
+        println!("[state] updated auth_url {}", url);
+        return true;
+    }
+
     pub fn init() -> Self {
         Self {
             is_lcu_running: false,
