@@ -408,9 +408,11 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-std",
+ "base64",
  "futures",
  "futures-channel",
  "futures-util",
+ "http",
  "lazy_static",
  "native-tls",
  "powershell_script",
