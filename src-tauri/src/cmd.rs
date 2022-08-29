@@ -2,7 +2,6 @@ use lazy_static::lazy_static;
 
 const APP_PORT_KEY: &str = "--app-port=";
 const TOKEN_KEY: &str = "--remoting-auth-token=";
-const PS_GET_COMMANDLINE: &str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'" | Select-Object -ExpandProperty CommandLine"#;
 
 pub fn make_auth_url(token: &String, port: &String) -> String {
     format!("riot:{token}@127.0.0.1:{port}")
@@ -16,15 +15,23 @@ lazy_static! {
 
 // #[cfg(target_os = "windows")]
 pub fn get_commandline() -> (String, bool) {
-    let ps = powershell_script::PsScriptBuilder::new()
-        .no_profile(true)
-        .non_interactive(true)
-        .hidden(true)
-        .print_commands(false)
-        .build();
-    let output = ps.run(&PS_GET_COMMANDLINE).unwrap();
-    match output.stdout() {
-        Some(stdout) => {
+    let output_file_path = std::env::temp_dir().join("champr_rs_lcu.tmp");
+    let file_path = output_file_path.display();
+    if !output_file_path.exists() {
+        match std::fs::File::create(&output_file_path) {
+            Ok(_) => (),
+            Err(e) => {
+                println!("[cmd] cannot create file {}: {}", file_path, e);
+            }
+        };
+    }
+    let cmd_str = format!(
+        r#"Start-Process powershell -Wait -WindowStyle hidden -Verb runAs -ArgumentList "-noprofile Get-CimInstance Win32_Process -Filter \""name = 'LeagueClientUx.exe'\""| Select-Object -ExpandProperty CommandLine | Out-File -Encoding utf8 -force {}"; Get-Content {}"#,
+        file_path, file_path
+    );
+    match powershell_script::run(&cmd_str) {
+        Ok(output) => {
+            let stdout = output.stdout().unwrap();
             let port_match = PORT_REGEXP.find(&stdout).unwrap();
             let port = port_match.as_str().replace(APP_PORT_KEY, "");
             let token_match = TOKEN_REGEXP.find(&stdout).unwrap();
@@ -36,8 +43,8 @@ pub fn get_commandline() -> (String, bool) {
             let auth_url = make_auth_url(&token, &port);
             (auth_url, true)
         }
-        None => {
-            println!("[cmd] perhaps LCU is not running.");
+        Err(e) => {
+            println!("Error: {}", e);
             (String::from(""), false)
         }
     }
