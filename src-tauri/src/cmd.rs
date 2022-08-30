@@ -15,16 +15,16 @@ lazy_static! {
 
 // #[cfg(target_os = "windows")]
 pub fn get_commandline() -> (String, bool) {
-    let output_file_path = std::env::temp_dir().join("champr_rs_lcu.tmp");
-    let file_path = output_file_path.display();
-    if !output_file_path.exists() {
-        match std::fs::File::create(&output_file_path) {
-            Ok(_) => (),
-            Err(e) => {
-                println!("[cmd] cannot create file {}: {}", file_path, e);
-            }
-        };
-    }
+    // let output_file_path = std::env::temp_dir().join("champr_rs_lcu.tmp");
+    // let file_path = output_file_path.display();
+    // if !output_file_path.exists() {
+    //     match std::fs::File::create(&output_file_path) {
+    //         Ok(_) => (),
+    //         Err(e) => {
+    //             println!("[cmd] cannot create file {}: {}", file_path, e);
+    //         }
+    //     };
+    // }
     // r#"Start-Process powershell -Wait -WindowStyle hidden -Verb runAs -ArgumentList "-noprofile Get-CimInstance Win32_Process -Filter \""name = 'LeagueClientUx.exe'\""| Select-Object -ExpandProperty CommandLine | Out-File -Encoding utf8 -force {}"; Get-Content {}"#,
     let cmd_str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'"| Select-Object -ExpandProperty CommandLine"#;
     match powershell_script::run(&cmd_str) {
