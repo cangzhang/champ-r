@@ -13,7 +13,7 @@ lazy_static! {
         regex::Regex::new(r"--remoting-auth-token=\S+").unwrap();
 }
 
-// #[cfg(target_os = "windows")]
+#[cfg(target_os = "windows")]
 pub fn get_commandline() -> (String, bool) {
     // let output_file_path = std::env::temp_dir().join("champr_rs_lcu.tmp");
     // let file_path = output_file_path.display();
@@ -49,11 +49,11 @@ pub fn get_commandline() -> (String, bool) {
     }
 }
 
-// #[cfg(not(target_os = "windows"))]
-// pub fn get_commandline() -> String {
-//     println!("[cmd::get_commandline] not implemented");
-//     String::from("_")
-// }
+#[cfg(not(target_os = "windows"))]
+pub fn get_commandline() -> (String, bool) {
+    println!("[cmd::get_commandline] not implemented");
+    (String::from(""), false)
+}
 
 pub fn update_lcu_state(state: tauri::State<'_, crate::state::GlobalState>) {
     let mut state_guard = state.0.lock().unwrap();

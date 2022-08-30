@@ -19,7 +19,7 @@ pub async fn save_build(path: String, data: &web::ItemBuild) -> anyhow::Result<(
 
     let mut f = std::fs::File::create(&path)?;
     let buf = serde_json::to_string(&data)?;
-    f.write_all(&buf[..].as_bytes())?;
+    f.write_all(buf[..].as_bytes())?;
     Ok(())
 }
 
@@ -35,14 +35,11 @@ pub async fn apply_builds(
     if path_exists && !keep_old {
         tokio::fs::remove_dir_all(dir.clone()).await?;
         println!("[builds] emptied dir: {}", dir);
-        match window {
-            Some(w) => {
-                let _ = w.emit(
-                    "apply_build_result",
-                    vec!["emptied_lol_builds_dir".to_string(), make_id()],
-                );
-            }
-            _ => {}
+        if let Some(w) = window {
+            let _ = w.emit(
+                "apply_build_result",
+                vec!["emptied_lol_builds_dir".to_string(), make_id()],
+            );
         }
     }
 
@@ -68,36 +65,30 @@ pub async fn apply_builds(
                     },
                     _ => vec![],
                 };
-                if data.len() == 0 {
+                if data.is_empty() {
                     tx.send((false, source.clone(), champ_name.clone()))
                         .unwrap();
-                    match window {
-                        Some(w) => {
-                            let _ = w.emit(
-                                "apply_build_result",
-                                (false, source.clone(), champ_name.clone(), make_id()),
-                            );
-                        }
-                        _ => {}
+                    if let Some(w) = window {
+                        let _ = w.emit(
+                            "apply_build_result",
+                            (false, source.clone(), champ_name.clone(), make_id()),
+                        );
                     }
                     println!("apply failed: {} {}", &source, &champ_name);
                 }
 
                 for (idx, i) in data.iter().enumerate() {
                     for (iidx, build) in i.item_builds.iter().enumerate() {
-                        match window {
-                            Some(w) => {
-                                let _ = w.emit(
-                                    "apply_build_result",
-                                    (
-                                        "ready_to_fetch".to_string(),
-                                        source.clone(),
-                                        champ_name.clone(),
-                                        make_id(),
-                                    ),
-                                );
-                            }
-                            _ => {}
+                        if let Some(w) = window {
+                            let _ = w.emit(
+                                "apply_build_result",
+                                (
+                                    "ready_to_fetch".to_string(),
+                                    source.clone(),
+                                    champ_name.clone(),
+                                    make_id(),
+                                ),
+                            );
                         }
                         let p = format!(
                             "{path}/{champ_name}/{source}-{champ_name}-{idx}-{iidx}.json",
