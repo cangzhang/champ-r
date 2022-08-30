@@ -7,14 +7,6 @@ use tokio_tungstenite::{
     Connector,
 };
 
-/// Generate a random key for the `Sec-WebSocket-Key` header.
-pub fn generate_key() -> String {
-    // a base64-encoded (see Section 4 of [RFC4648]) value that,
-    // when decoded, is 16 bytes in length (RFC 6455)
-    let r: [u8; 16] = rand::random();
-    base64::encode(&r)
-}
-
 pub async fn start_client(connect_addr: &String) -> Result<()> {
     let url = reqwest::Url::parse(connect_addr).unwrap();
     let credentials = format!("{}:{}", url.username(), url.password().unwrap());
