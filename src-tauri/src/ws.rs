@@ -25,7 +25,7 @@ impl LcuClient {
         }
     }
 
-    pub fn start_lcu_task(&mut self) {
+    pub async fn start_lcu_task(&mut self) {
         let (tx, rx) = std::sync::mpsc::channel();
         let _handle = async_std::task::spawn(async move {
             let _id = tokio_js_set_interval::set_interval!(
@@ -51,12 +51,7 @@ impl LcuClient {
         let mut url = String::from("wss://");
         url.push_str(&auth_url);
         println!("should update auth_url to {}", &auth_url);
-
-        // let (tx, rx) = std::sync::mpsc::channel();
-        async_std::task::spawn(async move {
-            // let tx = tx.clone();
-            let _ = start_client(&url).await;
-        });
+        let _ = start_client(&url).await;
     }
 }
 

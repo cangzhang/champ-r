@@ -29,17 +29,21 @@ pub fn get_commandline() -> (String, bool) {
     let cmd_str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'"| Select-Object -ExpandProperty CommandLine"#;
     match powershell_script::run(&cmd_str) {
         Ok(output) => {
-            let stdout = output.stdout().unwrap();
-            let port_match = PORT_REGEXP.find(&stdout).unwrap();
-            let port = port_match.as_str().replace(APP_PORT_KEY, "");
-            let token_match = TOKEN_REGEXP.find(&stdout).unwrap();
-            let token = token_match
-                .as_str()
-                .replace(TOKEN_KEY, "")
-                .replace("\\", "")
-                .replace("\"", "");
-            let auth_url = make_auth_url(&token, &port);
-            (auth_url, true)
+            if let Some(stdout) = output.stdout() {
+                let port_match = PORT_REGEXP.find(&stdout).unwrap();
+                let port = port_match.as_str().replace(APP_PORT_KEY, "");
+                let token_match = TOKEN_REGEXP.find(&stdout).unwrap();
+                let token = token_match
+                    .as_str()
+                    .replace(TOKEN_KEY, "")
+                    .replace("\\", "")
+                    .replace("\"", "");
+                let auth_url = make_auth_url(&token, &port);
+                (auth_url, true)
+            } else {
+                println!("[cmd] got nothing from output, maybe lcu is stopped");
+                (String::from(""), false)
+            }
         }
         Err(e) => {
             println!("Error: {}", e);

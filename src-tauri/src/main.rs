@@ -46,7 +46,7 @@ fn main() {
 
             // cmd::start_lcu_task(app.state());
             async_std::task::spawn(async move {
-                lcu_client.start_lcu_task();
+                lcu_client.start_lcu_task().await;
             });
 
             Ok(())
