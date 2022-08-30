@@ -25,10 +25,8 @@ pub fn get_commandline() -> (String, bool) {
             }
         };
     }
-    let cmd_str = format!(
-        r#"Start-Process powershell -Wait -WindowStyle hidden -Verb runAs -ArgumentList "-noprofile Get-CimInstance Win32_Process -Filter \""name = 'LeagueClientUx.exe'\""| Select-Object -ExpandProperty CommandLine | Out-File -Encoding utf8 -force {}"; Get-Content {}"#,
-        file_path, file_path
-    );
+    // r#"Start-Process powershell -Wait -WindowStyle hidden -Verb runAs -ArgumentList "-noprofile Get-CimInstance Win32_Process -Filter \""name = 'LeagueClientUx.exe'\""| Select-Object -ExpandProperty CommandLine | Out-File -Encoding utf8 -force {}"; Get-Content {}"#,
+    let cmd_str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'"| Select-Object -ExpandProperty CommandLine"#;
     match powershell_script::run(&cmd_str) {
         Ok(output) => {
             let stdout = output.stdout().unwrap();
@@ -45,6 +43,7 @@ pub fn get_commandline() -> (String, bool) {
         }
         Err(e) => {
             println!("Error: {}", e);
+            println!("[cmd] maybe you should run it with admin privilege");
             (String::from(""), false)
         }
     }

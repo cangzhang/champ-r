@@ -409,6 +409,7 @@ dependencies = [
  "anyhow",
  "async-std",
  "base64",
+ "embed-resource",
  "futures",
  "futures-channel",
  "futures-util",
