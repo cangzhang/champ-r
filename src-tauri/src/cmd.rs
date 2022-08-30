@@ -94,7 +94,7 @@ pub fn start_lcu_task(state: tauri::State<'_, crate::state::GlobalState>) {
     async_std::task::spawn(async move {
         let mut url = String::from("wss://");
         url.push_str(&auth_url);
-        let _ = crate::ws::start_client(&url).await;
+        // let _ = crate::ws::start_client(&url).await;
     });
 
     // *state_guard = crate::state::InnerState {

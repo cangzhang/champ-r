@@ -7,6 +7,7 @@ import './App.css';
 function App() {
   const [str, setStr] = useState(``);
   const [result, setResult] = useState<any[]>([]);
+  const [auth, setAuth] = useState(``);
   
   let unlistener = useRef(() => {});
   let ids = useRef(new Set());
@@ -36,8 +37,9 @@ function App() {
   }, []);
 
   const getLcuAuth = () => {
-    invoke(`get_lcu_auth`).then(authUrl => {
+    invoke(`get_lcu_auth`).then((authUrl) => {
       console.log(`authUrl: ${authUrl}`);
+      setAuth(authUrl as string);
     });
   }
 
@@ -77,6 +79,7 @@ function App() {
       <div style={{ height: 200, overflow: `auto`, width: 700 }}>
         {result.map((i, idx) => <p key={idx}>{i.join(`, `)}</p>)}
       </div>
+      <div>LCU Auth: <code>{auth}</code></div>
     </section>
   );
 }
