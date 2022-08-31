@@ -84,7 +84,7 @@ pub fn start_lcu_task(state: tauri::State<'_, crate::state::GlobalState>) {
 
     let (auth_url, running) = match rx.recv() {
         Ok(r) => r,
-        Err(_) => ("".to_string(), false),
+        Err(_) => (String::from(""), false),
     };
     let mut state_guard = state.0.lock().unwrap();
     state_guard.set_lcu_running_state(running);

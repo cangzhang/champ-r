@@ -20,7 +20,7 @@ impl LcuClient {
     pub fn new() -> Self {
         Self {
             socket: None,
-            auth_url: String::from(""),
+            auth_url: String::new(),
             is_lcu_running: false,
         }
     }
@@ -40,7 +40,7 @@ impl LcuClient {
 
         let (auth_url, running) = match rx.recv() {
             Ok(r) => r,
-            Err(_) => ("".to_string(), false),
+            Err(_) => (String::new(), false),
         };
 
         self.is_lcu_running = running;
