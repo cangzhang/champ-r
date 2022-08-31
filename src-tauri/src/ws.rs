@@ -25,33 +25,35 @@ impl LcuClient {
         }
     }
 
-    pub async fn start_lcu_task(&mut self) {
-        let (tx, rx) = std::sync::mpsc::channel();
-        let _handle = async_std::task::spawn(async move {
-            let _id = tokio_js_set_interval::set_interval!(
-                move || {
-                    let ret = crate::cmd::get_commandline();
-                    let tx = tx.clone();
-                    let _r = tx.send(ret); // TODO! `sending on closed channel` error
-                },
-                3000
-            );
+    pub async fn run_ps_task(&mut self, tx: std::sync::mpsc::Sender<(String, bool)>) -> Result<()> {
+        let _h = std::thread::spawn(move || {
+            let mut running = false;
+            loop {
+                let ret = crate::cmd::get_commandline();
+                running = ret.1;
+                let tx = tx.clone();
+                let _ = tx.send(ret);
+                std::thread::sleep(std::time::Duration::from_millis(5000));
+            }
         });
+        Ok(())
+    }
 
-        let (auth_url, running) = match rx.recv() {
-            Ok(r) => r,
-            Err(_) => (String::new(), false),
-        };
+    pub async fn start_lcu_task(&mut self) -> Result<()> {
+        let (tx, rx) = std::sync::mpsc::channel();
+        let _ = self.run_ps_task(tx).await;
+        for (auth_url, running) in rx {
+            self.is_lcu_running = running;
+            if auth_url.eq(&self.auth_url) {
+                continue;
+            }
 
-        self.is_lcu_running = running;
-        if auth_url.eq(&self.auth_url) {
-            return;
+            let mut url = String::from("wss://");
+            url.push_str(&auth_url);
+            println!("should update auth_url to {}", &auth_url);
+            let _ = start_client(&url).await;
         }
-
-        let mut url = String::from("wss://");
-        url.push_str(&auth_url);
-        println!("should update auth_url to {}", &auth_url);
-        let _ = start_client(&url).await;
+        Ok(())
     }
 }
 
@@ -85,4 +87,13 @@ pub async fn start_client(connect_addr: &String) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(unused)]
+    use super::*;
+
+    #[tokio::test]
+    async fn watch_lcu() {}
 }
