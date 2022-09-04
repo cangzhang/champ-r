@@ -115,8 +115,8 @@ export async function createPopupWindow() {
 
     skipTaskbar: popupConfig.alwaysOnTop,
     alwaysOnTop: popupConfig.alwaysOnTop,
-    width: popupConfig.width || 300,
-    height: popupConfig.height || 350,
+    width: popupConfig.width || 360,
+    height: popupConfig.height || 400,
     x: popupConfig.x || (isDev ? curDisplay.bounds.width / 2 : curDisplay.bounds.width - 500 - 140),
     y: popupConfig.y || curDisplay.bounds.height / 2,
     webPreferences,

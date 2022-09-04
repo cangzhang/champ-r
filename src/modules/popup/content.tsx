@@ -51,7 +51,6 @@ const getInitTab = () => {
 export function Content() {
   const [t] = useTranslation();
   const [, theme] = useStyletron();
-  const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
 
   const [activeTab, setActiveTab] = useState<ISourceItem[]>(getInitTab());
   const [perkMap, setPerkMap] = useImmer<{ [k: string]: IRuneItem[] }>({});
@@ -67,6 +66,8 @@ export function Content() {
   const [pinned, togglePinned] = useState(
     window.bridge.appConfig.get(`popup.alwaysOnTop`) as boolean,
   );
+
+  let sourcesRef = useRef<ISourceItem[]>([]);
   const qqInstance = useRef(new LolQQ());
   const source = activeTab[0].value;
 
@@ -74,6 +75,7 @@ export function Content() {
     window.bridge.on('for-popup', ({ championId: id }: { championId: number }) => {
       if (id) {
         setChampionId(id);
+        sourcesRef.current = window.bridge.appConfig.get(`sourceList`);
       }
     });
   }, []);
@@ -187,7 +189,7 @@ export function Content() {
 
   const renderContent = () => {
     const pkgName = activeTab[0].value;
-    const source = sourceList.find((i) => i.value === pkgName);
+    const source = sourcesRef.current.find((i) => i.value === pkgName);
     const availablePerks = perkMap[pkgName] ?? [];
     if (!availablePerks.length) {
       return (
@@ -228,7 +230,7 @@ export function Content() {
               clearable={false}
               deleteRemoves={false}
               escapeClearsValue={false}
-              options={sourceList}
+              options={sourcesRef.current}
               onBlurResetsInput={false}
               onCloseResetsInput={false}
               onSelectResetsInput={false}
