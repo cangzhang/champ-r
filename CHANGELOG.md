@@ -1,7 +1,7 @@
 # Changelog
 
 ## v1.3.3
-- fix: display sorted builds as they are in the list. #198
+- fix: builds order in game store. #198
 - change: optimized memory usage when running powershell command.
 
 ## v1.3.2
