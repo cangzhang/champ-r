@@ -1,5 +1,5 @@
 import path from 'path';
-import { isDev } from './utils';
+import { isDev } from './service';
 import { app, Menu, nativeImage, Tray } from 'electron';
 import { toggleMainWindow } from './listeners';
 

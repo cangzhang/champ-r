@@ -89,12 +89,10 @@ const prepareCmdOutFile = async () => {
 export const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
   try {
     await prepareCmdOutFile();
-    await execCmd(
-      `Start-Process powershell -WindowStyle hidden -Verb runAs -ArgumentList "-noprofile (Get-CimInstance Win32_Process -Filter \\""name = 'LeagueClientUx.exe'\\"").CommandLine | out-file -encoding utf8 -force ${cmdOutFile}"`,
+    let stdout = await execCmd(
+      `Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'"| Select-Object -ExpandProperty CommandLine`,
       true,
     );
-    const buffer = await fs.readFile(cmdOutFile);
-    const stdout = buffer.toString();
     if (!stdout.trim().length) {
       return null;
     }
@@ -143,7 +141,6 @@ export class LcuWatcher {
   private summonerId = 0;
   private lcuURL = ``;
   public wsURL = ``;
-  private getAuthTask: NodeJS.Timeout | null = null;
   private checkLcuStatusTask: NodeJS.Timeout | null = null;
   private watchChampSelectTask: NodeJS.Timeout | null = null;
   private withPwsh = false;
@@ -153,37 +150,23 @@ export class LcuWatcher {
 
     this.initListener();
     if (os.platform() === `win32`) {
-      this.startAuthTask();
+      this.startCheckLcuStatusTask();
     } else {
       console.log(`[ChampR] not running on MS Windows, skipped running cmd.`);
     }
   }
 
-  public startAuthTask = async () => {
-    clearTimeout(this.getAuthTask!);
-
-    this.getAuthTask = setTimeout(async () => {
-      try {
-        await this.getAuth();
-      } catch (e) {
-        console.error(`[watcher] [getAuthTask]`, e);
-      } finally {
-        this.startAuthTask();
-      }
-    }, 2000);
-  };
-
   public startCheckLcuStatusTask = () => {
     clearInterval(this.checkLcuStatusTask!);
 
+    this.getAuth();
     this.checkLcuStatusTask = setInterval(async () => {
-      try {
-        await this.getSummonerId();
-      } catch (err) {
-        console.info(`[watcher] lcu is not active,`, err.message);
-        // clearInterval(this.checkLcuStatusTask!);
-        // this.startAuthTask();
+      let succeed = await this.getSummonerId();
+      if (succeed) {
+        return;
       }
+
+      await this.getAuth();
     }, 4000);
   };
 
@@ -200,21 +183,19 @@ export class LcuWatcher {
           this.evBus?.emit(LcuEvent.OnAuthUpdate, this.wsURL);
         }
 
-        clearTimeout(this.getAuthTask!);
-        clearInterval(this.checkLcuStatusTask!);
-
         this.request = got.extend({
           prefixUrl: this.lcuURL,
         });
-
-        // this.startCheckLcuStatusTask();
-        // this.watchChampSelect();
+        return true;
       } else {
-        console.warn(`[watcher] fetch lcu status failed`);
-        // this.hidePopup();
+        this.lcuURL = ``;
+        console.info(`[watcher] maybe lcu is not running`);
+        return false;
       }
     } catch (err) {
-      console.warn(`[watcher] [cmd] lcu is not active`, err.message);
+      this.lcuURL = ``;
+      console.info(`[watcher] [cmd] lcu is not active`, err.message);
+      return Promise.resolve(false);
     }
   };
 
@@ -251,9 +232,10 @@ export class LcuWatcher {
         console.info(`[watcher] lcu status changed`);
         this.summonerId = summonerId;
       }
+      return true;
     } catch (err) {
       // console.log(err);
-      return Promise.resolve();
+      return Promise.resolve(false);
     }
   };
 

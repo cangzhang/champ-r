@@ -2,7 +2,7 @@ import { autoUpdater } from 'electron-updater';
 import electronLogger from 'electron-log';
 import { ipcMain } from 'electron';
 
-import { isDev } from './utils';
+import { isDev } from './service';
 import BrowserWindow = Electron.BrowserWindow;
 
 export function isNetworkError(errorObject: Error) {

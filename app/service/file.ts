@@ -59,8 +59,8 @@ export const saveToFile = async (
     const appendGameToDir = appConfig.get(`appendGameToDir`);
     const hasCjkChar = appConfig.get(`lolDirHasCJKChar`);
 
-    const tencentFile = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${sortrank}-${data.fileName}.json`;
-    const riotFile = `${desDir}/Config/Champions/${data.champion}/Recommended/${sortrank}-${data.fileName}.json`;
+    const tencentFile = `${desDir}/Game/Config/Champions/${data.champion}/Recommended/${sortrank}_${data.fileName}.json`;
+    const riotFile = `${desDir}/Config/Champions/${data.champion}/Recommended/${sortrank}_${data.fileName}.json`;
     const content = stripProps ? pick(data, ItemSetProps) : data;
 
     await Promise.all([

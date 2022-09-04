@@ -5,10 +5,10 @@ import { nanoid } from 'nanoid';
 import { app, dialog, ipcMain, screen } from 'electron';
 
 import { IChampionCdnDataItem, IChampionInfo, IChampionMap, IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
-import { appConfig } from './utils/config';
-import { ifIsCNServer, LcuWatcher } from './utils/lcu';
-import { bufferToStream, getAllFileContent, removeFolderContent, saveToFile, updateDirStats } from './utils/file';
-import { getChampionList, isDev, sleep } from './utils';
+import { appConfig } from './service/config';
+import { ifIsCNServer, LcuWatcher } from './service/lcu';
+import { bufferToStream, getAllFileContent, removeFolderContent, saveToFile, updateDirStats } from './service/file';
+import { getChampionList, isDev, sleep } from './service';
 import { onShowPopup } from './main';
 
 import BrowserWindow = Electron.BrowserWindow;
@@ -143,6 +143,8 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
     let url = `${registry}/@champ-r/${source}/latest`;
     let cwd = `.npm/${source}`;
     let lolDir = appConfig.get(`lolDir`);
+    let sourceList = appConfig.get(`sourceList`, []);
+    let sourceIdx = sourceList.findIndex(s => s.value === source);
 
     try {
       let { dist: { tarball }, version } = await got(url, {
@@ -194,9 +196,9 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
               ...k,
               champion,
               position,
-              fileName: `[${source.toUpperCase()}] ${pStr}${champion}-${idx + 1}`,
+              fileName: `[${source.toUpperCase()}]_${pStr}_${champion}-${idx + 1}`,
             };
-            let task = saveToFile(lolDir, file, true, 0)
+            let task = saveToFile(lolDir, file, true, sourceIdx)
               .then((result) => {
                 if (result instanceof Error) {
                   console.error(`failed: `, champion, position);

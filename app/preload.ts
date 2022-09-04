@@ -2,8 +2,8 @@ import { ipcRenderer, contextBridge, shell } from 'electron';
 import log from 'electron-log';
 import cheerio from 'cheerio';
 
-import { appConfig } from './utils/config';
-import * as file from './utils/file';
+import { appConfig } from './service/config';
+import * as file from './service/file';
 import { LanguageList, LanguageSet } from './constants/langs';
 
 export const bridge = {
