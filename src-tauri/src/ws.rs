@@ -1,15 +1,17 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
+use async_std::sync::Mutex;
 use futures_util::{SinkExt, StreamExt};
 use http::HeaderValue;
 use native_tls::TlsConnector;
 use tokio::net::TcpStream;
 use tokio_tungstenite::{
     connect_async_tls_with_config,
-    tungstenite::{client::IntoClientRequest, protocol::WebSocketConfig, Message, Result},
+    tungstenite::{client::IntoClientRequest, protocol::WebSocketConfig, Message},
     Connector, MaybeTlsStream, WebSocketStream,
 };
 
+#[derive(Clone, Debug)]
 pub struct LcuClient {
     pub socket: Option<Arc<Mutex<WebSocketStream<MaybeTlsStream<TcpStream>>>>>,
     pub auth_url: String,
@@ -25,64 +27,68 @@ impl LcuClient {
         }
     }
 
+    pub fn update_auth_url(&mut self, url: &String) {
+        if self.auth_url.eq(url) {
+            return;
+        }
+
+        self.auth_url = url.to_string();
+    }
+
+    pub fn set_lcu_status(&mut self, s: bool) {
+        self.is_lcu_running = s;
+    }
+
     pub async fn start_lcu_task(&mut self) {
-        let (tx, rx) = std::sync::mpsc::channel();
-        let _handle = async_std::task::spawn(async move {
-            let _id = tokio_js_set_interval::set_interval!(
-                move || {
-                    let ret = crate::cmd::get_commandline();
-                    let tx = tx.clone();
-                    let _r = tx.send(ret); // TODO! `sending on closed channel` error
-                },
-                3000
-            );
-        });
-
-        let (auth_url, running) = match rx.recv() {
-            Ok(r) => r,
-            Err(_) => ("".to_string(), false),
-        };
-
+        let (auth_url, running) = crate::cmd::get_commandline();
         self.is_lcu_running = running;
         if auth_url.eq(&self.auth_url) {
             return;
         }
 
-        let mut url = String::from("wss://");
-        url.push_str(&auth_url);
-        println!("should update auth_url to {}", &auth_url);
-        let _ = start_client(&url).await;
+        self.auth_url = auth_url.to_string();
+        println!("update auth_url to {}", &auth_url);
+        let _ = self.conn_ws().await;
+        let _ = self.subscribe().await;
     }
-}
 
-pub async fn start_client(connect_addr: &String) -> Result<()> {
-    let url = reqwest::Url::parse(connect_addr).unwrap();
-    let credentials = format!("{}:{}", url.username(), url.password().unwrap());
-    let cred_value = HeaderValue::from_str(&format!("Basic {}", base64::encode(credentials)))?;
-    let mut req = connect_addr.into_client_request()?;
-    req.headers_mut().insert("Authorization", cred_value);
-    let connector = Connector::NativeTls(
-        TlsConnector::builder()
-            .danger_accept_invalid_certs(true)
-            .build()
-            .unwrap(),
-    );
+    pub async fn conn_ws(&mut self) -> anyhow::Result<()> {
+        let wsurl = format!("wss://{}", &self.auth_url);
+        let url = reqwest::Url::parse(&wsurl).unwrap();
+        let credentials = format!("{}:{}", url.username(), url.password().unwrap());
+        let cred_value = HeaderValue::from_str(&format!("Basic {}", base64::encode(credentials)))?;
+        let mut req = self.auth_url.to_string().into_client_request()?;
+        req.headers_mut().insert("Authorization", cred_value);
+        let connector = Connector::NativeTls(
+            TlsConnector::builder()
+                .danger_accept_invalid_certs(true)
+                .build()
+                .unwrap(),
+        );
 
-    println!("[ws] start connection, {}", &connect_addr);
-    let (mut socket, _) = connect_async_tls_with_config::<http::Request<()>>(
-        req,
-        Some(WebSocketConfig::default()),
-        Some(connector),
-    )
-    .await?;
-    socket
-        .send(Message::Text(r#"[5, "OnJsonApiEvent"]"#.to_string()))
+        println!("[ws] start connection, {}", &wsurl);
+        let (socket, _) = connect_async_tls_with_config::<http::Request<()>>(
+            req,
+            Some(WebSocketConfig::default()),
+            Some(connector),
+        )
         .await?;
-
-    while let Some(msg) = socket.next().await {
-        let msg = msg?;
-        println!("{:?}", &msg.to_text());
+        self.socket = Some(Arc::new(Mutex::new(socket)));
+        Ok(())
     }
 
-    Ok(())
+    pub async fn subscribe(&mut self) -> anyhow::Result<()> {
+        let mut socket = self.socket.as_ref().clone().unwrap().lock().await;
+        socket
+            .send(Message::Text(r#"[5, "OnJsonApiEvent"]"#.to_string()))
+            .await?;
+        while let Some(msg) = socket.next().await {
+            let msg = msg?;
+            println!("{:?}", &msg.to_text());
+        }
+
+        Ok(())
+    }
+
+    pub async fn on_ws_close(&mut self) {}
 }

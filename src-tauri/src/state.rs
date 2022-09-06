@@ -1,30 +1,22 @@
 use std::sync::Mutex;
 
-#[derive(Clone, serde::Serialize, Default, Debug)]
+use crate::ws;
+
+#[derive(Clone, Debug)]
 pub struct InnerState {
-    pub is_lcu_running: bool,
-    pub auth_url: String,
+    pub ws_client: ws::LcuClient,
 }
 
 impl InnerState {
-    pub fn set_lcu_running_state(&mut self, s: bool) {
-        self.is_lcu_running = s;
-    }
-
-    pub fn update_auth_url(&mut self, url: &String) -> bool {
-        if self.auth_url.eq(url) {
-            return false;
-        }
-
-        self.auth_url = url.to_string();
-        println!("[state] updated auth_url {}", url);
-        return true;
-    }
-
     pub fn init() -> Self {
+        let ws_client = ws::LcuClient::new();
+        let mut ws = ws_client.clone();
+        async_std::task::spawn(async move {
+            ws.start_lcu_task().await;
+        });
+        
         Self {
-            is_lcu_running: false,
-            auth_url: String::new(),
+            ws_client,
         }
     }
 }
