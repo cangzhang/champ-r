@@ -44,11 +44,6 @@ fn main() {
                 app.state::<state::GlobalState>().0.lock().unwrap()
             );
 
-            cmd::start_lcu_task(app.state());
-            // async_std::task::spawn(async move {
-            //     lcu_client.start_lcu_task().await;
-            // });
-
             Ok(())
         })
         .system_tray(SystemTray::new().with_menu(tray_menu))

@@ -55,9 +55,10 @@ impl LcuClient {
     pub async fn conn_ws(&mut self) -> anyhow::Result<()> {
         let wsurl = format!("wss://{}", &self.auth_url);
         let url = reqwest::Url::parse(&wsurl).unwrap();
+        println!("{:?}", &url);
         let credentials = format!("{}:{}", url.username(), url.password().unwrap());
         let cred_value = HeaderValue::from_str(&format!("Basic {}", base64::encode(credentials)))?;
-        let mut req = self.auth_url.to_string().into_client_request()?;
+        let mut req = url.to_string().into_client_request()?;
         req.headers_mut().insert("Authorization", cred_value);
         let connector = Connector::NativeTls(
             TlsConnector::builder()
@@ -66,7 +67,6 @@ impl LcuClient {
                 .unwrap(),
         );
 
-        println!("[ws] start connection, {}", &wsurl);
         let (socket, _) = connect_async_tls_with_config::<http::Request<()>>(
             req,
             Some(WebSocketConfig::default()),
@@ -74,6 +74,7 @@ impl LcuClient {
         )
         .await?;
         self.socket = Some(Arc::new(Mutex::new(socket)));
+        println!("[ws] start connection, {}", &wsurl);
         Ok(())
     }
 
