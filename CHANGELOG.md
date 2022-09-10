@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.4
+- fix: correct source list url
+
 ## v1.3.3
 - fix: builds order in game store. #198
 - change: optimized memory usage when running powershell command.
