@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.5
+- change: check lcu status task
+- style(popup): rune list 
+
 ## v1.3.4
 - fix: correct source list url
 
