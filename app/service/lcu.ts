@@ -157,17 +157,10 @@ export class LcuWatcher {
   }
 
   public startCheckLcuStatusTask = () => {
-    clearInterval(this.checkLcuStatusTask!);
-
     this.getAuth();
     this.checkLcuStatusTask = setInterval(async () => {
-      let succeed = await this.getSummonerId();
-      if (succeed) {
-        return;
-      }
-
-      await this.getAuth();
-    }, 4000);
+      this.getAuth();
+    }, 6000);
   };
 
   public getAuth = async () => {
@@ -187,14 +180,12 @@ export class LcuWatcher {
           prefixUrl: this.lcuURL,
         });
         return true;
-      } else {
-        this.lcuURL = ``;
-        console.info(`[watcher] maybe lcu is not running`);
-        return false;
       }
+
+      throw new Error(`[watcher] empty output from ps`);
     } catch (err) {
       this.lcuURL = ``;
-      console.info(`[watcher] [cmd] lcu is not active`, err.message);
+      console.info(`[watcher] maybe lcu is not running`, err.message);
       return Promise.resolve(false);
     }
   };

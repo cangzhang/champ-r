@@ -24,6 +24,9 @@ export class LcuWsClient {
   }
 
   public createWsClient = (url: string) => {
+    this.ws?.close();
+    this.ws = null;
+
     const ws = new WebSocket(`wss://${url}`);
     ws.on(`open`, () => {
       const msg = [LcuMessageType.SUBSCRIBE, `OnJsonApiEvent`];

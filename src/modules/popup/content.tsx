@@ -21,6 +21,7 @@ import RunePreview from 'src/components/rune-preview';
 import Loading from 'src/components/loading-spinner';
 import { ReactComponent as PinIcon } from 'src/assets/icons/push-pin.svg';
 import { IChampionInfo, IRuneItem, ICoordinate } from '@interfaces/commonTypes';
+import initI18n from 'src/modules/i18n';
 
 const Pin = styled(`button`, () => ({
   margin: `0 2ex 0 0`,
@@ -70,6 +71,10 @@ export function Content() {
   let sourcesRef = useRef<ISourceItem[]>([]);
   const qqInstance = useRef(new LolQQ());
   const source = activeTab[0].value;
+
+  useEffect(() => {
+    initI18n();
+  }, []);
 
   useEffect(() => {
     window.bridge.on('for-popup', ({ championId: id }: { championId: number }) => {
@@ -191,16 +196,6 @@ export function Content() {
     const pkgName = activeTab[0].value;
     const source = sourcesRef.current.find((i) => i.value === pkgName);
     const availablePerks = perkMap[pkgName] ?? [];
-    if (!availablePerks.length) {
-      return (
-        <div className={s.waiting}>
-          <Loading className={s.loading}/>
-          <button className={s.close} onClick={onClose}>
-            <X size={26} color={`#EA4C89`}/>
-          </button>
-        </div>
-      );
-    }
 
     return (
       <div className={s.main}>
@@ -261,11 +256,16 @@ export function Content() {
           </div>
         )}
 
-        {availablePerks.length > 0 && (
-          <div className={s.list}>
-            {renderList(availablePerks, source?.isAram, source?.isURF)}
-          </div>
-        )}
+        {availablePerks.length > 0
+          ? (
+            <div className={s.list}>
+              {renderList(availablePerks, source?.isAram, source?.isURF)}
+            </div>
+          )
+          : (
+            <Loading className={s.loading}/>
+          )
+        }
       </div>
     );
   };
