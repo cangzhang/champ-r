@@ -15,17 +15,6 @@ lazy_static! {
 
 #[cfg(target_os = "windows")]
 pub fn get_commandline() -> (String, bool) {
-    // let output_file_path = std::env::temp_dir().join("champr_rs_lcu.tmp");
-    // let file_path = output_file_path.display();
-    // if !output_file_path.exists() {
-    //     match std::fs::File::create(&output_file_path) {
-    //         Ok(_) => (),
-    //         Err(e) => {
-    //             println!("[cmd] cannot create file {}: {}", file_path, e);
-    //         }
-    //     };
-    // }
-    // r#"Start-Process powershell -Wait -WindowStyle hidden -Verb runAs -ArgumentList "-noprofile Get-CimInstance Win32_Process -Filter \""name = 'LeagueClientUx.exe'\""| Select-Object -ExpandProperty CommandLine | Out-File -Encoding utf8 -force {}"; Get-Content {}"#,
     let cmd_str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'"| Select-Object -ExpandProperty CommandLine"#;
     match powershell_script::run(&cmd_str) {
         Ok(output) => {
@@ -59,54 +48,37 @@ pub fn get_commandline() -> (String, bool) {
     (String::from(""), false)
 }
 
-pub fn update_lcu_state(state: tauri::State<'_, crate::state::GlobalState>) {
-    let mut state_guard = state.0.lock().unwrap();
-    let (_auth_url, s) = get_commandline();
-    state_guard.ws_client.set_lcu_status(s);
-    // *state_guard = crate::state::InnerState {
-    //     is_lcu_running: s,
-    //     auth_url,
-    //     ws_client: None,
-    // }
-}
+// pub fn update_lcu_state(state: tauri::State<'_, crate::state::GlobalState>) {
+//    let mut state_guard = state.0.lock().unwrap();
+//    let (_auth_url, s) = get_commandline();
+//    state_guard.ws_client.set_lcu_status(s);
+//    // *state_guard = crate::state::InnerState {
+//    //     is_lcu_running: s,
+//    //     auth_url,
+//    //     ws_client: None,
+//    // }
+//}
 
-pub fn start_lcu_task(state: tauri::State<'_, crate::state::GlobalState>) {
-    let (tx, rx) = std::sync::mpsc::channel();
-    let _handle = async_std::task::spawn(async move {
-        // let _id = tokio_js_set_interval::set_interval!(
-        //     move || {
-                let ret = get_commandline();
-                let tx = tx.clone();
-                let _r = tx.send(ret); // TODO! `sending on closed channel` error
-            // },
-            // 3000
-        // );
-    });
+// pub async fn watch_lcu_status<'a>(state: &'a tauri::State<'_, crate::state::GlobalState>) {
+//    let (tx, rx) = std::sync::mpsc::channel();
+//    let _handle = async_std::task::spawn(async move {
+//        loop {
+//            let ret = get_commandline();
+//            let tx = tx.clone();
+//            let _r = tx.send(ret); // TODO! `sending on closed channel` error
+//            std::thread::sleep(std::time::Duration::from_millis(5000));
+//        }
+//    });
 
-    let (auth_url, running) = match rx.recv() {
-        Ok(r) => r,
-        Err(_) => (String::from(""), false),
-    };
-    let mut state_guard = state.0.lock().unwrap();
-    state_guard.ws_client.set_lcu_status(running);
-    state_guard.ws_client.update_auth_url(&auth_url);
-    println!("[interval task] update inner state.");
-
-    // if !updated {
-    //     return;
-    // }
-
-    // async_std::task::spawn(async move {
-    //     let mut url = String::from("wss://");
-    //     url.push_str(&auth_url);
-    //     // let _ = crate::ws::start_client(&url).await;
-    // });
-
-    // *state_guard = crate::state::InnerState {
-    //     is_lcu_running: running,
-    //     auth_url,
-    // };
-}
+//    let (auth_url, running) = match rx.recv() {
+//        Ok(r) => r,
+//        Err(_) => (String::from(""), false),
+//    };
+//    let mut state_guard = state.0.lock().unwrap();
+//    state_guard.ws_client.set_lcu_status(running);
+//    state_guard.ws_client.update_auth_url(&auth_url);
+//    println!("[interval task] update inner state.");
+// }
 
 #[cfg(test)]
 mod tests {

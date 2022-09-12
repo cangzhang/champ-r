@@ -28,13 +28,13 @@ rand = "0.8.5"
 powershell_script = "1.0.4"
 regex = "1.6.0"
 lazy_static = "1.4.0"
-tokio-js-set-interval = "1.1.0"
 futures-util = "0.3.23"
 futures-channel = "0.3.23"
 tokio-tungstenite = { version = "0.17.2", features = ["native-tls"] }
 native-tls = "0.2.10"
 base64 = "0.13.0"
 http = "0.2.8"
+crossbeam = "0.8.2"
 
 [dependencies.serde_with]
 version = "1.11.0"

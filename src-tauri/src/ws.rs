@@ -4,7 +4,7 @@ use async_std::sync::Mutex;
 use futures_util::{SinkExt, StreamExt};
 use http::HeaderValue;
 use native_tls::TlsConnector;
-use tokio::net::TcpStream;
+use tokio::{net::TcpStream, sync::mpsc};
 use tokio_tungstenite::{
     connect_async_tls_with_config,
     tungstenite::{client::IntoClientRequest, protocol::WebSocketConfig, Message},
@@ -27,69 +27,129 @@ impl LcuClient {
         }
     }
 
-    pub fn update_auth_url(&mut self, url: &String) {
+    pub fn update_auth_url(&mut self, url: &String) -> bool {
         if self.auth_url.eq(url) {
-            return;
+            return false;
         }
 
         self.auth_url = url.to_string();
+        println!("[LcuClient] updated auth url to {}", url);
+        true
     }
 
     pub fn set_lcu_status(&mut self, s: bool) {
         self.is_lcu_running = s;
+        if !s {}
     }
 
-    pub async fn start_lcu_task(&mut self) {
-        let (auth_url, running) = crate::cmd::get_commandline();
-        self.is_lcu_running = running;
-        if auth_url.eq(&self.auth_url) {
-            return;
+    pub async fn close_ws(&mut self) {
+        match &self.socket {
+            None => (),
+            Some(s) => {
+                let mut s = s.lock().await;
+                let _ = s.close(None);
+            }
         }
 
-        self.auth_url = auth_url.to_string();
-        println!("update auth_url to {}", &auth_url);
-        let _ = self.conn_ws().await;
-        let _ = self.subscribe().await;
+        self.socket = None;
+        self.auth_url = String::new();
+    }
+
+    pub async fn watch_cmd_output(&mut self) {
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let handle = tokio::task::spawn_blocking(move || loop {
+            let ret = crate::cmd::get_commandline();
+            match tx.send(ret) {
+                Ok(_) => (),
+                Err(e) => {
+                    println!("{:?}", e.to_string());
+                }
+            };
+            std::thread::sleep(std::time::Duration::from_millis(5000));
+        });
+
+        while let Some((auth_url, running)) = rx.recv().await {
+            self.set_lcu_status(running);
+
+            println!("[ws] is lcu running? {}", running);
+            if !running {
+                self.close_ws().await;
+                println!("== {:?}", self.socket);
+                continue;
+            }
+
+            let updated = self.update_auth_url(&auth_url);
+            if !updated {
+                continue;
+            }
+
+            let _ = self.conn_ws().await;
+        }
+
+        handle.await.unwrap();
     }
 
     pub async fn conn_ws(&mut self) -> anyhow::Result<()> {
         let wsurl = format!("wss://{}", &self.auth_url);
         let url = reqwest::Url::parse(&wsurl).unwrap();
-        println!("{:?}", &url);
         let credentials = format!("{}:{}", url.username(), url.password().unwrap());
-        let cred_value = HeaderValue::from_str(&format!("Basic {}", base64::encode(credentials)))?;
-        let mut req = url.to_string().into_client_request()?;
-        req.headers_mut().insert("Authorization", cred_value);
-        let connector = Connector::NativeTls(
-            TlsConnector::builder()
-                .danger_accept_invalid_certs(true)
-                .build()
-                .unwrap(),
-        );
 
-        let (socket, _) = connect_async_tls_with_config::<http::Request<()>>(
-            req,
-            Some(WebSocketConfig::default()),
-            Some(connector),
-        )
-        .await?;
-        self.socket = Some(Arc::new(Mutex::new(socket)));
-        println!("[ws] start connection, {}", &wsurl);
-        Ok(())
-    }
+        let mut socket;
+        loop {
+            // retry in 2s if failed
+            let mut req = url.to_string().into_client_request()?;
+            let cred_value =
+                HeaderValue::from_str(&format!("Basic {}", base64::encode(&credentials)))?;
+            req.headers_mut().insert("Authorization", cred_value);
 
-    pub async fn subscribe(&mut self) -> anyhow::Result<()> {
-        let mut socket = self.socket.as_ref().clone().unwrap().lock().await;
+            let connector = Connector::NativeTls(
+                TlsConnector::builder()
+                    .danger_accept_invalid_certs(true)
+                    .build()
+                    .unwrap(),
+            );
+            match connect_async_tls_with_config::<http::Request<()>>(
+                req,
+                Some(WebSocketConfig::default()),
+                Some(connector),
+            )
+            .await
+            {
+                Ok((s, _)) => {
+                    socket = s;
+                    break;
+                }
+                Err(_) => {
+                    // server not ready
+                    std::thread::sleep(std::time::Duration::from_millis(2000));
+                }
+            };
+        }
+
+        println!("[ws] connected, {}", &wsurl);
         socket
             .send(Message::Text(r#"[5, "OnJsonApiEvent"]"#.to_string()))
             .await?;
         while let Some(msg) = socket.next().await {
             let msg = msg?;
-            println!("{:?}", &msg.to_text());
+            let msg = msg.to_text().unwrap();
+            println!("{:?}", &msg.len());
         }
 
+        self.socket = Some(Arc::new(Mutex::new(socket)));
         Ok(())
     }
 
     pub async fn on_ws_close(&mut self) {}
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn start() {
+        let mut lcu = LcuClient::new();
+        lcu.watch_cmd_output().await;
+    }
 }

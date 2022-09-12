@@ -12,7 +12,7 @@ impl InnerState {
         let ws_client = ws::LcuClient::new();
         let mut ws = ws_client.clone();
         async_std::task::spawn(async move {
-            ws.start_lcu_task().await;
+            let _ = ws.watch_cmd_output().await;
         });
         
         Self {

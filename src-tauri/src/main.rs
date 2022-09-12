@@ -28,7 +28,6 @@ fn main() {
         .add_item(CustomMenuItem::new("quit", "Quit").accelerator("CmdOrControl+Q"));
 
     let context = tauri::generate_context!();
-    // let mut lcu_client = ws::LcuClient::new();
 
     let _app = tauri::Builder::default()
         .manage(state::GlobalState::init())
@@ -43,6 +42,14 @@ fn main() {
                 "[state] init app state: {:?}",
                 app.state::<state::GlobalState>().0.lock().unwrap()
             );
+
+            // let state = app.state::<state::GlobalState>();
+            // let s = state.clone();
+            // async_std::task::spawn(async move {
+            //     loop {
+            //         cmd::watch_lcu_status(&s);
+            //     }
+            // });
 
             Ok(())
         })
