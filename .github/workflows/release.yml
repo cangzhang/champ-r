@@ -42,30 +42,15 @@ jobs:
         Rename-Item -Path $file.FullName -NewName $newName
         echo "::set-output name=fileName::$($newName)"
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v1.0.0
+    - name: Create Release
+      uses: ncipollo/release-action@v1
       with:
-        name: ChampR-installer
-        path: "./dist/artifacts"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: "./dist/artifacts/*"
+        body: "[FAQ](https://github.com/cangzhang/champ-r/wiki/FAQ)\n[CHNAGELOG](https://github.com/cangzhang/champ-r/blob/main/CHANGELOG.md)"
 
-    # - name: Create Release
-    #   id: create_release
-    #   uses: actions/create-release@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     tag_name: ${{ github.ref }}
-    #     release_name: ${{ github.ref }}
-    #     draft: false
-    #     prerelease: false
-
-    # - name: Upload Release Assets
-    #   id: upload_release_assets
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #     asset_path: ./dist/artifacts/${{ steps.vars.outputs.fileName }}
-    #     asset_name: ${{ steps.vars.outputs.fileName }}
-    #     asset_content_type: application/vnd.microsoft.portable-executable
+#    - name: Upload artifacts
+#      uses: actions/upload-artifact@v1.0.0
+#      with:
+#        name: ChampR-installer
+#        path: "./dist/artifacts"
