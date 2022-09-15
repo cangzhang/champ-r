@@ -63,7 +63,14 @@
         "height": 600,
         "resizable": true,
         "title": "ChampR",
-        "width": 800
+        "width": 800,
+        "label": "main",
+        "url": "index.html"
+      },
+      {
+        "label": "rune",
+        "url": "rune.html",
+        "visible": false
       }
     ]
   }
