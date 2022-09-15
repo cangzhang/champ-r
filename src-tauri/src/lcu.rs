@@ -4,6 +4,7 @@ use async_std::sync::Mutex;
 use futures_util::{SinkExt, StreamExt};
 use http::HeaderValue;
 use native_tls::TlsConnector;
+use tauri::AppHandle;
 use tokio::{net::TcpStream, sync::mpsc};
 use tokio_tungstenite::{
     connect_async_tls_with_config,
@@ -16,6 +17,7 @@ pub struct LcuClient {
     pub socket: Option<Arc<Mutex<WebSocketStream<MaybeTlsStream<TcpStream>>>>>,
     pub auth_url: String,
     pub is_lcu_running: bool,
+    pub app_handle: Arc<Mutex<Option<AppHandle>>>,
 }
 
 impl LcuClient {
@@ -24,7 +26,13 @@ impl LcuClient {
             socket: None,
             auth_url: String::from(""),
             is_lcu_running: false,
+            app_handle: Arc::new(Mutex::new(None)),
         }
+    }
+
+    pub async fn set_app_handle(&mut self, handle: &AppHandle) {
+        let h = self.app_handle.clone();
+        *h.lock().await = Some(handle.clone());
     }
 
     pub fn update_auth_url(&mut self, url: &String) -> bool {
@@ -55,7 +63,7 @@ impl LcuClient {
         self.auth_url = String::new();
     }
 
-    pub async fn watch_cmd_output(&mut self) {
+    pub async fn watch_cmd_output(&mut self, app_handle: Option<&AppHandle>) {
         let (tx, mut rx) = mpsc::unbounded_channel();
         let handle = tokio::task::spawn_blocking(move || loop {
             let ret = crate::cmd::get_commandline();
@@ -83,13 +91,13 @@ impl LcuClient {
                 continue;
             }
 
-            let _ = self.conn_ws().await;
+            let _ = self.conn_ws(app_handle).await;
         }
 
         handle.await.unwrap();
     }
 
-    pub async fn conn_ws(&mut self) -> anyhow::Result<()> {
+    pub async fn conn_ws(&mut self, app_handle: Option<&AppHandle>) -> anyhow::Result<()> {
         let wsurl = format!("wss://{}", &self.auth_url);
         let url = reqwest::Url::parse(&wsurl).unwrap();
         let credentials = format!("{}:{}", url.username(), url.password().unwrap());
@@ -145,8 +153,13 @@ impl LcuClient {
                     let my_cell_id = data.get("localPlayerCellId").unwrap();
                     for c in team {
                         if my_cell_id == c.get("cellId").unwrap() {
-                            let champion_id = c.get("championId").unwrap();
+                            let champion_id = c.get("championId").unwrap().as_i64().unwrap();
                             println!("current champion id: {}", champion_id);
+                            if let Some(h) = app_handle {
+                                if champion_id > 0 {
+                                    crate::rune_window::toggle(h, Some(true));
+                                }
+                            }
                         }
                     }
                 }
@@ -167,6 +180,6 @@ mod tests {
     #[tokio::test]
     async fn start() {
         let mut lcu = LcuClient::new();
-        lcu.watch_cmd_output().await;
+        lcu.watch_cmd_output(None).await;
     }
 }

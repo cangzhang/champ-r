@@ -1,15 +1,21 @@
 use tauri::{AppHandle, Manager, WindowBuilder, WindowUrl};
 
-pub fn toggle(app_handle: &AppHandle) {
+pub fn toggle(app_handle: &AppHandle, status: Option<bool>) {
     let handle = app_handle.clone();
     std::thread::spawn(move || {
         let w = handle.get_window("rune");
         if let Some(w) = w {
-            let v = w.is_visible().unwrap();
+            let v = match status {
+                Some(v) => v,
+                None => {
+                    let v = w.is_visible().unwrap();
+                    !v
+                }
+            };
             if v {
-                w.hide().unwrap();
+                let _ = w.show();
             } else {
-                w.show().unwrap();
+                let _ = w.hide();
             }
 
             return ();

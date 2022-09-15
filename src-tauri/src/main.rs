@@ -30,26 +30,17 @@ fn main() {
     let context = tauri::generate_context!();
 
     let _app = tauri::Builder::default()
-        .manage(state::GlobalState::init())
         .setup(move |app| {
+            let mut inner_state = state::InnerState::new();
+            inner_state.init(&app.handle());
+            let state = state::GlobalState::init(inner_state);
+            app.manage(state);
+
             let handle = app.handle();
             let _id = app.listen_global("toggle_rune-global", move |event| {
                 println!("global listener, payload {:?}", event.payload().unwrap());
-                rune_window::toggle(&handle);
+                rune_window::toggle(&handle, None);
             });
-
-            println!(
-                "[state] init app state: {:?}",
-                app.state::<state::GlobalState>().0.lock().unwrap()
-            );
-
-            // let state = app.state::<state::GlobalState>();
-            // let s = state.clone();
-            // async_std::task::spawn(async move {
-            //     loop {
-            //         cmd::watch_lcu_status(&s);
-            //     }
-            // });
 
             Ok(())
         })
@@ -57,7 +48,7 @@ fn main() {
         .on_system_tray_event(move |app_handle, event| match event {
             SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
                 "toggle_window" => {
-                    let _ = rune_window::toggle(app_handle);
+                    let _ = rune_window::toggle(app_handle, None);
                 }
                 "apply_builds" => {
                     println!("[tray] apply builds");
