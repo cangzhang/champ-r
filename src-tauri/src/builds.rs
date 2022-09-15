@@ -4,10 +4,14 @@ use futures::stream::TryStreamExt;
 use futures::{AsyncReadExt, StreamExt};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::io::{Cursor, Write};
+use std::path::Path;
 use tar::Archive;
 
 use crate::web;
+
+const SOURCE_LIST_URL: &str = "https://mirrors.cloud.tencent.com/npm/@champ-r/source-list/latest";
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -27,7 +31,82 @@ struct PackageInfo {
     pub dist: PackageDist,
 }
 
-const SOURCE_LIST_URL: &str = "https://mirrors.cloud.tencent.com/npm/@champ-r/source-list/latest";
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BuildFile {
+    pub index: i64,
+    pub id: String,
+    pub version: String,
+    pub official_version: String,
+    pub pick_count: i64,
+    pub win_rate: String,
+    pub timestamp: i64,
+    pub alias: String,
+    pub name: String,
+    pub position: String,
+    pub skills: Vec<String>,
+    pub item_builds: Vec<ItemBuild>,
+    pub runes: Vec<Rune>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ItemBuild {
+    pub title: String,
+    pub associated_maps: Vec<i64>,
+    pub associated_champions: Vec<i64>,
+    pub blocks: Vec<Block>,
+    pub map: String,
+    pub mode: String,
+    pub preferred_item_slots: Option<String>,
+    pub sortrank: i64,
+    pub started_from: String,
+    #[serde(rename = "type")]
+    pub type_field: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Block {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub items: Option<Vec<Item>>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Item {
+    pub id: String,
+    pub count: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Rune {
+    pub alias: String,
+    pub name: String,
+    pub position: String,
+    pub pick_count: i64,
+    pub win_rate: String,
+    pub primary_style_id: i64,
+    pub sub_style_id: i64,
+    pub selected_perk_ids: Vec<i64>,
+    pub score: i64,
+    #[serde(rename = "type")]
+    pub type_field: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PackageJson {
+    pub name: String,
+    pub version: String,
+    pub source_version: String,
+    pub description: String,
+    pub main: String,
+    pub author: String,
+    pub license: String,
+}
 
 pub fn make_id() -> String {
     rand::thread_rng()
@@ -40,9 +119,9 @@ pub fn make_id() -> String {
 pub async fn save_build(path: String, data: &web::ItemBuild) -> anyhow::Result<()> {
     let path = std::path::Path::new(&path);
     let prefix = path.parent().unwrap();
-    std::fs::create_dir_all(prefix).unwrap();
+    fs::create_dir_all(prefix).unwrap();
 
-    let mut f = std::fs::File::create(&path)?;
+    let mut f = fs::File::create(&path)?;
     let buf = serde_json::to_string(&data)?;
     f.write_all(buf[..].as_bytes())?;
     Ok(())
@@ -185,7 +264,7 @@ pub fn spawn_apply_task(sources: Vec<String>, dir: String, keep_old: bool, windo
     });
 }
 
-pub async fn fetch_list() -> anyhow::Result<Vec<web::Source>> {
+pub async fn fetch_source_list() -> anyhow::Result<Vec<web::Source>> {
     let body = reqwest::get(SOURCE_LIST_URL)
         .await?
         .json::<PackageInfo>()
@@ -196,10 +275,9 @@ pub async fn fetch_list() -> anyhow::Result<Vec<web::Source>> {
 
 // https://users.rust-lang.org/t/unzip-reqwest-body-as-a-stream/56409/2
 // https://users.rust-lang.org/t/how-to-stream-async-reqwest-response-to-gzdecoder/74367/2
-pub async fn download_tarball(source: &String) -> anyhow::Result<()> {
+pub async fn download_tarball(source_name: &String) -> anyhow::Result<()> {
     let info = reqwest::get(format!(
-        "https://mirrors.cloud.tencent.com/npm/@champ-r/{}/latest",
-        source
+        "https://mirrors.cloud.tencent.com/npm/@champ-r/{source_name}/latest"
     ))
     .await?
     .json::<PackageInfo>()
@@ -214,7 +292,73 @@ pub async fn download_tarball(source: &String) -> anyhow::Result<()> {
     decoder.read_to_end(&mut data).await?;
     let file = Cursor::new(data);
     let mut archive = Archive::new(file);
-    archive.unpack(format!(".npm/{source}"))?;
+    archive.unpack(format!(".npm/{source_name}"))?;
+
+    Ok(())
+}
+
+pub async fn apply_builds_from_local(
+    source_name: &String,
+    target_folder: &String,
+    sort: i32,
+) -> anyhow::Result<()> {
+    let remote_source_url =
+        format!("https://mirrors.cloud.tencent.com/npm/@champ-r/{source_name}/latest");
+    let pkg = reqwest::get(remote_source_url)
+        .await?
+        .json::<PackageInfo>()
+        .await?;
+    let remote_version = pkg.version;
+
+    let mut should_download = true;
+    let source_folder = format!(".npm/{source_name}/package");
+    let pkg_json = format!("{source_folder}/package.json");
+    let path = std::path::Path::new(&pkg_json);
+    if path.exists() {
+        let local_file = fs::read_to_string(path).expect("Unable to read package.json");
+        let p: PackageJson = serde_json::from_str(&local_file).expect("Unable to parse");
+        if p.version.eq(&remote_version) {
+            should_download = false
+        }
+    }
+    if should_download {
+        download_tarball(source_name).await?;
+    }
+
+    let paths = fs::read_dir(&source_folder).unwrap();
+    let mut build_files = vec![];
+    for entry in paths {
+        let entry = entry?;
+        let p = entry.path().into_os_string().into_string().unwrap();
+        if p.contains("package.json") || p.contains("index.json") {
+            continue;
+        }
+
+        let file = fs::read_to_string(&p).expect("failed to read build file");
+        let b: Vec<BuildFile> = serde_json::from_str(&file).expect("Unable to parse build file");
+        build_files.push(b);
+    }
+
+    let source_name_in_path = source_name.replace(".", "_"); 
+    for builds in build_files {
+        for (idx, b) in builds.iter().enumerate() {
+            let alias = &b.alias;
+            let pos = &b.position;
+
+            let dir = format!("{target_folder}/Config/Champions/{alias}/Recommended");
+            fs::create_dir_all(&dir)?;
+            let full_path = format!("{dir}/{sort}_{source_name_in_path}_{alias}_{pos}_{idx}.json");
+            if Path::new(&full_path).exists() {
+                let _ = fs::remove_file(&full_path);
+                let _ = fs::remove_dir_all(&full_path);
+            }
+
+            let mut f = fs::File::create(&full_path)?;
+            let buf = serde_json::to_string(&b)?;
+            f.write_all(buf[..].as_bytes())?;
+            println!("write to: {}", &full_path);
+        }
+    }
 
     Ok(())
 }
@@ -222,6 +366,17 @@ pub async fn download_tarball(source: &String) -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn download() -> anyhow::Result<()> {
+        let target = String::from(".cdn_files");
+        let sources = fetch_source_list().await?;
+        // println!("{:?}", sources);
+        let s = &sources.first().unwrap().value;
+        println!("applying builds from `{s}`");
+        apply_builds_from_local(s, &target, 1).await?;
+        Ok(())
+    }
 
     #[tokio::test]
     async fn save_build() {
@@ -247,15 +402,5 @@ mod tests {
                 println!("{:?}", e);
             }
         }
-    }
-
-    #[tokio::test]
-    async fn download() -> anyhow::Result<()> {
-        let sources = fetch_list().await?;
-        println!("{:?}", sources);
-        let s = &sources.first().unwrap().value;
-        download_tarball(s).await?;
-
-        Ok(())
     }
 }
