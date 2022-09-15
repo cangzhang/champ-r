@@ -133,7 +133,24 @@ impl LcuClient {
         while let Some(msg) = socket.next().await {
             let msg = msg?;
             let msg = msg.to_text().unwrap();
-            println!("{:?}", &msg.len());
+            if msg.contains("/lol-champ-select/v1/session") {
+                let (_t, _ev, action): (
+                    i32,
+                    String,
+                    std::collections::HashMap<String, serde_json::Value>,
+                ) = serde_json::from_str(msg).unwrap();
+                let data = action.get("data").unwrap();
+                if let Some(my_team) = data.get("myTeam") {
+                    let team = my_team.as_array().unwrap();
+                    let my_cell_id = data.get("localPlayerCellId").unwrap();
+                    for c in team {
+                        if my_cell_id == c.get("cellId").unwrap() {
+                            let champion_id = c.get("championId").unwrap();
+                            println!("current champion id: {}", champion_id);
+                        }
+                    }
+                }
+            }
         }
 
         self.socket = Some(Arc::new(Mutex::new(socket)));

@@ -1,15 +1,15 @@
 use std::sync::Mutex;
 
-use crate::ws;
+use crate::lcu;
 
 #[derive(Clone, Debug)]
 pub struct InnerState {
-    pub ws_client: ws::LcuClient,
+    pub ws_client: lcu::LcuClient,
 }
 
 impl InnerState {
     pub fn init() -> Self {
-        let ws_client = ws::LcuClient::new();
+        let ws_client = lcu::LcuClient::new();
         let mut ws = ws_client.clone();
         async_std::task::spawn(async move {
             let _ = ws.watch_cmd_output().await;
