@@ -343,20 +343,23 @@ pub async fn apply_builds_from_local(
     for builds in build_files {
         for (idx, b) in builds.iter().enumerate() {
             let alias = &b.alias;
-            let pos = &b.position;
-
             let dir = format!("{target_folder}/Config/Champions/{alias}/Recommended");
+            let pos = &b.position;
             fs::create_dir_all(&dir)?;
-            let full_path = format!("{dir}/{sort}_{source_name_in_path}_{alias}_{pos}_{idx}.json");
-            if Path::new(&full_path).exists() {
-                let _ = fs::remove_file(&full_path);
-                let _ = fs::remove_dir_all(&full_path);
+
+            for (iidx, item) in b.item_builds.iter().enumerate() {
+                let full_path = format!("{dir}/{sort}_{source_name_in_path}_{alias}_{pos}_{idx}_{iidx}.json");
+                if Path::new(&full_path).exists() {
+                    let _ = fs::remove_file(&full_path);
+                    let _ = fs::remove_dir_all(&full_path);
+                }
+    
+                let mut f = fs::File::create(&full_path)?;
+                let buf = serde_json::to_string_pretty(&item)?;
+                f.write_all(buf[..].as_bytes())?;
+                println!("write to: {}", &full_path);
             }
 
-            let mut f = fs::File::create(&full_path)?;
-            let buf = serde_json::to_string(&b)?;
-            f.write_all(buf[..].as_bytes())?;
-            println!("write to: {}", &full_path);
         }
     }
 
