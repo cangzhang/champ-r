@@ -1,8 +1,33 @@
-use futures::StreamExt;
+use async_compression::futures::bufread::GzipDecoder;
+use futures::io::{self, BufReader, ErrorKind};
+use futures::stream::TryStreamExt;
+use futures::{AsyncReadExt, StreamExt};
 use rand::Rng;
-use std::io::Write;
+use serde::{Deserialize, Serialize};
+use std::io::{Cursor, Write};
+use tar::Archive;
 
 use crate::web;
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PackageDist {
+    pub integrity: String,
+    pub shasum: String,
+    pub tarball: String,
+    pub file_count: i64,
+    pub unpacked_size: i64,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+struct PackageInfo {
+    pub name: String,
+    pub version: String,
+    pub sources: Option<Vec<web::Source>>,
+    pub dist: PackageDist,
+}
+
+const SOURCE_LIST_URL: &str = "https://mirrors.cloud.tencent.com/npm/@champ-r/source-list/latest";
 
 pub fn make_id() -> String {
     rand::thread_rng()
@@ -160,6 +185,40 @@ pub fn spawn_apply_task(sources: Vec<String>, dir: String, keep_old: bool, windo
     });
 }
 
+pub async fn fetch_list() -> anyhow::Result<Vec<web::Source>> {
+    let body = reqwest::get(SOURCE_LIST_URL)
+        .await?
+        .json::<PackageInfo>()
+        .await?;
+    let sources = body.sources.unwrap_or_default();
+    Ok(sources)
+}
+
+// https://users.rust-lang.org/t/unzip-reqwest-body-as-a-stream/56409/2
+// https://users.rust-lang.org/t/how-to-stream-async-reqwest-response-to-gzdecoder/74367/2
+pub async fn download_tarball(source: &String) -> anyhow::Result<()> {
+    let info = reqwest::get(format!(
+        "https://mirrors.cloud.tencent.com/npm/@champ-r/{}/latest",
+        source
+    ))
+    .await?
+    .json::<PackageInfo>()
+    .await?;
+    let resp = reqwest::get(info.dist.tarball).await?;
+    let reader = resp
+        .bytes_stream()
+        .map_err(|e| io::Error::new(ErrorKind::Other, e))
+        .into_async_read();
+    let mut decoder = GzipDecoder::new(BufReader::new(reader));
+    let mut data = vec![];
+    decoder.read_to_end(&mut data).await?;
+    let file = Cursor::new(data);
+    let mut archive = Archive::new(file);
+    archive.unpack(format!(".npm/{source}"))?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -188,5 +247,15 @@ mod tests {
                 println!("{:?}", e);
             }
         }
+    }
+
+    #[tokio::test]
+    async fn download() -> anyhow::Result<()> {
+        let sources = fetch_list().await?;
+        println!("{:?}", sources);
+        let s = &sources.first().unwrap().value;
+        download_tarball(s).await?;
+
+        Ok(())
     }
 }
