@@ -91,7 +91,7 @@ pub struct Rune {
     pub primary_style_id: i64,
     pub sub_style_id: i64,
     pub selected_perk_ids: Vec<i64>,
-    pub score: i64,
+    pub score: Option<i64>,
     #[serde(rename = "type")]
     pub type_field: String,
 }
@@ -302,6 +302,51 @@ pub async fn apply_builds_from_local(
     target_folder: &String,
     sort: i32,
 ) -> anyhow::Result<()> {
+    update_tarball_if_not_latest(source_name).await?;
+
+    let source_folder = format!(".npm/{source_name}/package");
+    let paths = fs::read_dir(&source_folder).unwrap();
+    let mut build_files = vec![];
+    for entry in paths {
+        let entry = entry?;
+        let p = entry.path().into_os_string().into_string().unwrap();
+        if p.contains("package.json") || p.contains("index.json") {
+            continue;
+        }
+
+        let file = fs::read_to_string(&p).expect("failed to read build file");
+        let b: Vec<BuildFile> = serde_json::from_str(&file).expect("Unable to parse build file");
+        build_files.push(b);
+    }
+
+    let source_name_in_path = source_name.replace(".", "_");
+    for builds in build_files {
+        for (idx, b) in builds.iter().enumerate() {
+            let alias = &b.alias;
+            let dir = format!("{target_folder}/Config/Champions/{alias}/Recommended");
+            let pos = &b.position;
+            fs::create_dir_all(&dir)?;
+
+            for (iidx, item) in b.item_builds.iter().enumerate() {
+                let full_path =
+                    format!("{dir}/{sort}_{source_name_in_path}_{alias}_{pos}_{idx}_{iidx}.json");
+                if Path::new(&full_path).exists() {
+                    let _ = fs::remove_file(&full_path);
+                    let _ = fs::remove_dir_all(&full_path);
+                }
+
+                let mut f = fs::File::create(&full_path)?;
+                let buf = serde_json::to_string_pretty(&item)?;
+                f.write_all(buf[..].as_bytes())?;
+                println!("write to: {}", &full_path);
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub async fn update_tarball_if_not_latest(source_name: &String) -> anyhow::Result<()> {
     let remote_source_url =
         format!("https://mirrors.cloud.tencent.com/npm/@champ-r/{source_name}/latest");
     let pkg = reqwest::get(remote_source_url)
@@ -322,48 +367,26 @@ pub async fn apply_builds_from_local(
         }
     }
     if should_download {
+        println!("should update local package `{source_name}`");
         download_tarball(source_name).await?;
     }
 
-    let paths = fs::read_dir(&source_folder).unwrap();
-    let mut build_files = vec![];
-    for entry in paths {
-        let entry = entry?;
-        let p = entry.path().into_os_string().into_string().unwrap();
-        if p.contains("package.json") || p.contains("index.json") {
-            continue;
-        }
-
-        let file = fs::read_to_string(&p).expect("failed to read build file");
-        let b: Vec<BuildFile> = serde_json::from_str(&file).expect("Unable to parse build file");
-        build_files.push(b);
-    }
-
-    let source_name_in_path = source_name.replace(".", "_"); 
-    for builds in build_files {
-        for (idx, b) in builds.iter().enumerate() {
-            let alias = &b.alias;
-            let dir = format!("{target_folder}/Config/Champions/{alias}/Recommended");
-            let pos = &b.position;
-            fs::create_dir_all(&dir)?;
-
-            for (iidx, item) in b.item_builds.iter().enumerate() {
-                let full_path = format!("{dir}/{sort}_{source_name_in_path}_{alias}_{pos}_{idx}_{iidx}.json");
-                if Path::new(&full_path).exists() {
-                    let _ = fs::remove_file(&full_path);
-                    let _ = fs::remove_dir_all(&full_path);
-                }
-    
-                let mut f = fs::File::create(&full_path)?;
-                let buf = serde_json::to_string_pretty(&item)?;
-                f.write_all(buf[..].as_bytes())?;
-                println!("write to: {}", &full_path);
-            }
-
-        }
-    }
-
     Ok(())
+}
+
+pub async fn load_runes(source_name: &String, champ_alias: &String) -> anyhow::Result<Vec<Rune>> {
+    update_tarball_if_not_latest(source_name).await?;
+    let source_folder = format!(".npm/{source_name}/package");
+    let file_path = format!("{source_folder}/{champ_alias}.json");
+    let f = fs::read_to_string(&file_path).expect("read build file failed");
+    let builds: Vec<BuildFile> = serde_json::from_str(&f).expect("Unable to parse build file");
+
+    let mut runes: Vec<Rune> = vec![];
+    for b in builds {
+        runes = [runes, b.runes].concat();
+    }
+
+    Ok(runes)
 }
 
 #[cfg(test)]
@@ -378,6 +401,15 @@ mod tests {
         let s = &sources.first().unwrap().value;
         println!("applying builds from `{s}`");
         apply_builds_from_local(s, &target, 1).await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn show_runes() -> anyhow::Result<()> {
+        let source = String::from("u.gg");
+        let champ = String::from("Rengar");
+        let runes = load_runes(&source, &champ).await?;
+        println!("{:?}", runes);
         Ok(())
     }
 
