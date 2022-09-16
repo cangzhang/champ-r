@@ -37,7 +37,7 @@ fn main() {
             app.manage(state);
 
             let handle = app.handle();
-            let _id = app.listen_global("toggle_rune-global", move |event| {
+            let _ = app.listen_global("global::toggle_rune", move |event| {
                 println!("global listener, payload {:?}", event.payload().unwrap());
                 rune_window::toggle(&handle, None);
             });

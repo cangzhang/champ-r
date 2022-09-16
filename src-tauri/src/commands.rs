@@ -7,7 +7,7 @@ pub fn greeting(name: &str) -> String {
 
 #[tauri::command]
 pub fn toggle_rune_window(window: tauri::Window) {
-    window.trigger("toggle_rune-global", Some("".to_string()));
+    window.trigger("global::toggle_rune", Some("".to_string()));
 }
 
 #[tauri::command]

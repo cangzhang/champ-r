@@ -6,7 +6,7 @@ export function Rune() {
 
     useEffect(() => {
         let unlisten: () => any = () => null;
-        listen('rune::selected_champion', ({ payload }: { payload: any }) => {
+        listen('popup_window::selected_champion', ({ payload }: { payload: any }) => {
             console.log(payload);
             setChampionId(payload.champion_id);
         }).then(un => {

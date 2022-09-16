@@ -1,8 +1,15 @@
 use tauri::{AppHandle, Manager, WindowBuilder, WindowUrl, Window};
 
-#[derive(Clone, serde::Serialize)]
+use crate::builds;
+
+#[derive(Clone, serde::Serialize, Default)]
 pub struct ChampionSelectPayload {
     pub champion_id: i64,
+}
+
+#[derive(Clone, serde::Serialize, Default)]
+pub struct SourceRunesPayload {
+    pub runes: Option<Vec<builds::Rune>>,
 }
 
 pub fn toggle(app_handle: &AppHandle, status: Option<bool>) {
@@ -24,8 +31,16 @@ pub fn toggle(app_handle: &AppHandle, status: Option<bool>) {
 pub fn show_and_emit(app_handle: &AppHandle, champion_id: i64) {
     let w = get_rune_window(app_handle);
     let _ = w.emit(
-        "rune::selected_champion",
+        "popup_window::selected_champion",
         ChampionSelectPayload { champion_id },
+    );
+}
+
+pub fn emit_runes(app_handle: &AppHandle, runes: Vec<builds::Rune>) {
+    let w = get_rune_window(app_handle);
+    let _ = w.emit(
+        "popup_window::rune_list",
+        SourceRunesPayload { runes: Some(runes) },
     );
 }
 

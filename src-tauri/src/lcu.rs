@@ -162,6 +162,7 @@ impl LcuClient {
                                     crate::rune_window::toggle(h, Some(false));
                                 }
                             }
+                            break;
                         }
                     }
                 }
