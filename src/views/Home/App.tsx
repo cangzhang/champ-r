@@ -5,16 +5,15 @@ import { listen } from '@tauri-apps/api/event'
 import './App.css';
 
 function App() {
-  const [str, setStr] = useState(``);
   const [result, setResult] = useState<any[]>([]);
   const [auth, setAuth] = useState(``);
-  
-  let unlistener = useRef(() => {});
+
+  let unlistener = useRef(() => { });
   let ids = useRef(new Set());
 
-  const onCall = () => {
-    invoke(`greeting`, { name: 'al' }).then((ret) => {
-      setStr(ret as string);
+  const getRuneList = () => {
+    invoke(`get_runes`, { championId: 64, sourceName: "u.gg" }).then((ret) => {
+      console.log(ret);
     });
   }
 
@@ -70,12 +69,12 @@ function App() {
     <section className="App">
       <div className="App-header">
         <h1>HOME</h1>
-        <button onClick={onCall}>Say Hello</button>
+        <button onClick={getRuneList}>Get Rune List</button>
         <button onClick={onToggleWindow}>Toggle Window</button>
         <button onClick={applyBuilds}>Apply Builds</button>
         <button onClick={getLcuAuth}>LCU Auth</button>
       </div>
-      <div>{str}</div>
+
       <div style={{ height: 200, overflow: `auto`, width: 700 }}>
         {result.map((i, idx) => <p key={idx}>{i.join(`, `)}</p>)}
       </div>

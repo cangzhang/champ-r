@@ -1,13 +1,14 @@
+use serde_json::json;
 use tauri::Manager;
 
-#[tauri::command]
-pub fn greeting(name: &str) -> String {
-    format!("Hello {}", name)
-}
+// use crate::builds;
 
 #[tauri::command]
 pub fn toggle_rune_window(window: tauri::Window) {
-    window.trigger("global::toggle_rune", Some("".to_string()));
+    let payload = json!({
+        "action": "toggle_rune_window",
+    });
+    window.trigger("global_events", Some(payload.to_string()));
 }
 
 #[tauri::command]
@@ -27,4 +28,13 @@ pub fn get_lcu_auth(state: tauri::State<'_, crate::state::GlobalState>) -> Strin
     let s = state.0.lock().unwrap();
     println!("[command] {:?}", s);
     auth_url
+}
+
+#[tauri::command]
+pub fn get_runes(window: tauri::Window, champion_id: i64, source_name: String) {
+    let payload = json!({
+        "action": "get_runes",
+        "data": [champion_id, source_name],
+    });
+    window.trigger("global_events", Some(payload.to_string()));
 }

@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+use serde_json::Value;
 use tauri::{
     CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
@@ -10,14 +11,15 @@ use tauri::{
 pub mod builds;
 pub mod cmd;
 pub mod commands;
+pub mod lcu;
 pub mod rune_window;
 pub mod state;
 pub mod web;
-pub mod lcu;
 
 #[derive(Clone, serde::Serialize)]
-pub struct Payload {
-    pub message: String,
+pub struct GlobalEventPayload {
+    pub action: String,
+    pub data: Option<Value>,
 }
 
 fn main() {
@@ -37,9 +39,31 @@ fn main() {
             app.manage(state);
 
             let handle = app.handle();
-            let _ = app.listen_global("global::toggle_rune", move |event| {
-                println!("global listener, payload {:?}", event.payload().unwrap());
-                rune_window::toggle(&handle, None);
+            let _ = app.listen_global("global_events", move |ev| {
+                let s = ev.payload().unwrap();
+                println!("global listener payload {:?}", s);
+                let payload: Value = serde_json::from_str(s).unwrap();
+                let action = match payload.get("action") {
+                    Some(action) => action.as_str(),
+                    None => Some("")
+                };
+                match action {
+                    Some("toggle_rune_window") => {
+                        rune_window::toggle(&handle, None);
+                    }
+                    Some("get_runes") => {
+                        match payload["data"].as_array() {
+                            Some(arr) => {
+                                let champion_id = arr[0].as_i64().unwrap();
+                                let source_name = arr[1].as_str().unwrap();
+                                println!("{champion_id} {source_name}");
+                            }
+                            None => {},
+                        };
+                    }
+                    Some(_) => {}
+                    None => {}
+                };
             });
 
             Ok(())
@@ -70,10 +94,10 @@ fn main() {
             _ => {}
         })
         .invoke_handler(tauri::generate_handler![
-            commands::greeting,
             commands::toggle_rune_window,
             commands::apply_builds_from_sources,
             commands::get_lcu_auth,
+            commands::get_runes,
         ])
         .run(context)
         .expect("error while running tauri application");
