@@ -60,6 +60,9 @@ fn main() {
                         &w,
                     )
                 }
+                "quit" => {
+                    std::process::exit(0);
+                }
                 _ => {
                     println!("{}", id.as_str());
                 }

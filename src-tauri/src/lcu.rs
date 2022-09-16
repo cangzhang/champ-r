@@ -158,6 +158,8 @@ impl LcuClient {
                             if let Some(h) = app_handle {
                                 if champion_id > 0 {
                                     crate::rune_window::show_and_emit(h, champion_id);
+                                } else {
+                                    crate::rune_window::toggle(h, Some(false));
                                 }
                             }
                         }
