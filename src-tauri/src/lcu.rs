@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, collections::HashMap};
 
 use async_std::sync::Mutex;
 use futures_util::{SinkExt, StreamExt};
@@ -12,12 +12,16 @@ use tokio_tungstenite::{
     Connector, MaybeTlsStream, WebSocketStream,
 };
 
-#[derive(Clone, Debug)]
+use crate::web;
+use crate::rune_window;
+
+#[derive(Clone, Debug, Default)]
 pub struct LcuClient {
     pub socket: Option<Arc<Mutex<WebSocketStream<MaybeTlsStream<TcpStream>>>>>,
     pub auth_url: String,
     pub is_lcu_running: bool,
     pub app_handle: Arc<Mutex<Option<AppHandle>>>,
+    pub champion_map: HashMap<String, web::ChampInfo>,
 }
 
 impl LcuClient {
@@ -27,12 +31,8 @@ impl LcuClient {
             auth_url: String::from(""),
             is_lcu_running: false,
             app_handle: Arc::new(Mutex::new(None)),
+            champion_map: HashMap::new(),
         }
-    }
-
-    pub async fn set_app_handle(&mut self, handle: &AppHandle) {
-        let h = self.app_handle.clone();
-        *h.lock().await = Some(handle.clone());
     }
 
     pub fn update_auth_url(&mut self, url: &String) -> bool {
@@ -48,6 +48,17 @@ impl LcuClient {
     pub fn set_lcu_status(&mut self, s: bool) {
         self.is_lcu_running = s;
         if !s {}
+    }
+
+    pub async fn get_champion_map(&mut self) {
+        match web::fetch_latest_champion_list().await {
+            Ok(list) => {
+                self.champion_map = list.data;
+            }
+            Err(e) => {
+                println!("[lcu] fetch champion list failed. {:?}", e);
+            }
+        };
     }
 
     pub async fn close_ws(&mut self) {
@@ -157,9 +168,10 @@ impl LcuClient {
                             println!("current champion id: {}", champion_id);
                             if let Some(h) = app_handle {
                                 if champion_id > 0 {
-                                    crate::rune_window::show_and_emit(h, champion_id);
+                                    let champion_alias = web::get_alias_from_champion_map(&self.champion_map, champion_id);
+                                    rune_window::show_and_emit(h, champion_id, &champion_alias);
                                 } else {
-                                    crate::rune_window::toggle(h, Some(false));
+                                    rune_window::toggle(h, Some(false));
                                 }
                             }
                             break;

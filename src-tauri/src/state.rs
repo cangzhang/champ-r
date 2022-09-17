@@ -25,6 +25,7 @@ impl InnerState {
 
         async_std::task::spawn(async move {
             println!("[inner state] spwan");
+            let _ = ws.get_champion_map().await;
             let _ = ws.watch_cmd_output(Some(&handle)).await;
         });
 

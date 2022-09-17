@@ -73,6 +73,12 @@ pub async fn fetch_champ_list(version: &String) -> anyhow::Result<ChampListResp>
     Ok(data)
 }
 
+pub async fn fetch_latest_champion_list() -> anyhow::Result<ChampListResp> {
+    let v = fetch_lol_latest_version().await?;
+    let list = fetch_champ_list(&v).await?;
+    Ok(list)
+}
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampData {
@@ -161,6 +167,18 @@ pub async fn fetch_champ_file(
             Ok(None)
         }
     }
+}
+
+pub fn get_alias_from_champion_map(champion_map: &HashMap<String, ChampInfo>, champion_id: i64) -> String {
+    let mut ret = String::new();
+    for (alias, c) in champion_map.into_iter() {
+        if c.key.eq(&champion_id.to_string()) {
+            ret = alias.to_string();
+            break
+        }
+    }
+
+    ret
 }
 
 #[cfg(test)]
