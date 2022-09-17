@@ -11,12 +11,6 @@ function App() {
   let unlistener = useRef(() => { });
   let ids = useRef(new Set());
 
-  const getRuneList = () => {
-    invoke(`get_runes`, { championId: 64, sourceName: "u.gg" }).then((ret) => {
-      console.log(ret);
-    });
-  }
-
   const onToggleWindow = () => {
     invoke(`toggle_rune_window`);
   }
@@ -69,7 +63,6 @@ function App() {
     <section className="App">
       <div className="App-header">
         <h1>HOME</h1>
-        <button onClick={getRuneList}>Get Rune List</button>
         <button onClick={onToggleWindow}>Toggle Window</button>
         <button onClick={applyBuilds}>Apply Builds</button>
         <button onClick={getLcuAuth}>LCU Auth</button>

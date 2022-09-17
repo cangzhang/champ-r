@@ -45,21 +45,41 @@ fn main() {
                 let payload: Value = serde_json::from_str(s).unwrap();
                 let action = match payload.get("action") {
                     Some(action) => action.as_str(),
-                    None => Some("")
+                    None => Some(""),
                 };
                 match action {
                     Some("toggle_rune_window") => {
                         rune_window::toggle(&handle, None);
                     }
                     Some("get_runes") => {
-                        match payload["data"].as_array() {
-                            Some(arr) => {
-                                let champion_id = arr[0].as_i64().unwrap();
-                                let source_name = arr[1].as_str().unwrap();
-                                println!("{champion_id} {source_name}");
-                            }
-                            None => {},
-                        };
+                        // match payload["data"].as_object() {
+                        //     Some(obj) => {
+                        //         let champion_alias = obj["champion_alias"].as_i64().unwrap();
+                        //         let source_name = obj["source_name"].as_str().unwrap();
+                        //         println!("{champion_alias} {source_name}");
+                                
+                        //         let source = source_name.to_string();
+                        //         let alias = champion_alias.to_string();
+                        //         let handle = handle.clone();
+                                
+                        //         async_std::task::spawn(async move {
+                        //             match builds::load_runes(
+                        //                 &source,
+                        //                 &alias,
+                        //             )
+                        //             .await {
+                        //                 Ok(runes) => {
+                        //                     println!("[global_events] got runes for {alias}@{source},{:?}", runes.len());
+                        //                     rune_window::emit_runes(&handle, runes);
+                        //                 }
+                        //                 Err(e) => {
+                        //                     println!("[global_events] failed to load runes for {alias}@{source}, {:?}", e);
+                        //                 }
+                        //             };
+                        //         });
+                        //     }
+                        //     None => {}
+                        // };
                     }
                     Some(_) => {}
                     None => {}

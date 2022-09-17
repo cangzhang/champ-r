@@ -1,7 +1,7 @@
 use serde_json::json;
 use tauri::Manager;
 
-// use crate::builds;
+use crate::builds;
 
 #[tauri::command]
 pub fn toggle_rune_window(window: tauri::Window) {
@@ -31,10 +31,17 @@ pub fn get_lcu_auth(state: tauri::State<'_, crate::state::GlobalState>) -> Strin
 }
 
 #[tauri::command]
-pub fn get_runes(window: tauri::Window, champion_id: i64, source_name: String) {
-    let payload = json!({
-        "action": "get_runes",
-        "data": [champion_id, source_name],
-    });
-    window.trigger("global_events", Some(payload.to_string()));
+pub fn get_runes(
+    source_name: String,
+    champion_alias: String,
+) -> Vec<builds::Rune> {
+    tauri::async_runtime::block_on(async move {
+        match builds::load_runes(&source_name, &champion_alias).await {
+            Ok(runes) => runes,
+            Err(e) => {
+                println!("[commands::get_runes] {:?}", e);
+                vec![]
+            }
+        }
+    })
 }
