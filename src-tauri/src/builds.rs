@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use async_compression::futures::bufread::GzipDecoder;
 use futures::io::{self, BufReader, ErrorKind};
 use futures::stream::TryStreamExt;
@@ -374,10 +375,13 @@ pub async fn update_tarball_if_not_latest(source_name: &String) -> anyhow::Resul
     Ok(())
 }
 
-pub async fn load_runes(source_name: &String, champ_alias: &String) -> anyhow::Result<Vec<Rune>> {
+pub async fn load_runes(source_name: &String, champion_alias: &String) -> anyhow::Result<Vec<Rune>, > {
+     if source_name.is_empty() || champion_alias.is_empty() {
+        return Err(anyhow!("[builds] invalid source `{source_name}` or champion `{champion_alias}`"));
+     }
     update_tarball_if_not_latest(source_name).await?;
     let source_folder = format!(".npm/{source_name}/package");
-    let file_path = format!("{source_folder}/{champ_alias}.json");
+    let file_path = format!("{source_folder}/{champion_alias}.json");
     let f = fs::read_to_string(&file_path).expect("read build file failed");
     let builds: Vec<BuildFile> = serde_json::from_str(&f).expect("Unable to parse build file");
 

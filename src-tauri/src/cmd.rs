@@ -1,8 +1,9 @@
 use lazy_static::lazy_static;
 
+const APP_PORT_KEY: &'static str = "--app-port=";
+const TOKEN_KEY: &'static str = "--remoting-auth-token=";
+
 lazy_static! {
-    static ref APP_PORT_KEY: &'static str = "--app-port=";
-    static ref TOKEN_KEY: &'static str = "--remoting-auth-token=";
     static ref PORT_REGEXP: regex::Regex = regex::Regex::new(r"--app-port=\d+").unwrap();
     static ref TOKEN_REGEXP: regex::Regex =
         regex::Regex::new(r"--remoting-auth-token=\S+").unwrap();

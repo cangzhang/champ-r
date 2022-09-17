@@ -162,19 +162,22 @@ impl LcuClient {
                 if let Some(my_team) = data.get("myTeam") {
                     let team = my_team.as_array().unwrap();
                     let my_cell_id = data.get("localPlayerCellId").unwrap();
+                    let mut champion_id = 0;
                     for c in team {
                         if my_cell_id == c.get("cellId").unwrap() {
-                            let champion_id = c.get("championId").unwrap().as_i64().unwrap();
+                            champion_id = c.get("championId").unwrap().as_i64().unwrap();
                             println!("current champion id: {}", champion_id);
-                            if let Some(h) = app_handle {
-                                if champion_id > 0 {
-                                    let champion_alias = web::get_alias_from_champion_map(&self.champion_map, champion_id);
-                                    rune_window::show_and_emit(h, champion_id, &champion_alias);
-                                } else {
-                                    rune_window::toggle(h, Some(false));
-                                }
-                            }
                             break;
+                        }
+                    }
+
+                    if let Some(h) = app_handle {
+                        if champion_id > 0 {
+                            let champion_alias = web::get_alias_from_champion_map(&self.champion_map, champion_id);
+                            rune_window::show_and_emit(h, champion_id, &champion_alias);
+                        } else {
+                            println!("[lcu::champion_id] hide popup");
+                            rune_window::toggle(h, Some(false));
                         }
                     }
                 }

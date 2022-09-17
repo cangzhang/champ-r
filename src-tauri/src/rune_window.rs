@@ -31,6 +31,7 @@ pub fn toggle(app_handle: &AppHandle, status: Option<bool>) {
 
 pub fn show_and_emit(app_handle: &AppHandle, champion_id: i64, champion_alias: &String) {
     let w = get_rune_window(app_handle);
+    let _ = w.show();
     let _ = w.emit(
         "popup_window::selected_champion",
         ChampionSelectPayload {
@@ -58,13 +59,13 @@ pub fn get_rune_window(handle: &AppHandle) -> Window {
             w
         } else {
             let w = WindowBuilder::new(&handle, "rune", WindowUrl::App("rune.html".into()))
+                .visible(false)
                 .title("Rune")
                 .position(400., 400.)
                 .inner_size(400., 540.)
                 .skip_taskbar(true)
                 .build()
                 .unwrap();
-            let _ = w.hide();
             w
         };
         let _ = tx.send(w);
