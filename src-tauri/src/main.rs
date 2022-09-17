@@ -12,9 +12,9 @@ pub mod builds;
 pub mod cmd;
 pub mod commands;
 pub mod lcu;
-pub mod rune_window;
 pub mod state;
 pub mod web;
+pub mod window;
 
 #[derive(Clone, serde::Serialize)]
 pub struct GlobalEventPayload {
@@ -49,7 +49,7 @@ fn main() {
                 };
                 match action {
                     Some("toggle_rune_window") => {
-                        rune_window::toggle(&handle, None);
+                        window::toggle_rune_win(&handle, None);
                     }
                     Some("get_runes") => {
                         // match payload["data"].as_object() {
@@ -57,11 +57,11 @@ fn main() {
                         //         let champion_alias = obj["champion_alias"].as_i64().unwrap();
                         //         let source_name = obj["source_name"].as_str().unwrap();
                         //         println!("{champion_alias} {source_name}");
-                                
+
                         //         let source = source_name.to_string();
                         //         let alias = champion_alias.to_string();
                         //         let handle = handle.clone();
-                                
+
                         //         async_std::task::spawn(async move {
                         //             match builds::load_runes(
                         //                 &source,
@@ -92,7 +92,7 @@ fn main() {
         .on_system_tray_event(move |app_handle, event| match event {
             SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
                 "toggle_window" => {
-                    let _ = rune_window::toggle(app_handle, None);
+                    let _ = window::toggle_rune_win(app_handle, None);
                 }
                 "apply_builds" => {
                     println!("[tray] apply builds");
@@ -118,6 +118,7 @@ fn main() {
             commands::apply_builds_from_sources,
             commands::get_lcu_auth,
             commands::get_runes,
+            commands::apply_builds,
         ])
         .run(context)
         .expect("error while running tauri application");

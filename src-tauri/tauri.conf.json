@@ -59,11 +59,11 @@
     },
     "windows": [
       {
+        "height": 500,
+        "width": 300,
         "fullscreen": false,
-        "height": 600,
         "resizable": true,
         "title": "ChampR",
-        "width": 800,
         "label": "main",
         "url": "index.html"
       },

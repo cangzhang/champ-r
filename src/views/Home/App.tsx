@@ -6,35 +6,31 @@ import './App.css';
 
 function App() {
   const [result, setResult] = useState<any[]>([]);
-  const [auth, setAuth] = useState(``);
 
   let unlistener = useRef(() => { });
-  let ids = useRef(new Set());
+  let ids = useRef(new Set()).current;
 
   const onToggleWindow = () => {
     invoke(`toggle_rune_window`);
   }
 
   const applyBuilds = () => {
-    invoke(`apply_builds_from_sources`, { sources: ["op.gg-aram"], dir: "../.cdn_files", keepOld: false });
+    invoke(`apply_builds`, { sources: ["op.gg-aram", "op.gg", "u.gg-aram", "u.gg"] });
   }
 
-  const updateResult = useCallback((payload: any[]) => {
-    const id = payload[payload.length - 1];
-    if (ids.current.has(id)) {
+  const updateResult = useCallback((payload: any) => {
+    let id = payload.id;
+    if (ids.has(payload.id)) {
       return;
     }
+    ids.add(id);
 
-    ids.current.add(id);
-    setResult(r => [...r, payload])
+    let msg = payload.msg;
+    if (payload.done) {
+      msg = `[${payload.source}] done`
+    }
+    setResult(r => [msg, ...r])
   }, []);
-
-  const getLcuAuth = () => {
-    invoke(`get_lcu_auth`).then((authUrl) => {
-      console.log(`authUrl: ${authUrl}`);
-      setAuth(authUrl as string);
-    });
-  }
 
   useEffect(() => {
     async function startRadio() {
@@ -42,7 +38,7 @@ function App() {
         await unlistener.current();
       }
 
-      unlistener.current = await listen("apply_build_result", ev => {
+      unlistener.current = await listen("main_window::apply_builds_result", ev => {
         console.log(ev.payload);
         updateResult(ev.payload as Array<any>);
       });
@@ -63,15 +59,19 @@ function App() {
     <section className="App">
       <div className="App-header">
         <h1>HOME</h1>
-        <button onClick={onToggleWindow}>Toggle Window</button>
-        <button onClick={applyBuilds}>Apply Builds</button>
-        <button onClick={getLcuAuth}>LCU Auth</button>
+        <ul>
+          <li>
+            <button onClick={onToggleWindow}>Toggle Window</button>
+          </li>
+          <li>
+            <button onClick={applyBuilds}>Apply Builds</button>
+          </li>
+        </ul>
       </div>
 
-      <div style={{ height: 200, overflow: `auto`, width: 700 }}>
-        {result.map((i, idx) => <p key={idx}>{i.join(`, `)}</p>)}
+      <div style={{ height: 200, overflow: `auto` }}>
+        {result.map((i, idx) => <p key={idx}>{i}</p>)}
       </div>
-      <div>LCU Auth: <code>{auth}</code></div>
     </section>
   );
 }

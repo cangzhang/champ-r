@@ -5,12 +5,14 @@ use futures::stream::TryStreamExt;
 use futures::{AsyncReadExt, StreamExt};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::fs;
 use std::io::{Cursor, Write};
 use std::path::Path;
 use tar::Archive;
+use tauri::AppHandle;
 
-use crate::web;
+use crate::{web, window};
 
 const SOURCE_LIST_URL: &str = "https://mirrors.cloud.tencent.com/npm/@champ-r/source-list/latest";
 
@@ -59,7 +61,7 @@ pub struct ItemBuild {
     pub blocks: Vec<Block>,
     pub map: String,
     pub mode: String,
-    pub preferred_item_slots: Option<String>,
+    pub preferred_item_slots: Value,
     pub sortrank: i64,
     pub started_from: String,
     #[serde(rename = "type")]
@@ -301,9 +303,23 @@ pub async fn download_tarball(source_name: &String) -> anyhow::Result<()> {
 pub async fn apply_builds_from_local(
     source_name: &String,
     target_folder: &String,
-    sort: i32,
+    sort: u8,
+    app_handle: Option<&AppHandle>,
 ) -> anyhow::Result<()> {
-    update_tarball_if_not_latest(source_name).await?;
+    let updated = update_tarball_if_not_latest(source_name).await?;
+    if let Some(h) = app_handle {
+        window::emit_apply_builds_msg(h, source_name, &format!("[{source_name}] Start"), false, true);
+
+        if updated {
+            window::emit_apply_builds_msg(
+                h,
+                source_name,
+                &format!("[{source_name}] Updated tarball"),
+                false,
+                true,
+            );
+        }
+    }
 
     let source_folder = format!(".npm/{source_name}/package");
     let paths = fs::read_dir(&source_folder).unwrap();
@@ -315,15 +331,19 @@ pub async fn apply_builds_from_local(
             continue;
         }
 
-        let file = fs::read_to_string(&p).expect("failed to read build file");
-        let b: Vec<BuildFile> = serde_json::from_str(&file).expect("Unable to parse build file");
+        let file = fs::read_to_string(&p)
+            .expect("[builds::apply_builds_from_local] failed to read build file");
+        let b: Vec<BuildFile> = serde_json::from_str(&file)
+            .expect("[builds::apply_builds_from_local] failed to parse build file");
         build_files.push(b);
     }
 
     let source_name_in_path = source_name.replace(".", "_");
     for builds in build_files {
+        let mut alias = &String::new();
+
         for (idx, b) in builds.iter().enumerate() {
-            let alias = &b.alias;
+            alias = &b.alias;
             let dir = format!("{target_folder}/Config/Champions/{alias}/Recommended");
             let pos = &b.position;
             fs::create_dir_all(&dir)?;
@@ -339,15 +359,24 @@ pub async fn apply_builds_from_local(
                 let mut f = fs::File::create(&full_path)?;
                 let buf = serde_json::to_string_pretty(&item)?;
                 f.write_all(buf[..].as_bytes())?;
-                println!("write to: {}", &full_path);
+                println!("[builds::apply_builds_from_local] saved to: {}", &full_path);
             }
         }
+
+        if let Some(h) = app_handle {
+            let msg = format!("[{source_name}] Applied builds for {alias}");
+            window::emit_apply_builds_msg(h, source_name, &msg, false, true);
+        }
+    }
+
+    if let Some(h) = app_handle {
+        window::emit_apply_builds_msg(h, source_name, &String::new(), true, false);
     }
 
     Ok(())
 }
 
-pub async fn update_tarball_if_not_latest(source_name: &String) -> anyhow::Result<()> {
+pub async fn update_tarball_if_not_latest(source_name: &String) -> anyhow::Result<bool> {
     let remote_source_url =
         format!("https://mirrors.cloud.tencent.com/npm/@champ-r/{source_name}/latest");
     let pkg = reqwest::get(remote_source_url)
@@ -372,13 +401,18 @@ pub async fn update_tarball_if_not_latest(source_name: &String) -> anyhow::Resul
         download_tarball(source_name).await?;
     }
 
-    Ok(())
+    Ok(should_download)
 }
 
-pub async fn load_runes(source_name: &String, champion_alias: &String) -> anyhow::Result<Vec<Rune>, > {
-     if source_name.is_empty() || champion_alias.is_empty() {
-        return Err(anyhow!("[builds] invalid source `{source_name}` or champion `{champion_alias}`"));
-     }
+pub async fn load_runes(
+    source_name: &String,
+    champion_alias: &String,
+) -> anyhow::Result<Vec<Rune>> {
+    if source_name.is_empty() || champion_alias.is_empty() {
+        return Err(anyhow!(
+            "[builds] invalid source `{source_name}` or champion `{champion_alias}`"
+        ));
+    }
     update_tarball_if_not_latest(source_name).await?;
     let source_folder = format!(".npm/{source_name}/package");
     let file_path = format!("{source_folder}/{champion_alias}.json");
@@ -401,10 +435,9 @@ mod tests {
     async fn download() -> anyhow::Result<()> {
         let target = String::from(".cdn_files");
         let sources = fetch_source_list().await?;
-        // println!("{:?}", sources);
         let s = &sources.first().unwrap().value;
         println!("applying builds from `{s}`");
-        apply_builds_from_local(s, &target, 1).await?;
+        apply_builds_from_local(s, &target, 1, None).await?;
         Ok(())
     }
 

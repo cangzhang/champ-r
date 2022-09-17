@@ -1,6 +1,6 @@
 use tauri::{AppHandle, Manager, Window, WindowBuilder, WindowUrl};
 
-use crate::builds;
+use crate::builds::{self, make_id};
 
 #[derive(Clone, serde::Serialize, Default)]
 pub struct ChampionSelectPayload {
@@ -13,7 +13,7 @@ pub struct SourceRunesPayload {
     pub runes: Option<Vec<builds::Rune>>,
 }
 
-pub fn toggle(app_handle: &AppHandle, status: Option<bool>) {
+pub fn toggle_rune_win(app_handle: &AppHandle, status: Option<bool>) {
     let w = get_rune_window(app_handle);
     let v = match status {
         Some(v) => v,
@@ -72,4 +72,31 @@ pub fn get_rune_window(handle: &AppHandle) -> Window {
     });
 
     rx.recv().unwrap()
+}
+
+pub fn get_main_window(handle: &AppHandle) -> Window {
+    handle.get_window("main").unwrap()
+}
+
+#[derive(Clone, serde::Serialize, Default)]
+pub struct ApplyBuildsMessagePayload {
+    pub source: String,
+    pub msg: String,
+    pub done: bool,
+    pub in_progress: bool,
+    pub id: String,
+}
+
+pub fn emit_apply_builds_msg(handle: &AppHandle, source: &String, msg: &String, done: bool, in_progress: bool) {
+    let w = get_main_window(handle);
+    let _ = w.emit(
+        "main_window::apply_builds_result",
+        ApplyBuildsMessagePayload {
+            source: source.to_string(),
+            msg: msg.to_string(),
+            done,
+            in_progress,
+            id: make_id(),
+        },
+    );
 }

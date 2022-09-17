@@ -13,7 +13,7 @@ use tokio_tungstenite::{
 };
 
 use crate::web;
-use crate::rune_window;
+use crate::window;
 
 #[derive(Clone, Debug, Default)]
 pub struct LcuClient {
@@ -174,10 +174,10 @@ impl LcuClient {
                     if let Some(h) = app_handle {
                         if champion_id > 0 {
                             let champion_alias = web::get_alias_from_champion_map(&self.champion_map, champion_id);
-                            rune_window::show_and_emit(h, champion_id, &champion_alias);
+                            window::show_and_emit(h, champion_id, &champion_alias);
                         } else {
                             println!("[lcu::champion_id] hide popup");
-                            rune_window::toggle(h, Some(false));
+                            window::toggle_rune_win(h, Some(false));
                         }
                     }
                 }

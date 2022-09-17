@@ -1,5 +1,5 @@
 use serde_json::json;
-use tauri::Manager;
+use tauri::{AppHandle, Manager};
 
 use crate::builds;
 
@@ -13,7 +13,7 @@ pub fn toggle_rune_window(window: tauri::Window) {
 
 #[tauri::command]
 pub fn apply_builds_from_sources(
-    app_handle: tauri::AppHandle,
+    app_handle: AppHandle,
     sources: Vec<String>,
     dir: String,
     keep_old: bool,
@@ -31,10 +31,7 @@ pub fn get_lcu_auth(state: tauri::State<'_, crate::state::GlobalState>) -> Strin
 }
 
 #[tauri::command]
-pub fn get_runes(
-    source_name: String,
-    champion_alias: String,
-) -> Vec<builds::Rune> {
+pub fn get_runes(source_name: String, champion_alias: String) -> Vec<builds::Rune> {
     tauri::async_runtime::block_on(async move {
         match builds::load_runes(&source_name, &champion_alias).await {
             Ok(runes) => runes,
@@ -44,4 +41,16 @@ pub fn get_runes(
             }
         }
     })
+}
+
+#[tauri::command]
+pub fn apply_builds(app_handle: AppHandle, sources: Vec<String>) {
+    tauri::async_runtime::spawn(async move {
+        let mut idx = 0;
+        for s in sources {
+            println!("[commands::apply_builds] {idx} {s}");
+            let _ = builds::apply_builds_from_local(&s, &".cdn_files".to_string(), idx, Some(&app_handle)).await;
+            idx = idx + 1;
+        }
+    });
 }
