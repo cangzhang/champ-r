@@ -70,13 +70,52 @@ pub async fn fetch_champ_list(version: &String) -> anyhow::Result<ChampListResp>
     );
     let resp = reqwest::get(url).await?;
     let data = resp.json::<ChampListResp>().await?;
-
     Ok(data)
 }
 
 pub async fn fetch_latest_champion_list() -> anyhow::Result<ChampListResp> {
     let v = fetch_lol_latest_version().await?;
     let list = fetch_champ_list(&v).await?;
+    Ok(list)
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuneListItem {
+    pub id: i64,
+    pub key: String,
+    pub icon: String,
+    pub name: String,
+    pub slots: Vec<Slot>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Slot {
+    pub runes: Vec<SlotRuneItem>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SlotRuneItem {
+    pub id: i64,
+    pub key: String,
+    pub icon: String,
+    pub name: String,
+    pub short_desc: String,
+    pub long_desc: String,
+}
+
+pub async fn fetch_rune_list(version: &String) -> anyhow::Result<Vec<RuneListItem>> {
+    let url = format!("{CDN_DDRAGON}/cdn/{version}/data/en_US/runesReforged.json");
+    let resp = reqwest::get(url).await?;
+    let data = resp.json::<Vec<RuneListItem>>().await?;
+    Ok(data)
+}
+
+pub async fn fetch_latest_rune_list() -> anyhow::Result<Vec<RuneListItem>> {
+    let v = fetch_lol_latest_version().await?;
+    let list = fetch_rune_list(&v).await?;
     Ok(list)
 }
 

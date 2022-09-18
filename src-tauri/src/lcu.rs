@@ -1,6 +1,7 @@
-use std::{sync::Arc, collections::HashMap};
+use std::{collections::HashMap, sync::Arc};
 
 use async_std::sync::Mutex;
+use futures::future;
 use futures_util::{SinkExt, StreamExt};
 use http::HeaderValue;
 use native_tls::TlsConnector;
@@ -20,8 +21,9 @@ pub struct LcuClient {
     pub socket: Option<Arc<Mutex<WebSocketStream<MaybeTlsStream<TcpStream>>>>>,
     pub auth_url: String,
     pub is_lcu_running: bool,
-    pub app_handle: Arc<Mutex<Option<AppHandle>>>,
+    pub app_handle: Option<Arc<Mutex<AppHandle>>>,
     pub champion_map: HashMap<String, web::ChampInfo>,
+    pub rune_list: Vec<web::RuneListItem>,
 }
 
 impl LcuClient {
@@ -30,8 +32,9 @@ impl LcuClient {
             socket: None,
             auth_url: String::from(""),
             is_lcu_running: false,
-            app_handle: Arc::new(Mutex::new(None)),
+            app_handle: None,
             champion_map: HashMap::new(),
+            rune_list: vec![],
         }
     }
 
@@ -50,13 +53,30 @@ impl LcuClient {
         if !s {}
     }
 
-    pub async fn get_champion_map(&mut self) {
-        match web::fetch_latest_champion_list().await {
+    pub async fn prepare_data(&mut self, handle: &AppHandle) {
+        self.app_handle = Some(Arc::new(Mutex::new(handle.clone())));
+
+        let (champion_map, rune_list) = future::join(
+            web::fetch_latest_champion_list(),
+            web::fetch_latest_rune_list(),
+        )
+        .await;
+        match champion_map {
             Ok(list) => {
                 self.champion_map = list.data;
+                println!("[lcu] got champion map, {}.", list.version);
             }
             Err(e) => {
                 println!("[lcu] fetch champion list failed. {:?}", e);
+            }
+        };
+        match rune_list {
+            Ok(list) => {
+                self.rune_list = list;
+                println!("[lcu] got rune list.");
+            }
+            Err(e) => {
+                println!("[lcu] fetch rune list failed. {:?}", e);
             }
         };
     }
@@ -74,7 +94,7 @@ impl LcuClient {
         self.auth_url = String::new();
     }
 
-    pub async fn watch_cmd_output(&mut self, app_handle: Option<&AppHandle>) {
+    pub async fn watch_cmd_output(&mut self) {
         let (tx, mut rx) = mpsc::unbounded_channel();
         let handle = tokio::task::spawn_blocking(move || loop {
             let ret = crate::cmd::get_commandline();
@@ -102,13 +122,13 @@ impl LcuClient {
                 continue;
             }
 
-            let _ = self.conn_ws(app_handle).await;
+            let _ = self.conn_ws().await;
         }
 
         handle.await.unwrap();
     }
 
-    pub async fn conn_ws(&mut self, app_handle: Option<&AppHandle>) -> anyhow::Result<()> {
+    pub async fn conn_ws(&mut self) -> anyhow::Result<()> {
         let wsurl = format!("wss://{}", &self.auth_url);
         let url = reqwest::Url::parse(&wsurl).unwrap();
         let credentials = format!("{}:{}", url.username(), url.password().unwrap());
@@ -149,6 +169,8 @@ impl LcuClient {
         socket
             .send(Message::Text(r#"[5, "OnJsonApiEvent"]"#.to_string()))
             .await?;
+
+        let handle = self.app_handle.clone();
         while let Some(msg) = socket.next().await {
             let msg = msg?;
             let msg = msg.to_text().unwrap();
@@ -171,13 +193,15 @@ impl LcuClient {
                         }
                     }
 
-                    if let Some(h) = app_handle {
+                    if let Some(h) = &handle {
+                        let h = h.lock().await;
                         if champion_id > 0 {
-                            let champion_alias = web::get_alias_from_champion_map(&self.champion_map, champion_id);
-                            window::show_and_emit(h, champion_id, &champion_alias);
+                            let champion_alias =
+                                web::get_alias_from_champion_map(&self.champion_map, champion_id);
+                            window::show_and_emit(&h, champion_id, &champion_alias);
                         } else {
                             println!("[lcu::champion_id] hide popup");
-                            window::toggle_rune_win(h, Some(false));
+                            window::toggle_rune_win(&h, Some(false));
                         }
                     }
                 }
@@ -198,6 +222,6 @@ mod tests {
     #[tokio::test]
     async fn start() {
         let mut lcu = LcuClient::new();
-        lcu.watch_cmd_output(None).await;
+        lcu.watch_cmd_output().await;
     }
 }
