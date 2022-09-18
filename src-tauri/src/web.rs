@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use serde_with::serde_as;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -105,7 +106,7 @@ pub struct ItemBuild {
     pub blocks: Vec<Block>,
     pub map: String,
     pub mode: String,
-    // pub preferred_item_slots: Vec<Value>,
+    pub preferred_item_slots: Option<Vec<Value>>,
     pub sortrank: u32,
     pub started_from: String,
     #[serde(rename = "type")]

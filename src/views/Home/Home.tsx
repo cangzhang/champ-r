@@ -2,9 +2,9 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event'
 
-import './App.css';
+import './style.css';
 
-function App() {
+function Home() {
   const [result, setResult] = useState<any[]>([]);
 
   let unlistener = useRef(() => { });
@@ -58,7 +58,7 @@ function App() {
   return (
     <section className="App">
       <div className="App-header">
-        <h1>HOME</h1>
+        <h1 className={"text-3xl font-bold underline"}>HOME</h1>
         <ul>
           <li>
             <button onClick={onToggleWindow}>Toggle Window</button>
@@ -76,4 +76,4 @@ function App() {
   );
 }
 
-export default App;
+export default Home;

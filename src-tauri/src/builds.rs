@@ -61,7 +61,7 @@ pub struct ItemBuild {
     pub blocks: Vec<Block>,
     pub map: String,
     pub mode: String,
-    pub preferred_item_slots: Value,
+    pub preferred_item_slots: Option<Vec<Value>>,
     pub sortrank: i64,
     pub started_from: String,
     #[serde(rename = "type")]
@@ -80,7 +80,7 @@ pub struct Block {
 #[serde(rename_all = "camelCase")]
 pub struct Item {
     pub id: String,
-    pub count: i64,
+    pub count: u8,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
