@@ -13,8 +13,7 @@ use tokio_tungstenite::{
     Connector, MaybeTlsStream, WebSocketStream,
 };
 
-use crate::web;
-use crate::window;
+use crate::{cmd, web, window};
 
 #[derive(Clone, Debug, Default)]
 pub struct LcuClient {
@@ -97,7 +96,7 @@ impl LcuClient {
     pub async fn watch_cmd_output(&mut self) {
         let (tx, mut rx) = mpsc::unbounded_channel();
         let handle = tokio::task::spawn_blocking(move || loop {
-            let ret = crate::cmd::get_commandline();
+            let ret = cmd::get_commandline();
             match tx.send(ret) {
                 Ok(_) => (),
                 Err(e) => {
