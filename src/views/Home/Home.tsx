@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event'
+import { appWindow } from '@tauri-apps/api/window'
 
 import './style.css';
 
@@ -54,6 +55,18 @@ function Home() {
       stop();
     }
   }, [updateResult])
+
+  useEffect(() => {
+    document
+      .getElementById('titlebar-minimize')
+      .addEventListener('click', () => appWindow.minimize())
+    document
+      .getElementById('titlebar-maximize')
+      .addEventListener('click', () => appWindow.toggleMaximize())
+    document
+      .getElementById('titlebar-close')
+      .addEventListener('click', () => appWindow.close())
+  }, []);
 
   return (
     <section className="App">

@@ -85,41 +85,7 @@ pub fn match_stdout(stdout: &String) -> String {
     auth_url
 }
 
-/* 
-pub fn update_lcu_state(state: tauri::State<'_, crate::state::GlobalState>) {
-   let mut state_guard = state.0.lock().unwrap();
-   let (_auth_url, s) = get_commandline();
-   state_guard.ws_client.set_lcu_status(s);
-   *state_guard = crate::state::InnerState {
-       is_lcu_running: s,
-       auth_url,
-       ws_client: None,
-   }
-}
-
-pub async fn watch_lcu_status<'a>(state: &'a tauri::State<'_, crate::state::GlobalState>) {
-   let (tx, rx) = std::sync::mpsc::channel();
-   let _handle = async_std::task::spawn(async move {
-       loop {
-           let ret = get_commandline();
-           let tx = tx.clone();
-           let _r = tx.send(ret); // TODO! `sending on closed channel` error
-           std::thread::sleep(std::time::Duration::from_millis(5000));
-       }
-   });
-
-   let (auth_url, running) = match rx.recv() {
-       Ok(r) => r,
-       Err(_) => (String::from(""), false),
-   };
-   let mut state_guard = state.0.lock().unwrap();
-   state_guard.ws_client.set_lcu_status(running);
-   state_guard.ws_client.update_auth_url(&auth_url);
-   println!("[interval task] update inner state.");
-}
- */
-
- #[cfg(test)]
+#[cfg(test)]
 mod tests {
     use super::*;
 

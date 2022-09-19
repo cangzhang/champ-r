@@ -308,7 +308,13 @@ pub async fn apply_builds_from_local(
 ) -> anyhow::Result<()> {
     let updated = update_tarball_if_not_latest(source_name).await?;
     if let Some(h) = app_handle {
-        window::emit_apply_builds_msg(h, source_name, &format!("[{source_name}] Start"), false, true);
+        window::emit_apply_builds_msg(
+            h,
+            source_name,
+            &format!("[{source_name}] Start"),
+            false,
+            true,
+        );
 
         if updated {
             window::emit_apply_builds_msg(

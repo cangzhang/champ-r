@@ -87,7 +87,13 @@ pub struct ApplyBuildsMessagePayload {
     pub id: String,
 }
 
-pub fn emit_apply_builds_msg(handle: &AppHandle, source: &String, msg: &String, done: bool, in_progress: bool) {
+pub fn emit_apply_builds_msg(
+    handle: &AppHandle,
+    source: &String,
+    msg: &String,
+    done: bool,
+    in_progress: bool,
+) {
     let w = get_main_window(handle);
     let _ = w.emit(
         "main_window::apply_builds_result",

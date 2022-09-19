@@ -65,7 +65,8 @@
         "resizable": true,
         "title": "ChampR",
         "label": "main",
-        "url": "index.html"
+        "url": "index.html",
+        "decorations": false
       },
       {
         "label": "rune",

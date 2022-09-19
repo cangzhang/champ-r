@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api';
 
@@ -7,21 +7,26 @@ export function Rune() {
     const [championAlias, setChampionAlias] = useState('');
     const [runes, setRunes] = useState<any[]>([]);
 
-    const getRuneList = useCallback(() => {
+    let runesReforged = useRef<any>([]);
+
+    const getRuneList = useCallback(async () => {
         if (!championAlias) {
             return;
         }
-        
-        invoke(`get_runes`, { sourceName: "u.gg", championAlias }).then((ret: any) => {
-          console.log(ret);
-          setRunes(ret);
-        });
-      }, [championAlias]);
+
+        if (!runesReforged.current.length) {
+            runesReforged.current = await invoke(`get_ddragon_data`);
+            console.log(`ddragon data`, runesReforged.current);
+        }
+
+        let r: any = await invoke(`get_available_runes_for_champion`, { sourceName: "u.gg", championAlias });
+        setRunes(r);
+    }, [championAlias]);
 
     useEffect(() => {
         let unlisten: () => any = () => null;
         listen('popup_window::selected_champion', ({ payload }: { payload: any }) => {
-            console.log(payload);
+            console.log(`popup_window::selected_champion`, payload);
             setChampionId(payload.champion_id);
             setChampionAlias(payload.champion_alias);
         }).then(un => {

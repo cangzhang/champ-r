@@ -209,12 +209,15 @@ pub async fn fetch_champ_file(
     }
 }
 
-pub fn get_alias_from_champion_map(champion_map: &HashMap<String, ChampInfo>, champion_id: i64) -> String {
+pub fn get_alias_from_champion_map(
+    champion_map: &HashMap<String, ChampInfo>,
+    champion_id: i64,
+) -> String {
     let mut ret = String::new();
     for (alias, c) in champion_map.into_iter() {
         if c.key.eq(&champion_id.to_string()) {
             ret = alias.to_string();
-            break
+            break;
         }
     }
 

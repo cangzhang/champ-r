@@ -12,10 +12,10 @@ pub mod builds;
 pub mod cmd;
 pub mod commands;
 pub mod lcu;
+pub mod page_data;
 pub mod state;
 pub mod web;
 pub mod window;
-pub mod page_data;
 
 #[derive(Clone, serde::Serialize)]
 pub struct GlobalEventPayload {
@@ -120,8 +120,9 @@ fn main() {
             commands::toggle_rune_window,
             commands::apply_builds_from_sources,
             commands::get_lcu_auth,
-            commands::get_runes,
+            commands::get_available_runes_for_champion,
             commands::apply_builds,
+            commands::get_ddragon_data,
         ])
         .run(context)
         .expect("error while running tauri application");

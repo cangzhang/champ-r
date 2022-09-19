@@ -13,6 +13,7 @@ pub struct Source {
 pub struct PageData {
     pub source_list: Vec<Source>,
     pub rune_list: Vec<web::RuneListItem>,
+    pub ready: bool,
 }
 
 impl PageData {
@@ -20,6 +21,7 @@ impl PageData {
         Self {
             source_list: vec![],
             rune_list: vec![],
+            ready: false,
         }
     }
 
@@ -27,30 +29,34 @@ impl PageData {
         let (raw_list, rune_list) =
             future::join(builds::fetch_source_list(), web::fetch_latest_rune_list()).await;
 
-        let mut list: Vec<Source> = vec![];
-        match raw_list {
+        self.source_list = match raw_list {
             Ok(l) => {
-              for (idx, i) in l.iter().enumerate() {
-                list.push(Source {
-                  source: i.clone(),
-                  sort: idx as u8,
-                });
-              }
-              self.source_list = list;
-            },
+                let mut list = vec![];
+                for (idx, i) in l.iter().enumerate() {
+                    list.push(Source {
+                        source: i.clone(),
+                        sort: idx as u8,
+                    });
+                }
+                list
+            }
             Err(e) => {
                 println!("[page_data] fetch source list failed, {:?}", e);
+                vec![]
             }
-        }
-        match rune_list {
+        };
+        self.rune_list = match rune_list {
             Ok(list) => {
-                self.rune_list = list;
                 println!("[page_data] got rune list.");
+                list
             }
             Err(e) => {
                 println!("[page_data] fetch rune list failed. {:?}", e);
+                vec![]
             }
         };
+        self.ready = true;
+
         Ok(())
     }
 }
