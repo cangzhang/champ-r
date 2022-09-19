@@ -15,6 +15,7 @@ pub mod lcu;
 pub mod state;
 pub mod web;
 pub mod window;
+pub mod page_data;
 
 #[derive(Clone, serde::Serialize)]
 pub struct GlobalEventPayload {

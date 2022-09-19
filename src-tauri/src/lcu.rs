@@ -1,7 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_std::sync::Mutex;
-use futures::future;
 use futures_util::{SinkExt, StreamExt};
 use http::HeaderValue;
 use native_tls::TlsConnector;
@@ -22,7 +21,6 @@ pub struct LcuClient {
     pub is_lcu_running: bool,
     pub app_handle: Option<Arc<Mutex<AppHandle>>>,
     pub champion_map: HashMap<String, web::ChampInfo>,
-    pub rune_list: Vec<web::RuneListItem>,
 }
 
 impl LcuClient {
@@ -33,7 +31,6 @@ impl LcuClient {
             is_lcu_running: false,
             app_handle: None,
             champion_map: HashMap::new(),
-            rune_list: vec![],
         }
     }
 
@@ -55,27 +52,13 @@ impl LcuClient {
     pub async fn prepare_data(&mut self, handle: &AppHandle) {
         self.app_handle = Some(Arc::new(Mutex::new(handle.clone())));
 
-        let (champion_map, rune_list) = future::join(
-            web::fetch_latest_champion_list(),
-            web::fetch_latest_rune_list(),
-        )
-        .await;
-        match champion_map {
+        match web::fetch_latest_champion_list().await {
             Ok(list) => {
                 self.champion_map = list.data;
                 println!("[lcu] got champion map, {}.", list.version);
             }
             Err(e) => {
                 println!("[lcu] fetch champion list failed. {:?}", e);
-            }
-        };
-        match rune_list {
-            Ok(list) => {
-                self.rune_list = list;
-                println!("[lcu] got rune list.");
-            }
-            Err(e) => {
-                println!("[lcu] fetch rune list failed. {:?}", e);
             }
         };
     }
