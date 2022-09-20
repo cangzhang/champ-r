@@ -224,6 +224,13 @@ pub fn get_alias_from_champion_map(
     ret
 }
 
+pub async fn get_latest_source_version(source: &String) -> anyhow::Result<String> {
+    let url = format!("https://mirrors.cloud.tencent.com/npm/@champ-r/{source}/latest");
+    let pkg: Value = reqwest::get(url).await?.json().await?;
+    let v = pkg["sourceVersion"].as_str().unwrap();
+    Ok(v.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -7,6 +7,7 @@ use crate::{builds, web};
 pub struct Source {
     pub source: web::Source,
     pub sort: u8,
+    pub source_version: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -33,9 +34,11 @@ impl PageData {
             Ok(l) => {
                 let mut list = vec![];
                 for (idx, i) in l.iter().enumerate() {
+                    let source_version = web::get_latest_source_version(&i.value).await?;
                     list.push(Source {
                         source: i.clone(),
                         sort: idx as u8,
+                        source_version,
                     });
                 }
                 list
