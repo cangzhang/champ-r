@@ -125,6 +125,8 @@ fn main() {
             commands::get_available_runes_for_champion,
             commands::apply_builds,
             commands::get_ddragon_data,
+            commands::get_user_sources,
+            commands::get_runes_reforged,
         ])
         .run(context)
         .expect("error while running tauri application");

@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Manager, Window, WindowBuilder, WindowUrl, App};
+use tauri::{App, AppHandle, Manager, Window, WindowBuilder, WindowUrl};
 use window_shadows::set_shadow;
 
 use crate::builds::{self, make_id};
@@ -19,7 +19,7 @@ pub fn toggle_rune_win(app_handle: &AppHandle, status: Option<bool>) {
     let v = match status {
         Some(v) => v,
         None => {
-            let v = w.is_visible().unwrap();
+            let v = w.is_visible().unwrap_or_default();
             !v
         }
     };

@@ -62,7 +62,7 @@
         "height": 500,
         "width": 300,
         "fullscreen": false,
-        "resizable": true,
+        "resizable": false,
         "title": "ChampR",
         "label": "main",
         "url": "index.html",

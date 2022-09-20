@@ -16,6 +16,10 @@ use crate::{web, window};
 
 const SOURCE_LIST_URL: &str = "https://mirrors.cloud.tencent.com/npm/@champ-r/source-list/latest";
 
+pub fn empty_rune_type() -> String {
+    String::new()
+}
+
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct PackageDist {
@@ -47,7 +51,8 @@ pub struct BuildFile {
     pub alias: String,
     pub name: String,
     pub position: String,
-    pub skills: Vec<String>,
+    pub skills: Option<Vec<String>>,
+    pub spells: Option<Vec<String>>,
     pub item_builds: Vec<ItemBuild>,
     pub runes: Vec<Rune>,
 }
@@ -65,7 +70,7 @@ pub struct ItemBuild {
     pub sortrank: i64,
     pub started_from: String,
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -94,8 +99,8 @@ pub struct Rune {
     pub primary_style_id: i64,
     pub sub_style_id: i64,
     pub selected_perk_ids: Vec<i64>,
-    pub score: Option<i64>,
-    #[serde(rename = "type")]
+    pub score: Option<f64>,
+    #[serde(rename = "type", default = "empty_rune_type")]
     pub type_field: String,
 }
 

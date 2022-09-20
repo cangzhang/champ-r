@@ -1,7 +1,7 @@
 use futures::future;
 use serde::{Deserialize, Serialize};
 
-use crate::{builds, web};
+use crate::{builds, web::{self, RuneListItem}};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Source {
@@ -26,11 +26,11 @@ impl PageData {
         }
     }
 
-    pub async fn init(&mut self) -> anyhow::Result<()> {
+    pub async fn init() -> anyhow::Result<(bool, Vec<Source>, Vec<RuneListItem>)> {
         let (raw_list, rune_list) =
             future::join(builds::fetch_source_list(), web::fetch_latest_rune_list()).await;
 
-        self.source_list = match raw_list {
+        let source_list = match raw_list {
             Ok(l) => {
                 let mut list = vec![];
                 for (idx, i) in l.iter().enumerate() {
@@ -48,7 +48,7 @@ impl PageData {
                 vec![]
             }
         };
-        self.rune_list = match rune_list {
+        let rune_list = match rune_list {
             Ok(list) => {
                 println!("[page_data] got rune list.");
                 list
@@ -58,8 +58,7 @@ impl PageData {
                 vec![]
             }
         };
-        self.ready = true;
 
-        Ok(())
+        Ok((true, source_list, rune_list))
     }
 }

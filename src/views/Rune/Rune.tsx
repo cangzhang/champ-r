@@ -6,22 +6,25 @@ export function Rune() {
     const [championId, setChampionId] = useState(0);
     const [championAlias, setChampionAlias] = useState('');
     const [runes, setRunes] = useState<any[]>([]);
+    const [sources, setSources] = useState<any>([])
+    const [curSource, setCurSource] = useState('u.gg');
 
-    let runesReforged = useRef<any>([]);
+    let ddragon = useRef<any>([]);
 
     const getRuneList = useCallback(async () => {
-        if (!championAlias) {
+        if (!championAlias || !curSource) {
             return;
         }
 
-        if (!runesReforged.current.length) {
-            runesReforged.current = await invoke(`get_ddragon_data`);
-            console.log(`ddragon data`, runesReforged.current);
+        if (!ddragon.current.length) {
+            ddragon.current = await invoke(`get_ddragon_data`);
+            console.log(`ddragon data`, ddragon.current);
+            setSources(ddragon.current[0]);
         }
 
-        let r: any = await invoke(`get_available_runes_for_champion`, { sourceName: "u.gg", championAlias });
+        let r: any = await invoke(`get_available_runes_for_champion`, { sourceName: curSource, championAlias });
         setRunes(r);
-    }, [championAlias]);
+    }, [championAlias, curSource]);
 
     useEffect(() => {
         let unlisten: () => any = () => null;
@@ -39,6 +42,7 @@ export function Rune() {
     }, []);
 
     useEffect(() => {
+        console.log(`trigger getRuneList`);
         getRuneList();
     }, [getRuneList]);
 
@@ -46,7 +50,14 @@ export function Rune() {
         <section>
             <h1>RUNE WINDOW</h1>
             <p>current champion: <code>{championId}</code> <code>{championAlias}</code></p>
-            <button onClick={getRuneList}>Get Rune List</button>
+
+            <select className={"select select-bordered"} onChange={ev => setCurSource(ev.target.value)} >
+                {sources.map((i: any) => {
+                    return (<option key={i.source.value} value={i.source.value}>{i.source.label}</option>)
+                })}
+            </select>
+
+            <button className={`btn`} onClick={getRuneList}>Get Rune List</button>
 
             <pre>
                 {JSON.stringify(runes, null, 2)}
