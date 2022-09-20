@@ -89,6 +89,8 @@ fn main() {
                 };
             });
 
+            window::setup_window_shadow(app);
+
             Ok(())
         })
         .system_tray(SystemTray::new().with_menu(tray_menu))

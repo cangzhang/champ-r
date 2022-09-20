@@ -1,4 +1,5 @@
-use tauri::{AppHandle, Manager, Window, WindowBuilder, WindowUrl};
+use tauri::{AppHandle, Manager, Window, WindowBuilder, WindowUrl, App};
+use window_shadows::set_shadow;
 
 use crate::builds::{self, make_id};
 
@@ -105,4 +106,11 @@ pub fn emit_apply_builds_msg(
             id: make_id(),
         },
     );
+}
+
+pub fn setup_window_shadow(app: &App) {
+    let main_win = app.get_window("main").unwrap();
+    let _ = set_shadow(&main_win, true);
+    let rune_win = app.get_window("rune").unwrap();
+    let _ = set_shadow(&rune_win, true);
 }
