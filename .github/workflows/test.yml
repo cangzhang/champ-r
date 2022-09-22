@@ -37,6 +37,7 @@ jobs:
       run: |
         $sha = (git rev-parse --short HEAD)
         md -Name ./dist/artifacts -Force
+        Compress-Archive -Path ./dist/win-unpacked -DestinationPath ./dist/artifacts/win-unpacked.zip
         Copy-Item ./dist/*.exe -Destination ./dist/artifacts/
         $file = Get-ChildItem -Path ./dist/artifacts/ -Filter "*.exe" | select-object -first 1
         $newName = "$($file.BaseName).$($sha)$($file.Extension)"
@@ -44,7 +45,8 @@ jobs:
         echo "::set-output name=fileName::$($newName)"
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v1.0.0
+      uses: actions/upload-artifact@v3
       with:
-        name: ${{ steps.vars.outputs.fileName }}
-        path: "./dist/artifacts"
+        path: | 
+          "./dist/artifacts"
+        # name: ${{ steps.vars.outputs.fileName }}
