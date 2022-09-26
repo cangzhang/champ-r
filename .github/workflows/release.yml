@@ -41,6 +41,7 @@ jobs:
         $newName = "$($file.BaseName).$($sha)$($file.Extension)"
         Rename-Item -Path $file.FullName -NewName $newName
         echo "::set-output name=fileName::$($newName)"
+        Compress-Archive -Path ./dist/win-unpacked -DestinationPath ./dist/artifacts/win-unpacked.zip
 
     - name: Create Release
       uses: ncipollo/release-action@v1
