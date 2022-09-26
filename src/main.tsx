@@ -3,8 +3,10 @@ import ReactDOM from 'react-dom/client'
 import Home from './views/Home/Home'
 import './index.css'
 
+import { store } from './config';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <Home />
+    <Home store={store} />
   </React.StrictMode>
 )

@@ -5,16 +5,18 @@ import { appWindow } from '@tauri-apps/api/window';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import SimpleBar from 'simplebar-react';
 
+import { Store } from 'tauri-plugin-store-api';
+
 import 'simplebar-react/dist/simplebar.min.css';
 import './style.css';
 
-function Home() {
+function Home({ store }: { store: Store }) {
   const [result, setResult] = useState<any[]>([]);
   const [sources, setSources] = useState<any>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   
   let ids = useRef(new Set()).current;
-  
+
   const onToggleWindow = () => {
     invoke(`toggle_rune_window`);
   };
@@ -38,11 +40,29 @@ function Home() {
   }, []);
   
   const toggleSelectSource = useCallback((s: string) => (ev: any) => {
+    let next: string[] = [];
     if (selectedSources.includes(s)) {
-      setSelectedSources(ss => ss.filter(i => i !== s));
+      setSelectedSources(ss => {
+        next = ss.filter(i => i !== s);
+        return next;
+      });
     } else {
-      setSelectedSources(ss => [...ss, s]);
+      setSelectedSources(ss => {
+        next = [...ss, s]
+        return next;
+      });
     }
+
+    store.set(`selectedSources`, next.join(",")).then(async () => {
+      try {
+        let v = await store.get("selectedSources");
+        console.log("update", v)
+      } catch (e) {
+        console.error(e)
+      }
+    }).catch(e => {
+      console.error(e)
+    });
   }, [selectedSources]);
   
   useEffect(() => {
@@ -75,6 +95,10 @@ function Home() {
     invoke(`get_user_sources`).then((l: any) => {
       setSources(l);
     });
+  }, []);
+
+  useEffect(() => {
+    store.load();
   }, []);
   
   return (
