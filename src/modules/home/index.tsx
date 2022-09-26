@@ -1,4 +1,4 @@
-import _noop from 'lodash/noop';
+import noop from 'lodash/noop';
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -33,11 +33,11 @@ interface IProps {
   onDirChange?: (p: string) => void;
 }
 
-export default function Home({ onDirChange = _noop }: IProps) {
+export default function Home({ onDirChange = noop }: IProps) {
   const [css, theme] = useStyletron();
   const { enqueue, dequeue } = useSnackbar();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const { store, dispatch } = useContext(AppContext);
   const versionTasker = useRef<number>();
@@ -91,7 +91,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
 
   const startImport = useCallback(() => {
     let values = sourceList.map(i => {
-      return selectedSources.includes(i.label) ? i.value : ''
+      return selectedSources.includes(i.label) ? i.value : '';
     }).filter(Boolean);
     navigate(`/import?sources=${values.join(`,`)}&keepOld=${store.keepOld}`);
   }, [selectedSources, navigate, store.keepOld, sourceList]);
@@ -186,7 +186,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
       enqueue(
         {
           message: t(`please specify lol dir`),
-          startEnhancer: ({ size }) => <AlertIcon size={size} />,
+          startEnhancer: ({ size }) => <AlertIcon size={size}/>,
         },
         DURATION.infinite,
       );
@@ -202,7 +202,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
   return (
     <div className={s.container}>
       <h1 className={s.title}>
-        <img src={logo} alt='' />
+        <img src={logo} alt=""/>
         <span>ChampR</span>
       </h1>
 
@@ -210,7 +210,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
         {t(`lol folder is`)}
         <Tag
           closeable={Boolean(lolDir)}
-          kind='accent'
+          kind="accent"
           onClick={onSelectDir}
           onActionClick={clearFolder}
           overrides={{
@@ -243,8 +243,8 @@ export default function Home({ onDirChange = _noop }: IProps) {
             borderRadius: theme.borders.radius300,
           }),
         )}>
-        <CornerDownRight size={`1.6em`} color={`#43BF75`} />
-        <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }} />
+        <CornerDownRight size={`1.6em`} color={`#43BF75`}/>
+        <div dangerouslySetInnerHTML={{ __html: t('installation path of League of Legends') }}/>
       </code>
 
       <H6 margin={`0 0 1ex 0`} color={theme.colors.borderInverseOpaque}>
@@ -306,21 +306,21 @@ export default function Home({ onDirChange = _noop }: IProps) {
                           }}>
                           {v.label}
                           {sourceVer && (
-                            <Tag closeable={false} variant={VARIANT.outlined} kind='warning'>
+                            <Tag closeable={false} variant={VARIANT.outlined} kind="warning">
                               {sourceVer}
                             </Tag>
                           )}
                           {isAram && (
-                            <Tag closeable={false} variant={VARIANT.light} kind='positive'>
+                            <Tag closeable={false} variant={VARIANT.light} kind="positive">
                               {t(`aram`)}
                             </Tag>
                           )}
                           {isURF && (
-                            <Tag closeable={false} variant={VARIANT.light} kind='positive'>
+                            <Tag closeable={false} variant={VARIANT.light} kind="positive">
                               {t(`urf`)}
                             </Tag>
                           )}
-                          <Move className={s.move} size={18} />
+                          <Move className={s.move} size={18}/>
                         </Checkbox>
                       </div>
                     )}
@@ -352,7 +352,7 @@ export default function Home({ onDirChange = _noop }: IProps) {
             },
           }}
           disabled={shouldDisableImport}
-          startEnhancer={() => <ArrowRight size={24} />}
+          startEnhancer={() => <ArrowRight size={24}/>}
           onClick={startImport}>
           {t(`import now`)}
         </Button>
@@ -437,6 +437,8 @@ export default function Home({ onDirChange = _noop }: IProps) {
           </button>
         )}
       </div>
+
+      {i18n.language.startsWith('zh') && <div className={s.tips}>遇到问题？请点击右上角帮助按钮查看 FAQ</div>}
     </div>
   );
 }

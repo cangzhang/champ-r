@@ -4,10 +4,11 @@ import React, { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+import { Settings, Minimize2, X, HelpCircle } from 'react-feather';
 import { StatefulTooltip } from 'baseui/tooltip';
 import { StatefulPopover } from 'baseui/popover';
 import { Block } from 'baseui/block';
-import { Settings, Minimize2, X, HelpCircle } from 'react-feather';
+import { H6 } from 'baseui/typography';
 
 const Toolbar = () => {
   const [t] = useTranslation();
@@ -28,10 +29,13 @@ const Toolbar = () => {
 
   return (
     <div className={s.toolbar}>
-      <StatefulTooltip accessibilityType={'tooltip'} content={t(`faq`)}>
-        <StatefulPopover
-          content={() => (
-            <Block padding={'10px'} className={s.faqTips}>
+      <StatefulPopover
+        content={() => (
+          <Block padding={'10px'} className={s.faqTips}>
+            <H6 className={s.title}>
+              FAQ
+            </H6>
+            <div className={s.links}>
               <div className={s.item}>
                 <i
                   className="bx bxl-github bx-sm bx-border bx-tada-hover"
@@ -39,7 +43,7 @@ const Toolbar = () => {
                 />
                 GitHub
               </div>
-              <div className={s.divider} />
+              <div className={s.divider}/>
               <div className={s.item}>
                 <i
                   className="bx bxs-file-doc bx-sm bx-border bx-tada-hover"
@@ -47,16 +51,16 @@ const Toolbar = () => {
                 />
                 {t(`mirror`)}
               </div>
-            </Block>
-          )}
-          returnFocus
-          autoFocus
-        >
+            </div>
+          </Block>
+        )}
+        returnFocus
+        autoFocus
+      >
         <span className={s.icon}>
           <HelpCircle size={16}/>
         </span>
-        </StatefulPopover>
-      </StatefulTooltip>
+      </StatefulPopover>
 
       <StatefulTooltip accessibilityType={'tooltip'} content={t(`minimize`)}>
         <span className={s.icon} onClick={onHide}>

@@ -35,7 +35,17 @@
 }
 
 .faq-tips {
+  .title {
+    margin: 0 0 4px;
+    text-align: center;
+  }
+
+  .links {
+    display: flex;
+  }
+
   display: flex;
+  flex-direction: column;
   background-color: #ffffff;
   font-size: 12px;
   font-weight: lighter;

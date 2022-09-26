@@ -8,6 +8,15 @@
   flex-direction: column;
   padding: 1em;
 
+  .tips {
+    margin-top: 16px;
+    font-weight: lighter;
+    font-size: 12px;
+    text-align: center;
+    color: #666666;
+    text-decoration: underline;
+  }
+
   .title {
     margin-bottom: 1.6rem;
     user-select: none;

@@ -50,7 +50,7 @@ const getInitTab = () => {
   let sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
 
   if (onlyShowSelectedSourcesInPopup && selected.length > 0) {
-    sourceList = sourceList.filter(i => selected.includes(i.value));
+    sourceList = sourceList.filter(i => selected.includes(i.value) || selected.includes(i.label));
   }
 
   return [sourceList.find((i) => i.value === cur) ?? sourceList[0]];
@@ -91,8 +91,9 @@ export function Content() {
         let hideUnselected = window.bridge.appConfig.get(`onlyShowSelectedSourcesInPopup`);
         if (hideUnselected) {
           let selectedSources: string[] = window.bridge.appConfig.get(`selectedSources`);
+          console.log(selectedSources, sourcesRef.current)
           if (selectedSources?.length > 0) {
-            sourcesRef.current = sourcesRef.current.filter(i => selectedSources.includes(i.value));
+            sourcesRef.current = sourcesRef.current.filter(i => selectedSources.includes(i.value) || selectedSources.includes(i.label));
           }
         }
       }

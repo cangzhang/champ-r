@@ -2,7 +2,7 @@ export const lang = window.bridge.LanguageSet.zhCN;
 
 export default {
   translation: {
-    'lol folder is': `LOL 文件夹`,
+    'lol folder is': `LOL 安装文件夹`,
     'lol version is': `LOL 版本`,
     'import now': `一键导入出装!`,
     'keep old items': `保留旧出装文件`,
