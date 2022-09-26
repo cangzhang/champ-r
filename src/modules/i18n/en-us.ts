@@ -55,5 +55,8 @@ export default {
     'mirror server': `Fetch resources with CN mirror server`,
     'no data': `No Data.`,
     hide: `Hide`,
+    faq: `FAQ`,
+    mirror: `Mirror`,
+    'toggle filter sources in popup': `Hide Unselected Sources in Rune Popup`,
   },
 };

@@ -62,7 +62,7 @@ specifiers:
   eslint-plugin-jsx-a11y: 6.2.3
   eslint-plugin-react: ^7.19.0
   eslint-plugin-react-hooks: 3.0.0
-  feather-icons: ^4.28.0
+  feather-icons: ^4.29.0
   file-loader: 4.3.0
   fs-extra: ^10.0.0
   got: ^11.8.2
@@ -91,7 +91,7 @@ specifiers:
   react-custom-scrollbars: ^4.2.1
   react-dev-utils: ^11.0.4
   react-dom: 17.0.2
-  react-feather: ^2.0.9
+  react-feather: ^2.0.10
   react-hot-toast: 2.3.0
   react-i18next: ^11.3.4
   react-refresh: ^0.10.0
@@ -136,7 +136,7 @@ dependencies:
   electron-unhandled: 3.0.2
   electron-updater: 4.3.8
   electron-util: 0.17.2
-  feather-icons: 4.28.0
+  feather-icons: 4.29.0
   fs-extra: 10.0.0
   got: 11.8.2
   i18next: 19.9.2
@@ -151,7 +151,7 @@ dependencies:
   react-beautiful-dnd: 13.1.0_sfoxds7t5ydpegc3knd667wn6m
   react-custom-scrollbars: 4.2.1_sfoxds7t5ydpegc3knd667wn6m
   react-dom: 17.0.2_react@17.0.2
-  react-feather: 2.0.9_react@17.0.2
+  react-feather: 2.0.10_react@17.0.2
   react-hot-toast: 2.3.0_sfoxds7t5ydpegc3knd667wn6m
   react-i18next: 11.12.0_ftpfmoxqd2lj3y767446p7m2ce
   react-router-dom: 6.3.0_sfoxds7t5ydpegc3knd667wn6m
@@ -5934,12 +5934,13 @@ packages:
 
   /core-js/2.6.12:
     resolution: {integrity: sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==}
-    deprecated: core-js@<3.4 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Please, upgrade your dependencies to the actual version of core-js.
+    deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
     requiresBuild: true
     dev: false
 
   /core-js/3.18.1:
     resolution: {integrity: sha512-vJlUi/7YdlCZeL6fXvWNaLUPh/id12WXj3MbkMw5uOyF0PfWPBNOCNbs53YqgrvtujLNlt9JQpruyIKkUZ+PKA==}
+    deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
     requiresBuild: true
 
   /core-util-is/1.0.2:
@@ -7881,8 +7882,8 @@ packages:
       pend: 1.2.0
     dev: true
 
-  /feather-icons/4.28.0:
-    resolution: {integrity: sha512-gRdqKESXRBUZn6Nl0VBq2wPHKRJgZz7yblrrc2lYsS6odkNFDnA4bqvrlEVRUPjE1tFax+0TdbJKZ31ziJuzjg==}
+  /feather-icons/4.29.0:
+    resolution: {integrity: sha512-Y7VqN9FYb8KdaSF0qD1081HCkm0v4Eq/fpfQYQnubpqi0hXx14k+gF9iqtRys1SIcTEi97xDi/fmsPFZ8xo0GQ==}
     dependencies:
       classnames: 2.3.1
       core-js: 3.18.1
@@ -12194,6 +12195,12 @@ packages:
   /react-dev-utils/11.0.4_njkanytzgf3begphnaivptlwxm:
     resolution: {integrity: sha512-dx0LvIGHcOPtKbeiSUM4jqpBl3TcY7CDjZdfOIcKeznE7BWr9dg0iPG90G5yfVQ+p/rGNMXdbfStvzQZEVEi4A==}
     engines: {node: '>=10'}
+    peerDependencies:
+      typescript: '>=2.7'
+      webpack: '>=4'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
     dependencies:
       '@babel/code-frame': 7.10.4
       address: 1.1.2
@@ -12219,12 +12226,12 @@ packages:
       shell-quote: 1.7.2
       strip-ansi: 6.0.0
       text-table: 0.2.0
+      typescript: 4.6.2
+      webpack: 4.44.2
     transitivePeerDependencies:
       - eslint
       - supports-color
-      - typescript
       - vue-template-compiler
-      - webpack
     dev: true
 
   /react-dom/16.14.0_react@16.14.0:
@@ -12267,10 +12274,10 @@ packages:
     resolution: {integrity: sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==}
     dev: true
 
-  /react-feather/2.0.9_react@17.0.2:
-    resolution: {integrity: sha512-yMfCGRkZdXwIs23Zw/zIWCJO3m3tlaUvtHiXlW+3FH7cIT6fiK1iJ7RJWugXq7Fso8ZaQyUm92/GOOHXvkiVUw==}
+  /react-feather/2.0.10_react@17.0.2:
+    resolution: {integrity: sha512-BLhukwJ+Z92Nmdcs+EMw6dy1Z/VLiJTzEQACDUEnWMClhYnFykJCGWQx+NmwP/qQHGX/5CzQ+TGi8ofg2+HzVQ==}
     peerDependencies:
-      react: ^16.8.6 || ^17
+      react: '>=16.8.6'
     dependencies:
       prop-types: 15.7.2
       react: 17.0.2

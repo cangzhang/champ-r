@@ -55,5 +55,8 @@ export default {
     'start minimized': `启动时最小化`,
     'no data': `暂无数据`,
     hide: `隐藏`,
+    faq: `FAQ`,
+    mirror: `国内镜像`,
+    'toggle filter sources in popup': `天赋弹窗仅展示选定数据源`,
   },
 };

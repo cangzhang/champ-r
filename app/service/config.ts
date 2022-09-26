@@ -25,5 +25,6 @@ export const appConfig = new Store({
     enableChinaCDN: false,
     startMinimized: false,
     npmRegistry: `https://registry.npmmirror.com`,
+    onlyShowSelectedSourcesInPopup: false,
   },
 });

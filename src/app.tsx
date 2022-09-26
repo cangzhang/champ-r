@@ -52,9 +52,6 @@ const App = () => {
 
   useEffect(() => {
     window.bridge.sendMessage(`request-for-auth-config`);
-    window.bridge.on(`got-auth`, (data: any) => {
-      console.log(`got auth`, data);
-    });
   }, []);
 
   const value = useMemo(() => ({ store, dispatch, emitter }), [store, dispatch]);

@@ -41,6 +41,7 @@ export default function Settings() {
   );
   const [enableChinaCDN, toggleCNServer] = useState(window.bridge.appConfig.get(`enableChinaCDN`));
   const [startMinimized, setStartMinimized] = useState(window.bridge.appConfig.get(`startMinimized`));
+  const [filterSourcesInPopup, setFilterSourcesInPopup] = useState(window.bridge.appConfig.get(`onlyShowSelectedSourcesInPopup`));
 
   const recorder = useRef(false);
 
@@ -69,6 +70,12 @@ export default function Settings() {
     const { checked } = e.currentTarget;
     setStartMinimized(checked);
     window.bridge.appConfig.set(`startMinimized`, checked);
+  }
+
+  const onTogglePopupSourceFilter = (e: FormEvent<HTMLInputElement>) => {
+    const { checked } = e.currentTarget;
+    setFilterSourcesInPopup(checked);
+    window.bridge.appConfig.set(`onlyShowSelectedSourcesInPopup`, checked);
   }
 
   useEffect(() => {
@@ -183,6 +190,32 @@ export default function Settings() {
           },
         }}>
         {t(`start minimized`)}
+      </Checkbox>
+
+      <Checkbox
+        checked={filterSourcesInPopup}
+        checkmarkType={STYLE_TYPE.toggle_round}
+        onChange={onTogglePopupSourceFilter}
+        overrides={{
+          Root: {
+            style: () => ({
+              height: `48px`,
+              display: `flex`,
+              alignItems: `center`,
+              marginTop: `1em`,
+            }),
+          },
+          Label: {
+            style: ({ $theme }) => {
+              return {
+                fontSize: $theme.typography.ParagraphMedium,
+                fontWeight: 600,
+                marginRight: `auto`,
+              };
+            },
+          },
+        }}>
+        {t(`toggle filter sources in popup`)}
       </Checkbox>
 
       <div className={s.ctrlBtns}>

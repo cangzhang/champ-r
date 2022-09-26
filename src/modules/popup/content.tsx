@@ -44,8 +44,15 @@ const PinBtn = styled(PinIcon, (props: { $pinned: boolean }) => ({
 }));
 
 const getInitTab = () => {
-  const cur = window.bridge.appConfig.get(`perkTab`);
-  const sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
+  let onlyShowSelectedSourcesInPopup: boolean = window.bridge.appConfig.get(`onlyShowSelectedSourcesInPopup`);
+  const cur: string = window.bridge.appConfig.get(`perkTab`);
+  let selected: string[] = window.bridge.appConfig.get(`selectedSources`);
+  let sourceList: ISourceItem[] = window.bridge.appConfig.get(`sourceList`);
+
+  if (onlyShowSelectedSourcesInPopup && selected.length > 0) {
+    sourceList = sourceList.filter(i => selected.includes(i.value));
+  }
+
   return [sourceList.find((i) => i.value === cur) ?? sourceList[0]];
 };
 
@@ -81,9 +88,16 @@ export function Content() {
       if (id) {
         setChampionId(id);
         sourcesRef.current = window.bridge.appConfig.get(`sourceList`);
+        let hideUnselected = window.bridge.appConfig.get(`onlyShowSelectedSourcesInPopup`);
+        if (hideUnselected) {
+          let selectedSources: string[] = window.bridge.appConfig.get(`selectedSources`);
+          if (selectedSources?.length > 0) {
+            sourcesRef.current = sourcesRef.current.filter(i => selectedSources.includes(i.value));
+          }
+        }
       }
     });
-  }, []);
+  }, [championId]);
 
   useEffect(() => {
     if (!championId) {

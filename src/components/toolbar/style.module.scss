@@ -33,3 +33,34 @@
     }
   }
 }
+
+.faq-tips {
+  display: flex;
+  background-color: #ffffff;
+  font-size: 12px;
+  font-weight: lighter;
+  font-family: sans-serif;
+
+  .divider {
+    height: 40px;
+    width: 1px;
+    margin: 2px 12px 0;
+    background-color: #cbcbcb;
+  }
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    i {
+      margin-left: unset;
+      margin-bottom: 6px;
+    }
+  }
+}
