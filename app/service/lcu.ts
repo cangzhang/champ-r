@@ -178,6 +178,10 @@ export class LcuWatcher {
 
         this.request = got.extend({
           prefixUrl: this.lcuURL,
+          http2: true,
+          timeout: {
+            request: 3000,
+          }
         });
         return true;
       }
