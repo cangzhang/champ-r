@@ -84,3 +84,7 @@ pnpm run build:local
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=cangzhang/champ-r&type=Date)](https://star-history.com/#cangzhang/champ-r&Date)
+
+## Donation
+
+[![](./docs/afdian.jpeg)](https://afdian.net/a/alcheung)
