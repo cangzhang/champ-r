@@ -1,5 +1,7 @@
 # ChampR
 
+![champ-r](https://socialify.git.ci/cangzhang/champ-r/image?forks=1&logo=https%3A%2F%2Fgithub.com%2Fcangzhang%2Fchamp-r%2Fblob%2Fmain%2Fresources%2Fapp-icon.png%3Fraw%3Dtrue&name=1&owner=1&pattern=Plus&stargazers=1&theme=Light)
+
 [![](https://img.shields.io/github/v/release/cangzhang/champ-r?label=LATEST%20VERSION&style=for-the-badge)](https://github.com/cangzhang/champ-r/releases/latest)
 [![](https://img.shields.io/github/downloads/cangzhang/champ-r/total?style=for-the-badge)](https://github.com/cangzhang/champ-r/releases)
 [![](https://img.shields.io/github/workflow/status/cangzhang/champ-r/release?style=for-the-badge&color=65C0A3)](https://github.com/cangzhang/champ-r/actions)
