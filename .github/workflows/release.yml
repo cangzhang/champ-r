@@ -50,7 +50,7 @@ jobs:
         allowUpdates: true
         artifacts: "./dist/artifacts/*"
         body: >
-          > 🛎️ For tencent server users, please check here [FAQ](https://github.com/cangzhang/champ-r/wiki/FAQ#tencent-server-v1218-%E6%97%A0%E6%B3%95%E6%98%BE%E7%A4%BA%E5%A4%A9%E8%B5%8B%E6%8E%A8%E8%8D%90)
-          🛎️ 腾讯服务器用户，请查看 [FAQ](https://github.com/cangzhang/champ-r/wiki/FAQ#tencent-server-v1218-%E6%97%A0%E6%B3%95%E6%98%BE%E7%A4%BA%E5%A4%A9%E8%B5%8B%E6%8E%A8%E8%8D%90)
-          [FAQ](https://github.com/cangzhang/champ-r/wiki/FAQ)
-          [CHNAGELOG](https://github.com/cangzhang/champ-r/blob/main/CHANGELOG.md)
+          > 🛎️ For tencent server users, please check here [FAQ](https://github.com/cangzhang/champ-r/wiki/FAQ#tencent-server-v1218-%E6%97%A0%E6%B3%95%E6%98%BE%E7%A4%BA%E5%A4%A9%E8%B5%8B%E6%8E%A8%E8%8D%90) \n
+          🛎️ 腾讯服务器用户，请查看 [FAQ](https://github.com/cangzhang/champ-r/wiki/FAQ#tencent-server-v1218-%E6%97%A0%E6%B3%95%E6%98%BE%E7%A4%BA%E5%A4%A9%E8%B5%8B%E6%8E%A8%E8%8D%90) \n
+          [FAQ](https://github.com/cangzhang/champ-r/wiki/FAQ) \n
+          [CHNAGELOG](https://github.com/cangzhang/champ-r/blob/main/CHANGELOG.md) \n
