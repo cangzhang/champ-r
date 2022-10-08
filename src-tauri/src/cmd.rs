@@ -1,6 +1,4 @@
 use lazy_static::lazy_static;
-use std::io::{BufRead, BufReader};
-use std::process::{Command, Stdio};
 
 const APP_PORT_KEY: &'static str = "--app-port=";
 const TOKEN_KEY: &'static str = "--remoting-auth-token=";
@@ -21,7 +19,7 @@ pub fn get_commandline() -> (String, bool) {
     match powershell_script::run(&cmd_str) {
         Ok(output) => {
             if let Some(stdout) = output.stdout() {
-                let auth_url = match_stdout(stdout);
+                let auth_url = match_stdout(&stdout);
                 (auth_url, true)
             } else {
                 println!("[cmd] got nothing from output, maybe lcu is stopped");
@@ -38,6 +36,9 @@ pub fn get_commandline() -> (String, bool) {
 
 #[cfg(not(target_os = "windows"))]
 pub fn get_commandline() -> (String, bool) {
+    use std::io::{BufRead, BufReader};
+    use std::process::{Command, Stdio};
+
     let cmd_str = r#"ps -A | grep LeagueClientUx | grep remoting-auth-token="#;
     let mut cmd = Command::new("sh")
         .args(&["-c", cmd_str])
