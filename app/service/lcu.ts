@@ -1,8 +1,10 @@
 import os from 'os';
 import { promises as fs, constants as fsConstants } from 'fs';
 import * as path from 'path';
+import https from 'https';
+
 import cjk from 'cjk-regex';
-import got, { Got } from 'got';
+import axios, { AxiosInstance } from 'axios';
 import { execCmd } from './cmd';
 
 import {
@@ -133,9 +135,13 @@ export const getAuthFromCmd = async (): Promise<ILcuAuth | null> => {
   }
 };
 
+let httpsAgent = new https.Agent({
+  keepAlive: true,
+});
+
 export class LcuWatcher {
   public evBus: IEventBus | null = null;
-  private request!: Got;
+  private request!: AxiosInstance;
 
   private auth: ILcuAuth | null = null;
   private summonerId = 0;
@@ -151,6 +157,7 @@ export class LcuWatcher {
     this.initListener();
     if (os.platform() === `win32`) {
       this.startCheckLcuStatusTask();
+      // this.watchChampSelect();
     } else {
       console.log(`[ChampR] not running on MS Windows, skipped running cmd.`);
     }
@@ -176,13 +183,15 @@ export class LcuWatcher {
           this.evBus?.emit(LcuEvent.OnAuthUpdate, this.wsURL);
         }
 
-        this.request = got.extend({
-          prefixUrl: this.lcuURL,
-          http2: true,
-          timeout: {
-            request: 3000,
-          }
+        this.request = axios.create({
+          baseURL: this.lcuURL,
+          timeout: 3000,
+          httpsAgent,
+          headers: {
+            'Connection': `keep-alive`,
+          },
         });
+
         return true;
       }
 
@@ -199,15 +208,12 @@ export class LcuWatcher {
 
     this.watchChampSelectTask = setInterval(async () => {
       try {
-        await this.getSummonerId();
-        const ret: IChampionSelectRespData = await this.request
-          .get(`lol-champ-select/v1/session`)
-          .json();
+        // await this.getSummonerId();
+        const ret: IChampionSelectRespData = await this.request.get(`${this.lcuURL}/lol-champ-select/v1/session`).then(r => r.data);
+        console.log(ret);
         this.onSelectChampion(ret);
-      } catch (_err) {
-        // clearInterval(this.watchChampSelectTask!);
-        // this.getAuth();
-        // this.hidePopup();
+      } catch (err) {
+        console.error(err);
       }
     }, 2000);
   };
@@ -215,12 +221,7 @@ export class LcuWatcher {
   public getSummonerId = async () => {
     try {
       const ret: { summonerId: number } = await this.request
-        .get(`lol-chat/v1/me`, {
-          timeout: {
-            request: 3500,
-          },
-        })
-        .json();
+        .get(`lol-chat/v1/me`);
 
       const summonerId = ret?.summonerId ?? 0;
       if (summonerId !== this.summonerId) {
@@ -318,21 +319,14 @@ export class LcuWatcher {
   };
 
   public applyRunePage = async (data: any) => {
-    if (!this.auth && !this.lcuURL) {
-      throw new Error(`[lcu] no auth available`);
-    }
-
     try {
-      const list: IPerkPage[] = await this.request.get(`lol-perks/v1/pages`).json();
+      const list: IPerkPage[] = await this.request.get(`lol-perks/v1/pages`).then(r => r.data);
       const current = list.find((i) => i.current && i.isDeletable);
       if (current?.id) {
-        await this.request.delete(`lol-perks/v1/pages/${current.id}`).json();
+        await this.request.delete(`lol-perks/v1/pages/${current.id}`);
       }
       await this.request
-        .post(`lol-perks/v1/pages`, {
-          json: data,
-        })
-        .json();
+        .post(`lol-perks/v1/pages`, data);
     } catch (err) {
       console.error(err);
       return Promise.reject(err);

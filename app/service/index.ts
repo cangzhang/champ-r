@@ -1,5 +1,5 @@
 import { machineId } from 'node-machine-id';
-import got from 'got';
+import axios from 'axios';
 
 import { appConfig } from './config';
 import { IChampionMap } from '@interfaces/commonTypes';
@@ -25,15 +25,9 @@ export const isDev = process.env.IS_DEV_MODE === `true`;
 
 export async function getChampionList() {
   try {
-    let [v] = await got(`https://ddragon.leagueoflegends.com/api/versions.json`, {
-      responseType: 'json',
-      resolveBodyOnly: true,
-    });
+    let [v] = await axios(`https://ddragon.leagueoflegends.com/api/versions.json`).then(r => r.data);
     console.log(`[main/getChampionList] latest official version is ${v}`);
-    let body: any = await got(`https://ddragon.leagueoflegends.com/cdn/${v}/data/en_US/champion.json`, {
-      responseType: `json`,
-      resolveBodyOnly: true,
-    });
+    let body: any = await axios(`https://ddragon.leagueoflegends.com/cdn/${v}/data/en_US/champion.json`).then(r => r.data);
     return body.data as IChampionMap;
   } catch (e) {
     console.log(`[main/getChampionList] error`, e)

@@ -1,8 +1,8 @@
-import got from 'got';
 import fse from 'fs-extra';
 import tar from 'tar';
 import { nanoid } from 'nanoid';
 import { app, dialog, ipcMain, screen } from 'electron';
+import axios from 'axios';
 
 import { IChampionCdnDataItem, IChampionInfo, IChampionMap, IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
 import { appConfig } from './service/config';
@@ -122,6 +122,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
       await lcuWatcher?.applyRunePage(data);
       return true;
     } catch (err) {
+      console.error(err);
       if (isDev) {
         return Promise.resolve(true);
       }
@@ -147,9 +148,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
     let sourceIdx = sourceList.findIndex(s => s.value === source);
 
     try {
-      let { dist: { tarball }, version } = await got(url, {
-        responseType: `json`,
-      }).json();
+      let { dist: { tarball }, version }: any = await axios(url).then(r => r.data);
       // cwd += `_${version}/`;
       updateStatusForMainWindowWebView({
         source,
@@ -160,8 +159,8 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
         source,
         msg: `Downloading tarball for ${source}`,
       });
-      let { body } = await got(tarball, {
-        responseType: 'buffer',
+      let { data: body } = await axios(tarball, {
+        responseType: 'arraybuffer',
       });
       console.log(`[npm] tarball downloaded, ${source}`);
       updateStatusForMainWindowWebView({
@@ -257,10 +256,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
 
     let c = await getChampionInfo(championId);
     try {
-      let { dist: { tarball }, version } = await got(url, {
-        responseType: `json`,
-      }).json();
-
+      let { dist: { tarball }, version }: any = await axios(url).then(r => r.data);
       let shouldUpdate = false;
       let statsFilePath = path.join(cwd, `.stats`);
       try {
@@ -278,8 +274,8 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
       }
 
       console.log(`[npm] downloading tarball for ${source}`);
-      let { body } = await got(tarball, {
-        responseType: 'buffer',
+      let { data: body } = await axios(tarball, {
+        responseType: 'arraybuffer',
       });
       console.log(`[npm] tarball downloaded, ${source}`);
       let s = bufferToStream(body);
