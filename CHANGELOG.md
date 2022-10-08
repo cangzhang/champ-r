@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.7
+- fix: apply runes.
+
 ## v1.3.6
 - change: Add FAQ link to toolbar.
 - feat: add new option to hide unselected sources in rune popup.
