@@ -1,0 +1,27 @@
+name: 🐶 Release Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Download bin
+        env:
+          GH_TOKEN: ${{ secrets.GH_DOWNLOAD_TOKEN }}
+        run: |
+          release_name=$(gh api -H "Accept: application/vnd.github+json" /repos/cangzhang/data-maker/releases/latest --jq ".name")
+          gh release download v1.6.11 -R cangzhang/data-maker -p "*-linux*"
+          chmod +x data-maker-linux-amd64
+          data-maker-linux-amd64 -v
+          
