@@ -21,7 +21,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_DOWNLOAD_TOKEN }}
         run: |
           release_name=$(gh api -H "Accept: application/vnd.github+json" /repos/cangzhang/data-maker/releases/latest --jq ".name")
-          gh release download v1.6.11 -R cangzhang/data-maker -p "*-linux*" -D bin
-          cd bin && chmod +x data-maker-linux-amd64
-          ./data-maker-linux-amd64 -v
-          
+          gh release download "$release_name" -R cangzhang/data-maker -p "*-linux*" -D bin
+          cd bin && chmod +x data-maker-linux-amd64 && mv data-maker* data-maker
+          ./data-maker -v
