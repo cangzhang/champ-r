@@ -29,3 +29,9 @@ jobs:
           npm install -g --quiet @jsdevtools/npm-publish
           curl https://gist.githubusercontent.com/cangzhang/1bdb2f37e4c5770ac703ee5afec600f5/raw/ci-publish.sh -o publish.sh && chmod +x publish.sh
           ./publish.sh
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            bin/output/*
