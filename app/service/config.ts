@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { DefaultSourceList } from '../constants/sources';
+import { DefaultSourceList, DEFAULT_NPM_REGISTRY } from '../constants/sources';
 
 export const appConfig = new Store({
   defaults: {
@@ -24,7 +24,7 @@ export const appConfig = new Store({
     alwaysRequestLatestVersion: false,
     enableChinaCDN: false,
     startMinimized: false,
-    npmRegistry: `https://registry.npmmirror.com`,
+    npm_registry: DEFAULT_NPM_REGISTRY,
     onlyShowSelectedSourcesInPopup: false,
   },
 });

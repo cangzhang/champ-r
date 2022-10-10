@@ -1,3 +1,4 @@
+import path from 'path';
 import fse from 'fs-extra';
 import tar from 'tar';
 import { nanoid } from 'nanoid';
@@ -6,13 +7,13 @@ import axios from 'axios';
 
 import { IChampionCdnDataItem, IChampionInfo, IChampionMap, IPopupEventData, IRuneItem } from '@interfaces/commonTypes';
 import { appConfig } from './service/config';
+import { DEFAULT_NPM_REGISTRY } from './constants/sources';
 import { ifIsCNServer, LcuWatcher } from './service/lcu';
-import { bufferToStream, getAllFileContent, removeFolderContent, saveToFile, updateDirStats } from './service/file';
+import { bufferToStream, getAllFileContent, removeFolderContent, saveToFile } from './service/file';
 import { getChampionList, isDev, sleep } from './service';
 import { onShowPopup } from './main';
 
 import BrowserWindow = Electron.BrowserWindow;
-import path from 'path';
 
 export function toggleMainWindow(mainWindow: BrowserWindow | null) {
   if (!mainWindow) {
@@ -140,49 +141,64 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
   });
 
   ipcMain.on(`ApplySourceBuilds`, async (_ev, source) => {
-    let registry = appConfig.get(`npmRegistry`, `https://registry.npmmirror.com`);
-    let url = `${registry}/@champ-r/${source}/latest`;
+    let registry = appConfig.get(`npm_registry`, DEFAULT_NPM_REGISTRY);
+    let url = `${registry}/@champ-r/${source}/latest?_=${+Date.now()}`;
     let cwd = `.npm/${source}`;
     let lolDir = appConfig.get(`lolDir`);
     let sourceList = appConfig.get(`sourceList`, []);
     let sourceIdx = sourceList.findIndex(s => s.value === source);
 
+    let shouldUpdate = false;
+    let pkgInfoPath = path.join(cwd, `package.json`);
+    let pkgVer = '';
+    try {
+      await fse.pathExists(pkgInfoPath);
+      let pkgInfo = await fse.readJSON(pkgInfoPath);
+      pkgVer = pkgInfo?.version;
+    } catch (e) {
+      console.log(`[main/getSourceStats]`, e);
+      shouldUpdate = true;
+    }
+
     try {
       let { dist: { tarball }, version }: any = await axios(url).then(r => r.data);
-      // cwd += `_${version}/`;
+      console.log(tarball);
       updateStatusForMainWindowWebView({
         source,
         msg: `Fetched metadata for ${source}`,
       });
-      console.log(`[npm] downloading tarball for ${source}`);
-      updateStatusForMainWindowWebView({
-        source,
-        msg: `Downloading tarball for ${source}`,
-      });
-      let { data: body } = await axios(tarball, {
-        responseType: 'arraybuffer',
-      });
-      console.log(`[npm] tarball downloaded, ${source}`);
-      updateStatusForMainWindowWebView({
-        source,
-        msg: `Downloaded tarball for ${source}`,
-      });
-      let s = bufferToStream(body);
-      await fse.ensureDir(cwd);
-      console.log(`[npm] extracting to ${cwd}`);
-      s.pipe(
-        tar.x({
-          strip: 1,
-          cwd,
-        }),
-      );
-      console.log(`[npm] extracted to ${cwd}`);
-      updateStatusForMainWindowWebView({
-        source,
-        msg: `Extracted data for ${source}`,
-      });
-      await sleep(3000);
-      await updateDirStats(cwd, version);
+
+      if (version !== pkgVer || shouldUpdate) {
+        console.log(`[npm] downloading tarball for ${source}`);
+        updateStatusForMainWindowWebView({
+          source,
+          msg: `Downloading tarball for ${source}`,
+        });
+        let { data: body } = await axios(tarball, {
+          responseType: 'arraybuffer',
+        });
+        console.log(`[npm] tarball downloaded, ${source}`);
+        updateStatusForMainWindowWebView({
+          source,
+          msg: `Downloaded tarball for ${source}`,
+        });
+        let s = bufferToStream(body);
+        await fse.ensureDir(cwd);
+        console.log(`[npm] extracting to ${cwd}`);
+        s.pipe(
+          tar.x({
+            strip: 1,
+            cwd,
+          }),
+        );
+        console.log(`[npm] extracted to ${cwd}`);
+        updateStatusForMainWindowWebView({
+          source,
+          msg: `Extracted data for ${source}`,
+        });
+        await sleep(3000);
+      }
+
       let files = await getAllFileContent(cwd);
       let tasks: any[] = [];
       files.forEach(arr => {
@@ -250,19 +266,19 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
 
   ipcMain.handle(`MakeRuneData`, async (_ev, { source, championId }) => {
     console.log(`[main/MakeRuneData]`, source, championId);
-    let registry = appConfig.get(`npmRegistry`, `https://registry.npmmirror.com`);
-    let url = `${registry}/@champ-r/${source}/latest`;
+    let registry = appConfig.get(`npm_registry`, DEFAULT_NPM_REGISTRY);
+    let url = `${registry}/@champ-r/${source}/latest?_=${+Date.now()}`;
     let cwd = `.npm/${source}/`;
 
     let c = await getChampionInfo(championId);
     try {
       let { dist: { tarball }, version }: any = await axios(url).then(r => r.data);
       let shouldUpdate = false;
-      let statsFilePath = path.join(cwd, `.stats`);
+      let pkgInfoPath = path.join(cwd, `package.json`);
       try {
-        await fse.pathExists(statsFilePath);
-        let stats = await fse.readJSON(statsFilePath);
-        if (stats?.version !== version) {
+        await fse.pathExists(pkgInfoPath);
+        let pkgInfo = await fse.readJSON(pkgInfoPath);
+        if (pkgInfo?.version !== version) {
           shouldUpdate = true;
         }
       } catch (e) {
@@ -289,7 +305,6 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
       );
       console.log(`[npm] extracted to ${cwd}`);
       await sleep(2000);
-      await updateDirStats(cwd, version);
       return await getRunesFromLocal(cwd, c?.id);
     } catch (e) {
       console.error(source, e);

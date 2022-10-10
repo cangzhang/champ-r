@@ -31,3 +31,5 @@ export const SourceQQ: ISourceItem = {
 };
 
 export const DefaultSourceList: ISourceItem[] = [SourceQQ, ...DefaultExtraPkgs];
+
+export const DEFAULT_NPM_REGISTRY = 'https://mirrors.cloud.tencent.com/npm'
