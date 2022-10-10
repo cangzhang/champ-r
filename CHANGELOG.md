@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.8
+- fix: always fetch latest builds/runes.
+
 ## v1.3.7
 - fix: apply runes.
 

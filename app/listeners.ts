@@ -162,7 +162,6 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
 
     try {
       let { dist: { tarball }, version }: any = await axios(url).then(r => r.data);
-      console.log(tarball);
       updateStatusForMainWindowWebView({
         source,
         msg: `Fetched metadata for ${source}`,
