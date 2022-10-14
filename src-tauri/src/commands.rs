@@ -1,7 +1,7 @@
 use std::sync::mpsc;
 
 use serde_json::json;
-use tauri::{AppHandle, Manager, State, Window, command, async_runtime};
+use tauri::{async_runtime, command, AppHandle, Manager, State, Window};
 
 use crate::{builds, cmd, page_data, state, web};
 
@@ -38,7 +38,7 @@ pub fn get_available_runes_for_champion(
     champion_alias: String,
 ) -> Vec<builds::Rune> {
     let (tx, rx) = mpsc::channel();
-    tauri::async_runtime::spawn(async move {
+    async_runtime::spawn(async move {
         let r = match builds::load_runes(&source_name, &champion_alias).await {
             Ok(runes) => runes,
             Err(e) => {
@@ -54,7 +54,7 @@ pub fn get_available_runes_for_champion(
 
 #[command]
 pub fn apply_builds(app_handle: AppHandle, sources: Vec<String>) {
-    tauri::async_runtime::spawn(async move {
+    async_runtime::spawn(async move {
         let mut idx = 0;
         for s in sources {
             println!("[commands::apply_builds] {idx} {s}");
@@ -71,17 +71,16 @@ pub fn apply_builds(app_handle: AppHandle, sources: Vec<String>) {
 }
 
 #[command]
-pub fn get_ddragon_data(
+pub async fn get_ddragon_data(
     state: State<'_, state::GlobalState>,
-) -> (Vec<page_data::Source>, Vec<web::RuneListItem>) {
+) -> Result<page_data::PageData, ()> {
     let s = state.0.lock().unwrap();
     let mut p = s.page_data.lock().unwrap();
-
     if !p.ready {
         let (tx, rx) = mpsc::channel();
         async_runtime::spawn(async move {
             let r = page_data::PageData::init().await;
-            println!("ddragon data init");
+            println!("[get_ddragon_data] init");
             let _ = tx.send(r.unwrap());
         });
 
@@ -91,11 +90,13 @@ pub fn get_ddragon_data(
         p.rune_list = r;
     }
 
-    (p.source_list.clone(), p.rune_list.clone())
+    Ok(p.clone())
 }
 
 #[command]
-pub fn get_user_sources(state: tauri::State<'_, state::GlobalState>,) -> Vec<page_data::Source> {
+pub fn get_user_sources(
+    state: State<'_, state::GlobalState>,
+) -> Vec<page_data::Source> {
     let s = state.0.lock().unwrap();
     let mut p = s.page_data.lock().unwrap();
 
@@ -103,7 +104,7 @@ pub fn get_user_sources(state: tauri::State<'_, state::GlobalState>,) -> Vec<pag
         let (tx, rx) = mpsc::channel();
         async_runtime::spawn(async move {
             let r = page_data::PageData::init().await;
-            println!("ddragon data init");
+            println!("[commands::get_user_sources] ddragon data init");
             let _ = tx.send(r.unwrap());
         });
 
@@ -117,7 +118,7 @@ pub fn get_user_sources(state: tauri::State<'_, state::GlobalState>,) -> Vec<pag
 }
 
 #[command]
-pub fn get_runes_reforged(state: tauri::State<'_, state::GlobalState>,) -> Vec<web::RuneListItem> {
+pub fn get_runes_reforged(state: State<'_, state::GlobalState>) -> Vec<web::RuneListItem> {
     let s = state.0.lock().unwrap();
     let mut p = s.page_data.lock().unwrap();
 

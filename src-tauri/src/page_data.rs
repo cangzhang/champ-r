@@ -50,7 +50,6 @@ impl PageData {
         };
         let rune_list = match rune_list {
             Ok(list) => {
-                println!("[page_data] got rune list.");
                 list
             }
             Err(e) => {
@@ -59,6 +58,7 @@ impl PageData {
             }
         };
 
+        println!("[PageData::init] got rune & source list.");
         Ok((true, source_list, rune_list))
     }
 }

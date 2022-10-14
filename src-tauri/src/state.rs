@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, mpsc};
 use tauri::{AppHandle, Window};
 
 use crate::{lcu, page_data};
@@ -24,10 +24,29 @@ impl InnerState {
     pub fn init(&mut self, handle: &AppHandle) {
         let handle = handle.clone();
         let mut ws = self.ws_client.clone();
+
         tauri::async_runtime::spawn(async move {
             let _ = ws.prepare_data(&handle).await;
             ws.watch_cmd_output().await;
         });
+
+        let (tx, rx) = mpsc::channel();
+        tauri::async_runtime::spawn(async move {
+            match page_data::PageData::init().await {
+                Ok(r) => {
+                    let _ = tx.send(r);
+                },
+                Err(e) => {
+                    println!("{:?}", e);
+                }
+            };
+        });
+        let (ready, s, r) = rx.recv().unwrap();
+        let mut p = self.page_data.lock().unwrap();
+        p.ready = ready;
+        p.source_list = s;
+        p.rune_list = r;
+
         println!("[inner state] init");
     }
 }

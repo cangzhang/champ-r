@@ -18,8 +18,7 @@ export function Rune() {
 
         if (!ddragon.current.length) {
             ddragon.current = await invoke(`get_ddragon_data`);
-            console.log(`ddragon data`, ddragon.current);
-            setSources(ddragon.current[0]);
+            setSources(ddragon.current.source_list);
         }
 
         let r: any = await invoke(`get_available_runes_for_champion`, { sourceName: curSource, championAlias });
