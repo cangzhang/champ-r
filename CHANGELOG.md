@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.9
+- change(lcu): connection issue with tencent lcu.
+
 ## v1.3.8
 - fix: always fetch latest builds/runes.
 
