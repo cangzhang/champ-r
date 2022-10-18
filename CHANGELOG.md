@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.10
+- fix(lcu): champ select.
+
 ## v1.3.9
 - change(lcu): connection issue with tencent lcu.
 

@@ -30,7 +30,7 @@ jobs:
       run: |
         $release_name=(gh api -H "Accept: application/vnd.github+json" /repos/cangzhang/league-client-tencent/releases/latest --jq ".name")
         gh release download "$release_name" -R cangzhang/league-client-tencent -p "*exe" -D bin --clobber
-        echo "🐳 Downloaded LeagueClient."
+        echo "🐳 Downloaded LeagueClient $release_name"
         $sha = (git rev-parse --short HEAD)
         echo 'node-linker=hoisted' > .npmrc # make it work with electron
         pnpm i --frozen-lockfile
