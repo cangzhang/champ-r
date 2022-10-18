@@ -285,6 +285,7 @@ export function registerMainListeners(mainWindow: BrowserWindow, popupWindow: Br
         shouldUpdate = true;
       }
       if (!shouldUpdate) {
+        console.log(`[main/MakeRuneData] load from local for`, c?.id ?? 0);
         return await getRunesFromLocal(cwd, c?.id);
       }
 

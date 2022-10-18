@@ -15,3 +15,5 @@ lib/
 
 .npm/
 
+bin/LeagueClient.exe
+

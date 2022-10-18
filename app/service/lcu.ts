@@ -2,7 +2,9 @@ import os from 'os';
 import { promises as fs, constants as fsConstants } from 'fs';
 import * as path from 'path';
 import https from 'https';
+import { spawn } from 'child_process';
 
+import { nanoid } from 'nanoid';
 import cjk from 'cjk-regex';
 import axios, { AxiosInstance } from 'axios';
 import { execCmd } from './cmd';
@@ -15,8 +17,8 @@ import {
   IPerkPage,
 } from '@interfaces/commonTypes';
 import { appConfig } from './config';
-import { GamePhase, LcuEvent } from '../constants/events';
-import { nanoid } from 'nanoid';
+import { LcuEvent } from '../constants/events';
+import { isDev } from './index';
 
 const cjk_charset = cjk();
 
@@ -99,6 +101,7 @@ export const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
       return null;
     }
 
+    const region = stdout.split('--region=')[1]?.split('"')[0] ?? ``;
     const port = stdout.split('--app-port=')[1]?.split('"')[0] ?? ``;
     const token = stdout.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
     const urlWithAuth = `https://riot:${token}@127.0.0.1:${port}`;
@@ -107,6 +110,7 @@ export const getAuthFromPs = async (): Promise<ILcuAuth | null> => {
       port,
       token,
       urlWithAuth,
+      isTencent: region === 'TENCENT',
     };
   } catch (err) {
     console.error(`[ps] `, err);
@@ -120,6 +124,7 @@ export const getAuthFromCmd = async (): Promise<ILcuAuth | null> => {
       `wmic PROCESS WHERE name='LeagueClientUx.exe' GET commandline`,
       false,
     );
+    const region = cmdLine.split('--region=')[1]?.split('"')[0] ?? ``;
     const port = cmdLine.split('--app-port=')[1]?.split('"')[0] ?? ``;
     const token = cmdLine.split('--remoting-auth-token=')[1]?.split('"')[0] ?? ``;
     const urlWithAuth = `https://riot:${token}@127.0.0.1:${port}`;
@@ -128,6 +133,7 @@ export const getAuthFromCmd = async (): Promise<ILcuAuth | null> => {
       port,
       token,
       urlWithAuth,
+      isTencent: region === 'TENCENT',
     };
   } catch (err) {
     console.error(`[cmd] `, err);
@@ -144,12 +150,12 @@ export class LcuWatcher {
   private request!: AxiosInstance;
 
   private auth: ILcuAuth | null = null;
-  private summonerId = 0;
   private lcuURL = ``;
   public wsURL = ``;
   private checkLcuStatusTask: NodeJS.Timeout | null = null;
-  private watchChampSelectTask: NodeJS.Timeout | null = null;
   private withPwsh = false;
+  private isTencent = false;
+  private tencentTask: any;
 
   constructor(withPwsh: boolean) {
     this.withPwsh = withPwsh;
@@ -157,7 +163,6 @@ export class LcuWatcher {
     this.initListener();
     if (os.platform() === `win32`) {
       this.startCheckLcuStatusTask();
-      // this.watchChampSelect();
     } else {
       console.log(`[ChampR] not running on MS Windows, skipped running cmd.`);
     }
@@ -173,12 +178,20 @@ export class LcuWatcher {
   public getAuth = async () => {
     try {
       const cmdRet = this.withPwsh ? await getAuthFromPs() : await getAuthFromCmd();
-      const { port: appPort, token: remotingAuthToken, urlWithAuth: lcuURL } = cmdRet ?? {};
+      const { port: appPort, token: remotingAuthToken, urlWithAuth: lcuURL, isTencent } = cmdRet ?? {};
+      this.isTencent = Boolean(isTencent);
+      this.auth = cmdRet;
 
       if (appPort && remotingAuthToken) {
         if (lcuURL !== this.lcuURL) {
           this.lcuURL = lcuURL ?? ``;
           console.info(this.lcuURL);
+
+          if (isTencent) {
+            this.spawnForTencent(remotingAuthToken, appPort);
+            return true;
+          }
+
           this.wsURL = `riot:${remotingAuthToken}@127.0.0.1:${appPort}`;
           this.evBus?.emit(LcuEvent.OnAuthUpdate, this.wsURL);
         }
@@ -203,36 +216,41 @@ export class LcuWatcher {
     }
   };
 
-  public watchChampSelect = () => {
-    clearInterval(this.watchChampSelectTask!);
-
-    this.watchChampSelectTask = setInterval(async () => {
-      try {
-        // await this.getSummonerId();
-        const ret: IChampionSelectRespData = await this.request.get(`${this.lcuURL}/lol-champ-select/v1/session`).then(r => r.data);
-        console.log(ret);
-        this.onSelectChampion(ret);
-      } catch (err) {
-        console.error(err);
-      }
-    }, 2000);
+  public getBinPath = () => {
+    return isDev ? './bin/LeagueClient.exe' : path.join(process.resourcesPath, 'bin/LeagueClient.exe');
   };
 
-  public getSummonerId = async () => {
-    try {
-      const ret: { summonerId: number } = await this.request
-        .get(`lol-chat/v1/me`);
+  public spawnForTencent = (token: string, port: string) => {
+    this.tencentTask?.kill();
 
-      const summonerId = ret?.summonerId ?? 0;
-      if (summonerId !== this.summonerId) {
-        console.info(`[watcher] lcu status changed`);
-        this.summonerId = summonerId;
+    let cmd = spawn(this.getBinPath(), [token, port]);
+
+    cmd.stdout.on('data', data => {
+      let s = data.toString();
+      if (s.startsWith('=== champion id:')) {
+        let championId = +(s.trim().split(':').pop() ?? 0);
+        if (championId > 0) {
+          console.log('championId', championId);
+          this.evBus!.emit(LcuEvent.SelectedChampion, {
+            championId,
+          });
+          return;
+        }
+
+        if (!isDev) {
+          this.hidePopup();
+        }
       }
-      return true;
-    } catch (err) {
-      // console.log(err);
-      return Promise.resolve(false);
-    }
+    });
+    cmd.stderr.on('data', (data) => {
+      console.error(`stderr: ${data.toString()}`);
+    });
+
+    cmd.on('close', (code) => {
+      console.log(`child process exited with code ${code}`);
+    });
+
+    this.tencentTask = cmd;
   };
 
   public findChampionIdFromMyTeam = (myTeam: IChampionSelectTeamItem[] = [], cellId: number) => {
@@ -263,24 +281,6 @@ export class LcuWatcher {
     }
 
     return championId;
-  };
-
-  public onSelectChampion = (data: IChampionSelectRespData) => {
-    // console.log(data);
-    const { myTeam = [], timer } = data;
-    if (timer?.phase === GamePhase.GameStarting || this.summonerId <= 0 || myTeam.length === 0) {
-      // match started or ended
-      // this.hidePopup();
-      return;
-    }
-
-    const championId = this.getChampionIdFromLcuData(data);
-    if (championId > 0) {
-      console.info(`[watcher] picked champion ${championId}`);
-      this.evBus!.emit(LcuEvent.SelectedChampion, {
-        championId: championId,
-      });
-    }
   };
 
   public hidePopup = () => {
@@ -319,6 +319,16 @@ export class LcuWatcher {
   };
 
   public applyRunePage = async (data: any) => {
+    if (this.isTencent) {
+      let { token = '', port = '' } = this.auth ?? {};
+      let bs = Buffer.from(JSON.stringify(data)).toString('base64');
+      let cmd = spawn(this.getBinPath(), ['rune', token, port, bs]);
+      cmd.on('close', () => {
+        cmd.kill();
+      });
+      return Promise.resolve();
+    }
+
     try {
       const list: IPerkPage[] = await this.request.get(`lol-perks/v1/pages`).then(r => r.data);
       const current = list.find((i) => i.current && i.isDeletable);

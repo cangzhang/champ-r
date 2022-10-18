@@ -120,6 +120,7 @@ export interface ILcuAuth {
   port: string;
   token: string;
   urlWithAuth: string;
+  isTencent?: boolean;
 }
 
 export interface IChampionSelectTeamItem {
