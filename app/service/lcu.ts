@@ -172,7 +172,7 @@ export class LcuWatcher {
     this.getAuth();
     this.checkLcuStatusTask = setInterval(async () => {
       this.getAuth();
-    }, 6000);
+    }, 12 * 1000);
   };
 
   public getAuth = async () => {

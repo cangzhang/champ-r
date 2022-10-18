@@ -41,7 +41,7 @@ jobs:
       with:
         path: |
           dist/win-unpacked/
-          dist/*.exe
+#          dist/*.exe
 
     # - name: Move artifacts
     #   id: vars
