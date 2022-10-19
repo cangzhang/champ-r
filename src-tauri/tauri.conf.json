@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "ChampR",
+    "productName": "ChampR-rs",
     "version": "0.1.0"
   },
   "tauri": {

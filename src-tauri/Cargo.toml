@@ -1,11 +1,11 @@
 [package]
-name = "champr"
+name = "champr-rs"
 version = "0.1.0"
 description = "Another League of Legends helper"
 authors = ["Al Cheung<cangzan@gmail.com>"]
 license = "LGPL-2.1 license"
-repository = "https://github.com/cangzhang/champr.rs.git"
-default-run = "champr"
+repository = "https://github.com/cangzhang/champr-rs.git"
+default-run = "champr-rs"
 edition = "2021"
 rust-version = "1.57"
 
@@ -39,10 +39,7 @@ async-compression = { version = "0.3.14", features = ["futures-io", "gzip"] }
 tar = "0.4.38"
 window-shadows = { git = "https://github.com/tauri-apps/window-shadows", branch = "dev"}
 tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store", branch = "dev"}
-
-[dependencies.serde_with]
-version = "2.0.1"
-features = ["json"]
+serde_with = { version = "2.0", features = ["json"] }
 
 [features]
 # by default Tauri runs in production mode
@@ -51,3 +48,10 @@ default = ["custom-protocol"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+opt-level = "z"     # Optimize for size.
+lto = true          # Enable Link Time Optimization
+codegen-units = 1   # Reduce number of codegen units to increase optimizations.
+panic = "abort"     # Abort on panic
+strip = true        # Automatically strip symbols from the binary.
