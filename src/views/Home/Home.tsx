@@ -1,18 +1,14 @@
 import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
-import { appWindow } from '@tauri-apps/api/window';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import SimpleBar from 'simplebar-react';
-import Checkbox from '@jetbrains/ring-ui/dist/checkbox/checkbox';
-import Button from '@jetbrains/ring-ui/dist/button/button';
+import { Button, Checkbox, Container } from '@nextui-org/react';
 
 import { appConf } from '../../config';
 
 import 'simplebar-react/dist/simplebar.min.css';
 import s from './style.module.scss';
-
-console.log(s);
 
 function Home() {
   const [result, setResult] = useState<any[]>([]);
@@ -43,12 +39,7 @@ function Home() {
     setResult(r => [msg, ...r]);
   }, []);
 
-  const toggleSelectSource = useCallback((s: string, prev: string[]) => (ev: any) => {
-    let next = [...prev];
-    next = next.includes(s)
-      ? next.filter(i => i !== s)
-      : [...next, s]
-
+  const onSelectChange = useCallback((next: string[]) => {
     setSelectedSources(next);
     appConf.set("selectedSources", next);
   }, []);
@@ -68,18 +59,6 @@ function Home() {
   }, [updateResult]);
 
   useEffect(() => {
-    document
-      .getElementById('titlebar-minimize')
-      .addEventListener('click', () => appWindow.minimize());
-    document
-      .getElementById('titlebar-maximize')
-      .addEventListener('click', () => appWindow.toggleMaximize());
-    document
-      .getElementById('titlebar-close')
-      .addEventListener('click', () => appWindow.close());
-  }, []);
-
-  useEffect(() => {
     invoke(`get_user_sources`)
       .then((l: any) => {
         setSources(l);
@@ -89,7 +68,7 @@ function Home() {
   useEffect(() => {
     appConf.get<string[]>("selectedSources")
       .then((s) => {
-        setSelectedSources(s);
+        setSelectedSources(s ?? []);
       });
 
     return () => {
@@ -98,32 +77,33 @@ function Home() {
   }, [])
 
   return (
-    <section className="App">
+    <Container>
       <h2>ChampR - rs</h2>
 
-      <SimpleBar forceVisible={true}>
-          <div className={s.sourceList}>
+      <SimpleBar forceVisible={true} className={s.sourceList}>
+        <Checkbox.Group
+          label="Select sources"
+          value={selectedSources}
+          onChange={onSelectChange}
+        >
           {sources.map((i: any) => {
-            let checked = selectedSources.includes(i.source.value);
-
             return (
               <Checkbox
                 key={i.source.value}
                 label={i.source.label}
-                checked={checked}
-                onChange={toggleSelectSource(i.source.value, selectedSources)}
+                value={i.source.value}
               />
             );
           })}
-        </div>
+        </Checkbox.Group>
       </SimpleBar>
 
-      <Button primary={true} onClick={applyBuilds}>Apply Builds</Button>
+      <Button color={"primary"} onClick={applyBuilds}>Apply Builds</Button>
 
       <div style={{ height: 200, overflow: `auto` }}>
         {result.map((i, idx) => <p key={idx}>{i}</p>)}
       </div>
-    </section>
+    </Container>
   );
 }
 
