@@ -221,6 +221,7 @@ export class LcuWatcher {
   };
 
   public spawnForTencent = (token: string, port: string) => {
+    console.log("[lcu] spawn for TENCENT server");
     this.tencentTask?.kill();
 
     let cmd = spawn(this.getBinPath(), [token, port]);

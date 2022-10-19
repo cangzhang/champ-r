@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.11
+- change(lcu): watch champ select.
+
 ## v1.3.10
 - fix(lcu): champ select.
 
