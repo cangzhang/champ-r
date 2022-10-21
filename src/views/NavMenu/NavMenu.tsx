@@ -1,7 +1,9 @@
 import s from './style.module.scss';
 
-import { NavLink, useNavigate } from 'react-router-dom';
-import { Avatar, Badge, Button, Grid } from '@nextui-org/react';
+import { useNavigate } from 'react-router-dom';
+import { Button, Tooltip } from '@nextui-org/react';
+
+import { IconAffiliate, IconSettings, IconBuildingFortress } from '@tabler/icons';
 
 export function NavMenu() {
   const navigate = useNavigate();
@@ -17,11 +19,19 @@ export function NavMenu() {
         animated
         flat
       >
-        <Button onClick={() => navigate('/')}>
-          Builds
+        <Button
+          onClick={() => navigate('/')}
+        >
+          <Tooltip content={'Builds'} placement={'right'}>
+            <IconBuildingFortress/>
+          </Tooltip>
         </Button>
-        <Button onClick={() => navigate('/settings')}>
-          Settings
+        <Button
+          onClick={() => navigate('/settings')}
+        >
+          <Tooltip content={'Settings'} placement={'right'}>
+            <IconSettings/>
+          </Tooltip>
         </Button>
       </Button.Group>
     </div>
