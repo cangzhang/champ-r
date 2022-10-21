@@ -26,7 +26,7 @@ pub fn apply_builds_from_sources(
 
 #[command]
 pub fn get_lcu_auth(state: State<'_, state::GlobalState>) -> String {
-    let (auth_url, _done) = cmd::get_commandline();
+    let (auth_url, _running, _is_tencent) = cmd::get_commandline();
     let s = state.0.lock().unwrap();
     println!("[command] {:?}", s);
     auth_url

@@ -2,11 +2,13 @@ use lazy_static::lazy_static;
 
 const APP_PORT_KEY: &'static str = "--app-port=";
 const TOKEN_KEY: &'static str = "--remoting-auth-token=";
+const REGION_KEY: &'static str = "--region=";
 
 lazy_static! {
     static ref PORT_REGEXP: regex::Regex = regex::Regex::new(r"--app-port=\d+").unwrap();
     static ref TOKEN_REGEXP: regex::Regex =
         regex::Regex::new(r"--remoting-auth-token=\S+").unwrap();
+    static ref REGION_REGEXP: regex::Regex = regex::Regex::new(r"--region=\S+").unwrap();
 }
 
 pub fn make_auth_url(token: &String, port: &String) -> String {
@@ -14,28 +16,28 @@ pub fn make_auth_url(token: &String, port: &String) -> String {
 }
 
 #[cfg(target_os = "windows")]
-pub fn get_commandline() -> (String, bool) {
+pub fn get_commandline() -> (String, bool, bool) {
     let cmd_str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'"| Select-Object -ExpandProperty CommandLine"#;
     match powershell_script::run(&cmd_str) {
         Ok(output) => {
             if let Some(stdout) = output.stdout() {
-                let auth_url = match_stdout(&stdout);
-                (auth_url, true)
+                let (auth_url, is_tencent) = match_stdout(&stdout);
+                (auth_url, true, is_tencent)
             } else {
                 println!("[cmd] got nothing from output, maybe lcu is stopped");
-                (String::from(""), false)
+                (String::new(), false, false)
             }
         }
         Err(e) => {
             println!("Error: {}", e);
             println!("[cmd] maybe you should run it with admin privilege");
-            (String::from(""), false)
+            (String::new(), false, false)
         }
     }
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn get_commandline() -> (String, bool) {
+pub fn get_commandline() -> (String, bool, bool) {
     use std::io::{BufRead, BufReader};
     use std::process::{Command, Stdio};
 
@@ -48,6 +50,7 @@ pub fn get_commandline() -> (String, bool) {
 
     let mut auth_url = String::new();
     let mut running = false;
+    let mut is_tencent = false;
     {
         let stdout = cmd.stdout.as_mut().unwrap();
         let stdout_reader = BufReader::new(stdout);
@@ -57,7 +60,7 @@ pub fn get_commandline() -> (String, bool) {
             match line {
                 Ok(s) => {
                     if s.contains("--app-port=") {
-                        auth_url = match_stdout(&s);
+                        (auth_url, is_tencent) = match_stdout(&s);
                         running = true;
                         break;
                     }
@@ -73,7 +76,7 @@ pub fn get_commandline() -> (String, bool) {
     (auth_url, running)
 }
 
-pub fn match_stdout(stdout: &String) -> String {
+pub fn match_stdout(stdout: &String) -> (String, bool) {
     let port_match = PORT_REGEXP.find(&stdout).unwrap();
     let port = port_match.as_str().replace(APP_PORT_KEY, "");
     let token_match = TOKEN_REGEXP.find(&stdout).unwrap();
@@ -83,7 +86,14 @@ pub fn match_stdout(stdout: &String) -> String {
         .replace("\\", "")
         .replace("\"", "");
     let auth_url = make_auth_url(&token, &port);
-    auth_url
+    let region_match = REGION_REGEXP.find(&stdout).unwrap();
+    let region = region_match
+        .as_str()
+        .replace(REGION_KEY, "")
+        .replace("\\", "")
+        .replace("\"", "");
+    let is_tencent = if region.eq("TENCENT") { true } else { false };
+    (auth_url, is_tencent)
 }
 
 #[cfg(test)]

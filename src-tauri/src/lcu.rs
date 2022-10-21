@@ -21,6 +21,7 @@ pub struct LcuClient {
     pub is_lcu_running: bool,
     pub app_handle: Option<Arc<Mutex<AppHandle>>>,
     pub champion_map: HashMap<String, web::ChampInfo>,
+    pub is_tencent: bool,
 }
 
 impl LcuClient {
@@ -31,6 +32,7 @@ impl LcuClient {
             is_lcu_running: false,
             app_handle: None,
             champion_map: HashMap::new(),
+            is_tencent: false,
         }
     }
 
@@ -89,10 +91,10 @@ impl LcuClient {
             std::thread::sleep(std::time::Duration::from_millis(5000));
         });
 
-        while let Some((auth_url, running)) = rx.recv().await {
+        while let Some((auth_url, running, is_tencent)) = rx.recv().await {
             self.set_lcu_status(running);
 
-            println!("[ws] is lcu running? {}", running);
+            // println!("[ws] is lcu running? {}. Is tencent? {is_tencent}", running);
             if !running {
                 self.close_ws().await;
                 println!("== {:?}", self.socket);
@@ -104,7 +106,12 @@ impl LcuClient {
                 continue;
             }
 
-            let _ = self.conn_ws().await;
+            self.is_tencent = is_tencent;
+            if is_tencent {
+                let _ = self.spawn_league_client().await;
+            } else {
+                let _ = self.conn_ws().await;
+            }
         }
 
         handle.await.unwrap();
@@ -195,6 +202,37 @@ impl LcuClient {
     }
 
     pub async fn on_ws_close(&mut self) {}
+
+    #[cfg(target_os = "windows")]
+    pub async fn spawn_league_client(&mut self) -> anyhow::Result<()> {
+        use std::io::{BufRead, BufReader, Error, ErrorKind};
+        use std::process::{Command, Stdio};
+
+        let arr: Vec<String> = self.auth_url.split("@").map(|s| s.to_string()).collect();
+        let token = arr[0].replace("riot:", "");
+        let port = arr[1].replace("127.0.0.1:", "");
+
+        println!("{:?}", std::env::current_dir());
+        let stdout = Command::new("src/bin/LeagueClient.exe")
+            .args([&token, &port])
+            .stdout(Stdio::piped())
+            .spawn()?
+            .stdout
+            .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output."))?;
+
+        let reader = BufReader::new(stdout);
+        reader
+            .lines()
+            .filter_map(|line| line.ok())
+            .for_each(|line| println!("{}", line));
+
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    pub async fn spawn_league_client() -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 #[cfg(test)]

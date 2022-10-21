@@ -1,11 +1,11 @@
 [package]
-name = "champr-rs"
-version = "0.1.0"
+name = "champr"
+version = "2.0.0-alpha1"
 description = "Another League of Legends helper"
 authors = ["Al Cheung<cangzan@gmail.com>"]
 license = "LGPL-2.1 license"
 repository = "https://github.com/cangzhang/champr-rs.git"
-default-run = "champr-rs"
+default-run = "champr"
 edition = "2021"
 rust-version = "1.57"
 
