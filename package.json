@@ -14,6 +14,7 @@
     "@tauri-apps/api": "^1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.4.2",
     "simplebar-react": "^2.4.1",
     "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#dev"
   },
