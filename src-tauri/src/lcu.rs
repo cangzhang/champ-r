@@ -75,7 +75,6 @@ impl LcuClient {
         }
 
         self.socket = None;
-        self.auth_url = String::new();
     }
 
     pub async fn watch_cmd_output(&mut self) {
@@ -94,7 +93,6 @@ impl LcuClient {
         while let Some((auth_url, running, is_tencent)) = rx.recv().await {
             self.set_lcu_status(running);
 
-            // println!("[ws] is lcu running? {}. Is tencent? {is_tencent}", running);
             if !running {
                 self.close_ws().await;
                 println!("== {:?}", self.socket);
@@ -108,6 +106,7 @@ impl LcuClient {
 
             self.is_tencent = is_tencent;
             if is_tencent {
+                self.close_ws().await;
                 let _ = self.spawn_league_client().await;
             } else {
                 let _ = self.conn_ws().await;
@@ -206,14 +205,23 @@ impl LcuClient {
     #[cfg(target_os = "windows")]
     pub async fn spawn_league_client(&mut self) -> anyhow::Result<()> {
         use std::io::{BufRead, BufReader, Error, ErrorKind};
+        use std::path::Path;
         use std::process::{Command, Stdio};
+
+        println!(
+            "[spawn] LeagueClient eixsts? {:?}",
+            Path::new("./LeagueClient.exe").exists()
+        );
+
+        let handle = self.app_handle.clone().unwrap();
+        let handle = handle.lock().await;
+        let handle = handle.clone();
 
         let arr: Vec<String> = self.auth_url.split("@").map(|s| s.to_string()).collect();
         let token = arr[0].replace("riot:", "");
         let port = arr[1].replace("127.0.0.1:", "");
 
-        println!("{:?}", std::env::current_dir());
-        let stdout = Command::new("src/bin/LeagueClient.exe")
+        let stdout = Command::new("./LeagueClient.exe")
             .args([&token, &port])
             .stdout(Stdio::piped())
             .spawn()?
@@ -221,10 +229,23 @@ impl LcuClient {
             .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output."))?;
 
         let reader = BufReader::new(stdout);
+        let mut champ_id: i64 = 0;
         reader
             .lines()
             .filter_map(|line| line.ok())
-            .for_each(|line| println!("{}", line));
+            .for_each(|line| {
+                if line.starts_with("=== champion id:") {
+                    let champ_id_str = line.trim().replace("=== champion id:", "");
+                    champ_id = champ_id_str.parse().unwrap();
+
+                    if champ_id > 0 {
+                        println!("[watch champ select] {champ_id}");
+                        let champion_alias =
+                            web::get_alias_from_champion_map(&self.champion_map, champ_id);
+                        window::show_and_emit(&handle, champ_id, &champion_alias);
+                    }
+                }
+            });
 
         Ok(())
     }
