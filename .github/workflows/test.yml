@@ -22,9 +22,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Get current date
-        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-        if: matrix.platform == 'macos-latest' || matrix.platform == 'ubuntu-latest'
-
+        if: matrix.platform == 'windows-latest'
+        run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        
       - name: setup node
         uses: actions/setup-node@v1
         with:
