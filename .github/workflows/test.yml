@@ -1,0 +1,33 @@
+name: "Test Build"
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish-tauri:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: install app dependencies and build it
+        env:
+          GH_TOKEN: ${{ secrets.GH_DOWNLOAD_TOKEN }}
+        run: |
+          $release_name=(gh api -H "Accept: application/vnd.github+json" /repos/cangzhang/league-client-tencent/releases/latest --jq ".name")
+          gh release download "$release_name" -R cangzhang/league-client-tencent -p "*exe" -D src-tauri/src/ --clobber && echo "🐳 Downloaded LeagueClient $release_name"
+          npm i -g pnpm
+          pnpm install && pnpm tauri build
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          path: |
+            src-tauri/target/release/*.exe
+            src-tauri/*.exe
