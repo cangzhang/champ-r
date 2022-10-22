@@ -1,3 +1,5 @@
+import s from './style.module.scss';
+
 import { invoke } from '@tauri-apps/api';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -6,12 +8,11 @@ import SimpleBar from 'simplebar-react';
 import { Button, Checkbox, Container } from '@nextui-org/react';
 
 import { appConf } from '../../config';
-
-import 'simplebar-react/dist/simplebar.min.css';
-import s from './style.module.scss';
+import { isDev } from '../../helper';
+import { Source } from '../../interfaces';
 
 export function Builds() {
-  const [sources, setSources] = useState<any>([]);
+  const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
 
   const navigate = useNavigate();
@@ -69,7 +70,9 @@ export function Builds() {
       </SimpleBar>
 
       <Button color={'primary'} onClick={goToImportResult}>Apply Builds</Button>
-      <Button flat size={'sm'} onClick={onToggleWindow}>Toggle Runes</Button>
+      {isDev &&
+        (<Button flat size={'sm'} onClick={onToggleWindow} css={{marginTop: '10px'}}>Toggle Runes</Button>)
+      }
     </Container>
   );
 }
