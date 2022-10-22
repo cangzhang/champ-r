@@ -24,7 +24,7 @@ jobs:
       - name: Get current date
         if: matrix.platform == 'windows-latest'
         run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        
+
       - name: setup node
         uses: actions/setup-node@v1
         with:
@@ -70,12 +70,12 @@ jobs:
         run: |
           $release_name=(gh api -H "Accept: application/vnd.github+json" /repos/cangzhang/league-client-tencent/releases/latest --jq ".name")
           gh release download "$release_name" -R cangzhang/league-client-tencent -p "*exe" -D src-tauri/src/ --clobber && echo "🐳 Downloaded LeagueClient $release_name"
-          npm i -g pnpm
-          pnpm install && pnpm tauri build
+          npm i -g pnpm && pnpm install && pnpm tauri build
+          Move-Item -Path src-tauri/src/LeagueClient.exe -Destination src-tauri/target/release/
+
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
           path: |
             src-tauri/target/release/bundle/*
             src-tauri/target/release/*.exe
-            src-tauri/src/*.exe
