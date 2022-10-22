@@ -47,7 +47,7 @@ pub fn apply_builds_from_sources(
 
 #[command]
 pub fn get_lcu_auth(state: State<'_, state::GlobalState>) -> String {
-    let (auth_url, _running, _is_tencent) = cmd::get_commandline();
+    let (auth_url, _running, _, _, _) = cmd::get_commandline();
     let s = state.0.lock().unwrap();
     println!("[command] {:?}", s);
     auth_url
@@ -164,4 +164,14 @@ pub fn get_runes_reforged(state: State<'_, state::GlobalState>) -> Vec<web::Rune
     }
 
     p.rune_list.clone()
+}
+
+#[command]
+pub async fn apply_perk(perk: String) -> Result<(), ()> {  
+    let _h = async_runtime::spawn(async move {
+        let (_, _, _, token, port) = cmd::get_commandline();
+        let _ = cmd::spawn_apply_rune(&token, &port, &perk).await;
+    });
+
+    Ok(())
 }

@@ -31,10 +31,7 @@ regex = "1.6.0"
 lazy_static = "1.4.0"
 futures-util = "0.3.23"
 futures-channel = "0.3.23"
-tokio-tungstenite = { version = "0.17.2", features = ["native-tls"] }
-native-tls = "0.2.10"
 base64 = "0.13.0"
-http = "0.2.8"
 async-compression = { version = "0.3.14", features = ["futures-io", "gzip"] }
 tar = "0.4.38"
 window-shadows = { git = "https://github.com/tauri-apps/window-shadows", branch = "dev"}

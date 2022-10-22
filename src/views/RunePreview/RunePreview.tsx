@@ -1,9 +1,11 @@
 import s from './style.module.scss';
 
 import { useCallback, useMemo } from 'react';
-import { Card } from '@nextui-org/react';
+import { Button, Card } from '@nextui-org/react';
 
 import { PerkPage, Rune, RuneSlot } from '../../interfaces';
+import { IconSword } from '@tabler/icons';
+import { invoke } from '@tauri-apps/api';
 
 interface RRune extends Rune {
   parent?: number;
@@ -19,6 +21,10 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
       sub
     };
   }, [runesReforged]);
+
+  const applyPerk = useCallback((p: PerkPage) => {
+    invoke('apply_perk', {perk: JSON.stringify(p)});
+  }, []);
 
   let runesRef = useMemo(() => {
     let r: { [key: number]: RRune } = {};
@@ -37,13 +43,13 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
   }, [runesReforged]);
 
   return (
-    <Card css={{ width: '80vw' }}>
+    <Card css={{width: '80vw'}}>
       {
-        perks.map(p => {
+        perks.map((p, idx) => {
           let {primary, sub} = getSlots(p);
 
           return (
-            <div className={s.item}>
+            <div className={s.item} key={idx}>
               <img
                 width={36}
                 height={36}
@@ -79,6 +85,15 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
                   />
                 );
               })}
+
+              <Button
+                auto
+                flat
+                color="success"
+                icon={<IconSword/>}
+                css={{marginLeft: '2rem'}}
+                onClick={() => applyPerk(p)}
+              />
             </div>
           );
         })

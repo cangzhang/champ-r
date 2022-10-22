@@ -16,28 +16,28 @@ pub fn make_auth_url(token: &String, port: &String) -> String {
 }
 
 #[cfg(target_os = "windows")]
-pub fn get_commandline() -> (String, bool, bool) {
+pub fn get_commandline() -> (String, bool, bool, String, String) {
     let cmd_str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'"| Select-Object -ExpandProperty CommandLine"#;
     match powershell_script::run(&cmd_str) {
         Ok(output) => {
             if let Some(stdout) = output.stdout() {
-                let (auth_url, is_tencent) = match_stdout(&stdout);
-                (auth_url, true, is_tencent)
+                let (auth_url, is_tencent, token, port) = match_stdout(&stdout);
+                (auth_url, true, is_tencent, token, port)
             } else {
                 println!("[cmd] got nothing from output, maybe lcu is stopped");
-                (String::new(), false, false)
+                (String::new(), false, false, String::new(), String::new())
             }
         }
         Err(e) => {
             println!("Error: {}", e);
             println!("[cmd] maybe you should run it with admin privilege");
-            (String::new(), false, false)
+            (String::new(), false, false, String::new(), String::new())
         }
     }
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn get_commandline() -> (String, bool, bool) {
+pub fn get_commandline() -> (String, bool, bool, String, String) {
     use std::io::{BufRead, BufReader};
     use std::process::{Command, Stdio};
 
@@ -49,6 +49,8 @@ pub fn get_commandline() -> (String, bool, bool) {
         .unwrap();
 
     let mut auth_url = String::new();
+    let mut token = String::new();
+    let mut port = String::new();
     let mut running = false;
     let mut is_tencent = false;
     {
@@ -60,7 +62,7 @@ pub fn get_commandline() -> (String, bool, bool) {
             match line {
                 Ok(s) => {
                     if s.contains("--app-port=") {
-                        (auth_url, is_tencent) = match_stdout(&s);
+                        (auth_url, is_tencent, token, port) = match_stdout(&s);
                         running = true;
                         break;
                     }
@@ -73,10 +75,10 @@ pub fn get_commandline() -> (String, bool, bool) {
     }
     cmd.wait().unwrap();
 
-    (auth_url, running)
+    (auth_url, running, token, port)
 }
 
-pub fn match_stdout(stdout: &String) -> (String, bool) {
+pub fn match_stdout(stdout: &String) -> (String, bool, String, String) {
     let port_match = PORT_REGEXP.find(&stdout).unwrap();
     let port = port_match.as_str().replace(APP_PORT_KEY, "");
     let token_match = TOKEN_REGEXP.find(&stdout).unwrap();
@@ -93,7 +95,26 @@ pub fn match_stdout(stdout: &String) -> (String, bool) {
         .replace("\\", "")
         .replace("\"", "");
     let is_tencent = if region.eq("TENCENT") { true } else { false };
-    (auth_url, is_tencent)
+    (auth_url, is_tencent, token, port)
+}
+
+#[cfg(target_os = "windows")]
+pub async fn spawn_apply_rune(token: &String, port: &String, perk: &String) -> anyhow::Result<()> {
+    use std::process::Command;
+
+    let perk = base64::encode(perk);
+    println!("{token} {port} {perk}");
+    Command::new("./LeagueClient.exe")
+        .args(["rune", token, port, &perk])
+        .spawn()
+        .expect("[spawn_apply_rune] failed");
+
+    Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
+pub async fn spawn_apply_rune(perk: String) -> anyhow::Result<()> {
+    Ok(())
 }
 
 #[cfg(test)]

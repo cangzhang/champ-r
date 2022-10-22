@@ -131,6 +131,7 @@ fn main() {
             commands::get_user_sources,
             commands::get_runes_reforged,
             commands::random_runes,
+            commands::apply_perk,
         ])
         .run(context)
         .expect("error while running tauri application");
