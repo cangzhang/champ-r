@@ -5,7 +5,7 @@ on:
       - main
 
 jobs:
-  publish-tauri:
+  tauri-build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,11 +13,11 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 16
-      - name: install Rust stable
+      - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: install app dependencies and build it
+      - name: Build
         env:
           GH_TOKEN: ${{ secrets.GH_DOWNLOAD_TOKEN }}
         run: |
@@ -30,4 +30,4 @@ jobs:
         with:
           path: |
             src-tauri/target/release/*.exe
-            src-tauri/*.exe
+            src-tauri/src/*.exe
