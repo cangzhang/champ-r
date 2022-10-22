@@ -20,21 +20,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Get current date
+      - name: Get Current Date
         if: matrix.platform == 'windows-latest'
         run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: setup node
+      - name: Setup Node
         uses: actions/setup-node@v1
         with:
           node-version: 16
-
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Cache cargo state
+      - name: Cache Cargo State
         uses: actions/cache@v2
         env:
           cache-name: cargo_state
@@ -49,7 +46,7 @@ jobs:
             ${{ matrix.platform }}-stable-${{ env.cache-name }}-
             ${{ matrix.platform }}-stable-
             ${{ matrix.platform }}-
-      - name: Cache bundler cargo target
+      - name: Cache Cargo Target
         uses: actions/cache@v2
         env:
           cache-name: cargo_bundler
@@ -77,5 +74,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: |
-            src-tauri/target/release/bundle/*
+            src-tauri/target/release/bundle/msi/*
             src-tauri/target/release/*.exe
