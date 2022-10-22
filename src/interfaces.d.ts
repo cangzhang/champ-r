@@ -11,20 +11,24 @@ export interface Source {
 }
 
 export interface Rune {
-  icon: string
-  id: number
-  key: string
-  longDesc: string
-  name: string
-  shortDesc: string
+  icon: string;
+  id: number;
+  key: string;
+  longDesc: string;
+  name: string;
+  shortDesc: string;
+}
+
+export interface SlotChild {
+  runes: Rune[];
 }
 
 export interface RuneSlot {
-  icon: string
-  id: number
-  key: string
-  name: string
-  slots: Rune[][]
+  icon: string;
+  id: number;
+  key: string;
+  name: string;
+  slots: SlotChild[];
 }
 
 export interface DDragon {
@@ -32,4 +36,15 @@ export interface DDragon {
   rune_list: RuneSlot[];
   ready: boolean;
   official_version: string;
+}
+
+export interface PerkPage {
+  alias: string;
+  pickCount: number;
+  position: string;
+  winRate: string;
+  name: string;
+  primaryStyleId: number;
+  selectedPerkIds: number[];
+  subStyleId: number;
 }

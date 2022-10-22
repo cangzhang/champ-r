@@ -4,18 +4,20 @@ import { invoke } from '@tauri-apps/api';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Container, Dropdown, Tooltip } from '@nextui-org/react';
 
-import { DDragon, Source } from '../../interfaces';
+import { DDragon, RuneSlot, Source } from '../../interfaces';
 import { appConf } from '../../config';
 
 import s from './style.module.scss';
+import { RunePreview } from '../RunePreview/RunePreview';
 
-export function Rune() {
+export function RuneOverview() {
   const [championId, setChampionId] = useState(0);
   const [championAlias, setChampionAlias] = useState('');
-  const [runes, setRunes] = useState<any[]>([]);
+  const [perks, setPerks] = useState<any[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
   const [curSource, setCurSource] = useState(new Set([]));
   const [version, setVersion] = useState('');
+  const [runesReforged, setRunesReforged] = useState<RuneSlot[]>([]);
 
   let ddragon = useRef<DDragon>(null).current;
 
@@ -25,7 +27,7 @@ export function Rune() {
     }
 
     let r: any = await invoke(`get_available_runes_for_champion`, {sourceName: [...curSource][0], championAlias});
-    setRunes(r);
+    setPerks(r);
   }, [championAlias, curSource]);
 
   const initData = useCallback(async () => {
@@ -33,6 +35,7 @@ export function Rune() {
       ddragon = await invoke(`get_ddragon_data`);
     }
 
+    setRunesReforged(ddragon.rune_list);
     let selectedSources: string[] = await appConf.get('selectedSources');
     let availableSources = ddragon.source_list;
     if (selectedSources?.length > 0) {
@@ -87,7 +90,7 @@ export function Rune() {
   let selectedSource = useMemo(() => [...curSource].join(''), [curSource]);
 
   return (
-    <Container>
+    <div>
       <div className={s.header}>
         <Tooltip content={championAlias} placement={'bottom'}>
           <Avatar src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}/>
@@ -111,8 +114,8 @@ export function Rune() {
           </Dropdown.Menu>
         </Dropdown>
       </div>
-      <button className={`btn`} onClick={getRuneList}>Get Rune List</button>
-      <pre>{JSON.stringify(runes, null, 2)}</pre>
-    </Container>
+
+      {runesReforged.length > 0  && <RunePreview perks={perks} runesReforged={runesReforged}/>}
+    </div>
   );
 }

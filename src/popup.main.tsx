@@ -1,10 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { Rune } from './views/Rune/Rune';
+import { RuneOverview } from './views/RuneOverview/RuneOverview';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  // <React.StrictMode>
-  <Rune/>
-  // </React.StrictMode>
+  <RuneOverview/>
 );
