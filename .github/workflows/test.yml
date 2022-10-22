@@ -4,19 +4,66 @@ on:
     branches:
       - main
 
+env:
+  RUST_BACKTRACE: 1
+  CARGO_INCREMENTAL: 0 # This is set to 0 by the https://github.com/Swatinem/rust-cache
+  CARGO_PROFILE_DEV_DEBUG: 0 # This would add unnecessary bloat to the target folder, decreasing cache efficiency.
+
 jobs:
   tauri-build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.platform }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest]
+
     steps:
       - uses: actions/checkout@v2
+
+      - name: Get current date
+        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'ubuntu-latest'
+
       - name: setup node
         uses: actions/setup-node@v1
         with:
           node-version: 16
+
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - name: Cache cargo state
+        uses: actions/cache@v2
+        env:
+          cache-name: cargo_state
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+          key: ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+          restore-keys: |
+            ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}-
+            ${{ matrix.platform }}-stable-${{ env.cache-name }}-
+            ${{ matrix.platform }}-stable-
+            ${{ matrix.platform }}-
+      - name: Cache bundler cargo target
+        uses: actions/cache@v2
+        env:
+          cache-name: cargo_bundler
+        with:
+          path: src-tauri/target
+          # Add date to the cache to keep it up to date
+          key: ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('src-tauri/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+          # Restore from outdated cache for speed
+          restore-keys: |
+            ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+            ${{ matrix.platform }}-stable-${{ env.cache-name }}-
+            ${{ matrix.platform }}-stable-
+            ${{ matrix.platform }}-
+
       - name: Build
         env:
           GH_TOKEN: ${{ secrets.GH_DOWNLOAD_TOKEN }}
@@ -29,5 +76,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: |
+            src-tauri/target/release/bundle/*
             src-tauri/target/release/*.exe
             src-tauri/src/*.exe
