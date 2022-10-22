@@ -113,10 +113,10 @@ pub async fn fetch_rune_list(version: &String) -> anyhow::Result<Vec<RuneListIte
     Ok(data)
 }
 
-pub async fn fetch_latest_rune_list() -> anyhow::Result<Vec<RuneListItem>> {
+pub async fn fetch_latest_rune_list() -> anyhow::Result<(Vec<RuneListItem>, String)> {
     let v = fetch_lol_latest_version().await?;
     let list = fetch_rune_list(&v).await?;
-    Ok(list)
+    Ok((list, v))
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

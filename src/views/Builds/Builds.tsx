@@ -13,41 +13,41 @@ import s from './style.module.scss';
 export function Builds() {
   const [sources, setSources] = useState<any>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
-  
+
   const navigate = useNavigate();
-  
+
   const onToggleWindow = () => {
-    invoke(`toggle_rune_window`);
+    invoke(`random_runes`);
   };
-  
+
   const goToImportResult = () => {
     let selected = selectedSources.join(',');
     navigate(`/import?sources=${selected}`);
   };
-  
+
   const onSelectChange = useCallback((next: string[]) => {
     setSelectedSources(next);
     appConf.set('selectedSources', next);
   }, []);
-  
+
   useEffect(() => {
     invoke(`get_user_sources`)
-      .then((l: any) => {
-        setSources(l);
-      });
+    .then((l: any) => {
+      setSources(l);
+    });
   }, []);
-  
+
   useEffect(() => {
     appConf.get<string[]>('selectedSources')
-      .then((s) => {
-        setSelectedSources(s ?? []);
-      });
-    
+    .then((s) => {
+      setSelectedSources(s ?? []);
+    });
+
     return () => {
       appConf.save();
     };
   }, []);
-  
+
   return (
     <Container>
       <SimpleBar forceVisible={true} className={s.sourceList}>
@@ -67,8 +67,9 @@ export function Builds() {
           })}
         </Checkbox.Group>
       </SimpleBar>
-      
+
       <Button color={'primary'} onClick={goToImportResult}>Apply Builds</Button>
+      <Button flat size={'sm'} onClick={onToggleWindow}>Toggle Runes</Button>
     </Container>
   );
 }

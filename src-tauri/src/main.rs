@@ -130,6 +130,7 @@ fn main() {
             commands::get_ddragon_data,
             commands::get_user_sources,
             commands::get_runes_reforged,
+            commands::random_runes,
         ])
         .run(context)
         .expect("error while running tauri application");

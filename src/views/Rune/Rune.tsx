@@ -1,66 +1,108 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { listen } from '@tauri-apps/api/event'
+import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api';
 
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Avatar, Container, Dropdown } from '@nextui-org/react';
+
+import { appConf } from '../../config';
+
+import s from './style.module.scss';
+
 export function Rune() {
-    const [championId, setChampionId] = useState(0);
-    const [championAlias, setChampionAlias] = useState('');
-    const [runes, setRunes] = useState<any[]>([]);
-    const [sources, setSources] = useState<any>([])
-    const [curSource, setCurSource] = useState('u.gg');
+  const [championId, setChampionId] = useState(0);
+  const [championAlias, setChampionAlias] = useState('');
+  const [runes, setRunes] = useState<any[]>([]);
+  const [sources, setSources] = useState<any>([]);
+  const [curSource, setCurSource] = useState(new Set([]));
+  const [version, setVersion] = useState('')
 
-    let ddragon = useRef<any>([]);
+  let ddragon = useRef<any>([]).current;
 
-    const getRuneList = useCallback(async () => {
-        if (!championAlias || !curSource) {
-            return;
-        }
+  const getRuneList = useCallback(async () => {
+    if (!championAlias || !curSource) {
+      return;
+    }
 
-        if (!ddragon.current.length) {
-            ddragon.current = await invoke(`get_ddragon_data`);
-            setSources(ddragon.current.source_list);
-        }
+    let r: any = await invoke(`get_available_runes_for_champion`, {sourceName: [...curSource][0], championAlias});
+    setRunes(r);
+  }, [championAlias, curSource]);
 
-        let r: any = await invoke(`get_available_runes_for_champion`, { sourceName: curSource, championAlias });
-        setRunes(r);
-    }, [championAlias, curSource]);
+  const initData = useCallback(async () => {
+    if (!ddragon.length) {
+      ddragon = await invoke(`get_ddragon_data`);
 
-    useEffect(() => {
-        let unlisten: () => any = () => null;
-        listen('popup_window::selected_champion', ({ payload }: { payload: any }) => {
-            console.log(`popup_window::selected_champion`, payload);
-            setChampionId(payload.champion_id);
-            setChampionAlias(payload.champion_alias);
-        }).then(un => {
-            unlisten = un;
-        });
+      setSources(ddragon.source_list);
+      setVersion(ddragon.official_version);
+    }
 
-        return () => {
-            unlisten()
-        }
-    }, []);
+    let sourceList = ddragon.source_list;
 
-    useEffect(() => {
-        console.log(`trigger getRuneList`);
-        getRuneList();
-    }, [getRuneList]);
+    let runeSource: string = await appConf.get('runeSource');
+    if (!runeSource) {
+      runeSource = sourceList[0].source.value;
+    }
+    setCurSource(new Set([runeSource]));
+  }, []);
 
-    return (
-        <section>
-            <h1>RUNE WINDOW</h1>
-            <p>current champion: <code>{championId}</code> <code>{championAlias}</code></p>
+  useEffect(() => {
+    let sourceTab: string = [...curSource][0];
+    if (sourceTab) {
+      appConf.set('runeSource', sourceTab);
+    }
+  }, [curSource]);
 
-            <select className={"select select-bordered"} onChange={ev => setCurSource(ev.target.value)} >
-                {sources.map((i: any) => {
-                    return (<option key={i.source.value} value={i.source.value}>{i.source.label}</option>)
-                })}
-            </select>
+  useEffect(() => {
+    let unlisten: () => any = () => null;
+    listen('popup_window::selected_champion', ({payload}: { payload: any }) => {
+      console.log(`popup_window::selected_champion`, payload);
+      setChampionId(payload.champion_id);
+      setChampionAlias(payload.champion_alias);
+    }).then(un => {
+      unlisten = un;
+    });
 
-            <button className={`btn`} onClick={getRuneList}>Get Rune List</button>
+    return () => {
+      unlisten();
+    };
+  }, []);
 
-            <pre>
-                {JSON.stringify(runes, null, 2)}
-            </pre>
-        </section>
-    )
+  useEffect(() => {
+    getRuneList();
+  }, [getRuneList]);
+
+  useEffect(() => {
+    initData();
+
+    return () => {
+      appConf.save();
+    };
+  }, [initData]);
+
+  let selectedSource = useMemo(() => [...curSource].join(''), [curSource]);
+
+  return (
+    <Container>
+      <Avatar src={`https://game.gtimg.cn/images/lol/act/img/champion/${championAlias}.png`}/>
+      <Avatar src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}/>
+
+      <Dropdown>
+        <Dropdown.Button flat color={'secondary'}>{selectedSource}</Dropdown.Button>
+        <Dropdown.Menu
+          color="secondary"
+          disallowEmptySelection
+          selectionMode="single"
+          selectedKeys={curSource}
+          // @ts-ignore
+          onSelectionChange={setCurSource}
+        >
+          {sources.map((i: any) => (
+            <Dropdown.Item key={i.source.value}>{i.source.label}</Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
+
+      <button className={`btn`} onClick={getRuneList}>Get Rune List</button>
+      <pre>{JSON.stringify(runes, null, 2)}</pre>
+    </Container>
+  );
 }

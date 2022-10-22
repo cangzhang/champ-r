@@ -1,5 +1,6 @@
 use std::sync::mpsc;
 
+use rand::Rng;
 use serde_json::json;
 use tauri::{async_runtime, command, AppHandle, Manager, State, Window};
 
@@ -11,6 +12,26 @@ pub fn toggle_rune_window(window: Window) {
         "action": "toggle_rune_window",
     });
     window.trigger("global_events", Some(payload.to_string()));
+}
+
+#[command]
+pub fn random_runes(handle: AppHandle, state: State<'_, state::GlobalState>) {
+    let s = state.0.lock().unwrap();
+    let p = s.page_data.lock().unwrap();
+
+    let mut rng = rand::thread_rng();
+    println!("{}", p.champion_map.len());
+    let mut i = rng.gen_range(0..p.champion_map.len());
+    for (_, c) in p.champion_map.iter() {
+        if i > 0 {
+            i -= 1;
+            continue;
+        }
+
+        let key: i64 = c.key.parse().unwrap();
+        crate::window::show_and_emit(&handle, key, &c.id);
+        break;
+    }
 }
 
 #[command]
@@ -84,10 +105,12 @@ pub async fn get_ddragon_data(
             let _ = tx.send(r.unwrap());
         });
 
-        let (ready, s, r) = rx.recv().unwrap();
+        let (ready, s, r, v, c) = rx.recv().unwrap();
         p.ready = ready;
         p.source_list = s;
         p.rune_list = r;
+        p.official_version = v;
+        p.champion_map = c;
     }
 
     Ok(p.clone())
@@ -108,10 +131,12 @@ pub fn get_user_sources(
             let _ = tx.send(r.unwrap());
         });
 
-        let (ready, s, r) = rx.recv().unwrap();
+        let (ready, s, r, v,c ) = rx.recv().unwrap();
         p.ready = ready;
         p.source_list = s;
         p.rune_list = r;
+        p.official_version = v;
+        p.champion_map = c;
     }
 
     p.source_list.clone()
@@ -130,10 +155,12 @@ pub fn get_runes_reforged(state: State<'_, state::GlobalState>) -> Vec<web::Rune
             let _ = tx.send(r.unwrap());
         });
 
-        let (ready, s, r) = rx.recv().unwrap();
+        let (ready, s, r, v, c) = rx.recv().unwrap();
         p.ready = ready;
         p.source_list = s;
         p.rune_list = r;
+        p.official_version = v;
+        p.champion_map = c;
     }
 
     p.rune_list.clone()

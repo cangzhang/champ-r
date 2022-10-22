@@ -5,7 +5,7 @@ use crate::{lcu, page_data};
 
 #[derive(Clone, Debug)]
 pub struct InnerState {
-    pub ws_client: lcu::LcuClient,
+    pub lcu_client: lcu::LcuClient,
     pub app_handle: Arc<Mutex<Option<AppHandle>>>,
     pub main_window: Arc<Mutex<Option<Window>>>,
     pub page_data: Arc<Mutex<page_data::PageData>>,
@@ -14,7 +14,7 @@ pub struct InnerState {
 impl InnerState {
     pub fn new() -> Self {
         Self {
-            ws_client: lcu::LcuClient::new(),
+            lcu_client: lcu::LcuClient::new(),
             app_handle: Arc::new(Mutex::new(None)),
             main_window: Arc::new(Mutex::new(None)),
             page_data: Arc::new(Mutex::new(page_data::PageData::new())),
@@ -23,7 +23,7 @@ impl InnerState {
 
     pub fn init(&mut self, handle: &AppHandle) {
         let handle = handle.clone();
-        let mut ws = self.ws_client.clone();
+        let mut ws = self.lcu_client.clone();
 
         tauri::async_runtime::spawn(async move {
             let _ = ws.prepare_data(&handle).await;
@@ -41,11 +41,13 @@ impl InnerState {
                 }
             };
         });
-        let (ready, s, r) = rx.recv().unwrap();
+        let (ready, s, r, v, c) = rx.recv().unwrap();
         let mut p = self.page_data.lock().unwrap();
         p.ready = ready;
         p.source_list = s;
         p.rune_list = r;
+        p.official_version = v;
+        p.champion_map = c;
 
         println!("[inner state] init");
     }
