@@ -103,7 +103,6 @@ pub async fn spawn_apply_rune(token: &String, port: &String, perk: &String) -> a
     use std::process::Command;
 
     let perk = base64::encode(perk);
-    println!("{token} {port} {perk}");
     Command::new("./LeagueClient.exe")
         .args(["rune", token, port, &perk])
         .spawn()
@@ -114,6 +113,59 @@ pub async fn spawn_apply_rune(token: &String, port: &String, perk: &String) -> a
 
 #[cfg(not(target_os = "windows"))]
 pub async fn spawn_apply_rune(perk: String) -> anyhow::Result<()> {
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+pub async fn spawn_league_client(
+    token: &String,
+    port: &String,
+    handle: &Option<tauri::AppHandle>,
+    champion_map: &std::collections::HashMap<String, crate::web::ChampInfo>,
+) -> anyhow::Result<()> {
+    use std::io::{BufRead, BufReader, Error, ErrorKind};
+    use std::path::Path;
+    use std::process::{Command, Stdio};
+
+    println!(
+        "[spawn] LeagueClient eixsts? {:?}",
+        Path::new("./LeagueClient.exe").exists()
+    );
+    println!("[spawn] auth: {} {}", token, port);
+
+    let stdout = Command::new("./LeagueClient.exe")
+        .args([token, port])
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output."))?;
+
+    let reader = BufReader::new(stdout);
+    let mut champ_id: i64 = 0;
+    reader
+        .lines()
+        .filter_map(|line| line.ok())
+        .for_each(|line| {
+            if line.starts_with("=== champion id:") {
+                let champ_id_str = line.trim().replace("=== champion id:", "");
+                champ_id = champ_id_str.parse().unwrap();
+
+                if champ_id > 0 {
+                    println!("[watch champ select] {champ_id}");
+                    let champion_alias =
+                        crate::web::get_alias_from_champion_map(champion_map, champ_id);
+                    if let Some(h) = handle {
+                        crate::window::show_and_emit(h, champ_id, &champion_alias);
+                    }
+                }
+            }
+        });
+
+    Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
+pub async fn spawn_league_client() -> anyhow::Result<()> {
     Ok(())
 }
 

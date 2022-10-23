@@ -20,7 +20,6 @@ pub fn random_runes(handle: AppHandle, state: State<'_, state::GlobalState>) {
     let p = s.page_data.lock().unwrap();
 
     let mut rng = rand::thread_rng();
-    println!("{}", p.champion_map.len());
     let mut i = rng.gen_range(0..p.champion_map.len());
     for (_, c) in p.champion_map.iter() {
         if i > 0 {

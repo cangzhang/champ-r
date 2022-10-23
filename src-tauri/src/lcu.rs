@@ -1,10 +1,9 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::{Arc, mpsc}};
 
 use async_std::sync::Mutex;
 use tauri::AppHandle;
-use tokio::sync::mpsc;
 
-use crate::{cmd, web, window};
+use crate::{cmd, web};
 
 #[derive(Clone, Debug, Default)]
 pub struct LcuClient {
@@ -56,85 +55,36 @@ impl LcuClient {
         };
     }
 
-    pub async fn watch_cmd_output(&mut self) {
-        let (tx, mut rx) = mpsc::unbounded_channel();
-        let handle = tokio::task::spawn_blocking(move || loop {
-            let ret = cmd::get_commandline();
-            match tx.send(ret) {
-                Ok(_) => (),
-                Err(e) => {
-                    println!("{:?}", e.to_string());
-                }
-            };
-            std::thread::sleep(std::time::Duration::from_millis(5000));
+    pub fn watch_lcu(&mut self, handle: &Option<AppHandle>) {
+        let (tx, rx) = mpsc::channel();
+        std::thread::spawn(move || {
+            let tx = tx.clone();
+
+            loop {
+                let ret = cmd::get_commandline();
+                let _ = tx.send(ret);
+                std::thread::sleep(std::time::Duration::from_millis(5000));
+            }
         });
 
-        while let Some((auth_url, running, is_tencent, token, port)) = rx.recv().await {
+        while let Ok((auth_url, running, is_tencent, token, port)) = rx.recv() {
             self.set_lcu_status(running);
             if !running {
                 continue;
             }
 
+            self.is_tencent = is_tencent;
             let updated = self.update_auth_url(&auth_url, &token, &port);
             if !updated {
                 continue;
             }
 
-            self.is_tencent = is_tencent;
-            let _ = self.spawn_league_client().await;
-        }
-
-        handle.await.unwrap();
-    }
-
-    #[cfg(target_os = "windows")]
-    pub async fn spawn_league_client(&mut self) -> anyhow::Result<()> {
-        use std::io::{BufRead, BufReader, Error, ErrorKind};
-        use std::path::Path;
-        use std::process::{Command, Stdio};
-
-        println!(
-            "[spawn] LeagueClient eixsts? {:?}",
-            Path::new("./LeagueClient.exe").exists()
-        );
-        println!("auth: {} {}", self.token, self.port);
-
-        let handle = self.app_handle.clone().unwrap();
-        let handle = handle.lock().await;
-        let handle = handle.clone();
-
-        let stdout = Command::new("./LeagueClient.exe")
-            .args([&self.token, &self.port])
-            .stdout(Stdio::piped())
-            .spawn()?
-            .stdout
-            .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output."))?;
-
-        let reader = BufReader::new(stdout);
-        let mut champ_id: i64 = 0;
-        reader
-            .lines()
-            .filter_map(|line| line.ok())
-            .for_each(|line| {
-                if line.starts_with("=== champion id:") {
-                    let champ_id_str = line.trim().replace("=== champion id:", "");
-                    champ_id = champ_id_str.parse().unwrap();
-
-                    if champ_id > 0 {
-                        println!("[watch champ select] {champ_id}");
-                        let champion_alias =
-                            web::get_alias_from_champion_map(&self.champion_map, champ_id);
-                        window::show_and_emit(&handle, champ_id, &champion_alias);
-                    }
-                }
+            let champ_map = self.champion_map.clone();
+            let handle = handle.clone();
+            async_std::task::spawn(async move {
+                let _ = cmd::spawn_league_client(&token, &port, &handle, &champ_map).await;
             });
-
-        Ok(())
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    pub async fn spawn_league_client() -> anyhow::Result<()> {
-        Ok(())
+        }
     }
 }
 
@@ -145,6 +95,6 @@ mod tests {
     #[tokio::test]
     async fn start() {
         let mut lcu = LcuClient::new();
-        lcu.watch_cmd_output().await;
+        lcu.watch_lcu(&None);
     }
 }
