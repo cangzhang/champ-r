@@ -2,13 +2,16 @@ import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, Container, Dropdown, Tooltip } from '@nextui-org/react';
+import { Avatar, Dropdown, Tooltip } from '@nextui-org/react';
+import { Toaster } from 'react-hot-toast';
 
 import { DDragon, RuneSlot, Source } from '../../interfaces';
 import { appConf } from '../../config';
 
-import s from './style.module.scss';
 import { RunePreview } from '../RunePreview/RunePreview';
+import { Toolbar } from '../Toolbar/Toolbar';
+
+import s from './style.module.scss';
 
 export function RuneOverview() {
   const [championId, setChampionId] = useState(0);
@@ -90,32 +93,37 @@ export function RuneOverview() {
   let selectedSource = useMemo(() => [...curSource].join(''), [curSource]);
 
   return (
-    <div>
-      <div className={s.header}>
-        <Tooltip content={championAlias} placement={'bottom'}>
-          <Avatar src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}/>
-        </Tooltip>
+    <>
+      <Toolbar/>
+      <div className={s.overviewContainer}>
+        <div className={s.header}>
+          <Tooltip content={championAlias} placement={'bottom'}>
+            <Avatar src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}/>
+          </Tooltip>
 
-        <Dropdown>
-          <Dropdown.Button flat color={'secondary'}>
-            <div className={s.curSource}>{selectedSource}</div>
-          </Dropdown.Button>
-          <Dropdown.Menu
-            color="secondary"
-            disallowEmptySelection
-            selectionMode="single"
-            selectedKeys={curSource}
-            // @ts-ignore
-            onSelectionChange={setCurSource}
-          >
-            {sources.map((i: any) => (
-              <Dropdown.Item key={i.source.value}>{i.source.label}</Dropdown.Item>
-            ))}
-          </Dropdown.Menu>
-        </Dropdown>
+          <Dropdown>
+            <Dropdown.Button flat color={'secondary'}>
+              <div className={s.curSource}>{selectedSource}</div>
+            </Dropdown.Button>
+            <Dropdown.Menu
+              color="secondary"
+              disallowEmptySelection
+              selectionMode="single"
+              selectedKeys={curSource}
+              // @ts-ignore
+              onSelectionChange={setCurSource}
+            >
+              {sources.map((i: any) => (
+                <Dropdown.Item key={i.source.value}>{i.source.label}</Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+        </div>
+
+        {runesReforged.length > 0 && <RunePreview perks={perks} runesReforged={runesReforged}/>}
+
+        <Toaster position="bottom-center"/>
       </div>
-
-      {runesReforged.length > 0  && <RunePreview perks={perks} runesReforged={runesReforged}/>}
-    </div>
+    </>
   );
 }

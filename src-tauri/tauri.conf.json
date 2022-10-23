@@ -69,9 +69,13 @@
         "decorations": false
       },
       {
+        "title": "Runes",
         "label": "rune",
         "url": "rune.html",
-        "visible": false
+        "visible": false,
+        "width": 420,
+        "decorations": false,
+        "resizable": false
       }
     ]
   }

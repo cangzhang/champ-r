@@ -18,7 +18,7 @@ export function Toolbar() {
       <div className={s.titlebarBtn} onClick={() => appWindow.minimize()}>
         <IconMinus size={20}/>
       </div>
-      <div className={s.titlebarBtn} onClick={() => null}>
+      <div className={s.titlebarBtn} onClick={() => appWindow.hide()}>
         <IconX size={20}/>
       </div>
     </div>

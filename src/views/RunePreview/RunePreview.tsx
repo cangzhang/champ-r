@@ -1,17 +1,40 @@
 import s from './style.module.scss';
 
-import { useCallback, useMemo } from 'react';
-import { Button, Card } from '@nextui-org/react';
+import { invoke } from '@tauri-apps/api';
+
+import { useCallback, useMemo, useState } from 'react';
+import { Button } from '@nextui-org/react';
+import cn from 'classnames';
+import { IconCheck, IconRotateClockwise2, IconSword } from '@tabler/icons';
+import toast from 'react-hot-toast';
 
 import { PerkPage, Rune, RuneSlot } from '../../interfaces';
-import { IconSword } from '@tabler/icons';
-import { invoke } from '@tauri-apps/api';
+import { sleep } from '../../helper';
 
 interface RRune extends Rune {
   parent?: number;
 }
 
+enum ApplyStage {
+  Normal,
+  Processing,
+  Done,
+}
+
+const getStageIcon = (stage: number) => {
+  switch (stage) {
+    case ApplyStage.Processing:
+      return <IconRotateClockwise2 className={s.loading}/>;
+    case ApplyStage.Done:
+      return <IconCheck />;
+    default:
+      return <IconSword/>;
+  }
+}
+
 export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesReforged: RuneSlot[] }) {
+  const [processing, setProcessing] = useState<{ [key: number]: ApplyStage }>({});
+
   const getSlots = useCallback((perk: PerkPage) => {
     let primary = runesReforged.find(i => i.id === perk.primaryStyleId);
     let sub = runesReforged.find(i => i.id === perk.subStyleId);
@@ -22,8 +45,28 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
     };
   }, [runesReforged]);
 
-  const applyPerk = useCallback((p: PerkPage) => {
-    invoke('apply_perk', {perk: JSON.stringify(p)});
+  const applyPerk = useCallback((p: PerkPage, idx: number) => {
+    setProcessing(s => {
+      let ss = {...s};
+      ss[idx] = ApplyStage.Processing;
+      return ss;
+    });
+    invoke('apply_perk', {perk: JSON.stringify(p)})
+    .finally(async () => {
+      await sleep(600);
+      setProcessing(s => {
+        let ss = {...s};
+        ss[idx] = ApplyStage.Done;
+        return ss;
+      });
+      toast.success('Applied');
+      await sleep(600);
+      setProcessing(s => {
+        let ss = {...s};
+        ss[idx] = ApplyStage.Normal;
+        return ss;
+      });
+    });
   }, []);
 
   let runesRef = useMemo(() => {
@@ -43,10 +86,11 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
   }, [runesReforged]);
 
   return (
-    <Card css={{width: '80vw'}}>
+    <div className={s.previewCard}>
       {
         perks.map((p, idx) => {
           let {primary, sub} = getSlots(p);
+          let stage = processing[idx];
 
           return (
             <div className={s.item} key={idx}>
@@ -56,6 +100,7 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
                 key={primary.key}
                 src={`https://ddragon.leagueoflegends.com/cdn/img/${primary.icon}`}
                 alt={primary.name}
+                className={s.main}
               />
               {p.selectedPerkIds
               .filter(i => runesRef[i]?.parent === primary.id)
@@ -63,25 +108,34 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
                 let rune = runesRef[i];
                 return (
                   <img
+                    key={i}
                     width={24}
                     height={24}
                     src={`https://ddragon.leagueoflegends.com/cdn/img/${runesRef[i].icon}`}
                     alt={runesRef[i].name}
+                    className={s.normal}
                   />
                 );
               })}
 
-              <img key={sub.key} src={`https://ddragon.leagueoflegends.com/cdn/img/${sub.icon}`} alt={sub.name}/>
+              <img
+                key={sub.key}
+                src={`https://ddragon.leagueoflegends.com/cdn/img/${sub.icon}`}
+                alt={sub.name}
+                className={s.main}
+              />
               {p.selectedPerkIds
               .filter(i => runesRef[i]?.parent === sub.id)
               .map(i => {
                 let rune = runesRef[i];
                 return (
                   <img
+                    key={i}
                     width={24}
                     height={24}
                     src={`https://ddragon.leagueoflegends.com/cdn/img/${runesRef[i].icon}`}
                     alt={runesRef[i].name}
+                    className={s.normal}
                   />
                 );
               })}
@@ -90,14 +144,14 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
                 auto
                 flat
                 color="success"
-                icon={<IconSword/>}
-                css={{marginLeft: '2rem'}}
-                onClick={() => applyPerk(p)}
+                icon={getStageIcon(stage)}
+                className={cn(s.applyBtn)}
+                onPress={() => applyPerk(p, idx)}
               />
             </div>
           );
         })
       }
-    </Card>
+    </div>
   );
 }
