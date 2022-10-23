@@ -125,11 +125,12 @@ pub fn match_stdout(stdout: &String) -> CommandLineOutput {
 
 #[cfg(target_os = "windows")]
 pub async fn spawn_apply_rune(token: &String, port: &String, perk: &String) -> anyhow::Result<()> {
-    use std::process::Command;
+    use std::{process::Command, os::windows::process::CommandExt};
 
     let perk = base64::encode(perk);
     Command::new("./LeagueClient.exe")
         .args(["rune", token, port, &perk])
+        .creation_flags(0x08000000)
         .spawn()
         .expect("[spawn_apply_rune] failed");
 
@@ -149,6 +150,7 @@ pub async fn spawn_league_client(
     champion_map: &std::collections::HashMap<String, crate::web::ChampInfo>,
 ) -> anyhow::Result<()> {
     use std::io::{BufRead, BufReader, Error, ErrorKind};
+    use std::os::windows::process::CommandExt;
     use std::path::Path;
     use std::process::{Command, Stdio};
 
@@ -160,6 +162,7 @@ pub async fn spawn_league_client(
 
     let stdout = Command::new("./LeagueClient.exe")
         .args([token, port])
+        .creation_flags(0x08000000)
         .stdout(Stdio::piped())
         .spawn()?
         .stdout
