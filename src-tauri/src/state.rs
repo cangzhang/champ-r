@@ -48,7 +48,6 @@ impl InnerState {
         p.rune_list = r;
         p.official_version = v;
         p.champion_map = c;
-
         println!("[state] init page data");
 
         let lcu = self.lcu_client.clone();

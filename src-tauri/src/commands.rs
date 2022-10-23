@@ -37,23 +37,23 @@ pub fn random_runes(handle: AppHandle, state: State<'_, state::GlobalState>) {
 pub fn apply_builds_from_sources(
     app_handle: AppHandle,
     sources: Vec<String>,
-    dir: String,
     keep_old: bool,
 ) {
     let w = app_handle.get_window("main").unwrap();
-    builds::spawn_apply_task(sources, dir, keep_old, &w);
+    let cmd::CommandLineOutput { dir, .. } = cmd::get_commandline();
+    builds::spawn_apply_task(&sources, &dir, keep_old, &w);
 }
 
 #[command]
 pub fn get_lcu_auth(state: State<'_, state::GlobalState>) -> String {
-    let (auth_url, _running, _, _, _) = cmd::get_commandline();
+    let output = cmd::get_commandline();
     let s = state.0.lock().unwrap();
     println!("[command] {:?}", s);
-    auth_url
+    output.auth_url
 }
 
 #[command]
-pub fn get_available_runes_for_champion(
+pub fn get_available_perks_for_champion(
     source_name: String,
     champion_alias: String,
 ) -> Vec<builds::Rune> {
@@ -74,13 +74,15 @@ pub fn get_available_runes_for_champion(
 
 #[command]
 pub fn apply_builds(app_handle: AppHandle, sources: Vec<String>) {
+    let cmd::CommandLineOutput { dir, .. } = cmd::get_commandline();
+
     async_runtime::spawn(async move {
         let mut idx = 0;
         for s in sources {
             println!("[commands::apply_builds] {idx} {s}");
             let _ = builds::apply_builds_from_local(
                 &s,
-                &".cdn_files".to_string(),
+                &dir,
                 idx,
                 Some(&app_handle),
             )
@@ -168,8 +170,8 @@ pub fn get_runes_reforged(state: State<'_, state::GlobalState>) -> Vec<web::Rune
 #[command]
 pub async fn apply_perk(perk: String) -> Result<(), ()> {  
     let _h = async_runtime::spawn(async move {
-        let (_, _, _, token, port) = cmd::get_commandline();
-        let _ = cmd::spawn_apply_rune(&token, &port, &perk).await;
+        let output = cmd::get_commandline();
+        let _ = cmd::spawn_apply_rune(&output.token, &output.port, &perk).await;
     });
 
     Ok(())

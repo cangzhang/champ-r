@@ -1,37 +1,52 @@
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 
 const APP_PORT_KEY: &'static str = "--app-port=";
 const TOKEN_KEY: &'static str = "--remoting-auth-token=";
 const REGION_KEY: &'static str = "--region=";
+const DIR_KEY: &'static str = "--install-directory=";
 
 lazy_static! {
     static ref PORT_REGEXP: regex::Regex = regex::Regex::new(r"--app-port=\d+").unwrap();
     static ref TOKEN_REGEXP: regex::Regex =
         regex::Regex::new(r"--remoting-auth-token=\S+").unwrap();
     static ref REGION_REGEXP: regex::Regex = regex::Regex::new(r"--region=\S+").unwrap();
+    static ref DIR_REGEXP: regex::Regex = regex::Regex::new(r"--install-directory=\S+").unwrap();
 }
 
 pub fn make_auth_url(token: &String, port: &String) -> String {
     format!("riot:{token}@127.0.0.1:{port}")
 }
 
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct CommandLineOutput {
+    pub auth_url: String,
+    pub is_tencent: bool,
+    pub token: String,
+    pub port: String,
+    pub dir: String,
+}
+
 #[cfg(target_os = "windows")]
-pub fn get_commandline() -> (String, bool, bool, String, String) {
+pub fn get_commandline() -> CommandLineOutput {
     let cmd_str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'"| Select-Object -ExpandProperty CommandLine"#;
     match powershell_script::run(&cmd_str) {
         Ok(output) => {
             if let Some(stdout) = output.stdout() {
-                let (auth_url, is_tencent, token, port) = match_stdout(&stdout);
-                (auth_url, true, is_tencent, token, port)
+                match_stdout(&stdout)
             } else {
                 println!("[cmd] got nothing from output, maybe lcu is stopped");
-                (String::new(), false, false, String::new(), String::new())
+                CommandLineOutput {
+                    ..Default::default()
+                }
             }
         }
         Err(e) => {
             println!("Error: {}", e);
             println!("[cmd] maybe you should run it with admin privilege");
-            (String::new(), false, false, String::new(), String::new())
+            CommandLineOutput {
+                ..Default::default()
+            }
         }
     }
 }
@@ -78,7 +93,7 @@ pub fn get_commandline() -> (String, bool, bool, String, String) {
     (auth_url, running, token, port)
 }
 
-pub fn match_stdout(stdout: &String) -> (String, bool, String, String) {
+pub fn match_stdout(stdout: &String) -> CommandLineOutput {
     let port_match = PORT_REGEXP.find(&stdout).unwrap();
     let port = port_match.as_str().replace(APP_PORT_KEY, "");
     let token_match = TOKEN_REGEXP.find(&stdout).unwrap();
@@ -95,7 +110,17 @@ pub fn match_stdout(stdout: &String) -> (String, bool, String, String) {
         .replace("\\", "")
         .replace("\"", "");
     let is_tencent = if region.eq("TENCENT") { true } else { false };
-    (auth_url, is_tencent, token, port)
+    let dir_match = DIR_REGEXP.find(&stdout).unwrap();
+    let dir = dir_match.as_str().replace(DIR_KEY, "").replace("\"", "");
+    let dir = format!("{dir}/..");
+
+    CommandLineOutput {
+        auth_url,
+        is_tencent,
+        token,
+        port,
+        dir,
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -156,6 +181,11 @@ pub async fn spawn_league_client(
                         crate::web::get_alias_from_champion_map(champion_map, champ_id);
                     if let Some(h) = handle {
                         crate::window::show_and_emit(h, champ_id, &champion_alias);
+                    }
+                } else {
+                    #[cfg(not(debug_assertions))]
+                    if let Some(h) = handle {
+                        crate::window::toggle_rune_win(h, Some(false));
                     }
                 }
             }

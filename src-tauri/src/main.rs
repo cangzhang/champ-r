@@ -100,17 +100,18 @@ fn main() {
         .on_system_tray_event(move |app_handle, event| match event {
             SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
                 "toggle_window" => {
-                    let _ = window::toggle_rune_win(app_handle, None);
+                    let _ = window::toggle_main_window(app_handle);
                 }
                 "apply_builds" => {
-                    println!("[tray] apply builds");
-                    let w = app_handle.get_window("main").unwrap();
-                    builds::spawn_apply_task(
-                        vec!["op.gg-aram".to_string()],
-                        "../.cdn_files".to_string(),
-                        false,
-                        &w,
-                    )
+                    // println!("[tray] apply builds");
+                    // let w = app_handle.get_window("main").unwrap();
+
+                    // builds::spawn_apply_task(
+                    //     &vec!["op.gg-aram".to_string()],
+                    //     &"../.cdn_files".to_string(),
+                    //     false,
+                    //     &w,
+                    // )
                 }
                 "quit" => {
                     std::process::exit(0);
@@ -123,9 +124,9 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::toggle_rune_window,
-            commands::apply_builds_from_sources,
+            // commands::apply_builds_from_sources,
             commands::get_lcu_auth,
-            commands::get_available_runes_for_champion,
+            commands::get_available_perks_for_champion,
             commands::apply_builds,
             commands::get_ddragon_data,
             commands::get_user_sources,

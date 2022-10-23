@@ -30,6 +30,20 @@ pub fn toggle_rune_win(app_handle: &AppHandle, status: Option<bool>) {
     }
 }
 
+pub fn toggle_main_window(handle: &AppHandle) {
+    let w = handle.get_window("main").unwrap();
+    match w.is_visible() {
+        Ok(v) => {
+            if v {
+                let _ = w.hide();
+            } else {
+                let _ = w.show();
+            }
+        }
+        Err(_) => (),
+    }
+}
+
 pub fn show_and_emit(app_handle: &AppHandle, champion_id: i64, champion_alias: &String) {
     let w = get_rune_window(app_handle);
     let _ = w.show();

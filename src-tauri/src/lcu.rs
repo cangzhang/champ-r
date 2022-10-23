@@ -14,6 +14,7 @@ pub struct LcuClient {
     pub app_handle: Option<Arc<Mutex<AppHandle>>>,
     pub champion_map: HashMap<String, web::ChampInfo>,
     pub is_tencent: bool,
+    pub lol_dir: String,
 }
 
 impl LcuClient {
@@ -67,13 +68,16 @@ impl LcuClient {
             }
         });
 
-        while let Ok((auth_url, running, is_tencent, token, port)) = rx.recv() {
+        while let Ok(cmd::CommandLineOutput { auth_url, is_tencent, token, port, dir }) = rx.recv() {
+            let running = if token.len() > 0 { true } else { false };
             self.set_lcu_status(running);
             if !running {
                 continue;
             }
 
             self.is_tencent = is_tencent;
+            self.lol_dir = dir;
+
             let updated = self.update_auth_url(&auth_url, &token, &port);
             if !updated {
                 continue;

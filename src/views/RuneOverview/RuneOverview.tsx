@@ -29,7 +29,7 @@ export function RuneOverview() {
       return;
     }
 
-    let r: any = await invoke(`get_available_runes_for_champion`, {sourceName: [...curSource][0], championAlias});
+    let r: any = await invoke(`get_available_perks_for_champion`, {sourceName: [...curSource][0], championAlias});
     setPerks(r);
   }, [championAlias, curSource]);
 

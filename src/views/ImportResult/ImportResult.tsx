@@ -11,25 +11,25 @@ export function ImportResult() {
   const [result, setResult] = useState<any[]>([]);
   let ids = useRef(new Set()).current;
   let [searchParams] = useSearchParams();
-  
+
   const applyBuilds = useCallback((sources: string[]) => {
     invoke(`apply_builds`, {sources});
   }, []);
-  
+
   const updateResult = useCallback((payload: any) => {
     let id = payload.id;
     if (ids.has(payload.id)) {
       return;
     }
     ids.add(id);
-    
+
     let msg = payload.msg;
     if (payload.done) {
       msg = `[${payload.source}] done`;
     }
     setResult(r => [msg, ...r]);
   }, []);
-  
+
   useEffect(() => {
     let unlisten = () => {
     };
@@ -39,17 +39,17 @@ export function ImportResult() {
     }).then(h => {
       unlisten = h;
     });
-    
+
     return () => {
       unlisten();
     };
   }, [updateResult]);
-  
+
   useEffect(() => {
     let sources = searchParams.get('sources').split(',');
     applyBuilds(sources);
   }, [applyBuilds]);
-  
+
   return (
     <Container>
       <NavLink to={'/'}>
@@ -57,7 +57,7 @@ export function ImportResult() {
           Back
         </Button>
       </NavLink>
-      
+
       <div style={{height: 200, overflow: `auto`}}>
         {result.map((i, idx) => <p key={idx}>{i}</p>)}
       </div>

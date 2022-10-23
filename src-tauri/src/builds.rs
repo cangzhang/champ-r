@@ -136,8 +136,8 @@ pub async fn save_build(path: String, data: &web::ItemBuild) -> anyhow::Result<(
 }
 
 pub async fn apply_builds(
-    sources: Vec<String>,
-    dir: String,
+    sources: &Vec<String>,
+    dir: &String,
     keep_old: bool,
     window: Option<&tauri::Window>,
 ) -> anyhow::Result<Vec<(bool, String, String)>> {
@@ -265,10 +265,13 @@ pub async fn apply_builds(
     Ok(results)
 }
 
-pub fn spawn_apply_task(sources: Vec<String>, dir: String, keep_old: bool, window: &tauri::Window) {
+pub fn spawn_apply_task(sources: &Vec<String>, dir: &String, keep_old: bool, window: &tauri::Window) {
     let w = window.clone();
+    let sources = sources.clone();
+    let dir = dir.clone();
+    
     async_std::task::spawn(async move {
-        let _ = apply_builds(sources, dir, keep_old, Some(&w)).await;
+        let _ = apply_builds(&sources, &dir, keep_old, Some(&w)).await;
     });
 }
 
@@ -355,7 +358,7 @@ pub async fn apply_builds_from_local(
 
         for (idx, b) in builds.iter().enumerate() {
             alias = &b.alias;
-            let dir = format!("{target_folder}/Config/Champions/{alias}/Recommended");
+            let dir = format!("{target_folder}/Game/Config/Champions/{alias}/Recommended");
             let pos = &b.position;
             fs::create_dir_all(&dir)?;
 
@@ -477,7 +480,7 @@ mod tests {
             sources, keep_old
         );
 
-        match apply_builds(sources, folder, keep_old, None).await {
+        match apply_builds(&sources, &folder, keep_old, None).await {
             Ok(_) => {
                 println!("all set");
             }
