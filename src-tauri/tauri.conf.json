@@ -74,6 +74,7 @@
         "url": "rune.html",
         "visible": false,
         "width": 420,
+        "height": 470,
         "decorations": false,
         "resizable": false
       }

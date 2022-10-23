@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 
 import { PerkPage, Rune, RuneSlot } from '../../interfaces';
 import { sleep } from '../../helper';
+// import SimpleBar from 'simplebar-react';
 
 interface RRune extends Rune {
   parent?: number;
@@ -26,11 +27,11 @@ const getStageIcon = (stage: number) => {
     case ApplyStage.Processing:
       return <IconRotateClockwise2 className={s.loading}/>;
     case ApplyStage.Done:
-      return <IconCheck />;
+      return <IconCheck/>;
     default:
       return <IconSword/>;
   }
-}
+};
 
 export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesReforged: RuneSlot[] }) {
   const [processing, setProcessing] = useState<{ [key: number]: ApplyStage }>({});
