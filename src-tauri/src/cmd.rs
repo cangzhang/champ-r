@@ -125,7 +125,7 @@ pub fn match_stdout(stdout: &String) -> CommandLineOutput {
 
 #[cfg(target_os = "windows")]
 pub async fn spawn_apply_rune(token: &String, port: &String, perk: &String) -> anyhow::Result<()> {
-    use std::{process::Command, os::windows::process::CommandExt};
+    use std::{os::windows::process::CommandExt, process::Command};
 
     let perk = base64::encode(perk);
     Command::new("./LeagueClient.exe")
@@ -146,13 +146,16 @@ pub async fn spawn_apply_rune(perk: String) -> anyhow::Result<()> {
 pub async fn spawn_league_client(
     token: &String,
     port: &String,
-    handle: &Option<tauri::AppHandle>,
     champion_map: &std::collections::HashMap<String, crate::web::ChampInfo>,
+    win: &tauri::Window,
 ) -> anyhow::Result<()> {
     use std::io::{BufRead, BufReader, Error, ErrorKind};
     use std::os::windows::process::CommandExt;
     use std::path::Path;
     use std::process::{Command, Stdio};
+
+    use serde_json::json;
+    use tauri::Manager;
 
     println!(
         "[spawn] LeagueClient eixsts? {:?}",
@@ -182,9 +185,13 @@ pub async fn spawn_league_client(
                     println!("[watch champ select] {champ_id}");
                     let champion_alias =
                         crate::web::get_alias_from_champion_map(champion_map, champ_id);
-                    if let Some(h) = handle {
-                        crate::window::show_and_emit(h, champ_id, &champion_alias);
-                    }
+
+                    let payload = json!({
+                        "action": "on_champ_select",
+                        "alias": champion_alias,
+                        "id": champ_id,
+                    });
+                    win.trigger_global("global_events", Some(payload.to_string()));
                 } else {
                     #[cfg(not(debug_assertions))]
                     if let Some(h) = handle {

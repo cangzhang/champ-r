@@ -1,7 +1,10 @@
-use std::sync::{mpsc, Arc, Mutex};
-use tauri::{async_runtime, AppHandle, Window};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
+use tauri::{AppHandle, Window};
 
-use crate::{lcu, page_data};
+use crate::{lcu, page_data, web};
 
 #[derive(Clone, Debug)]
 pub struct InnerState {
@@ -21,40 +24,20 @@ impl InnerState {
         }
     }
 
-    pub fn init(&mut self, handle: &AppHandle) {
-        let handle1 = handle.clone();
-        let lcu = self.lcu_client.clone();
-        let (tx, rx) = mpsc::channel();
-        
-        async_runtime::spawn(async move {
-            match page_data::PageData::init().await {
-                Ok((ready, s, r, v, c)) => {
-                    let mut lcu = lcu.lock().unwrap();
-                    lcu.champion_map = c.clone();
-                    println!("[state] init lcu client");
-
-                    let _ = tx.send((ready, s, r, v, c));
-                }
-                Err(e) => {
-                    println!("{:?}", e);
-                }
-            };
-        });
-
-        let (ready, s, r, v, c) = rx.recv().unwrap();
+    pub fn init_page_data(
+        &mut self,
+        ready: bool,
+        source_list: &Vec<page_data::Source>,
+        rune_list: &Vec<web::RuneListItem>,
+        version: &String,
+        champion_map: &HashMap<String, web::ChampInfo>,
+    ) {
         let mut p = self.page_data.lock().unwrap();
         p.ready = ready;
-        p.source_list = s;
-        p.rune_list = r;
-        p.official_version = v;
-        p.champion_map = c;
-        println!("[state] init page data");
-
-        let lcu = self.lcu_client.clone();
-        async_std::task::spawn(async move {
-            let mut l = lcu.lock().unwrap();
-            l.watch_lcu(&Some(handle1));
-        });
+        p.source_list = source_list.clone();
+        p.rune_list = rune_list.clone();
+        p.official_version = version.clone();
+        p.champion_map = champion_map.clone();
     }
 }
 

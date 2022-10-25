@@ -1,9 +1,9 @@
-use std::{collections::HashMap, sync::{Arc, mpsc}};
+use std::{collections::HashMap, sync::Arc};
 
 use async_std::sync::Mutex;
 use tauri::AppHandle;
 
-use crate::{cmd, web};
+use crate::web;
 
 #[derive(Clone, Debug, Default)]
 pub struct LcuClient {
@@ -54,41 +54,6 @@ impl LcuClient {
                 println!("[lcu] fetch champion list failed. {:?}", e);
             }
         };
-    }
-
-    pub fn watch_lcu(&mut self, handle: &Option<AppHandle>) {
-        let (tx, rx) = mpsc::channel();
-        std::thread::spawn(move || {
-            let tx = tx.clone();
-
-            loop {
-                let ret = cmd::get_commandline();
-                let _ = tx.send(ret);
-                std::thread::sleep(std::time::Duration::from_millis(5000));
-            }
-        });
-
-        while let Ok(cmd::CommandLineOutput { auth_url, is_tencent, token, port, dir }) = rx.recv() {
-            let running = if token.len() > 0 { true } else { false };
-            self.set_lcu_status(running);
-            if !running {
-                continue;
-            }
-
-            self.is_tencent = is_tencent;
-            self.lol_dir = dir;
-
-            let updated = self.update_auth_url(&auth_url, &token, &port);
-            if !updated {
-                continue;
-            }
-
-            let champ_map = self.champion_map.clone();
-            let handle = handle.clone();
-            async_std::task::spawn(async move {
-                let _ = cmd::spawn_league_client(&token, &port, &handle, &champ_map).await;
-            });
-        }
     }
 }
 

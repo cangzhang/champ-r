@@ -34,11 +34,7 @@ pub fn random_runes(handle: AppHandle, state: State<'_, state::GlobalState>) {
 }
 
 #[command]
-pub fn apply_builds_from_sources(
-    app_handle: AppHandle,
-    sources: Vec<String>,
-    keep_old: bool,
-) {
+pub fn apply_builds_from_sources(app_handle: AppHandle, sources: Vec<String>, keep_old: bool) {
     let w = app_handle.get_window("main").unwrap();
     let cmd::CommandLineOutput { dir, .. } = cmd::get_commandline();
     builds::spawn_apply_task(&sources, &dir, keep_old, &w);
@@ -80,13 +76,7 @@ pub fn apply_builds(app_handle: AppHandle, sources: Vec<String>) {
         let mut idx = 0;
         for s in sources {
             println!("[commands::apply_builds] {idx} {s}");
-            let _ = builds::apply_builds_from_local(
-                &s,
-                &dir,
-                idx,
-                Some(&app_handle),
-            )
-            .await;
+            let _ = builds::apply_builds_from_local(&s, &dir, idx, Some(&app_handle)).await;
             idx = idx + 1;
         }
     });
@@ -97,48 +87,46 @@ pub async fn get_ddragon_data(
     state: State<'_, state::GlobalState>,
 ) -> Result<page_data::PageData, ()> {
     let s = state.0.lock().unwrap();
-    let mut p = s.page_data.lock().unwrap();
-    if !p.ready {
-        let (tx, rx) = mpsc::channel();
-        async_runtime::spawn(async move {
-            let r = page_data::PageData::init().await;
-            println!("[get_ddragon_data] init");
-            let _ = tx.send(r.unwrap());
-        });
+    let p = s.page_data.lock().unwrap();
+    // if !p.ready {
+    //     let (tx, rx) = mpsc::channel();
+    //     async_runtime::spawn(async move {
+    //         let r = page_data::PageData::init().await;
+    //         println!("[get_ddragon_data] init");
+    //         let _ = tx.send(r.unwrap());
+    //     });
 
-        let (ready, s, r, v, c) = rx.recv().unwrap();
-        p.ready = ready;
-        p.source_list = s;
-        p.rune_list = r;
-        p.official_version = v;
-        p.champion_map = c;
-    }
+    //     let (ready, s, r, v, c) = rx.recv().unwrap();
+    //     p.ready = ready;
+    //     p.source_list = s;
+    //     p.rune_list = r;
+    //     p.official_version = v;
+    //     p.champion_map = c;
+    // }
 
     Ok(p.clone())
 }
 
 #[command]
-pub fn get_user_sources(
-    state: State<'_, state::GlobalState>,
-) -> Vec<page_data::Source> {
+pub fn get_user_sources(state: State<'_, state::GlobalState>) -> Vec<page_data::Source> {
     let s = state.0.lock().unwrap();
-    let mut p = s.page_data.lock().unwrap();
+    let p = s.page_data.lock().unwrap();
 
-    if !p.ready {
-        let (tx, rx) = mpsc::channel();
-        async_runtime::spawn(async move {
-            let r = page_data::PageData::init().await;
-            println!("[commands::get_user_sources] ddragon data init");
-            let _ = tx.send(r.unwrap());
-        });
+    // if !p.ready {
+    //     let (tx, rx) = mpsc::channel();
+    //     async_runtime::spawn(async move {
+    //         let r = page_data::PageData::init().await;
+    //         println!("[commands::get_user_sources] ddragon data init");
+    //         let _ = tx.send(r.unwrap());
+    //     });
 
-        let (ready, s, r, v,c ) = rx.recv().unwrap();
-        p.ready = ready;
-        p.source_list = s;
-        p.rune_list = r;
-        p.official_version = v;
-        p.champion_map = c;
-    }
+    //     let (ready, s, r, v, c) = rx.recv().unwrap();
+    //     p.ready = ready;
+    //     p.source_list = s;
+    //     p.rune_list = r;
+    //     p.official_version = v;
+    //     p.champion_map = c;
+    // }
 
     p.source_list.clone()
 }
@@ -146,29 +134,28 @@ pub fn get_user_sources(
 #[command]
 pub fn get_runes_reforged(state: State<'_, state::GlobalState>) -> Vec<web::RuneListItem> {
     let s = state.0.lock().unwrap();
-    let mut p = s.page_data.lock().unwrap();
+    let p = s.page_data.lock().unwrap();
+    // if !p.ready {
+    //     let (tx, rx) = mpsc::channel();
+    //     async_runtime::spawn(async move {
+    //         let r = page_data::PageData::init().await;
+    //         println!("ddragon data init");
+    //         let _ = tx.send(r.unwrap());
+    //     });
 
-    if !p.ready {
-        let (tx, rx) = mpsc::channel();
-        async_runtime::spawn(async move {
-            let r = page_data::PageData::init().await;
-            println!("ddragon data init");
-            let _ = tx.send(r.unwrap());
-        });
-
-        let (ready, s, r, v, c) = rx.recv().unwrap();
-        p.ready = ready;
-        p.source_list = s;
-        p.rune_list = r;
-        p.official_version = v;
-        p.champion_map = c;
-    }
+    //     let (ready, s, r, v, c) = rx.recv().unwrap();
+    //     p.ready = ready;
+    //     p.source_list = s;
+    //     p.rune_list = r;
+    //     p.official_version = v;
+    //     p.champion_map = c;
+    // }
 
     p.rune_list.clone()
 }
 
 #[command]
-pub async fn apply_perk(perk: String) -> Result<(), ()> {  
+pub async fn apply_perk(perk: String) -> Result<(), ()> {
     let _h = async_runtime::spawn(async move {
         let output = cmd::get_commandline();
         let _ = cmd::spawn_apply_rune(&output.token, &output.port, &perk).await;
@@ -176,3 +163,12 @@ pub async fn apply_perk(perk: String) -> Result<(), ()> {
 
     Ok(())
 }
+
+// #[command]
+// pub fn init_state(state: State<'_, state::GlobalState>, handle: AppHandle) {
+//     let mut state = state.0.lock().unwrap();
+//     // let s = *state;
+//     thread::spawn(move || {
+//         state.init(&handle);
+//     });
+// }
