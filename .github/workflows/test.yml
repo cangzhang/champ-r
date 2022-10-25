@@ -66,7 +66,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_DOWNLOAD_TOKEN }}
         run: |
           $release_name=(gh api -H "Accept: application/vnd.github+json" /repos/cangzhang/league-client-tencent/releases/latest --jq ".name")
-          gh release download "$release_name" -R cangzhang/league-client-tencent -p "*exe" -D src-tauri/src/ --clobber && echo "🐳 Downloaded LeagueClient $release_name"
+          gh release download "$release_name" -R cangzhang/league-client-tencent -p "*exe" -D src-tauri/ --clobber && echo "🐳 Downloaded LeagueClient $release_name"
           npm i -g pnpm && pnpm install && pnpm tauri build
           Move-Item -Force -Path src-tauri/src/LeagueClient.exe -Destination src-tauri/target/release/; Move-Item -Force -Path src-tauri/target/release/bundle/msi -Destination src-tauri/target/release/
 
