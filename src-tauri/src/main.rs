@@ -68,7 +68,7 @@ fn main() {
                         auth_token = token.clone();
                         if auth_token.len() > 0 && port.len() > 0 {
                             let _ =
-                                cmd::spawn_league_client(&token, &port, &champion_map, &main_win)
+                                cmd::spawn_league_client(&token, &port, &champion_map, Some(&main_win))
                                     .await;
                         } else {
                             println!("[spawn] auth: invalid token & port");
@@ -95,6 +95,9 @@ fn main() {
                         let champ_id = payload["id"].as_i64().unwrap();
                         let champ_alias = payload["alias"].as_str().unwrap();
                         window::show_and_emit(&handle, champ_id, &champ_alias.to_string());
+                    }
+                    Some("hide_rune_win") => {
+                        window::toggle_rune_win(&handle, Some(false));
                     }
                     Some(_) => {}
                     None => {}
