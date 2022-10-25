@@ -147,7 +147,7 @@ pub async fn spawn_league_client(
     token: &String,
     port: &String,
     champion_map: &std::collections::HashMap<String, crate::web::ChampInfo>,
-    win: &tauri::Window,
+    win: Option<&tauri::Window>,
 ) -> anyhow::Result<()> {
     use std::io::{BufRead, BufReader, Error, ErrorKind};
     use std::os::windows::process::CommandExt;
@@ -191,12 +191,14 @@ pub async fn spawn_league_client(
                         "alias": champion_alias,
                         "id": champ_id,
                     });
-                    win.trigger_global("global_events", Some(payload.to_string()));
+                    if let Some(win) = win {
+                        win.trigger_global("global_events", Some(payload.to_string()));
+                    }
                 } else {
                     #[cfg(not(debug_assertions))]
-                    if let Some(h) = handle {
-                        crate::window::toggle_rune_win(h, Some(false));
-                    }
+                    win.trigger_global("global_events", Some(json!({
+                        "action": "hide_rune_win",
+                    })));
                 }
             }
         });
