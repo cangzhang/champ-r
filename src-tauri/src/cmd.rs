@@ -196,9 +196,11 @@ pub async fn spawn_league_client(
                     }
                 } else {
                     #[cfg(not(debug_assertions))]
-                    win.trigger_global("global_events", Some(json!({
-                        "action": "hide_rune_win",
-                    })));
+                    if let Some(win) = win {
+                        win.trigger_global("global_events", Some(json!({
+                            "action": "hide_rune_win",
+                        })));
+                    }
                 }
             }
         });
