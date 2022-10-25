@@ -42,7 +42,9 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
+      "resources": [
+        "./LeagueClient.exe"
+      ],
       "shortDescription": "",
       "targets": "all",
       "windows": {
