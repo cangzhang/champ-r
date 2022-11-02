@@ -60,6 +60,7 @@ export function RuneOverview() {
     let sourceTab: string = [...curSource][0];
     if (sourceTab) {
       appConf.set('runeSource', sourceTab);
+      appConf.save();
     }
   }, [curSource]);
 
