@@ -1,15 +1,10 @@
 {
   "compilerOptions": {
+    "strictNullChecks": false,
     "target": "ESNext",
-    "lib": [
-      "dom",
-      "es6",
-      "es2017",
-      "es2020",
-      "esnext.asynciterable"
-    ],
-    "useUnknownInCatchVariables": false,
-    "allowJs": true,
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
@@ -20,31 +15,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
-    "baseUrl": ".",
-    "paths": {
-      "src/*": [
-        "./src/*"
-      ],
-      "@interfaces/*": [
-        "./interfaces/*"
-      ],
-      "@app/*": [
-        "./app/*"
-      ]
-    },
-    "typeRoots": [
-      "node_modules/@types",
-      "src/global.d.ts"
-    ]
+    "jsx": "react-jsx"
   },
-  "exclude": [
-    "node_modules"
-  ],
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "app/**/*.js",
-    "src/**/*.js"
-  ]
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
