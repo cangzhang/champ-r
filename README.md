@@ -36,10 +36,10 @@ Yet another League of Legends helper.
 
 ## Download
 
-- `v2 nightly` `~10Mb` https://nightly.link/cangzhang/champ-r/workflows/test/main/artifact.zip
-- `v1 Stable` `~70Mb` https://github.com/cangzhang/champ-r/releases
+- `v2 nightly` `~10Mb` [Link](https://nightly.link/cangzhang/champ-r/workflows/test/main/artifact.zip)
+- `v1 Stable` `~70Mb` [Download](https://github.com/cangzhang/champ-r/releases)
 
-## How to use
+## How to
 
 ### Import builds
 
