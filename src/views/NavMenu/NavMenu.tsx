@@ -20,14 +20,14 @@ export function NavMenu() {
         flat
       >
         <Button
-          onClick={() => navigate('/')}
+          onPress={() => navigate('/')}
         >
           <Tooltip content={'Builds'} placement={'right'}>
             <IconBuildingFortress/>
           </Tooltip>
         </Button>
         <Button
-          onClick={() => navigate('/settings')}
+          onPress={() => navigate('/settings')}
         >
           <Tooltip content={'Settings'} placement={'right'}>
             <IconSettings/>

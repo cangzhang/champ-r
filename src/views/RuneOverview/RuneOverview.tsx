@@ -50,7 +50,7 @@ export function RuneOverview() {
     let sourceList = ddragon.source_list;
 
     let runeSource: string = await appConf.get('runeSource');
-    if (!runeSource || !selectedSource.includes(runeSource)) {
+    if (!runeSource || !selectedSources.includes(runeSource)) {
       runeSource = sourceList[0].source.value;
     }
     setCurSource(new Set([runeSource]));

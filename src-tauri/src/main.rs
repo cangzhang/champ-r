@@ -9,7 +9,7 @@ use serde_json::Value;
 use tauri::{
     CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
-use tauri_plugin_store::{PluginBuilder, StoreBuilder};
+use tauri_plugin_store::PluginBuilder;
 
 pub mod builds;
 pub mod cmd;
@@ -46,10 +46,10 @@ fn main() {
         .add_item(CustomMenuItem::new("quit", "Quit").accelerator("CmdOrControl+Q"));
 
     let context = tauri::generate_context!();
-    let settings = StoreBuilder::new(".settings".parse().unwrap()).build();
+    // let settings = StoreBuilder::new(".settings".parse().unwrap()).build();
 
     let _app = tauri::Builder::default()
-        .plugin(PluginBuilder::default().stores([settings]).freeze().build())
+        .plugin(PluginBuilder::default().build())
         .setup(move |app| {
             let mut inner_state = state::InnerState::new();
             // inner_state.init(&app.handle());
@@ -67,9 +67,13 @@ fn main() {
                     if !auth_token.eq(token.as_str()) {
                         auth_token = token.clone();
                         if auth_token.len() > 0 && port.len() > 0 {
-                            let _ =
-                                cmd::spawn_league_client(&token, &port, &champion_map, Some(&main_win))
-                                    .await;
+                            let _ = cmd::spawn_league_client(
+                                &token,
+                                &port,
+                                &champion_map,
+                                Some(&main_win),
+                            )
+                            .await;
                         } else {
                             println!("[spawn] auth: invalid token & port");
                         }

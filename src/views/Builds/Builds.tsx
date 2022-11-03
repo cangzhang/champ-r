@@ -5,7 +5,7 @@ import { invoke } from '@tauri-apps/api';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SimpleBar from 'simplebar-react';
-import { Button, Checkbox, Container, Badge } from '@nextui-org/react';
+import { Button, Checkbox, Badge } from '@nextui-org/react';
 
 import { appConf } from '../../config';
 import { isDev } from '../../helper';
@@ -29,6 +29,7 @@ export function Builds() {
   const onSelectChange = useCallback((next: string[]) => {
     setSelectedSources(next);
     appConf.set('selectedSources', next);
+    appConf.save();
   }, []);
 
   useEffect(() => {
@@ -68,10 +69,10 @@ export function Builds() {
                 value={i.source.value}
               >
                 {i.source.label}
-                <Badge className={s.version}>{i.source_version}</Badge>
                 {isSR && <Badge variant="dot" className={s.mode} />}
                 {i.source.isAram && <Badge variant="dot" color="success" className={s.mode} />}
                 {i.source.isUrf && <Badge variant="dot" color="warning" className={s.mode} />}
+                <Badge className={s.version}>{i.source_version}</Badge>
               </Checkbox>
             );
           })}
@@ -91,9 +92,9 @@ export function Builds() {
       </div>
 
       <div className={s.btns}>
-        <Button color={'primary'} onClick={goToImportResult}>Apply Builds</Button>
+        <Button color={'primary'} onPress={goToImportResult}>Apply Builds</Button>
         {isDev &&
-          (<Button flat size={'sm'} onClick={onToggleWindow}>Toggle Runes</Button>)
+          (<Button flat size={'sm'} onPress={onToggleWindow}>Toggle Runes</Button>)
         }
       </div>
     </section>
