@@ -4,7 +4,6 @@ import { invoke } from '@tauri-apps/api';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SimpleBar from 'simplebar-react';
 import { Button, Checkbox, Badge } from '@nextui-org/react';
 
 import { appConf } from '../../config';
@@ -52,8 +51,8 @@ export function Builds() {
   }, []);
 
   return (
-    <section>
-      <SimpleBar forceVisible={true} className={s.sourceList}>
+    <section className={s.builds}>
+      <div className={s.sourceList}>
         <Checkbox.Group
           label="Select Source(s)"
           value={selectedSources}
@@ -77,7 +76,7 @@ export function Builds() {
             );
           })}
         </Checkbox.Group>
-      </SimpleBar>
+      </div>
 
       <div className={s.modes}>
         <div>
