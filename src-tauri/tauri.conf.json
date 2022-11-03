@@ -62,7 +62,7 @@
     "windows": [
       {
         "height": 500,
-        "width": 500,
+        "width": 450,
         "fullscreen": false,
         "resizable": false,
         "title": "ChampR",

@@ -1,4 +1,39 @@
 .sourceList {
-    height: 300px;
-    margin-bottom: 2rem;
+    height: 340px;
+    margin: 1rem 0 1rem;
+    padding-bottom: 1ex;
+    box-shadow: rgba(27, 31, 35, 0.04) 0px 1px 0px, rgba(255, 255, 255, 0.25) 0px 1px 0px inset;
+}
+
+.source {
+    text-transform: uppercase;
+}
+
+.version {
+    margin-left: 1ex;
+}
+
+.mode {
+    margin-left: 1ex;
+}
+
+.modes {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 14px;
+
+    > div {
+        margin-right: 1ex;
+    }
+}
+
+.btns {
+    display: flex;
+    align-items: center;
+
+    > * {
+        margin-right: 10px;
+    }
 }

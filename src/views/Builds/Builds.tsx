@@ -5,7 +5,7 @@ import { invoke } from '@tauri-apps/api';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SimpleBar from 'simplebar-react';
-import { Button, Checkbox, Container } from '@nextui-org/react';
+import { Button, Checkbox, Container, Badge } from '@nextui-org/react';
 
 import { appConf } from '../../config';
 import { isDev } from '../../helper';
@@ -33,16 +33,17 @@ export function Builds() {
 
   useEffect(() => {
     invoke(`get_user_sources`)
-    .then((l: any) => {
-      setSources(l);
-    });
+      .then((l) => {
+        console.log('sources', l);
+        setSources(l as Source[]);
+      });
   }, []);
 
   useEffect(() => {
     appConf.get<string[]>('selectedSources')
-    .then((s) => {
-      setSelectedSources(s ?? []);
-    });
+      .then((s) => {
+        setSelectedSources(s ?? []);
+      });
 
     return () => {
       appConf.save();
@@ -50,30 +51,52 @@ export function Builds() {
   }, []);
 
   return (
-    <Container>
+    <section>
       <SimpleBar forceVisible={true} className={s.sourceList}>
         <Checkbox.Group
           label="Select Source(s)"
           value={selectedSources}
           onChange={onSelectChange}
         >
-          {sources.map((i: any) => {
+          {sources.map((i) => {
+            let isSR = !i.source.isAram && !i.source.isUrf;
+
             return (
               <Checkbox
                 key={i.source.value}
-                label={i.source.label}
+                className={s.source}
                 value={i.source.value}
-              />
+              >
+                {i.source.label}
+                <Badge className={s.version}>{i.source_version}</Badge>
+                {isSR && <Badge variant="dot" className={s.mode} />}
+                {i.source.isAram && <Badge variant="dot" color="success" className={s.mode} />}
+                {i.source.isUrf && <Badge variant="dot" color="warning" className={s.mode} />}
+              </Checkbox>
             );
           })}
         </Checkbox.Group>
       </SimpleBar>
 
-      <Button color={'primary'} onClick={goToImportResult}>Apply Builds</Button>
-      {isDev &&
-        (<Button flat size={'sm'} onClick={onToggleWindow} css={{marginTop: '10px'}}>Toggle Runes</Button>)
-      }
-    </Container>
+      <div className={s.modes}>
+        <div>
+          <Badge variant="dot" /> Summoner's Rift
+        </div>
+        <div>
+          <Badge variant="dot" color="success" /> ARAM
+        </div>
+        <div>
+          <Badge variant="dot" color="warning" /> URF
+        </div>
+      </div>
+
+      <div className={s.btns}>
+        <Button color={'primary'} onClick={goToImportResult}>Apply Builds</Button>
+        {isDev &&
+          (<Button flat size={'sm'} onClick={onToggleWindow}>Toggle Runes</Button>)
+        }
+      </div>
+    </section>
   );
 }
 
