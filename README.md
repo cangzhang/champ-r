@@ -25,7 +25,7 @@ Yet another League of Legends helper.
     - 🇺🇸 `English`
     - 🇫🇷 `French`
 - ℹ️ Update notifier
-- 😎 Multiple data sources for **Summoner's Rift** & **ARAM**
+- 😎 Multiple data sources for **Summoner's Rift** / **ARAM** / **URF**
     - `op.gg`
     - `lolalytics.com`
     - `u.gg`
@@ -35,6 +35,8 @@ Yet another League of Legends helper.
     - ...
 
 ## Download
+
+> 🎗️ (For v2 users) If you cannot run ChampR v2 directly, install [webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section) first.
 
 - `v2 nightly` `~10Mb` [Link](https://nightly.link/cangzhang/champ-r/workflows/test/main/artifact.zip)
 - `v1 Stable` `~70Mb` [Download](https://github.com/cangzhang/champ-r/releases)
