@@ -64,6 +64,6 @@ mod tests {
     #[tokio::test]
     async fn start() {
         let _lcu = LcuClient::new();
-    //     lcu.watch_lcu(&None);
+        //     lcu.watch_lcu(&None);
     }
 }

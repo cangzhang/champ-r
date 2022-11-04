@@ -71,11 +71,13 @@ pub fn get_available_perks_for_champion(
 #[command]
 pub fn apply_builds(app_handle: AppHandle, sources: Vec<String>) {
     let w = app_handle.get_window("main").unwrap();
-    let cmd::CommandLineOutput { dir, is_tencent, .. } = cmd::get_commandline();
-    
+    let cmd::CommandLineOutput {
+        dir, is_tencent, ..
+    } = cmd::get_commandline();
+
     async_runtime::spawn(async move {
         builds::empty_lol_build_dir(&dir, is_tencent, &Some(w));
-        
+
         let mut idx = 0;
         for s in sources {
             println!("[commands::apply_builds] {idx} {s}");
