@@ -10,7 +10,7 @@ use std::fs;
 use std::io::{Cursor, Write};
 use std::path::Path;
 use tar::Archive;
-use tauri::AppHandle;
+use tauri::{AppHandle, Window};
 
 use crate::{web, window};
 
@@ -265,11 +265,16 @@ pub async fn apply_builds(
     Ok(results)
 }
 
-pub fn spawn_apply_task(sources: &Vec<String>, dir: &String, keep_old: bool, window: &tauri::Window) {
+pub fn spawn_apply_task(
+    sources: &Vec<String>,
+    dir: &String,
+    keep_old: bool,
+    window: &tauri::Window,
+) {
     let w = window.clone();
     let sources = sources.clone();
     let dir = dir.clone();
-    
+
     async_std::task::spawn(async move {
         let _ = apply_builds(&sources, &dir, keep_old, Some(&w)).await;
     });
@@ -439,6 +444,33 @@ pub async fn load_runes(
     }
 
     Ok(runes)
+}
+
+pub fn empty_lol_build_dir(dir: &String, _is_tencent: bool, win: &Option<Window>) {
+    let dir = format!("{dir}/Game/Config/Champions/");
+    let dir_path = Path::new(&dir);
+    let path_exists = dir_path.exists();
+
+    if path_exists {
+        match fs::remove_dir_all(dir_path) {
+            Ok(_) => {
+                println!("[builds::empty_lol_build_dir] emptied dir: {}", dir);
+            }
+            Err(e) => {
+                println!("[builds::empty_lol_build_dir::empty_dir]{:?}", e);
+            }
+        };
+
+        if let Some(w) = win {
+            let _ = w.emit(
+                "apply_build_result",
+                vec!["emptied_lol_builds_dir".to_string(), make_id()],
+            );
+        }
+    } else {
+        println!("[builds::empty_lol_build_dir] {dir} does not exist, perform create action");
+        let _ = fs::create_dir(dir_path);
+    }
 }
 
 #[cfg(test)]
