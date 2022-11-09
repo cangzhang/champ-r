@@ -38,7 +38,7 @@ Yet another League of Legends helper.
 
 > 🎗️ (For v2 users) If you cannot run ChampR v2 directly, install [webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section) first.
 
-- `v2 nightly` `~10Mb` [Link](https://nightly.link/cangzhang/champ-r/workflows/test/main/artifact.zip)
+- `v2 nightly` `~10Mb` [Link](https://github.com/cangzhang/champ-r/releases/tag/v2.0.0-nightly.20221104)
 - `v1 Stable` `~70Mb` [Download](https://github.com/cangzhang/champ-r/releases)
 
 ## How to
