@@ -4,17 +4,19 @@ import { invoke } from '@tauri-apps/api';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Checkbox, Badge } from '@nextui-org/react';
+import { Button, Checkbox, Badge, Tooltip } from '@nextui-org/react';
 
 import { appConf } from '../../config';
 import { isDev } from '../../helper';
 import { Source } from '../../interfaces';
+import { useAppStore } from '../../store';
 
 export function Builds() {
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
 
   const navigate = useNavigate();
+  const lcuRunning = useAppStore(s => s.lcuRunning);
 
   const onToggleWindow = () => {
     invoke(`random_runes`);
@@ -68,9 +70,9 @@ export function Builds() {
                 value={i.source.value}
               >
                 {i.source.label}
-                {isSR && <Badge variant="dot" className={s.mode} />}
-                {i.source.isAram && <Badge variant="dot" color="success" className={s.mode} />}
-                {i.source.isUrf && <Badge variant="dot" color="warning" className={s.mode} />}
+                {isSR && <Badge variant="dot" className={s.mode}/>}
+                {i.source.isAram && <Badge variant="dot" color="success" className={s.mode}/>}
+                {i.source.isUrf && <Badge variant="dot" color="warning" className={s.mode}/>}
                 <Badge className={s.version}>{i.source_version}</Badge>
               </Checkbox>
             );
@@ -80,18 +82,20 @@ export function Builds() {
 
       <div className={s.modes}>
         <div>
-          <Badge variant="dot" /> Summoner's Rift
+          <Badge variant="dot"/> Summoner's Rift
         </div>
         <div>
-          <Badge variant="dot" color="success" /> ARAM
+          <Badge variant="dot" color="success"/> ARAM
         </div>
         <div>
-          <Badge variant="dot" color="warning" /> URF
+          <Badge variant="dot" color="warning"/> URF
         </div>
       </div>
 
       <div className={s.btns}>
-        <Button color={'primary'} onPress={goToImportResult}>Apply Builds</Button>
+        <Tooltip content={lcuRunning ? `` : `Please start League of Legends first`} placement={'top'}>
+          <Button color={'primary'} onPress={goToImportResult} disabled={!lcuRunning}>Apply Builds</Button>
+        </Tooltip>
         {isDev &&
           (<Button flat size={'sm'} onPress={onToggleWindow}>Toggle Runes</Button>)
         }

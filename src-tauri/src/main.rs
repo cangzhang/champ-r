@@ -64,6 +64,10 @@ fn main() {
                 let mut auth_token = String::new();
                 loop {
                     let cmd::CommandLineOutput { token, port, .. } = cmd::get_commandline();
+                    let running = token.len() > 0 && port.len() > 0;
+                    println!("webview::lol_running_status: {running}");
+                    let _ = main_win.emit("webview::lol_running_status", vec![running]);
+
                     if !auth_token.eq(token.as_str()) {
                         auth_token = token.clone();
                         if auth_token.len() > 0 && port.len() > 0 {
@@ -78,7 +82,7 @@ fn main() {
                             println!("[spawn] auth: invalid token & port");
                         }
                     }
-                    thread::sleep(time::Duration::from_millis(10000));
+                    thread::sleep(time::Duration::from_secs(6));
                 }
             });
 

@@ -2,6 +2,7 @@ import { appWindow } from '@tauri-apps/api/window';
 
 import { IconMinus, IconX } from '@tabler/icons';
 import { Avatar } from '@nextui-org/react';
+import cn from 'classnames';
 
 import Logo from '../../assets/icon.png';
 
@@ -18,7 +19,7 @@ export function Toolbar() {
       <div className={s.titlebarBtn} onClick={() => appWindow.minimize()}>
         <IconMinus size={20}/>
       </div>
-      <div className={s.titlebarBtn} onClick={() => appWindow.hide()}>
+      <div className={cn(s.titlebarBtn, s.warn)} onClick={() => appWindow.hide()}>
         <IconX size={20}/>
       </div>
     </div>

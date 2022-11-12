@@ -8,4 +8,23 @@
     display: flex;
     justify-content: center;
   }
+
+  .lol {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    margin-bottom: 1ex;
+
+    img {
+      height: 24px;
+      width: 24px;
+      filter: grayscale(80%);
+    }
+
+    &.online {
+      img {
+        filter: none;
+      }
+    }
+  }
 }
