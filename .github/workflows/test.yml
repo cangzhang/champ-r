@@ -71,7 +71,7 @@ jobs:
           gh release download "$release_name" -R cangzhang/league-client-tencent -p "*exe" -D src-tauri/ --clobber && echo "🐳 Downloaded LeagueClient $release_name"
           npm i -g pnpm && pnpm install && pnpm tauri build
           Move-Item -Force -Path src-tauri/LeagueClient.exe -Destination src-tauri/target/release/
-          Move-Item -Force -Path src-tauri/target/release/bundle/msi/*.exe -Destination "src-tauri/target/release/msi/ChampR_$env:GITHUB_REF_NAME.exe"
+          Move-Item -Force -Path src-tauri/target/release/bundle/msi/*.msi -Destination "src-tauri/target/release/msi/ChampR_$env:GITHUB_REF_NAME.msi"
 
       - name: Upload
         uses: actions/upload-artifact@v3
