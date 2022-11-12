@@ -316,6 +316,7 @@ pub async fn download_tarball(source_name: &String) -> anyhow::Result<()> {
 pub async fn apply_builds_from_local(
     source_name: &String,
     target_folder: &String,
+    is_tencent: bool,
     sort: u8,
     app_handle: Option<&AppHandle>,
 ) -> anyhow::Result<()> {
@@ -363,7 +364,11 @@ pub async fn apply_builds_from_local(
 
         for (idx, b) in builds.iter().enumerate() {
             alias = &b.alias;
-            let dir = format!("{target_folder}/Game/Config/Champions/{alias}/Recommended");
+            let dir = if is_tencent {
+                format!("{target_folder}/Game/Config/Champions/{alias}/Recommended")
+            } else {
+                format!("{target_folder}/Config/Champions/{alias}/Recommended")
+            };
             let pos = &b.position;
             fs::create_dir_all(&dir)?;
 
@@ -486,7 +491,7 @@ mod tests {
         let sources = fetch_source_list().await?;
         let s = &sources.first().unwrap().value;
         println!("applying builds from `{s}`");
-        apply_builds_from_local(s, &target, 1, None).await?;
+        apply_builds_from_local(s, &target, false, 1, None).await?;
         Ok(())
     }
 

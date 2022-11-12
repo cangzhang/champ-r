@@ -81,7 +81,8 @@ pub fn apply_builds(app_handle: AppHandle, sources: Vec<String>) {
         let mut idx = 0;
         for s in sources {
             println!("[commands::apply_builds] {idx} {s}");
-            let _ = builds::apply_builds_from_local(&s, &dir, idx, Some(&app_handle)).await;
+            let _ =
+                builds::apply_builds_from_local(&s, &dir, is_tencent, idx, Some(&app_handle)).await;
             idx = idx + 1;
         }
     });

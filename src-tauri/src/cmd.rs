@@ -11,7 +11,8 @@ lazy_static! {
     static ref TOKEN_REGEXP: regex::Regex =
         regex::Regex::new(r"--remoting-auth-token=\S+").unwrap();
     static ref REGION_REGEXP: regex::Regex = regex::Regex::new(r"--region=\S+").unwrap();
-    static ref DIR_REGEXP: regex::Regex = regex::Regex::new(r"--install-directory=\S+").unwrap();
+    static ref DIR_REGEXP: regex::Regex =
+        regex::Regex::new(r#"--install-directory=(.*?)""#).unwrap();
 }
 
 pub fn make_auth_url(token: &String, port: &String) -> String {
@@ -111,8 +112,13 @@ pub fn match_stdout(stdout: &String) -> CommandLineOutput {
         .replace("\"", "");
     let is_tencent = if region.eq("TENCENT") { true } else { false };
     let dir_match = DIR_REGEXP.find(&stdout).unwrap();
-    let dir = dir_match.as_str().replace(DIR_KEY, "").replace("\"", "");
-    let dir = format!("{dir}/..");
+    let dir = dir_match.as_str().replace(DIR_KEY, "");
+    let dir = dir.replace("\"", "");
+    let dir = if is_tencent {
+        format!("{dir}/..")
+    } else {
+        format!("{dir}/")
+    };
 
     CommandLineOutput {
         auth_url,
