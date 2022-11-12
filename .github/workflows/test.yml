@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - v2-nightly
 
 env:
   RUST_BACKTRACE: 1

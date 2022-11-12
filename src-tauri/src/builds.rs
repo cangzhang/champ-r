@@ -416,8 +416,11 @@ pub async fn update_tarball_if_not_latest(source_name: &String) -> anyhow::Resul
         }
     }
     if should_download {
-        println!("should update local package `{source_name}`");
+        println!(
+            "[builds::update_tarball_if_not_latest] should update local package `{source_name}`"
+        );
         download_tarball(source_name).await?;
+        println!("[builds::update_tarball_if_not_latest] updated package `{source_name}`");
     }
 
     Ok(should_download)

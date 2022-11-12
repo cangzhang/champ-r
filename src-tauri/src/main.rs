@@ -114,6 +114,9 @@ fn main() {
         })
         .system_tray(SystemTray::new().with_menu(tray_menu))
         .on_system_tray_event(move |app_handle, event| match event {
+            SystemTrayEvent::LeftClick { .. } => {
+                window::toggle_main_window(app_handle);
+            }
             SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
                 "toggle_window" => {
                     let _ = window::toggle_main_window(app_handle);

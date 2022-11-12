@@ -38,6 +38,7 @@ pub fn toggle_main_window(handle: &AppHandle) {
                 let _ = w.hide();
             } else {
                 let _ = w.show();
+                let _ = w.set_focus();
             }
         }
         Err(_) => (),
@@ -47,6 +48,7 @@ pub fn toggle_main_window(handle: &AppHandle) {
 pub fn show_and_emit(app_handle: &AppHandle, champion_id: i64, champion_alias: &String) {
     let w = get_rune_window(app_handle);
     let _ = w.show();
+    let _ = w.set_always_on_top(true);
     let _ = w.emit(
         "popup_window::selected_champion",
         ChampionSelectPayload {
