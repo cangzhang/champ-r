@@ -34,9 +34,10 @@ futures-channel = "0.3.23"
 base64 = "0.13.0"
 async-compression = { version = "0.3.14", features = ["futures-io", "gzip"] }
 tar = "0.4.38"
+serde_with = { version = "2.0", features = ["json"] }
 window-shadows = { git = "https://github.com/tauri-apps/window-shadows", branch = "dev"}
 tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store", branch = "dev"}
-serde_with = { version = "2.0", features = ["json"] }
+tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/tauri-plugin-single-instance", branch = "dev"}
 
 [features]
 # by default Tauri runs in production mode

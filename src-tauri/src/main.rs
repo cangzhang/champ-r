@@ -50,6 +50,7 @@ fn main() {
 
     let _app = tauri::Builder::default()
         .plugin(PluginBuilder::default().build())
+        .plugin(tauri_plugin_single_instance::init(|_app, _argv, _cwd| {}))
         .setup(move |app| {
             let mut inner_state = state::InnerState::new();
             // inner_state.init(&app.handle());
