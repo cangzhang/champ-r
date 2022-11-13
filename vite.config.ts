@@ -9,6 +9,7 @@ export default defineConfig({
   },
   plugins: [react()],
   build: {
+    assetsInlineLimit: Infinity,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),

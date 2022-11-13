@@ -10,10 +10,12 @@ import { appConf } from '../../config';
 import { isDev } from '../../helper';
 import { Source } from '../../interfaces';
 import { useAppStore } from '../../store';
+import { IconRotateClockwise2 } from '@tabler/icons';
 
 export function Builds() {
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
+  const [ready, setReady] = useState(false);
 
   const navigate = useNavigate();
   const lcuRunning = useAppStore(s => s.lcuRunning);
@@ -36,8 +38,9 @@ export function Builds() {
   useEffect(() => {
     invoke(`get_user_sources`)
       .then((l) => {
-        console.log('sources', l);
+        // console.log('sources', l);
         setSources(l as Source[]);
+        setReady(true);
       });
   }, []);
 
@@ -81,13 +84,18 @@ export function Builds() {
       </div>
 
       <div className={s.modes}>
-        <div>
+        {!ready && <div className={s.prepare}>
+          <IconRotateClockwise2 className={s.spin}/>
+          Preparing...
+        </div>}
+
+        <div className={s.map}>
           <Badge variant="dot"/> Summoner's Rift
         </div>
-        <div>
+        <div className={s.map}>
           <Badge variant="dot" color="success"/> ARAM
         </div>
-        <div>
+        <div className={s.map}>
           <Badge variant="dot" color="warning"/> URF
         </div>
       </div>
@@ -97,7 +105,7 @@ export function Builds() {
           <Button color={'primary'} onPress={goToImportResult} disabled={!lcuRunning}>Apply Builds</Button>
         </Tooltip>
         {isDev &&
-          (<Button flat size={'sm'} onPress={onToggleWindow}>Toggle Runes</Button>)
+          (<Button flat size={'sm'} onPress={onToggleWindow}>Runes</Button>)
         }
       </div>
     </section>

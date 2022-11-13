@@ -4,7 +4,7 @@ import { NextUIProvider } from '@nextui-org/react';
 import { Toolbar } from './views/Toolbar/Toolbar';
 import { Root } from './views/Root/Root';
 
-import './index.css';
+import './index.scss';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <NextUIProvider>
