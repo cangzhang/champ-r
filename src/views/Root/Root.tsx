@@ -10,6 +10,7 @@ import {
 } from 'react-router-dom';
 
 import { useAppStore } from '../../store';
+import { blockKeyCombosInProd } from '../../helper';
 
 import { Builds } from '../Builds/Builds';
 import { Settings } from '../Settings/Settings';
@@ -18,6 +19,10 @@ import { ImportResult } from '../ImportResult/ImportResult';
 
 export function Root() {
   let toggleLcuStatus = useAppStore(s => s.toggleLcuStatus);
+
+  useEffect(() => {
+    blockKeyCombosInProd();
+  }, []);
 
   useEffect(() => {
     let unlisten = () => {

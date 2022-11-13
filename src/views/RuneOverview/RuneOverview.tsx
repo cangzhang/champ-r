@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast';
 
 import { DDragon, RuneSlot, Source } from '../../interfaces';
 import { appConf } from '../../config';
+import { blockKeyCombosInProd } from '../../helper';
 
 import { RunePreview } from '../RunePreview/RunePreview';
 import { Toolbar } from '../Toolbar/Toolbar';
@@ -63,6 +64,10 @@ export function RuneOverview() {
       appConf.save();
     }
   }, [curSource]);
+
+  useEffect(() => {
+    blockKeyCombosInProd();
+  }, []);
 
   useEffect(() => {
     let unlisten: () => any = () => null;
