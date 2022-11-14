@@ -32,16 +32,13 @@ pub fn toggle_rune_win(app_handle: &AppHandle, status: Option<bool>) {
 
 pub fn toggle_main_window(handle: &AppHandle) {
     let w = handle.get_window("main").unwrap();
-    match w.is_visible() {
-        Ok(v) => {
-            if v {
-                let _ = w.hide();
-            } else {
-                let _ = w.show();
-                let _ = w.set_focus();
-            }
+    if let Ok(v) = w.is_visible() {
+        if v {
+            let _ = w.hide();
+        } else {
+            let _ = w.show();
+            let _ = w.set_focus();
         }
-        Err(_) => (),
     }
 }
 
