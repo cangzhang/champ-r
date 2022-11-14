@@ -48,7 +48,7 @@ fn main() {
     let context = tauri::generate_context!();
     // let settings = StoreBuilder::new(".settings".parse().unwrap()).build();
 
-    let _app = tauri::Builder::default()
+    tauri::Builder::default()
         .plugin(PluginBuilder::default().build())
         .plugin(tauri_plugin_single_instance::init(|_app, _argv, _cwd| {}))
         .setup(move |app| {
@@ -65,13 +65,13 @@ fn main() {
                 let mut auth_token = String::new();
                 loop {
                     let cmd::CommandLineOutput { token, port, .. } = cmd::get_commandline();
-                    let running = token.len() > 0 && port.len() > 0;
+                    let running = !token.is_empty() && !port.is_empty();
                     println!("webview::lol_running_status: {running}");
                     let _ = main_win.emit("webview::lol_running_status", vec![running]);
 
                     if !auth_token.eq(token.as_str()) {
                         auth_token = token.clone();
-                        if auth_token.len() > 0 && port.len() > 0 {
+                        if !auth_token.is_empty() && !port.is_empty() {
                             let _ = cmd::spawn_league_client(
                                 &token,
                                 &port,
@@ -124,7 +124,7 @@ fn main() {
             }
             SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
                 "toggle_window" => {
-                    let _ = window::toggle_main_window(app_handle);
+                    window::toggle_main_window(app_handle);
                 }
                 "apply_builds" => {}
                 "quit" => {

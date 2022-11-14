@@ -57,7 +57,7 @@ pub struct BuildFile {
     pub runes: Vec<Rune>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemBuild {
     pub title: String,
@@ -73,7 +73,7 @@ pub struct ItemBuild {
     pub type_field: Option<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Block {
     #[serde(rename = "type")]
@@ -81,7 +81,7 @@ pub struct Block {
     pub items: Option<Vec<Item>>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Item {
     pub id: String,
@@ -104,7 +104,7 @@ pub struct Rune {
     pub type_field: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PackageJson {
     pub name: String,
@@ -129,7 +129,7 @@ pub async fn save_build(path: String, data: &web::ItemBuild) -> anyhow::Result<(
     let prefix = path.parent().unwrap();
     fs::create_dir_all(prefix).unwrap();
 
-    let mut f = fs::File::create(&path)?;
+    let mut f = fs::File::create(path)?;
     let buf = serde_json::to_string(&data)?;
     f.write_all(buf[..].as_bytes())?;
     Ok(())
@@ -247,7 +247,7 @@ pub async fn apply_builds(
     drop(tx);
     let mut results: Vec<(bool, String, String)> = vec![];
     for r in rx {
-        if r.0 == false {
+        if !r.0 {
             println!("{:?}", r);
         }
         results.push(r);
@@ -358,7 +358,7 @@ pub async fn apply_builds_from_local(
         build_files.push(b);
     }
 
-    let source_name_in_path = source_name.replace(".", "_");
+    let source_name_in_path = source_name.replace('.', "_");
     for builds in build_files {
         let mut alias = &String::new();
 

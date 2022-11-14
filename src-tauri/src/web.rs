@@ -25,7 +25,7 @@ pub async fn fetch_lol_latest_version() -> anyhow::Result<String> {
 }
 
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampListResp {
     #[serde(rename = "type")]
@@ -35,7 +35,7 @@ pub struct ChampListResp {
     pub data: HashMap<String, ChampInfo>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampInfo {
     pub version: String,
@@ -51,7 +51,7 @@ pub struct ChampInfo {
     // pub stats: Stats,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Image {
     pub full: String,
@@ -80,7 +80,7 @@ pub async fn fetch_latest_champion_list() -> anyhow::Result<ChampListResp> {
     Ok(list)
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RuneListItem {
     pub id: i64,
@@ -90,13 +90,13 @@ pub struct RuneListItem {
     pub slots: Vec<Slot>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Slot {
     pub runes: Vec<SlotRuneItem>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SlotRuneItem {
     pub id: i64,
@@ -137,7 +137,7 @@ pub struct ChampData {
     pub runes: Vec<Rune>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemBuild {
     pub title: String,
@@ -153,7 +153,7 @@ pub struct ItemBuild {
     pub type_field: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Block {
     #[serde(rename = "type")]
@@ -161,7 +161,7 @@ pub struct Block {
     pub items: Option<Vec<Item>>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Item {
     pub id: String,
@@ -215,7 +215,7 @@ pub fn get_alias_from_champion_map(
     champion_id: i64,
 ) -> String {
     let mut ret = String::new();
-    for (alias, c) in champion_map.into_iter() {
+    for (alias, c) in champion_map.iter() {
         if c.key.eq(&champion_id.to_string()) {
             ret = alias.to_string();
             break;

@@ -64,8 +64,8 @@ pub fn get_available_perks_for_champion(
         };
         let _ = tx.send(r);
     });
-    let runes = rx.recv().unwrap();
-    runes
+    
+    rx.recv().unwrap()
 }
 
 #[command]
@@ -83,7 +83,7 @@ pub fn apply_builds(app_handle: AppHandle, sources: Vec<String>) {
             println!("[commands::apply_builds] {idx} {s}");
             let _ =
                 builds::apply_builds_from_local(&s, &dir, is_tencent, idx, Some(&app_handle)).await;
-            idx = idx + 1;
+            idx += 1;
         }
     });
 }
