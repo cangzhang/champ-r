@@ -13,9 +13,8 @@ export function Settings() {
   const onChange = (ev: SwitchEvent) => {
     let v = ev.target.checked;
     setAutoStart(v);
-
-    invoke('update_app_auto_start', { autoStart });
-
+    
+    invoke('update_app_auto_start', { autoStart: v });
     appConf.set(`autoStart`, v).then(() => {
       appConf.save();
     });

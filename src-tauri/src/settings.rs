@@ -40,9 +40,9 @@ impl Settings {
 
         thread::spawn(move || {
             if cur {
-                auto.enable();
+                println!("[Settings::on_auto_start] enable auto start, {:?}", auto.enable());
             } else {
-                auto.disable();
+                println!("[Settings::on_auto_start] disable auto start, {:?}", auto.disable());
             }
         });
     }
