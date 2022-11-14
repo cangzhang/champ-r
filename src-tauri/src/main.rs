@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use std::{sync::mpsc, thread, time};
+use std::{sync::mpsc, thread, time, env};
 
 use serde_json::Value;
 use tauri::{
@@ -19,6 +19,7 @@ pub mod page_data;
 pub mod state;
 pub mod web;
 pub mod window;
+pub mod settings;
 
 #[derive(Clone, serde::Serialize)]
 pub struct GlobalEventPayload {
@@ -55,7 +56,10 @@ fn main() {
             let mut inner_state = state::InnerState::new();
             // inner_state.init(&app.handle());
             let (ready, source_list, rune_list, version, champion_map) = rx.recv().unwrap();
+            
             inner_state.init_page_data(ready, &source_list, &rune_list, &version, &champion_map);
+            inner_state.init_settings();
+
             let st = state::GlobalState::init(inner_state);
             app.manage(st);
 
@@ -147,6 +151,7 @@ fn main() {
             commands::get_runes_reforged,
             commands::random_runes,
             commands::apply_perk,
+            commands::update_app_auto_start,
         ])
         .run(context)
         .expect("error while running tauri application");

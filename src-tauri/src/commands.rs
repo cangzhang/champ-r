@@ -170,6 +170,14 @@ pub async fn apply_perk(perk: String) -> Result<(), ()> {
     Ok(())
 }
 
+#[command]
+pub fn update_app_auto_start(state: State<'_, state::GlobalState>, auto_start: bool) {
+    let s = state.0.lock().unwrap();
+    let mut s = s.settings.lock().unwrap();
+
+    s.on_auto_start(Some(auto_start));
+}
+
 // #[command]
 // pub fn init_state(state: State<'_, state::GlobalState>, handle: AppHandle) {
 //     let mut state = state.0.lock().unwrap();

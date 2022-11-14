@@ -4,7 +4,7 @@ use std::{
 };
 use tauri::{AppHandle, Window};
 
-use crate::{lcu, page_data, web};
+use crate::{lcu, page_data, web, settings};
 
 #[derive(Clone, Debug)]
 pub struct InnerState {
@@ -12,6 +12,7 @@ pub struct InnerState {
     pub app_handle: Arc<Mutex<Option<AppHandle>>>,
     pub main_window: Arc<Mutex<Option<Window>>>,
     pub page_data: Arc<Mutex<page_data::PageData>>,
+    pub settings: Arc<Mutex<settings::Settings>>,
 }
 
 impl InnerState {
@@ -21,6 +22,7 @@ impl InnerState {
             app_handle: Arc::new(Mutex::new(None)),
             main_window: Arc::new(Mutex::new(None)),
             page_data: Arc::new(Mutex::new(page_data::PageData::new())),
+            settings: Arc::new(Mutex::new(settings::Settings::load()))
         }
     }
 
@@ -38,6 +40,11 @@ impl InnerState {
         p.rune_list = rune_list.clone();
         p.official_version = version.clone();
         p.champion_map = champion_map.clone();
+    }
+
+    pub fn init_settings(&mut self) {
+        let mut s = self.settings.lock().unwrap();
+        s.on_auto_start(None);
     }
 }
 
