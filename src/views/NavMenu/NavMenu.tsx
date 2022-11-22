@@ -44,7 +44,7 @@ export function NavMenu() {
       <div className={cn(s.lol, lcuRunning && s.online)}>
         <Tooltip
           placement={'right'}
-          content={lcuRunning ? `Connected to LoL client` : `Disconnected with LoL Client`}
+          content={lcuRunning ? `Connected to LoL Client` : `Disconnected with LoL Client`}
         >
           {lcuRunning ? <IconPlugConnected color={'#0072F5'}/> : <IconPlugOff color={'#889096'}/>}
         </Tooltip>

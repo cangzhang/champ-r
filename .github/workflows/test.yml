@@ -70,14 +70,15 @@ jobs:
           $release_name=(gh api -H "Accept: application/vnd.github+json" /repos/cangzhang/league-client-tencent/releases/latest --jq ".name")
           gh release download "$release_name" -R cangzhang/league-client-tencent -p "*exe" -D src-tauri/ --clobber && echo "🐳 Downloaded LeagueClient $release_name"
           npm i -g pnpm && pnpm install && pnpm tauri build
+          New-Item .\src-tauri\target\release\msi -ItemType Directory -Force
           Move-Item -Force -Path src-tauri/LeagueClient.exe -Destination src-tauri/target/release/
-          Move-Item -Force -Path src-tauri/target/release/bundle/msi/*.msi -Destination "src-tauri/target/release/ChampR_$env:GITHUB_REF_NAME.msi"
+          Move-Item -Force -Path src-tauri/target/release/bundle/msi/*.msi -Destination "src-tauri/target/release/msi/ChampR_$env:GITHUB_REF_NAME.msi"
 
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
           path: |
-            src-tauri/target/release/*.msi
+            src-tauri/target/release/msi/*
             src-tauri/target/release/*.exe
 
       - name: Create Nightly Release
@@ -87,7 +88,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           prerelease: true
-          artifacts: "src-tauri/target/release/*.msi"
+          artifacts: "src-tauri/target/release/msi/*"
           body: >
             [FAQ](https://github.com/cangzhang/champ-r/wiki/FAQ) 
             <br/>
