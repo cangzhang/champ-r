@@ -13,6 +13,7 @@ import { RunePreview } from '../RunePreview/RunePreview';
 import { Toolbar } from '../Toolbar/Toolbar';
 
 import s from './style.module.scss';
+import { appWindow } from '@tauri-apps/api/window';
 
 export function RuneOverview() {
   const [championId, setChampionId] = useState(0);
@@ -96,16 +97,23 @@ export function RuneOverview() {
     };
   }, [initData]);
 
+  useEffect(() => {
+    if (championId > 0) {
+      appWindow.show();
+      appWindow.setAlwaysOnTop(true);
+    }
+  }, [championId]);
+
   let selectedSource = useMemo(() => [...curSource].join(''), [curSource]);
   let source = sources.find(i => i.source.value === selectedSource);
 
   return (
     <>
-      <Toolbar />
+      <Toolbar/>
       <div className={s.overviewContainer}>
         <div className={s.header}>
           <Tooltip content={championAlias} placement={'bottom'}>
-            <Avatar src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`} />
+            <Avatar src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}/>
           </Tooltip>
 
           <Dropdown>
@@ -126,14 +134,14 @@ export function RuneOverview() {
             </Dropdown.Menu>
           </Dropdown>
 
-          {source?.source.isAram && <><Badge variant="dot" color={'success'} />ARAM</>}
-          {source?.source.isUrf && <><Badge variant="dot" color={'warning'} />URF</>}
-          {(!source?.source.isAram && !source?.source.isUrf) && <><Badge variant="dot" />Summoner's Rift</>}
+          {source?.source.isAram && <><Badge variant="dot" color={'success'}/>ARAM</>}
+          {source?.source.isUrf && <><Badge variant="dot" color={'warning'}/>URF</>}
+          {(!source?.source.isAram && !source?.source.isUrf) && <><Badge variant="dot"/>Summoner's Rift</>}
         </div>
 
-        {runesReforged.length > 0 && <RunePreview perks={perks} runesReforged={runesReforged} />}
+        {runesReforged.length > 0 && <RunePreview perks={perks} runesReforged={runesReforged}/>}
 
-        <Toaster position="bottom-center" />
+        <Toaster position="bottom-center"/>
       </div>
     </>
   );

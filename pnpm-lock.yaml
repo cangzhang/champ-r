@@ -3,8 +3,8 @@ lockfileVersion: 5.4
 specifiers:
   '@nextui-org/react': 1.0.0-beta.10
   '@tabler/icons': ^1.105.0
-  '@tauri-apps/api': ^1
-  '@tauri-apps/cli': ^1.2
+  '@tauri-apps/api': ^1.2.0
+  '@tauri-apps/cli': ^1.2.0
   '@types/node': ^16
   '@types/react': ^18.0.6
   '@types/react-dom': ^18.0.6
@@ -25,7 +25,7 @@ specifiers:
 dependencies:
   '@nextui-org/react': 1.0.0-beta.10_biqbaboplfbrettd7655fr4n2y
   '@tabler/icons': 1.105.0_biqbaboplfbrettd7655fr4n2y
-  '@tauri-apps/api': 1.1.0
+  '@tauri-apps/api': 1.2.0
   classnames: 2.3.2
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
@@ -1166,6 +1166,11 @@ packages:
   /@tauri-apps/api/1.1.0:
     resolution: {integrity: sha512-n13pIqdPd3KtaMmmAcrU7BTfdMtIlGNnfZD0dNX8L4p8dgmuNyikm6JAA+yCpl9gqq6I8x5cV2Y0muqdgD0cWw==}
     engines: {node: '>= 12.22.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
+    dev: false
+
+  /@tauri-apps/api/1.2.0:
+    resolution: {integrity: sha512-lsI54KI6HGf7VImuf/T9pnoejfgkNoXveP14pVV7XarrQ46rOejIVJLFqHI9sRReJMGdh2YuCoI3cc/yCWCsrw==}
+    engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
     dev: false
 
   /@tauri-apps/cli-darwin-arm64/1.2.0:
