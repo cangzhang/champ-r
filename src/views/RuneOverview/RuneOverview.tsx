@@ -101,6 +101,7 @@ export function RuneOverview() {
     if (championId > 0) {
       appWindow.show();
       appWindow.setAlwaysOnTop(true);
+      appWindow.unminimize();
     }
   }, [championId]);
 
