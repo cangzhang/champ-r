@@ -3,13 +3,14 @@ import s from './style.module.scss';
 import { invoke } from '@tauri-apps/api';
 
 import { useCallback, useMemo, useState } from 'react';
-import { Button } from '@nextui-org/react';
+import { Button } from '@adobe/react-spectrum';
 import cn from 'classnames';
 import { IconCheck, IconRotateClockwise2, IconSword } from '@tabler/icons';
 import toast from 'react-hot-toast';
 
 import { PerkPage, Rune, RuneSlot } from '../../interfaces';
 import { sleep } from '../../helper';
+
 // import SimpleBar from 'simplebar-react';
 
 interface RRune extends Rune {
@@ -33,7 +34,7 @@ const getStageIcon = (stage: number) => {
   }
 };
 
-export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesReforged: RuneSlot[] }) {
+export function RunePreview({ perks, runesReforged }: { perks: PerkPage[], runesReforged: RuneSlot[] }) {
   const [processing, setProcessing] = useState<{ [key: number]: ApplyStage }>({});
 
   const getSlots = useCallback((perk: PerkPage) => {
@@ -42,32 +43,32 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
 
     return {
       primary,
-      sub
+      sub,
     };
   }, [runesReforged]);
 
   const applyPerk = useCallback((p: PerkPage, idx: number) => {
     setProcessing(s => {
-      let ss = {...s};
+      let ss = { ...s };
       ss[idx] = ApplyStage.Processing;
       return ss;
     });
-    invoke('apply_perk', {perk: JSON.stringify(p)})
-    .finally(async () => {
-      await sleep(600);
-      setProcessing(s => {
-        let ss = {...s};
-        ss[idx] = ApplyStage.Done;
-        return ss;
+    invoke('apply_perk', { perk: JSON.stringify(p) })
+      .finally(async () => {
+        await sleep(600);
+        setProcessing(s => {
+          let ss = { ...s };
+          ss[idx] = ApplyStage.Done;
+          return ss;
+        });
+        toast.success('Applied');
+        await sleep(600);
+        setProcessing(s => {
+          let ss = { ...s };
+          ss[idx] = ApplyStage.Normal;
+          return ss;
+        });
       });
-      toast.success('Applied');
-      await sleep(600);
-      setProcessing(s => {
-        let ss = {...s};
-        ss[idx] = ApplyStage.Normal;
-        return ss;
-      });
-    });
   }, []);
 
   let runesRef = useMemo(() => {
@@ -77,7 +78,7 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
         j.runes.forEach(k => {
           r[k.id] = {
             ...k,
-            parent: i.id
+            parent: i.id,
           };
         });
       });
@@ -90,7 +91,7 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
     <div className={s.previewCard}>
       {
         perks.map((p, idx) => {
-          let {primary, sub} = getSlots(p);
+          let { primary, sub } = getSlots(p);
           let stage = processing[idx];
 
           return (
@@ -104,20 +105,20 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
                 className={s.main}
               />
               {p.selectedPerkIds
-              .filter(i => runesRef[i]?.parent === primary.id)
-              .map(i => {
-                let rune = runesRef[i];
-                return (
-                  <img
-                    key={i}
-                    width={24}
-                    height={24}
-                    src={`https://ddragon.leagueoflegends.com/cdn/img/${runesRef[i].icon}`}
-                    alt={runesRef[i].name}
-                    className={s.normal}
-                  />
-                );
-              })}
+                .filter(i => runesRef[i]?.parent === primary.id)
+                .map(i => {
+                  let rune = runesRef[i];
+                  return (
+                    <img
+                      key={i}
+                      width={24}
+                      height={24}
+                      src={`https://ddragon.leagueoflegends.com/cdn/img/${runesRef[i].icon}`}
+                      alt={runesRef[i].name}
+                      className={s.normal}
+                    />
+                  );
+                })}
 
               <img
                 key={sub.key}
@@ -126,33 +127,32 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
                 className={s.main}
               />
               {p.selectedPerkIds
-              .filter(i => runesRef[i]?.parent === sub.id)
-              .map(i => {
-                let rune = runesRef[i];
-                return (
-                  <img
-                    key={i}
-                    width={24}
-                    height={24}
-                    src={`https://ddragon.leagueoflegends.com/cdn/img/${runesRef[i].icon}`}
-                    alt={runesRef[i].name}
-                    className={s.normal}
-                  />
-                );
-              })}
+                .filter(i => runesRef[i]?.parent === sub.id)
+                .map(i => {
+                  let rune = runesRef[i];
+                  return (
+                    <img
+                      key={i}
+                      width={24}
+                      height={24}
+                      src={`https://ddragon.leagueoflegends.com/cdn/img/${runesRef[i].icon}`}
+                      alt={runesRef[i].name}
+                      className={s.normal}
+                    />
+                  );
+                })}
 
               <Button
-                auto
-                flat
-                color="success"
-                icon={getStageIcon(stage)}
-                className={cn(s.applyBtn)}
+                variant="accent"
+                UNSAFE_className={cn(s.applyBtn)}
                 onPress={() => applyPerk(p, idx)}
-              />
+              >
+                {getStageIcon(stage)}
+              </Button>
             </div>
           );
         })
-      }
+        }
     </div>
   );
 }

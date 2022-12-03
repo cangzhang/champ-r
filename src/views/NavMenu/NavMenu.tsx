@@ -1,11 +1,7 @@
 import s from './style.module.scss';
 
-import { listen } from '@tauri-apps/api/event';
-
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Tooltip } from '@nextui-org/react';
-
+import { Button, ButtonGroup, Tooltip, TooltipTrigger } from '@adobe/react-spectrum';
 import cn from 'classnames';
 import { IconSettings, IconBuildingFortress, IconPlugConnected, IconPlugOff } from '@tabler/icons';
 
@@ -19,38 +15,34 @@ export function NavMenu() {
     <div className={s.nav}>
       <div className={s.header}></div>
 
-      <Button.Group
-        color="secondary"
-        vertical
-        animated
-        flat
+      <ButtonGroup
+        orientation="vertical"
       >
-        <Button
-          onPress={() => navigate('/')}
-        >
-          {/*// @ts-ignore*/}
-          <Tooltip content={'Builds'} placement={'right'}>
+        <TooltipTrigger placement={'right'}>
+          <Button
+            onPress={() => navigate('/')} variant={'secondary'}>
             <IconBuildingFortress/>
-          </Tooltip>
-        </Button>
-        <Button
-          onPress={() => navigate('/settings')}
-        >
-          {/*// @ts-ignore*/}
-          <Tooltip content={'Settings'} placement={'right'}>
+          </Button>
+          <Tooltip>Builds</Tooltip>
+        </TooltipTrigger>
+        <TooltipTrigger>
+
+          <Button
+            onPress={() => navigate('/settings')} variant={'secondary'}>
             <IconSettings/>
-          </Tooltip>
-        </Button>
-      </Button.Group>
+          </Button>
+          <Tooltip placement={'right'}>Settings</Tooltip>
+        </TooltipTrigger>
+      </ButtonGroup>
 
       <div className={cn(s.lol, lcuRunning && s.online)}>
-        {/*// @ts-ignore*/}
-        <Tooltip
-          placement={'right'}
-          content={lcuRunning ? `Connected to LoL Client` : `Disconnected with LoL Client`}
-        >
+        <TooltipTrigger>
           {lcuRunning ? <IconPlugConnected color={'#0072F5'}/> : <IconPlugOff color={'#889096'}/>}
-        </Tooltip>
+          <Tooltip
+            placement={'right'}
+          >
+          </Tooltip>
+        </TooltipTrigger>
       </div>
     </div>
   );

@@ -2,8 +2,8 @@ import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, Dropdown, Tooltip, Badge } from '@nextui-org/react';
 import { Toaster } from 'react-hot-toast';
+import { Picker, Tooltip, Item, StatusLight, TooltipTrigger } from '@adobe/react-spectrum';
 
 import { DDragon, RuneSlot, Source } from '../../interfaces';
 import { appConf } from '../../config';
@@ -20,7 +20,7 @@ export function RuneOverview() {
   const [championAlias, setChampionAlias] = useState('');
   const [perks, setPerks] = useState<any[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
-  const [curSource, setCurSource] = useState(new Set([]));
+  const [curSource, setCurSource] = useState('');
   const [version, setVersion] = useState('');
   const [runesReforged, setRunesReforged] = useState<RuneSlot[]>([]);
 
@@ -31,7 +31,7 @@ export function RuneOverview() {
       return;
     }
 
-    let r: any = await invoke(`get_available_perks_for_champion`, { sourceName: [...curSource][0], championAlias });
+    let r: any = await invoke(`get_available_perks_for_champion`, { sourceName: curSource, championAlias });
     setPerks(r);
   }, [championAlias, curSource]);
 
@@ -55,7 +55,7 @@ export function RuneOverview() {
     if (!runeSource || !selectedSources.includes(runeSource)) {
       runeSource = sourceList[0].source.value;
     }
-    setCurSource(new Set([runeSource]));
+    setCurSource(runeSource);
   }, []);
 
   useEffect(() => {
@@ -113,33 +113,21 @@ export function RuneOverview() {
       <Toolbar/>
       <div className={s.overviewContainer}>
         <div className={s.header}>
-          {/*// @ts-ignore */}
-          <Tooltip content={championAlias} placement={'bottom'}>
-            <Avatar src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}/>
-          </Tooltip>
+          <TooltipTrigger>
+            <img src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}/>
+            <Tooltip placement={'bottom'}>{championAlias}</Tooltip>
+          </TooltipTrigger>
 
-          <Dropdown>
-            <Dropdown.Button flat color={'secondary'}>
-              <div className={s.curSource}>{selectedSource}</div>
-            </Dropdown.Button>
-            <Dropdown.Menu
-              color="secondary"
-              // @ts-ignore
-              disallowEmptySelection
-              selectionMode="single"
-              selectedKeys={curSource}
-              // @ts-ignore
-              onSelectionChange={setCurSource}
-            >
-              {sources.map((i: any) => (
-                <Dropdown.Item key={i.source.value}>{i.source.label}</Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
+          <Picker selectedKey={curSource}>
+            {sources.map((i: any) => (
+              <Item key={i.source.value}>{i.source.label}</Item>
+            ))}
+          </Picker>
 
-          {source?.source.isAram && <><Badge variant="dot" color={'success'}/>ARAM</>}
-          {source?.source.isUrf && <><Badge variant="dot" color={'warning'}/>URF</>}
-          {(!source?.source.isAram && !source?.source.isUrf) && <><Badge variant="dot"/>Summoner's Rift</>}
+          {source?.source.isAram && <StatusLight variant="positive">ARAM</StatusLight>}
+          {source?.source.isUrf && <StatusLight variant="positive">URF</StatusLight>}
+          {(!source?.source.isAram && !source?.source.isUrf) &&
+            <StatusLight variant="positive">Summoner's Rift</StatusLight>}
         </div>
 
         {runesReforged.length > 0 && <RunePreview perks={perks} runesReforged={runesReforged}/>}

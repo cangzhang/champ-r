@@ -4,7 +4,15 @@ import { invoke } from '@tauri-apps/api';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Checkbox, Badge, Tooltip } from '@nextui-org/react';
+import {
+  Button,
+  Checkbox,
+  Tooltip,
+  CheckboxGroup,
+  StatusLight,
+  Flex,
+  TooltipTrigger,
+} from '@adobe/react-spectrum';
 
 import { appConf } from '../../config';
 import { isDev } from '../../helper';
@@ -58,10 +66,10 @@ export function Builds() {
   return (
     <section className={s.builds}>
       <div className={s.sourceList}>
-        <Checkbox.Group
+        <CheckboxGroup
           label="Select Source(s)"
           value={selectedSources}
-          // @ts-ignore
+            // @ts-ignore
           onChange={onSelectChange}
         >
           {sources.map((i) => {
@@ -70,19 +78,21 @@ export function Builds() {
             return (
               <Checkbox
                 key={i.source.value}
-                className={s.source}
-                // @ts-ignore
+                UNSAFE_className={s.source}
+                  // @ts-ignore
                 value={i.source.value}
               >
-                {i.source.label}
-                {isSR && <Badge variant="dot" className={s.mode}/>}
-                {i.source.isAram && <Badge variant="dot" color="success" className={s.mode}/>}
-                {i.source.isUrf && <Badge variant="dot" color="warning" className={s.mode}/>}
-                <Badge className={s.version}>{i.source_version}</Badge>
+                <Flex>
+                  {i.source.label}
+                  {isSR && <StatusLight variant="seafoam" UNSAFE_className={s.mode}/>}
+                  {i.source.isAram && <StatusLight variant="indigo" UNSAFE_className={s.mode}/>}
+                  {i.source.isUrf && <StatusLight variant="purple" UNSAFE_className={s.mode}/>}
+                  <StatusLight variant="info" UNSAFE_className={s.version}>{i.source_version}</StatusLight>
+                </Flex>
               </Checkbox>
             );
           })}
-        </Checkbox.Group>
+        </CheckboxGroup>
       </div>
 
       <div className={s.modes}>
@@ -91,24 +101,27 @@ export function Builds() {
           Preparing...
         </div>}
 
-        <div className={s.map}>
-          <Badge variant="dot"/> Summoner's Rift
-        </div>
-        <div className={s.map}>
-          <Badge variant="dot" color="success"/> ARAM
-        </div>
-        <div className={s.map}>
-          <Badge variant="dot" color="warning"/> URF
-        </div>
+        <Flex>
+          <div className={s.map}>
+            <StatusLight variant="positive">Summoner's Rift</StatusLight>
+          </div>
+          <div className={s.map}>
+            <StatusLight variant="positive">ARAM</StatusLight>
+          </div>
+          <div className={s.map}>
+            <StatusLight variant="positive">URF</StatusLight>
+          </div>
+        </Flex>
       </div>
 
       <div className={s.btns}>
-        {/*// @ts-ignore*/}
-        <Tooltip content={lcuRunning ? `` : `Please start League of Legends first`} placement={'top'}>
-          <Button color={'primary'} onPress={goToImportResult} disabled={!lcuRunning}>Apply Builds</Button>
-        </Tooltip>
+        <TooltipTrigger>
+          <Button variant="accent">Apply Builds</Button>
+          <Tooltip>{lcuRunning ? `` : `Please start League of Legends first`}</Tooltip>
+        </TooltipTrigger>
+
         {isDev &&
-          (<Button flat size={'sm'} onPress={onToggleWindow}>Runes</Button>)
+          (<Button variant="primary" onPress={onToggleWindow}>Runes</Button>)
         }
       </div>
     </section>

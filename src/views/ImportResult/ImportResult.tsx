@@ -4,7 +4,7 @@ import { invoke } from '@tauri-apps/api';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams, NavLink } from 'react-router-dom';
 
-import { Button, Container } from '@nextui-org/react';
+import { Button, Content, Text } from '@adobe/react-spectrum';
 import { IconArrowLeft } from '@tabler/icons';
 
 export function ImportResult() {
@@ -13,7 +13,7 @@ export function ImportResult() {
   let [searchParams] = useSearchParams();
 
   const applyBuilds = useCallback((sources: string[]) => {
-    invoke(`apply_builds`, {sources});
+    invoke(`apply_builds`, { sources });
   }, []);
 
   const updateResult = useCallback((payload: any) => {
@@ -51,16 +51,17 @@ export function ImportResult() {
   }, [applyBuilds]);
 
   return (
-    <Container>
+    <Content>
       <NavLink to={'/'}>
-        <Button light icon={<IconArrowLeft/>}>
-          Back
+        <Button variant="negative">
+          <IconArrowLeft/>
+          <Text>Back</Text>
         </Button>
       </NavLink>
 
-      <div style={{height: 200, overflow: `auto`}}>
+      <div style={{ height: 200, overflow: `auto` }}>
         {result.map((i, idx) => <p key={idx}>{i}</p>)}
       </div>
-    </Container>
+    </Content>
   );
 }

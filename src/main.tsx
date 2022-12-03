@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom/client';
-import { NextUIProvider } from '@nextui-org/react';
+import { defaultTheme, Provider } from '@adobe/react-spectrum';
 
 import { Toolbar } from './views/Toolbar/Toolbar';
 import { Root } from './views/Root/Root';
@@ -7,8 +7,8 @@ import { Root } from './views/Root/Root';
 import './index.scss';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <NextUIProvider>
+  <Provider theme={defaultTheme}>
     <Toolbar/>
     <Root/>
-  </NextUIProvider>
+  </Provider>,
 );
