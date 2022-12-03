@@ -28,6 +28,7 @@ export function NavMenu() {
         <Button
           onPress={() => navigate('/')}
         >
+          {/*// @ts-ignore*/}
           <Tooltip content={'Builds'} placement={'right'}>
             <IconBuildingFortress/>
           </Tooltip>
@@ -35,6 +36,7 @@ export function NavMenu() {
         <Button
           onPress={() => navigate('/settings')}
         >
+          {/*// @ts-ignore*/}
           <Tooltip content={'Settings'} placement={'right'}>
             <IconSettings/>
           </Tooltip>
@@ -42,6 +44,7 @@ export function NavMenu() {
       </Button.Group>
 
       <div className={cn(s.lol, lcuRunning && s.online)}>
+        {/*// @ts-ignore*/}
         <Tooltip
           placement={'right'}
           content={lcuRunning ? `Connected to LoL Client` : `Disconnected with LoL Client`}

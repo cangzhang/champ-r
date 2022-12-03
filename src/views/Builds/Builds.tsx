@@ -61,6 +61,7 @@ export function Builds() {
         <Checkbox.Group
           label="Select Source(s)"
           value={selectedSources}
+          // @ts-ignore
           onChange={onSelectChange}
         >
           {sources.map((i) => {
@@ -70,6 +71,7 @@ export function Builds() {
               <Checkbox
                 key={i.source.value}
                 className={s.source}
+                // @ts-ignore
                 value={i.source.value}
               >
                 {i.source.label}
@@ -101,6 +103,7 @@ export function Builds() {
       </div>
 
       <div className={s.btns}>
+        {/*// @ts-ignore*/}
         <Tooltip content={lcuRunning ? `` : `Please start League of Legends first`} placement={'top'}>
           <Button color={'primary'} onPress={goToImportResult} disabled={!lcuRunning}>Apply Builds</Button>
         </Tooltip>

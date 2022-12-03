@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use std::{sync::mpsc, thread, time, env};
+use std::{env, sync::mpsc, thread, time};
 
 use serde_json::Value;
 use tauri::{
@@ -16,10 +16,10 @@ pub mod cmd;
 pub mod commands;
 pub mod lcu;
 pub mod page_data;
+pub mod settings;
 pub mod state;
 pub mod web;
 pub mod window;
-pub mod settings;
 
 #[derive(Clone, serde::Serialize)]
 pub struct GlobalEventPayload {
@@ -56,7 +56,7 @@ fn main() {
             let mut inner_state = state::InnerState::new();
             // inner_state.init(&app.handle());
             let (ready, source_list, rune_list, version, champion_map) = rx.recv().unwrap();
-            
+
             inner_state.init_page_data(ready, &source_list, &rune_list, &version, &champion_map);
             inner_state.init_settings();
 

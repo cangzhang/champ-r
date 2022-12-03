@@ -4,7 +4,7 @@ use std::{
 };
 use tauri::{AppHandle, Window};
 
-use crate::{lcu, page_data, web, settings};
+use crate::{lcu, page_data, settings, web};
 
 #[derive(Clone, Debug)]
 pub struct InnerState {
@@ -22,7 +22,7 @@ impl InnerState {
             app_handle: Arc::new(Mutex::new(None)),
             main_window: Arc::new(Mutex::new(None)),
             page_data: Arc::new(Mutex::new(page_data::PageData::new())),
-            settings: Arc::new(Mutex::new(settings::Settings::load()))
+            settings: Arc::new(Mutex::new(settings::Settings::load())),
         }
     }
 

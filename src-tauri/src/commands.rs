@@ -64,7 +64,7 @@ pub fn get_available_perks_for_champion(
         };
         let _ = tx.send(r);
     });
-    
+
     rx.recv().unwrap()
 }
 
