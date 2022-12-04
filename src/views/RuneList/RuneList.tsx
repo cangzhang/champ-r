@@ -3,8 +3,9 @@ import s from './style.module.scss';
 import { invoke } from '@tauri-apps/api';
 
 import { useCallback, useMemo, useState } from 'react';
-import { Button } from '@adobe/react-spectrum';
 import cn from 'classnames';
+
+import { ActionButton } from '@adobe/react-spectrum';
 import { IconCheck, IconRotateClockwise2, IconSword } from '@tabler/icons';
 import toast from 'react-hot-toast';
 
@@ -34,7 +35,7 @@ const getStageIcon = (stage: number) => {
   }
 };
 
-export function RunePreview({ perks, runesReforged }: { perks: PerkPage[], runesReforged: RuneSlot[] }) {
+export function RuneList({ perks, runesReforged }: { perks: PerkPage[], runesReforged: RuneSlot[] }) {
   const [processing, setProcessing] = useState<{ [key: number]: ApplyStage }>({});
 
   const getSlots = useCallback((perk: PerkPage) => {
@@ -142,13 +143,12 @@ export function RunePreview({ perks, runesReforged }: { perks: PerkPage[], runes
                   );
                 })}
 
-              <Button
-                variant="accent"
+              <ActionButton
                 UNSAFE_className={cn(s.applyBtn)}
                 onPress={() => applyPerk(p, idx)}
               >
                 {getStageIcon(stage)}
-              </Button>
+              </ActionButton>
             </div>
           );
         })

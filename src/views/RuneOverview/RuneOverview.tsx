@@ -1,19 +1,19 @@
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api';
+import { appWindow } from '@tauri-apps/api/window';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { Picker, Tooltip, Item, StatusLight, TooltipTrigger } from '@adobe/react-spectrum';
+import { Picker, Tooltip, Item, StatusLight, TooltipTrigger, Image } from '@adobe/react-spectrum';
 
 import { DDragon, RuneSlot, Source } from '../../interfaces';
 import { appConf } from '../../config';
 import { blockKeyCombosInProd } from '../../helper';
 
-import { RunePreview } from '../RunePreview/RunePreview';
+import { RuneList } from '../RuneList/RuneList';
 import { Toolbar } from '../Toolbar/Toolbar';
 
 import s from './style.module.scss';
-import { appWindow } from '@tauri-apps/api/window';
 
 export function RuneOverview() {
   const [championId, setChampionId] = useState(0);
@@ -59,7 +59,7 @@ export function RuneOverview() {
   }, []);
 
   useEffect(() => {
-    let sourceTab: string = [...curSource][0];
+    let sourceTab: string = curSource;
     if (sourceTab) {
       appConf.set('runeSource', sourceTab);
       appConf.save();
@@ -102,6 +102,7 @@ export function RuneOverview() {
       appWindow.show();
       appWindow.setAlwaysOnTop(true);
       appWindow.unminimize();
+      appWindow.setDecorations(false);
     }
   }, [championId]);
 
@@ -113,24 +114,31 @@ export function RuneOverview() {
       <Toolbar/>
       <div className={s.overviewContainer}>
         <div className={s.header}>
-          <TooltipTrigger>
-            <img src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}/>
-            <Tooltip placement={'bottom'}>{championAlias}</Tooltip>
+          <TooltipTrigger placement={'bottom'}>
+            <Image
+              width={'size-500'}
+              src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}
+            />
+            <Tooltip>{championAlias}</Tooltip>
           </TooltipTrigger>
 
-          <Picker selectedKey={curSource}>
+          <Picker
+            label={'Current Source'}
+            selectedKey={curSource}
+            onSelectionChange={(k) => setCurSource(k as string)}
+          >
             {sources.map((i: any) => (
               <Item key={i.source.value}>{i.source.label}</Item>
             ))}
           </Picker>
 
-          {source?.source.isAram && <StatusLight variant="positive">ARAM</StatusLight>}
-          {source?.source.isUrf && <StatusLight variant="positive">URF</StatusLight>}
+          {source?.source.isAram && <StatusLight variant="indigo">ARAM</StatusLight>}
+          {source?.source.isUrf && <StatusLight variant="purple">URF</StatusLight>}
           {(!source?.source.isAram && !source?.source.isUrf) &&
-            <StatusLight variant="positive">Summoner's Rift</StatusLight>}
+            <StatusLight variant="seafoam">Summoner's Rift</StatusLight>}
         </div>
 
-        {runesReforged.length > 0 && <RunePreview perks={perks} runesReforged={runesReforged}/>}
+        {runesReforged.length > 0 && <RuneList perks={perks} runesReforged={runesReforged}/>}
 
         <Toaster position="bottom-center"/>
       </div>
