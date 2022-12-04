@@ -1,7 +1,12 @@
 import s from './style.module.scss';
 
 import { useNavigate } from 'react-router-dom';
-import { Button, ButtonGroup, Tooltip, TooltipTrigger } from '@adobe/react-spectrum';
+import {
+  Button,
+  ButtonGroup,
+  Tooltip,
+  TooltipTrigger,
+} from '@adobe/react-spectrum';
 import cn from 'classnames';
 import { IconSettings, IconBuildingFortress, IconPlugConnected, IconPlugOff } from '@tabler/icons';
 
@@ -20,18 +25,22 @@ export function NavMenu() {
       >
         <TooltipTrigger placement={'right'}>
           <Button
-            onPress={() => navigate('/')} variant={'secondary'}>
+            variant={'secondary'}
+            onPress={() => navigate('/')}>
             <IconBuildingFortress/>
           </Button>
           <Tooltip>Builds</Tooltip>
         </TooltipTrigger>
-        <TooltipTrigger>
 
+        <TooltipTrigger placement={'right'}>
           <Button
-            onPress={() => navigate('/settings')} variant={'secondary'}>
+            width={'size-100'}
+            marginTop={'size-25'}
+            variant={'secondary'}
+            onPress={() => navigate('/settings')}>
             <IconSettings/>
           </Button>
-          <Tooltip placement={'right'}>Settings</Tooltip>
+          <Tooltip>Settings</Tooltip>
         </TooltipTrigger>
       </ButtonGroup>
 

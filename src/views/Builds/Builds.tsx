@@ -11,7 +11,7 @@ import {
   CheckboxGroup,
   StatusLight,
   Flex,
-  TooltipTrigger,
+  TooltipTrigger, Badge,
 } from '@adobe/react-spectrum';
 
 import { appConf } from '../../config';
@@ -87,7 +87,7 @@ export function Builds() {
                   {isSR && <StatusLight variant="seafoam" UNSAFE_className={s.mode}/>}
                   {i.source.isAram && <StatusLight variant="indigo" UNSAFE_className={s.mode}/>}
                   {i.source.isUrf && <StatusLight variant="purple" UNSAFE_className={s.mode}/>}
-                  <StatusLight variant="info" UNSAFE_className={s.version}>{i.source_version}</StatusLight>
+                  <Badge variant={'yellow'}>{i.source_version}</Badge>
                 </Flex>
               </Checkbox>
             );
@@ -103,13 +103,13 @@ export function Builds() {
 
         <Flex>
           <div className={s.map}>
-            <StatusLight variant="positive">Summoner's Rift</StatusLight>
+            <StatusLight variant="seafoam">Summoner's Rift</StatusLight>
           </div>
           <div className={s.map}>
-            <StatusLight variant="positive">ARAM</StatusLight>
+            <StatusLight variant="indigo">ARAM</StatusLight>
           </div>
           <div className={s.map}>
-            <StatusLight variant="positive">URF</StatusLight>
+            <StatusLight variant="purple">URF</StatusLight>
           </div>
         </Flex>
       </div>
