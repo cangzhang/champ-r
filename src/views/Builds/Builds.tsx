@@ -4,21 +4,21 @@ import { invoke } from '@tauri-apps/api';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Button,
-  Checkbox,
-  Tooltip,
-  CheckboxGroup,
-  StatusLight,
-  Flex,
-  TooltipTrigger, Badge,
-} from '@adobe/react-spectrum';
 
-import { appConf } from '../../config';
-import { isDev } from '../../helper';
-import { Source } from '../../interfaces';
-import { useAppStore } from '../../store';
+import { appConf } from 'src/config';
+import { isDev } from 'src/helper';
+import { Source } from 'src/interfaces';
+import { useAppStore } from 'src/store';
 import { IconRotateClockwise2 } from '@tabler/icons';
+
+import { Checkbox } from 'src/components/ui/Checkbox';
+import { Button } from 'src/components/ui/Button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from 'src/components/ui/Tooltip';
 
 export function Builds() {
   const [sources, setSources] = useState<Source[]>([]);
@@ -65,65 +65,51 @@ export function Builds() {
 
   return (
     <section className={s.builds}>
-      <div className={s.sourceList}>
-        <CheckboxGroup
-          label="Select Source(s)"
-          value={selectedSources}
-            // @ts-ignore
-          onChange={onSelectChange}
-        >
-          {sources.map((i) => {
-            let isSR = !i.source.isAram && !i.source.isUrf;
+      <TooltipProvider>
+        <div className={s.sourceList}>
+          {
+            sources.map((s) => {
+              let sourceId = `source_${s.source.value}`;
 
-            return (
-              <Checkbox
-                key={i.source.value}
-                UNSAFE_className={s.source}
-                  // @ts-ignore
-                value={i.source.value}
-              >
-                <Flex>
-                  {i.source.label}
-                  {isSR && <StatusLight variant="seafoam" UNSAFE_className={s.mode}/>}
-                  {i.source.isAram && <StatusLight variant="indigo" UNSAFE_className={s.mode}/>}
-                  {i.source.isUrf && <StatusLight variant="purple" UNSAFE_className={s.mode}/>}
-                  <Badge variant={'yellow'}>{i.source_version}</Badge>
-                </Flex>
-              </Checkbox>
-            );
-          })}
-        </CheckboxGroup>
-      </div>
+              return (
+                <div className="flex items-center gap-2" key={sourceId}>
+                  <Checkbox id={sourceId}/>
+                  <label
+                    htmlFor={sourceId}
+                    className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {s.source.label}
+                  </label>
+                </div>
+              );
+            })
+          }
+        </div>
 
-      <div className={s.modes}>
-        {!ready && <div className={s.prepare}>
-          <IconRotateClockwise2 className={s.spin}/>
-          Preparing...
-        </div>}
+        <div className={s.modes}>
+          {!ready && <div className={s.prepare}>
+            <IconRotateClockwise2 className={s.spin}/>
+            Preparing...
+          </div>}
+        </div>
 
-        <Flex>
-          <div className={s.map}>
-            <StatusLight variant="seafoam">Summoner's Rift</StatusLight>
-          </div>
-          <div className={s.map}>
-            <StatusLight variant="indigo">ARAM</StatusLight>
-          </div>
-          <div className={s.map}>
-            <StatusLight variant="purple">URF</StatusLight>
-          </div>
-        </Flex>
-      </div>
+        <div className={s.btns}>
+          <Tooltip>
+            <TooltipTrigger>
+              <>Apply Builds</>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div>
+                {lcuRunning ? `` : `Please start League of Legends first`}
+              </div>
+            </TooltipContent>
+          </Tooltip>
 
-      <div className={s.btns}>
-        <TooltipTrigger>
-          <Button variant="accent">Apply Builds</Button>
-          <Tooltip>{lcuRunning ? `` : `Please start League of Legends first`}</Tooltip>
-        </TooltipTrigger>
-
-        {isDev &&
-          (<Button variant="primary" onPress={onToggleWindow}>Runes</Button>)
-        }
-      </div>
+          {isDev &&
+            (<Button onClick={onToggleWindow}>Runes</Button>)
+          }
+        </div>
+      </TooltipProvider>
     </section>
   );
 }
