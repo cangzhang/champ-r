@@ -2,7 +2,6 @@ import { appWindow } from '@tauri-apps/api/window';
 
 import cn from 'clsx';
 import { IconMinus, IconX } from '@tabler/icons';
-import { Flex, Image } from '@adobe/react-spectrum';
 
 import Logo from '../../assets/icon.png';
 import s from './style.module.scss';
@@ -11,9 +10,9 @@ export function Toolbar() {
   return (
     <div data-tauri-drag-region className={s.titlebar}>
       <div className={s.appName}>
-        <Flex width={24}>
-          <Image src={Logo}/>
-        </Flex>
+        <div className={'flex w-8'}>
+          <img alt={''} src={Logo}/>
+        </div>
         <span className={s.name}>ChampR</span>
       </div>
 
