@@ -4,16 +4,19 @@ import { appWindow } from '@tauri-apps/api/window';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { Picker, Tooltip, Item, StatusLight, TooltipTrigger, Image } from '@adobe/react-spectrum';
 
-import { DDragon, RuneSlot, Source } from '../../interfaces';
-import { appConf } from '../../config';
-import { blockKeyCombosInProd } from '../../helper';
+import { DDragon, RuneSlot, Source } from 'src/interfaces';
+import { appConf } from 'src/config';
+import { blockKeyCombosInProd } from 'src/helper';
 
-import { RuneList } from '../RuneList/RuneList';
-import { Toolbar } from '../Toolbar/Toolbar';
+import { RuneList } from 'src/views/RuneList/RuneList';
+import { Toolbar } from 'src/views/Toolbar/Toolbar';
 
 import s from './style.module.scss';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from 'src/components/ui/Tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger } from 'src/components/ui/Select';
+import { SelectValue } from '@radix-ui/react-select';
+import { clsx } from 'clsx';
 
 export function RuneOverview() {
   const [championId, setChampionId] = useState(0);
@@ -110,38 +113,37 @@ export function RuneOverview() {
   let source = sources.find(i => i.source.value === selectedSource);
 
   return (
-    <>
+    <TooltipProvider>
       <Toolbar/>
       <div className={s.overviewContainer}>
         <div className={s.header}>
-          <TooltipTrigger placement={'bottom'}>
-            <Image
-              width={'size-500'}
-              src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}
-            />
-            <Tooltip>{championAlias}</Tooltip>
-          </TooltipTrigger>
+          <Tooltip>
+            <TooltipTrigger>
+              <img
+                className={clsx('h-10 w-10')}
+                src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}
+                alt={championAlias}
+              />
+            </TooltipTrigger>
+            <TooltipContent>{championAlias}</TooltipContent>
+          </Tooltip>
 
-          <Picker
-            label={'Current Source'}
-            selectedKey={curSource}
-            onSelectionChange={(k) => setCurSource(k as string)}
-          >
-            {sources.map((i: any) => (
-              <Item key={i.source.value}>{i.source.label}</Item>
-            ))}
-          </Picker>
-
-          {source?.source.isAram && <StatusLight variant="indigo">ARAM</StatusLight>}
-          {source?.source.isUrf && <StatusLight variant="purple">URF</StatusLight>}
-          {(!source?.source.isAram && !source?.source.isUrf) &&
-            <StatusLight variant="seafoam">Summoner's Rift</StatusLight>}
+          <Select value={curSource}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Theme"/>
+            </SelectTrigger>
+            <SelectContent>
+              {sources.map((i: any) => (
+                <SelectItem key={i.source.value} value={i.source.value}>{i.source.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {runesReforged.length > 0 && <RuneList perks={perks} runesReforged={runesReforged}/>}
 
         <Toaster position="bottom-center"/>
       </div>
-    </>
+    </TooltipProvider>
   );
 }

@@ -1,6 +1,6 @@
 import { appWindow } from '@tauri-apps/api/window';
 
-import cn from 'classnames';
+import cn from 'clsx';
 import { IconMinus, IconX } from '@tabler/icons';
 import { Flex, Image } from '@adobe/react-spectrum';
 

@@ -1,9 +1,10 @@
 import { invoke } from '@tauri-apps/api';
 
 import { useEffect, useState } from 'react';
-import { Switch, Content } from '@adobe/react-spectrum'
+import { Label } from 'src/components/ui/Label';
+import { Switch } from 'src/components/ui/Switch';
 
-import { appConf } from '../../config';
+import { appConf } from 'src/config';
 
 import s from './style.module.scss';
 
@@ -26,14 +27,15 @@ export function Settings() {
   }, []);
 
   return (
-    <Content UNSAFE_className={s.container}>
+    <section>
       <div className={s.option}>
         <Switch
-          isSelected={autoStart}
-          onChange={onChange}
+          id="auto-start"
+          checked={autoStart}
+          onCheckedChange={onChange}
         />
-        Auto Start
+        <Label htmlFor="auto-start">Auto Start</Label>
       </div>
-    </Content>
+    </section>
   );
 }

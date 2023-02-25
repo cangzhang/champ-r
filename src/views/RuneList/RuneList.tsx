@@ -3,14 +3,14 @@ import s from './style.module.scss';
 import { invoke } from '@tauri-apps/api';
 
 import { useCallback, useMemo, useState } from 'react';
-import cn from 'classnames';
+import cn from 'clsx';
 
-import { ActionButton } from '@adobe/react-spectrum';
 import { IconCheck, IconRotateClockwise2, IconSword } from '@tabler/icons';
 import toast from 'react-hot-toast';
 
-import { PerkPage, Rune, RuneSlot } from '../../interfaces';
-import { sleep } from '../../helper';
+import { PerkPage, Rune, RuneSlot } from 'src/interfaces';
+import { sleep } from 'src/helper';
+import { Button } from 'src/components/ui/Button';
 
 // import SimpleBar from 'simplebar-react';
 
@@ -143,12 +143,11 @@ export function RuneList({ perks, runesReforged }: { perks: PerkPage[], runesRef
                   );
                 })}
 
-              <ActionButton
-                UNSAFE_className={cn(s.applyBtn)}
-                onPress={() => applyPerk(p, idx)}
+              <Button
+                onClick={() => applyPerk(p, idx)}
               >
                 {getStageIcon(stage)}
-              </ActionButton>
+              </Button>
             </div>
           );
         })

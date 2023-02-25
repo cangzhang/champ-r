@@ -9,8 +9,18 @@ import {
   Route,
 } from 'react-router-dom';
 
-import { useAppStore } from '../../store';
-import { blockKeyCombosInProd } from '../../helper';
+import { useAppStore } from 'src/store';
+import { blockKeyCombosInProd } from 'src/helper';
+
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from "src/components/ui/Menubar"
 
 import { Builds } from '../Builds/Builds';
 import { Settings } from '../Settings/Settings';

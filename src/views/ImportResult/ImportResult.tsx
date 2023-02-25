@@ -4,8 +4,8 @@ import { invoke } from '@tauri-apps/api';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams, NavLink } from 'react-router-dom';
 
-import { Button, Content, Text } from '@adobe/react-spectrum';
 import { IconArrowLeft } from '@tabler/icons';
+import { Button } from 'src/components/ui/Button';
 
 export function ImportResult() {
   const [result, setResult] = useState<any[]>([]);
@@ -51,17 +51,17 @@ export function ImportResult() {
   }, [applyBuilds]);
 
   return (
-    <Content>
+    <section>
       <NavLink to={'/'}>
-        <Button variant="negative">
+        <Button>
           <IconArrowLeft/>
-          <Text>Back</Text>
+          <p>Back</p>
         </Button>
       </NavLink>
 
       <div style={{ height: 200, overflow: `auto` }}>
         {result.map((i, idx) => <p key={idx}>{i}</p>)}
       </div>
-    </Content>
+    </section>
   );
 }

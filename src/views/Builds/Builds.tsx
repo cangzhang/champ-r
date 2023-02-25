@@ -20,6 +20,8 @@ import {
   TooltipTrigger,
 } from 'src/components/ui/Tooltip';
 
+import { clsx } from 'clsx';
+
 export function Builds() {
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
@@ -64,21 +66,21 @@ export function Builds() {
   }, []);
 
   return (
-    <section className={s.builds}>
+    <section className={clsx(s.builds, 'flex flex-col')}>
       <TooltipProvider>
-        <div className={s.sourceList}>
+        <div className={clsx(s.sourceList, 'ml-4')}>
           {
-            sources.map((s) => {
-              let sourceId = `source_${s.source.value}`;
+            sources.map((source) => {
+              let sourceId = `source_${source.source.value}`;
 
               return (
-                <div className="flex items-center gap-2" key={sourceId}>
-                  <Checkbox id={sourceId}/>
+                <div className="flex items-center gap-2 my-4 uppercase" key={sourceId}>
+                  <Checkbox className={s.checkbox} id={sourceId}/>
                   <label
                     htmlFor={sourceId}
                     className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    {s.source.label}
+                    {source.source.label}
                   </label>
                 </div>
               );
@@ -95,14 +97,17 @@ export function Builds() {
 
         <div className={s.btns}>
           <Tooltip>
-            <TooltipTrigger>
-              <>Apply Builds</>
+            <TooltipTrigger asChild={true}>
+              <Button>Apply Builds</Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <div>
-                {lcuRunning ? `` : `Please start League of Legends first`}
-              </div>
-            </TooltipContent>
+            {
+              !lcuRunning &&
+              <TooltipContent>
+                <div>
+                  Please start League of Legends first
+                </div>
+              </TooltipContent>
+            }
           </Tooltip>
 
           {isDev &&
