@@ -10,7 +10,7 @@ export function Toolbar() {
   return (
     <div data-tauri-drag-region className={s.titlebar}>
       <div className={s.appName}>
-        <div className={'flex w-8'}>
+        <div className={'flex w-6'}>
           <img alt={''} src={Logo}/>
         </div>
         <span className={s.name}>ChampR</span>
