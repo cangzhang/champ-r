@@ -27,15 +27,15 @@ export function ImportResult() {
     if (payload.done) {
       msg = `[${payload.source}] done`;
     }
-    setResult(r => [msg, ...r]);
+    setResult((r) => [msg, ...r]);
   }, []);
 
   useEffect(() => {
     let unlisten: UnlistenFn;
-    listen('main_window::apply_builds_result', h => {
+    listen('main_window::apply_builds_result', (h) => {
       console.log(h.payload);
       updateResult(h.payload as Array<any>);
-    }).then(h => {
+    }).then((h) => {
       unlisten = h;
     });
 
@@ -53,13 +53,15 @@ export function ImportResult() {
     <section>
       <NavLink to={'/'}>
         <Button>
-          <IconArrowLeft/>
+          <IconArrowLeft />
           <p>Back</p>
         </Button>
       </NavLink>
 
       <div style={{ height: 200, overflow: `auto` }}>
-        {result.map((i, idx) => <p key={idx}>{i}</p>)}
+        {result.map((i, idx) => (
+          <p key={idx}>{i}</p>
+        ))}
       </div>
     </section>
   );

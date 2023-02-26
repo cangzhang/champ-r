@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "lint": "eslint --ext .js,.ts,.jsx,.tsx src --fix",
+    "lint": "eslint --ext .js,.ts,.jsx,.tsx --fix src",
+    "pretty": "prettier --write ./src",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",

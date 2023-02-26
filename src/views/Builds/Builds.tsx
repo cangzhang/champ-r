@@ -28,7 +28,7 @@ export function Builds() {
   const [ready, setReady] = useState(false);
 
   const navigate = useNavigate();
-  const lcuRunning = useAppStore(s => s.lcuRunning);
+  const lcuRunning = useAppStore((s) => s.lcuRunning);
 
   const onToggleWindow = () => {
     invoke(`random_runes`);
@@ -46,19 +46,17 @@ export function Builds() {
   }, []);
 
   useEffect(() => {
-    invoke(`get_user_sources`)
-      .then((l) => {
-        // console.log('sources', l);
-        setSources(l as Source[]);
-        setReady(true);
-      });
+    invoke(`get_user_sources`).then((l) => {
+      // console.log('sources', l);
+      setSources(l as Source[]);
+      setReady(true);
+    });
   }, []);
 
   useEffect(() => {
-    appConf.get<string[]>('selectedSources')
-      .then((s) => {
-        setSelectedSources(s ?? []);
-      });
+    appConf.get<string[]>('selectedSources').then((s) => {
+      setSelectedSources(s ?? []);
+    });
 
     return () => {
       appConf.save();
@@ -69,30 +67,33 @@ export function Builds() {
     <section className={clsx(s.builds, 'flex flex-col')}>
       <TooltipProvider>
         <div className={clsx(s.sourceList, 'ml-4')}>
-          {
-            sources.map((source) => {
-              const sourceId = `source_${source.source.value}`;
+          {sources.map((source) => {
+            const sourceId = `source_${source.source.value}`;
 
-              return (
-                <div className="flex items-center gap-2 my-4 uppercase" key={sourceId}>
-                  <Checkbox className={s.checkbox} id={sourceId}/>
-                  <label
-                    htmlFor={sourceId}
-                    className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {source.source.label}
-                  </label>
-                </div>
-              );
-            })
-          }
+            return (
+              <div
+                className="flex items-center gap-2 my-4 uppercase"
+                key={sourceId}
+              >
+                <Checkbox className={s.checkbox} id={sourceId} />
+                <label
+                  htmlFor={sourceId}
+                  className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {source.source.label}
+                </label>
+              </div>
+            );
+          })}
         </div>
 
         <div className={s.modes}>
-          {!ready && <div className={s.prepare}>
-            <IconRotateClockwise2 className={s.spin}/>
-            Preparing...
-          </div>}
+          {!ready && (
+            <div className={s.prepare}>
+              <IconRotateClockwise2 className={s.spin} />
+              Preparing...
+            </div>
+          )}
         </div>
 
         <div className={s.btns}>
@@ -100,22 +101,16 @@ export function Builds() {
             <TooltipTrigger asChild={true}>
               <Button>Apply Builds</Button>
             </TooltipTrigger>
-            {
-              !lcuRunning &&
+            {!lcuRunning && (
               <TooltipContent>
-                <div>
-                  Please start League of Legends first
-                </div>
+                <div>Please start League of Legends first</div>
               </TooltipContent>
-            }
+            )}
           </Tooltip>
 
-          {isDev &&
-            (<Button onClick={onToggleWindow}>Runes</Button>)
-          }
+          {isDev && <Button onClick={onToggleWindow}>Runes</Button>}
         </div>
       </TooltipProvider>
     </section>
   );
 }
-

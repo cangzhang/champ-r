@@ -7,7 +7,7 @@ import './index.scss';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <main>
-    <Toolbar/>
-    <Root/>
-  </main>,
+    <Toolbar />
+    <Root />
+  </main>
 );

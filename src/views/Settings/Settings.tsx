@@ -13,7 +13,7 @@ export function Settings() {
 
   const onChange = (v: boolean) => {
     setAutoStart(v);
-    
+
     invoke('update_app_auto_start', { autoStart: v });
     appConf.set(`autoStart`, v).then(() => {
       appConf.save();
@@ -21,7 +21,7 @@ export function Settings() {
   };
 
   useEffect(() => {
-    appConf.get<boolean>(`autoStart`).then(s => {
+    appConf.get<boolean>(`autoStart`).then((s) => {
       setAutoStart(s);
     });
   }, []);

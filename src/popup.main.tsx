@@ -7,6 +7,6 @@ import './index.scss';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <main>
-    <RuneOverview/>
-  </main>,
+    <RuneOverview />
+  </main>
 );
