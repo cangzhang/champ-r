@@ -1,4 +1,5 @@
 import { UnlistenFn, listen } from '@tauri-apps/api/event';
+import { clsx } from 'clsx';
 import { useEffect } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 
@@ -9,7 +10,6 @@ import { Builds } from '../Builds/Builds';
 import { ImportResult } from '../ImportResult/ImportResult';
 import { NavMenu } from '../NavMenu/NavMenu';
 import { Settings } from '../Settings/Settings';
-import s from './style.module.scss';
 
 export function Root() {
   const toggleLcuStatus = useAppStore((s) => s.toggleLcuStatus);
@@ -28,14 +28,14 @@ export function Root() {
       unlisten = un;
     });
 
-    // return () => {
-    //   unlisten();
-    // };
-  }, []);
+    return () => {
+      unlisten();
+    };
+  }, [toggleLcuStatus]);
 
   return (
     <HashRouter>
-      <div className={s.container}>
+      <div className={clsx('container flex h-screen')}>
         <NavMenu />
 
         <Routes>

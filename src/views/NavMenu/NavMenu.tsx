@@ -25,9 +25,14 @@ export function NavMenu() {
   const lcuRunning = useAppStore((s) => s.lcuRunning);
 
   return (
-    <div className={clsx(s.nav, 'border-r border-r-slate-200')}>
-      <div className={clsx('flex flex-col gap-2 items-center')}>
+    <div
+      className={clsx(
+        'flex flex-col items-center border-r border-r-slate-200 pb-12 w-16'
+      )}
+    >
+      <div className={clsx('flex flex-col gap-2 items-center mt-4')}>
         <Button
+          size={'sm'}
           variant={'link'}
           className={clsx('flex align-start')}
           onClick={() => navigate('/')}
@@ -36,6 +41,7 @@ export function NavMenu() {
         </Button>
         <Separator />
         <Button
+          size={'sm'}
           variant={'link'}
           className={clsx('flex align-start')}
           onClick={() => navigate('/settings')}
@@ -44,7 +50,7 @@ export function NavMenu() {
         </Button>
       </div>
 
-      <div className={clsx(s.lol, lcuRunning && s.online)}>
+      <div className={clsx(s.lol, lcuRunning && s.online, 'mt-auto')}>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>

@@ -1,12 +1,11 @@
 import { invoke } from '@tauri-apps/api';
+import { clsx } from 'clsx';
 import { useEffect, useState } from 'react';
 
 import { Label } from 'src/components/ui/Label';
 import { Switch } from 'src/components/ui/Switch';
 
 import { appConf } from 'src/config';
-
-import s from './style.module.scss';
 
 export function Settings() {
   const [autoStart, setAutoStart] = useState(false);
@@ -27,8 +26,8 @@ export function Settings() {
   }, []);
 
   return (
-    <section>
-      <div className={s.option}>
+    <section className={clsx('flex flex-row p-6')}>
+      <div className={clsx('flex self-start items-center gap-2')}>
         <Switch
           id="auto-start"
           checked={autoStart}

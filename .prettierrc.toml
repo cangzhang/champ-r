@@ -3,6 +3,7 @@ tabWidth = 2
 semi = true
 singleQuote = true
 jsxBracketSameLine = true
+htmlSingleAttributePerLine = true
 plugins = ["@trivago/prettier-plugin-sort-imports"]
 importOrder = ["^src/lib/(.*)$", "^src/components/(.*)$", "^src/views/(.*)$", "^src/assets/(.*)$", "^src/(.*)", "^[./]"]
 importOrderSeparation = true

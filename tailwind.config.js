@@ -9,9 +9,9 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   darkMode: ["class", '[data-theme="dark"]'],
-  colors,
   theme: {
     extend: {
+      colors: { ...colors },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },

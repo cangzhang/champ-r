@@ -53,3 +53,33 @@ export function blockKeyCombosInProd() {
     true
   );
 }
+
+export const ModeGroup = [
+  {
+    name: "Summoner's Rift",
+    value: 'sr',
+    color: 'cyan-500',
+  },
+  {
+    name: 'ARAM',
+    value: 'aram',
+    color: 'indigo-500',
+  },
+  {
+    name: 'URF',
+    value: 'urf',
+    color: 'amber-500',
+  },
+];
+
+export function getColorForMode(isARAM: boolean, isURF: boolean) {
+  if (isARAM) {
+    return ModeGroup[1].color;
+  }
+
+  if (isURF) {
+    return ModeGroup[2].color;
+  }
+
+  return ModeGroup[0].color;
+}
