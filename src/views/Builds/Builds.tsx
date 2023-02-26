@@ -35,7 +35,7 @@ export function Builds() {
   };
 
   const goToImportResult = () => {
-    let selected = selectedSources.join(',');
+    const selected = selectedSources.join(',');
     navigate(`/import?sources=${selected}`);
   };
 
@@ -71,7 +71,7 @@ export function Builds() {
         <div className={clsx(s.sourceList, 'ml-4')}>
           {
             sources.map((source) => {
-              let sourceId = `source_${source.source.value}`;
+              const sourceId = `source_${source.source.value}`;
 
               return (
                 <div className="flex items-center gap-2 my-4 uppercase" key={sourceId}>

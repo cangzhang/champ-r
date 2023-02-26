@@ -1,4 +1,4 @@
-import { listen } from '@tauri-apps/api/event';
+import { listen, UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -9,15 +9,15 @@ import { Button } from 'src/components/ui/Button';
 
 export function ImportResult() {
   const [result, setResult] = useState<any[]>([]);
-  let ids = useRef(new Set()).current;
-  let [searchParams] = useSearchParams();
+  const ids = useRef(new Set()).current;
+  const [searchParams] = useSearchParams();
 
   const applyBuilds = useCallback((sources: string[]) => {
     invoke(`apply_builds`, { sources });
   }, []);
 
   const updateResult = useCallback((payload: any) => {
-    let id = payload.id;
+    const id = payload.id;
     if (ids.has(payload.id)) {
       return;
     }
@@ -31,8 +31,7 @@ export function ImportResult() {
   }, []);
 
   useEffect(() => {
-    let unlisten = () => {
-    };
+    let unlisten: UnlistenFn;
     listen('main_window::apply_builds_result', h => {
       console.log(h.payload);
       updateResult(h.payload as Array<any>);
@@ -46,7 +45,7 @@ export function ImportResult() {
   }, [updateResult]);
 
   useEffect(() => {
-    let sources = searchParams.get('sources').split(',');
+    const sources = searchParams.get('sources').split(',');
     applyBuilds(sources);
   }, [applyBuilds]);
 

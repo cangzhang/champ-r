@@ -14,15 +14,15 @@ export function blockKeyCombosInProd() {
   }
 
   document.addEventListener('keydown', ev => {
-    let refresh = ev.ctrlKey && ev.key === 'r';
-    let print = ev.ctrlKey && ev.key === 'p';
-    let save = ev.ctrlKey && ev.key === 's';
+    const refresh = ev.ctrlKey && ev.key === 'r';
+    const print = ev.ctrlKey && ev.key === 'p';
+    const save = ev.ctrlKey && ev.key === 's';
 
-    let back = ev.altKey && ev.key === 'ArrowLeft';
-    let forward = ev.altKey && ev.key === 'ArrowRight';
-    let devTool = ev.ctrlKey && ev.shiftKey && ev.key === 'i';
-    let select = ev.ctrlKey && ev.shiftKey && ev.key === 'x';
-    let capture = ev.ctrlKey && ev.shiftKey && ev.key === 's';
+    const back = ev.altKey && ev.key === 'ArrowLeft';
+    const forward = ev.altKey && ev.key === 'ArrowRight';
+    const devTool = ev.ctrlKey && ev.shiftKey && ev.key === 'i';
+    const select = ev.ctrlKey && ev.shiftKey && ev.key === 'x';
+    const capture = ev.ctrlKey && ev.shiftKey && ev.key === 's';
 
     if (refresh ||
       print ||

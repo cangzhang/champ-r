@@ -1,6 +1,6 @@
 import s from './style.module.scss';
 
-import { listen } from '@tauri-apps/api/event';
+import { listen, UnlistenFn } from '@tauri-apps/api/event';
 
 import { useEffect } from 'react';
 import {
@@ -12,33 +12,22 @@ import {
 import { useAppStore } from 'src/store';
 import { blockKeyCombosInProd } from 'src/helper';
 
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarSeparator,
-  MenubarShortcut,
-  MenubarTrigger,
-} from "src/components/ui/Menubar"
-
 import { Builds } from '../Builds/Builds';
 import { Settings } from '../Settings/Settings';
 import { NavMenu } from '../NavMenu/NavMenu';
 import { ImportResult } from '../ImportResult/ImportResult';
 
 export function Root() {
-  let toggleLcuStatus = useAppStore(s => s.toggleLcuStatus);
+  const toggleLcuStatus = useAppStore(s => s.toggleLcuStatus);
 
   useEffect(() => {
     blockKeyCombosInProd();
   }, []);
 
   useEffect(() => {
-    let unlisten = () => {
-    };
+    let unlisten: UnlistenFn;
     listen(`webview::lol_running_status`, (data) => {
-      let [running] = data.payload as any[];
+      const [running] = data.payload as any[];
       console.log('lcu running: ', running);
       toggleLcuStatus(running);
     }).then(un => {

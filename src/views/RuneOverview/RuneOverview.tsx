@@ -34,7 +34,7 @@ export function RuneOverview() {
       return;
     }
 
-    let r: any = await invoke(`get_available_perks_for_champion`, { sourceName: curSource, championAlias });
+    const r: any = await invoke(`get_available_perks_for_champion`, { sourceName: curSource, championAlias });
     setPerks(r);
   }, [championAlias, curSource]);
 
@@ -44,7 +44,7 @@ export function RuneOverview() {
     }
 
     setRunesReforged(ddragon.rune_list);
-    let selectedSources: string[] = await appConf.get('selectedSources');
+    const selectedSources: string[] = await appConf.get('selectedSources');
     let availableSources = ddragon.source_list;
     if (selectedSources?.length > 0) {
       availableSources = ddragon.source_list.filter(i => selectedSources.includes(i.source.value));
@@ -52,7 +52,7 @@ export function RuneOverview() {
     setSources(availableSources);
     setVersion(ddragon.official_version);
 
-    let sourceList = ddragon.source_list;
+    const sourceList = ddragon.source_list;
 
     let runeSource: string = await appConf.get('runeSource');
     if (!runeSource || !selectedSources.includes(runeSource)) {
@@ -62,7 +62,7 @@ export function RuneOverview() {
   }, []);
 
   useEffect(() => {
-    let sourceTab: string = curSource;
+    const sourceTab: string = curSource;
     if (sourceTab) {
       appConf.set('runeSource', sourceTab);
       appConf.save();
@@ -108,9 +108,6 @@ export function RuneOverview() {
       appWindow.setDecorations(false);
     }
   }, [championId]);
-
-  let selectedSource = useMemo(() => [...curSource].join(''), [curSource]);
-  let source = sources.find(i => i.source.value === selectedSource);
 
   return (
     <TooltipProvider>

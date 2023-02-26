@@ -3,7 +3,7 @@ import { appWindow } from '@tauri-apps/api/window';
 import cn from 'clsx';
 import { IconMinus, IconX } from '@tabler/icons';
 
-import Logo from '../../assets/icon.png';
+import Logo from 'src/assets/icon.png';
 import s from './style.module.scss';
 
 export function Toolbar() {

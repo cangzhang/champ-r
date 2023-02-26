@@ -5,7 +5,7 @@ import { Root } from './views/Root/Root';
 
 import './index.scss';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <main>
     <Toolbar/>
     <Root/>
