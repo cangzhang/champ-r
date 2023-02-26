@@ -1,17 +1,15 @@
-import s from './style.module.scss';
-
-import { listen, UnlistenFn } from '@tauri-apps/api/event';
-
+import { UnlistenFn, listen } from '@tauri-apps/api/event';
 import { useEffect } from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Route, Routes } from 'react-router-dom';
 
-import { useAppStore } from 'src/store';
 import { blockKeyCombosInProd } from 'src/helper';
+import { useAppStore } from 'src/store';
 
 import { Builds } from '../Builds/Builds';
-import { Settings } from '../Settings/Settings';
-import { NavMenu } from '../NavMenu/NavMenu';
 import { ImportResult } from '../ImportResult/ImportResult';
+import { NavMenu } from '../NavMenu/NavMenu';
+import { Settings } from '../Settings/Settings';
+import s from './style.module.scss';
 
 export function Root() {
   const toggleLcuStatus = useAppStore((s) => s.toggleLcuStatus);

@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api';
-
 import { useEffect, useState } from 'react';
+
 import { Label } from 'src/components/ui/Label';
 import { Switch } from 'src/components/ui/Switch';
 

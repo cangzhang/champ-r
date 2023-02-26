@@ -1,23 +1,24 @@
-import s from './style.module.scss';
-
-import { useNavigate } from 'react-router-dom';
 import {
-  IconSettings,
   IconBuildingFortress,
   IconPlugConnected,
   IconPlugOff,
+  IconSettings,
 } from '@tabler/icons';
 import { clsx } from 'clsx';
+import { useNavigate } from 'react-router-dom';
 
-import { useAppStore } from 'src/store';
-import { Separator } from 'src/components/ui/Separator';
 import { Button } from 'src/components/ui/Button';
+import { Separator } from 'src/components/ui/Separator';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from 'src/components/ui/Tooltip';
+
+import { useAppStore } from 'src/store';
+
+import s from './style.module.scss';
 
 export function NavMenu() {
   const navigate = useNavigate();

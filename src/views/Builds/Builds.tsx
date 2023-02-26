@@ -1,18 +1,11 @@
-import s from './style.module.scss';
-
+import { IconRotateClockwise2 } from '@tabler/icons';
 import { invoke } from '@tauri-apps/api';
-
-import { useEffect, useState, useCallback } from 'react';
+import { clsx } from 'clsx';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { appConf } from 'src/config';
-import { isDev } from 'src/helper';
-import { Source } from 'src/interfaces';
-import { useAppStore } from 'src/store';
-import { IconRotateClockwise2 } from '@tabler/icons';
-
-import { Checkbox } from 'src/components/ui/Checkbox';
 import { Button } from 'src/components/ui/Button';
+import { Checkbox } from 'src/components/ui/Checkbox';
 import {
   Tooltip,
   TooltipContent,
@@ -20,7 +13,12 @@ import {
   TooltipTrigger,
 } from 'src/components/ui/Tooltip';
 
-import { clsx } from 'clsx';
+import { appConf } from 'src/config';
+import { isDev } from 'src/helper';
+import { Source } from 'src/interfaces';
+import { useAppStore } from 'src/store';
+
+import s from './style.module.scss';
 
 export function Builds() {
   const [sources, setSources] = useState<Source[]>([]);

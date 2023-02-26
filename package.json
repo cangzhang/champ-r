@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.2.3",
+    "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "@types/node": "^18",
     "@types/react": "^18.0.6",
     "@types/react-dom": "^18.0.6",

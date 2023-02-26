@@ -1,15 +1,14 @@
-import s from './style.module.scss';
-
-import { invoke } from '@tauri-apps/api';
-
-import { useCallback, useMemo, useState } from 'react';
-
 import { IconCheck, IconRotateClockwise2, IconSword } from '@tabler/icons';
+import { invoke } from '@tauri-apps/api';
+import { useCallback, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { PerkPage, Rune, RuneSlot } from 'src/interfaces';
-import { sleep } from 'src/helper';
 import { Button } from 'src/components/ui/Button';
+
+import { sleep } from 'src/helper';
+import { PerkPage, Rune, RuneSlot } from 'src/interfaces';
+
+import s from './style.module.scss';
 
 interface RRune extends Rune {
   parent?: number;

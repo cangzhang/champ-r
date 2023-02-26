@@ -1,9 +1,9 @@
-import { appWindow } from '@tauri-apps/api/window';
-
-import cn from 'clsx';
 import { IconMinus, IconX } from '@tabler/icons';
+import { appWindow } from '@tauri-apps/api/window';
+import cn from 'clsx';
 
 import Logo from 'src/assets/icon.png';
+
 import s from './style.module.scss';
 
 export function Toolbar() {

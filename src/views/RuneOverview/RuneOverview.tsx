@@ -1,32 +1,32 @@
-import { listen } from '@tauri-apps/api/event';
+import { SelectValue } from '@radix-ui/react-select';
 import { invoke } from '@tauri-apps/api';
+import { listen } from '@tauri-apps/api/event';
 import { appWindow } from '@tauri-apps/api/window';
-
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { clsx } from 'clsx';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 
-import { DDragon, RuneSlot, Source } from 'src/interfaces';
-import { appConf } from 'src/config';
-import { blockKeyCombosInProd } from 'src/helper';
-
-import { RuneList } from 'src/views/RuneList/RuneList';
-import { Toolbar } from 'src/views/Toolbar/Toolbar';
-
-import s from './style.module.scss';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from 'src/components/ui/Tooltip';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from 'src/components/ui/Select';
-import { SelectValue } from '@radix-ui/react-select';
-import { clsx } from 'clsx';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from 'src/components/ui/Tooltip';
+
+import { RuneList } from 'src/views/RuneList/RuneList';
+import { Toolbar } from 'src/views/Toolbar/Toolbar';
+
+import { appConf } from 'src/config';
+import { blockKeyCombosInProd } from 'src/helper';
+import { DDragon, RuneSlot, Source } from 'src/interfaces';
+
+import s from './style.module.scss';
 
 export function RuneOverview() {
   const [championId, setChampionId] = useState(0);
