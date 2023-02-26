@@ -20,6 +20,24 @@ import { useAppStore } from 'src/store';
 
 import s from './style.module.scss';
 
+const ModeGroup = [
+  {
+    name: 'SR',
+    value: 'sr',
+    color: 'cyan',
+  },
+  {
+    name: 'ARAM',
+    value: 'aram',
+    color: 'indigo',
+  },
+  {
+    name: 'URF',
+    value: 'urf',
+    color: 'amber',
+  },
+];
+
 export function Builds() {
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
@@ -32,20 +50,29 @@ export function Builds() {
     invoke(`random_runes`);
   };
 
-  const goToImportResult = () => {
+  const startImport = () => {
     const selected = selectedSources.join(',');
     navigate(`/import?sources=${selected}`);
   };
 
-  const onSelectChange = useCallback((next: string[]) => {
-    setSelectedSources(next);
+  const onCheck = useCallback((val: string) => {
+    let next: string[] = [];
+    setSelectedSources(d => {
+      if (d.includes(val)) {
+        next = d.filter((v) => v !== val);
+      } else {
+        next = [...d, val];
+      }
+
+      return next;
+    });
+
     appConf.set('selectedSources', next);
     appConf.save();
   }, []);
 
   useEffect(() => {
     invoke(`get_user_sources`).then((l) => {
-      // console.log('sources', l);
       setSources(l as Source[]);
       setReady(true);
     });
@@ -67,13 +94,15 @@ export function Builds() {
         <div className={clsx(s.sourceList, 'ml-4')}>
           {sources.map((source) => {
             const sourceId = `source_${source.source.value}`;
+            const checked = selectedSources.includes(source.source.value);
 
             return (
               <div
                 className="flex items-center gap-2 my-4 uppercase"
                 key={sourceId}
               >
-                <Checkbox className={s.checkbox} id={sourceId} />
+                <Checkbox className={s.checkbox} id={sourceId} checked={checked}
+                          onCheckedChange={() => onCheck(source.source.value)}/>
                 <label
                   htmlFor={sourceId}
                   className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -86,18 +115,20 @@ export function Builds() {
         </div>
 
         <div className={s.modes}>
-          {!ready && (
-            <div className={s.prepare}>
-              <IconRotateClockwise2 className={s.spin} />
-              Preparing...
-            </div>
-          )}
+          {ModeGroup.map((mode) => {
+            return (
+              <div key={mode.value} className={clsx('pr-3 flex items-center italic')}>
+                <div className={clsx(`bg-${mode.color}-500`, 'w-4 h-4 rounded-full')}/>
+                {mode.name}
+              </div>
+            );
+          })}
         </div>
 
         <div className={s.btns}>
           <Tooltip>
             <TooltipTrigger asChild={true}>
-              <Button>Apply Builds</Button>
+              <Button onClick={startImport}>Apply Builds</Button>
             </TooltipTrigger>
             {!lcuRunning && (
               <TooltipContent>
