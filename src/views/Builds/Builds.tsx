@@ -93,7 +93,8 @@ export function Builds() {
                 />
                 <label
                   htmlFor={sourceId}
-                  className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-1.5">
+                  className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-1.5"
+                >
                   {source.label}
                   <div
                     className={clsx(
@@ -112,7 +113,8 @@ export function Builds() {
             return (
               <div
                 key={mode.value}
-                className={clsx('pr-3 flex items-center italic')}>
+                className={clsx('pr-3 flex items-center italic')}
+              >
                 <div
                   className={clsx(
                     `bg-${mode.color}`,
