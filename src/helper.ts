@@ -58,17 +58,17 @@ export const ModeGroup = [
   {
     name: "Summoner's Rift",
     value: 'sr',
-    color: 'cyan-500',
+    color: 'cyan',
   },
   {
     name: 'ARAM',
     value: 'aram',
-    color: 'indigo-500',
+    color: 'indigo',
   },
   {
     name: 'URF',
     value: 'urf',
-    color: 'amber-500',
+    color: 'amber',
   },
 ];
 

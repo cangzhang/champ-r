@@ -1,4 +1,4 @@
-use std::sync::mpsc;
+use std::{collections::HashMap, sync::mpsc, thread, time};
 
 use rand::Rng;
 use serde_json::json;
@@ -178,11 +178,93 @@ pub fn update_app_auto_start(state: State<'_, state::GlobalState>, auto_start: b
     s.on_auto_start(Some(auto_start));
 }
 
-// #[command]
-// pub fn init_state(state: State<'_, state::GlobalState>, handle: AppHandle) {
-//     let mut state = state.0.lock().unwrap();
-//     // let s = *state;
-//     thread::spawn(move || {
-//         state.init(&handle);
-//     });
-// }
+#[command]
+pub fn init_server_data(state: State<'_, state::GlobalState>, handle: AppHandle) {
+    let main_win = &handle.get_window("main").unwrap();
+
+    let state = state.0.lock().unwrap();
+    let page_data = state.page_data.lock().unwrap();
+    if page_data.ready {
+        println!("[command::init_server_data] already fetched");
+        let r = (
+            page_data.ready,
+            page_data.source_list.clone(),
+            page_data.rune_list.clone(),
+            page_data.official_version.clone(),
+            page_data.champion_map.clone(),
+        );
+        let _ = main_win.emit("webview::server_data", r);
+        return ();
+    }
+
+    async_runtime::spawn(async move {
+        match page_data::PageData::init().await {
+            Ok(r) => {
+                let main_win = &handle.get_window("main").unwrap();
+                let _ = main_win.emit("webview::server_data", r);
+            }
+            Err(e) => {
+                println!("{:?}", e);
+            }
+        };
+    });
+}
+
+#[command]
+pub fn set_page_data(
+    state: State<'_, state::GlobalState>,
+    data: (
+        bool,
+        Vec<page_data::Source>,
+        Vec<web::RuneListItem>,
+        String,
+        HashMap<String, web::ChampInfo>,
+    ),
+) {
+    
+    let st = state.0.lock().unwrap();
+    let mut page_data = st.page_data.lock().unwrap();
+    
+    if page_data.ready {
+        println!("[commands::set_page_data] already done");
+        return ();
+    }
+    
+    let (ready, source_list, rune_list, version, champion_map) = data;
+    page_data.ready = ready;
+    page_data.source_list = source_list;
+    page_data.rune_list = rune_list;
+    page_data.official_version = version;
+    page_data.champion_map = champion_map;
+    println!("[commands::set_page_data] done");
+}
+
+#[command]
+pub fn watch_lcu(state: State<'_, state::GlobalState>, handle: AppHandle) {
+    let st = state.0.lock().unwrap();
+    let page_data = st.page_data.lock().unwrap();
+    let champion_map = page_data.champion_map.clone();
+    let main_win = handle.get_window("main").unwrap();
+
+    async_std::task::spawn(async move {
+        let mut auth_token = String::new();
+
+        loop {
+            let cmd::CommandLineOutput { token, port, .. } = cmd::get_commandline();
+            let running = !token.is_empty() && !port.is_empty();
+            println!("webview::lol_running_status: {running}");
+            let _ = main_win.emit("webview::lol_running_status", vec![running]);
+
+            if !auth_token.eq(token.as_str()) {
+                auth_token = token.clone();
+                if !auth_token.is_empty() && !port.is_empty() {
+                    let _ = cmd::spawn_league_client(&token, &port, &champion_map, Some(&main_win))
+                        .await;
+                } else {
+                    println!("[spawn] auth: invalid token & port");
+                }
+            }
+            thread::sleep(time::Duration::from_secs(6));
+        }
+    });
+}

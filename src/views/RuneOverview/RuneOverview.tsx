@@ -25,10 +25,13 @@ import { Toolbar } from 'src/views/Toolbar/Toolbar';
 import { appConf } from 'src/config';
 import { blockKeyCombosInProd } from 'src/helper';
 import { DDragon, RuneSlot, Source } from 'src/interfaces';
+import { useAppStore } from 'src/store';
 
 import s from './style.module.scss';
 
 export function RuneOverview() {
+  const { sources: availableSources } = useAppStore();
+
   const [championId, setChampionId] = useState(0);
   const [championAlias, setChampionAlias] = useState('');
   const [perks, setPerks] = useState<any[]>([]);

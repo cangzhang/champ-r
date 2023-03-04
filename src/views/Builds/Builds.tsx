@@ -21,12 +21,11 @@ import { useAppStore } from 'src/store';
 import s from './style.module.scss';
 
 export function Builds() {
-  const [sources, setSources] = useState<Source[]>([]);
+  const navigate = useNavigate();
+  const { lcuRunning, sources } = useAppStore();
+
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
-
-  const navigate = useNavigate();
-  const lcuRunning = useAppStore((s) => s.lcuRunning);
 
   const onToggleWindow = () => {
     invoke(`random_runes`);
@@ -58,11 +57,10 @@ export function Builds() {
   }, []);
 
   useEffect(() => {
-    invoke(`get_user_sources`).then((l) => {
-      setSources(l as Source[]);
+    if (sources.length) {
       setReady(true);
-    });
-  }, []);
+    }
+  }, [sources]);
 
   useEffect(() => {
     appConf.get<string[]>('selectedSources').then((s) => {
@@ -78,7 +76,7 @@ export function Builds() {
     <section className={clsx(s.builds, 'flex flex-col')}>
       <TooltipProvider>
         <div className={clsx(s.sourceList, 'ml-4')}>
-          {sources.map(({ source }) => {
+          {sources.map(({ source, source_version }) => {
             const sourceId = `source_${source.value}`;
             const checked = selectedSources.includes(source.value);
             const color = getColorForMode(source.isAram, source.isUrf);
@@ -93,15 +91,17 @@ export function Builds() {
                 />
                 <label
                   htmlFor={sourceId}
-                  className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-1.5"
+                  className="flex text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-1.5"
                 >
                   {source.label}
                   <div
                     className={clsx(
-                      'flex self-start rounded-full w-2 h-2',
-                      `bg-${color}`
+                      'flex text-xs px-1.5 py-0.5 rounded-lg text-white',
+                      `bg-${color}-500`
                     )}
-                  />
+                  >
+                    {source_version}
+                  </div>
                 </label>
               </div>
             );
@@ -117,7 +117,7 @@ export function Builds() {
               >
                 <div
                   className={clsx(
-                    `bg-${mode.color}`,
+                    `bg-${mode.color}-300`,
                     'w-3 h-3 rounded-full mr-1'
                   )}
                 />

@@ -6,7 +6,7 @@ const { fontFamily } = require('tailwindcss/defaultTheme');
 module.exports = {
   content: ['./index.html', './rune.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: ['class', '[data-theme="dark"]'],
-  safelist: [{ pattern: /^(animate|transition|bg)-/ }],
+  safelist: [{ pattern: /^(animate|transition|bg|text)-/ }],
   theme: {
     extend: {
       fontFamily: {
