@@ -1,6 +1,6 @@
 import { SelectValue } from '@radix-ui/react-select';
 import { invoke } from '@tauri-apps/api';
-import { listen } from '@tauri-apps/api/event';
+import { UnlistenFn, listen } from '@tauri-apps/api/event';
 import { appWindow } from '@tauri-apps/api/window';
 import { clsx } from 'clsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -25,13 +25,10 @@ import { Toolbar } from 'src/views/Toolbar/Toolbar';
 import { appConf } from 'src/config';
 import { blockKeyCombosInProd } from 'src/helper';
 import { DDragon, RuneSlot, Source } from 'src/interfaces';
-import { useAppStore } from 'src/store';
 
 import s from './style.module.scss';
 
 export function RuneOverview() {
-  const { sources: availableSources } = useAppStore();
-
   const [championId, setChampionId] = useState(0);
   const [championAlias, setChampionAlias] = useState('');
   const [perks, setPerks] = useState<any[]>([]);
@@ -40,7 +37,7 @@ export function RuneOverview() {
   const [version, setVersion] = useState('');
   const [runesReforged, setRunesReforged] = useState<RuneSlot[]>([]);
 
-  let ddragon = useRef<DDragon>(null).current;
+  const ddragonRef = useRef<DDragon>(null);
 
   const getRuneList = useCallback(async () => {
     if (!championAlias || !curSource) {
@@ -55,26 +52,27 @@ export function RuneOverview() {
   }, [championAlias, curSource]);
 
   const initData = useCallback(async () => {
-    if (!ddragon) {
-      ddragon = await invoke(`get_ddragon_data`);
+    if (!ddragonRef.current) {
+      ddragonRef.current = await invoke(`get_ddragon_data`);
     }
 
-    setRunesReforged(ddragon.rune_list);
+    setRunesReforged(ddragonRef.current.rune_list);
     const selectedSources: string[] = await appConf.get('selectedSources');
-    let availableSources = ddragon.source_list;
+
+    let availableSources: Source[] = [];
+    const sourceList = ddragonRef.current.source_list;
+
     if (selectedSources?.length > 0) {
-      availableSources = ddragon.source_list.filter((i) =>
+      availableSources = sourceList.filter((i) =>
         selectedSources.includes(i.source.value)
       );
     }
     setSources(availableSources);
-    setVersion(ddragon.official_version);
-
-    const sourceList = ddragon.source_list;
+    setVersion(ddragonRef.current.official_version);
 
     let runeSource: string = await appConf.get('runeSource');
     if (!runeSource || !selectedSources.includes(runeSource)) {
-      runeSource = sourceList[0].source.value;
+      runeSource = selectedSources[0] || sourceList[0].source.value;
     }
     setCurSource(runeSource);
   }, []);
@@ -92,10 +90,12 @@ export function RuneOverview() {
   }, []);
 
   useEffect(() => {
-    let unlisten: () => any = () => null;
+    let unlisten: UnlistenFn;
+
     listen(
       'popup_window::selected_champion',
       ({ payload }: { payload: any }) => {
+        initData();
         console.log(`popup_window::selected_champion`, payload);
         setChampionId(payload.champion_id);
         setChampionAlias(payload.champion_alias);
@@ -107,19 +107,11 @@ export function RuneOverview() {
     return () => {
       unlisten();
     };
-  }, []);
+  }, [initData]);
 
   useEffect(() => {
     getRuneList();
   }, [getRuneList]);
-
-  useEffect(() => {
-    initData();
-
-    return () => {
-      appConf.save();
-    };
-  }, [initData]);
 
   useEffect(() => {
     if (championId > 0) {
@@ -146,7 +138,7 @@ export function RuneOverview() {
             <TooltipContent>{championAlias}</TooltipContent>
           </Tooltip>
 
-          <Select value={curSource}>
+          <Select value={curSource} onValueChange={(s) => setCurSource(s)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Theme" />
             </SelectTrigger>

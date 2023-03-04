@@ -1,7 +1,7 @@
 use tauri::{App, AppHandle, Manager, Window, WindowBuilder, WindowUrl};
 use window_shadows::set_shadow;
 
-use crate::builds::{self, make_id};
+use crate::{builds::{self, make_id}, page_data};
 
 #[derive(Clone, serde::Serialize, Default)]
 pub struct ChampionSelectPayload {

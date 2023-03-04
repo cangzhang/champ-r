@@ -94,21 +94,6 @@ pub async fn get_ddragon_data(
 ) -> Result<page_data::PageData, ()> {
     let s = state.0.lock().unwrap();
     let p = s.page_data.lock().unwrap();
-    // if !p.ready {
-    //     let (tx, rx) = mpsc::channel();
-    //     async_runtime::spawn(async move {
-    //         let r = page_data::PageData::init().await;
-    //         println!("[get_ddragon_data] init");
-    //         let _ = tx.send(r.unwrap());
-    //     });
-
-    //     let (ready, s, r, v, c) = rx.recv().unwrap();
-    //     p.ready = ready;
-    //     p.source_list = s;
-    //     p.rune_list = r;
-    //     p.official_version = v;
-    //     p.champion_map = c;
-    // }
 
     Ok(p.clone())
 }
@@ -118,22 +103,6 @@ pub fn get_user_sources(state: State<'_, state::GlobalState>) -> Vec<page_data::
     let s = state.0.lock().unwrap();
     let p = s.page_data.lock().unwrap();
 
-    // if !p.ready {
-    //     let (tx, rx) = mpsc::channel();
-    //     async_runtime::spawn(async move {
-    //         let r = page_data::PageData::init().await;
-    //         println!("[commands::get_user_sources] ddragon data init");
-    //         let _ = tx.send(r.unwrap());
-    //     });
-
-    //     let (ready, s, r, v, c) = rx.recv().unwrap();
-    //     p.ready = ready;
-    //     p.source_list = s;
-    //     p.rune_list = r;
-    //     p.official_version = v;
-    //     p.champion_map = c;
-    // }
-
     p.source_list.clone()
 }
 
@@ -141,21 +110,6 @@ pub fn get_user_sources(state: State<'_, state::GlobalState>) -> Vec<page_data::
 pub fn get_runes_reforged(state: State<'_, state::GlobalState>) -> Vec<web::RuneListItem> {
     let s = state.0.lock().unwrap();
     let p = s.page_data.lock().unwrap();
-    // if !p.ready {
-    //     let (tx, rx) = mpsc::channel();
-    //     async_runtime::spawn(async move {
-    //         let r = page_data::PageData::init().await;
-    //         println!("ddragon data init");
-    //         let _ = tx.send(r.unwrap());
-    //     });
-
-    //     let (ready, s, r, v, c) = rx.recv().unwrap();
-    //     p.ready = ready;
-    //     p.source_list = s;
-    //     p.rune_list = r;
-    //     p.official_version = v;
-    //     p.champion_map = c;
-    // }
 
     p.rune_list.clone()
 }
