@@ -1,68 +1,54 @@
-import { invoke } from '@tauri-apps/api';
-import { UnlistenFn, listen } from '@tauri-apps/api/event';
-import { clsx } from 'clsx';
-import { useEffect } from 'react';
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import s from './style.module.scss';
 
-import { blockKeyCombosInProd } from 'src/helper';
-import { Source } from 'src/interfaces';
-import { useAppStore } from 'src/store';
+import { listen } from '@tauri-apps/api/event';
+
+import { useEffect } from 'react';
+import {
+  HashRouter,
+  Routes,
+  Route,
+} from 'react-router-dom';
+
+import { useAppStore } from '../../store';
+import { blockKeyCombosInProd } from '../../helper';
 
 import { Builds } from '../Builds/Builds';
-import { ImportResult } from '../ImportResult/ImportResult';
-import { NavMenu } from '../NavMenu/NavMenu';
 import { Settings } from '../Settings/Settings';
+import { NavMenu } from '../NavMenu/NavMenu';
+import { ImportResult } from '../ImportResult/ImportResult';
 
 export function Root() {
-  const { toggleLcuStatus, setSources } = useAppStore();
+  let toggleLcuStatus = useAppStore(s => s.toggleLcuStatus);
 
   useEffect(() => {
     blockKeyCombosInProd();
   }, []);
 
   useEffect(() => {
-    let unlisten: UnlistenFn;
+    let unlisten = () => {
+    };
     listen(`webview::lol_running_status`, (data) => {
-      const [running] = data.payload as any[];
+      let [running] = data.payload as any[];
       console.log('lcu running: ', running);
       toggleLcuStatus(running);
-    }).then((un) => {
+    }).then(un => {
       unlisten = un;
     });
 
-    return () => {
-      unlisten();
-    };
-  }, [toggleLcuStatus]);
-
-  useEffect(() => {
-    invoke(`init_server_data`);
-
-    let unlisten: UnlistenFn;
-    listen(`webview::server_data`, (ev) => {
-      const payload = ev.payload as any[];
-      console.log(payload);
-      setSources(payload[1] as Source[]);
-      invoke(`set_page_data`, { data: payload });
-      invoke(`watch_lcu`);
-    }).then((un) => {
-      unlisten = un;
-    });
-
-    return () => {
-      unlisten();
-    };
-  }, [setSources]);
+    // return () => {
+    //   unlisten();
+    // };
+  }, []);
 
   return (
     <HashRouter>
-      <div className={clsx('container flex h-screen')}>
-        <NavMenu />
+      <div className={s.container}>
+        <NavMenu/>
 
         <Routes>
-          <Route path={'/import'} element={<ImportResult />}></Route>
-          <Route path={'/settings'} element={<Settings />}></Route>
-          <Route path={'/'} element={<Builds />}></Route>
+          <Route path={'/import'} element={<ImportResult/>}></Route>
+          <Route path={'/settings'} element={<Settings/>}></Route>
+          <Route path={'/'} element={<Builds/>}></Route>
         </Routes>
       </div>
     </HashRouter>

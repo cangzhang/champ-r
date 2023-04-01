@@ -1,6 +1,4 @@
 {
-  "include": ["src"],
-  "baseUrl": ".",
   "compilerOptions": {
     "strictNullChecks": false,
     "target": "ESNext",
@@ -17,10 +15,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
-    "paths": {
-      "src/*": ["./src/*"],
-    }
+    "jsx": "react-jsx"
   },
+  "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

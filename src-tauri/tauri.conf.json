@@ -62,7 +62,7 @@
     "windows": [
       {
         "height": 500,
-        "width": 400,
+        "width": 450,
         "fullscreen": false,
         "resizable": false,
         "title": "ChampR",
@@ -75,8 +75,8 @@
         "label": "rune",
         "url": "rune.html",
         "visible": false,
-        "width": 400,
-        "height": 460,
+        "width": 420,
+        "height": 470,
         "decorations": false,
         "resizable": false
       }

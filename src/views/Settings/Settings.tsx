@@ -1,18 +1,19 @@
 import { invoke } from '@tauri-apps/api';
-import { clsx } from 'clsx';
+
 import { useEffect, useState } from 'react';
+import { Container, Switch, SwitchEvent } from '@nextui-org/react';
 
-import { Label } from 'src/components/ui/Label';
-import { Switch } from 'src/components/ui/Switch';
+import { appConf } from '../../config';
 
-import { appConf } from 'src/config';
+import s from './style.module.scss';
 
 export function Settings() {
   const [autoStart, setAutoStart] = useState(false);
 
-  const onChange = (v: boolean) => {
+  const onChange = (ev: SwitchEvent) => {
+    let v = ev.target.checked;
     setAutoStart(v);
-
+    
     invoke('update_app_auto_start', { autoStart: v });
     appConf.set(`autoStart`, v).then(() => {
       appConf.save();
@@ -20,21 +21,20 @@ export function Settings() {
   };
 
   useEffect(() => {
-    appConf.get<boolean>(`autoStart`).then((s) => {
+    appConf.get<boolean>(`autoStart`).then(s => {
       setAutoStart(s);
     });
   }, []);
 
   return (
-    <section className={clsx('flex flex-row p-6')}>
-      <div className={clsx('flex self-start items-center gap-2')}>
+    <Container className={s.container}>
+      <div className={s.option}>
         <Switch
-          id="auto-start"
           checked={autoStart}
-          onCheckedChange={onChange}
+          onChange={onChange}
         />
-        <Label htmlFor="auto-start">Auto Start</Label>
+        Auto Start
       </div>
-    </section>
+    </Container>
   );
 }

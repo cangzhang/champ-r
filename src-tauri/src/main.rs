@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use std::env;
+use std::{env, sync::mpsc, thread, time};
 
 use serde_json::Value;
 use tauri::{
@@ -28,6 +28,18 @@ pub struct GlobalEventPayload {
 }
 
 fn main() {
+    let (tx, rx) = mpsc::channel();
+    async_std::task::spawn(async move {
+        match page_data::PageData::init().await {
+            Ok(r) => {
+                let _ = tx.send(r);
+            }
+            Err(e) => {
+                println!("{:?}", e);
+            }
+        };
+    });
+
     let tray_menu = SystemTrayMenu::new()
         .add_item(CustomMenuItem::new("toggle_window", "Toggle"))
         .add_item(CustomMenuItem::new("apply_builds", "Apply Builds"))
@@ -42,10 +54,42 @@ fn main() {
         .plugin(tauri_plugin_single_instance::init(|_app, _argv, _cwd| {}))
         .setup(move |app| {
             let mut inner_state = state::InnerState::new();
+            // inner_state.init(&app.handle());
+            let (ready, source_list, rune_list, version, champion_map) = rx.recv().unwrap();
+
+            inner_state.init_page_data(ready, &source_list, &rune_list, &version, &champion_map);
             inner_state.init_settings();
 
             let st = state::GlobalState::init(inner_state);
             app.manage(st);
+
+            let main_win = app.get_window("main").unwrap();
+            let champion_map = champion_map.clone();
+            async_std::task::spawn(async move {
+                let mut auth_token = String::new();
+                loop {
+                    let cmd::CommandLineOutput { token, port, .. } = cmd::get_commandline();
+                    let running = !token.is_empty() && !port.is_empty();
+                    println!("webview::lol_running_status: {running}");
+                    let _ = main_win.emit("webview::lol_running_status", vec![running]);
+
+                    if !auth_token.eq(token.as_str()) {
+                        auth_token = token.clone();
+                        if !auth_token.is_empty() && !port.is_empty() {
+                            let _ = cmd::spawn_league_client(
+                                &token,
+                                &port,
+                                &champion_map,
+                                Some(&main_win),
+                            )
+                            .await;
+                        } else {
+                            println!("[spawn] auth: invalid token & port");
+                        }
+                    }
+                    thread::sleep(time::Duration::from_secs(6));
+                }
+            });
 
             let handle = app.handle();
             let _ = app.listen_global("global_events", move |ev| {
@@ -108,10 +152,7 @@ fn main() {
             commands::random_runes,
             commands::apply_perk,
             commands::update_app_auto_start,
-            commands::init_server_data,
-            commands::set_page_data,
-            commands::watch_lcu,
-            ])
+        ])
         .run(context)
         .expect("error while running tauri application");
 }

@@ -1,71 +1,54 @@
-import { IconRotateClockwise2 } from '@tabler/icons';
-import { invoke } from '@tauri-apps/api';
-import { clsx } from 'clsx';
-import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-import { Button } from 'src/components/ui/Button';
-import { Checkbox } from 'src/components/ui/Checkbox';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from 'src/components/ui/Tooltip';
-
-import { appConf } from 'src/config';
-import { ModeGroup, getColorForMode, isDev } from 'src/helper';
-import { Source } from 'src/interfaces';
-import { useAppStore } from 'src/store';
-
 import s from './style.module.scss';
 
-export function Builds() {
-  const navigate = useNavigate();
-  const { lcuRunning, sources } = useAppStore();
+import { invoke } from '@tauri-apps/api';
 
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button, Checkbox, Badge, Tooltip } from '@nextui-org/react';
+
+import { appConf } from '../../config';
+import { isDev } from '../../helper';
+import { Source } from '../../interfaces';
+import { useAppStore } from '../../store';
+import { IconRotateClockwise2 } from '@tabler/icons';
+
+export function Builds() {
+  const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
+
+  const navigate = useNavigate();
+  const lcuRunning = useAppStore(s => s.lcuRunning);
 
   const onToggleWindow = () => {
     invoke(`random_runes`);
   };
 
-  const startImport = useCallback(() => {
-    if (!lcuRunning) {
-      return;
-    }
-
-    const selected = selectedSources.join(',');
+  const goToImportResult = () => {
+    let selected = selectedSources.join(',');
     navigate(`/import?sources=${selected}`);
-  }, [lcuRunning, navigate, selectedSources]);
+  };
 
-  const onCheck = useCallback((val: string) => {
-    let next: string[] = [];
-    setSelectedSources((d) => {
-      if (d.includes(val)) {
-        next = d.filter((v) => v !== val);
-      } else {
-        next = [...d, val];
-      }
-
-      return next;
-    });
-
+  const onSelectChange = useCallback((next: string[]) => {
+    setSelectedSources(next);
     appConf.set('selectedSources', next);
     appConf.save();
   }, []);
 
   useEffect(() => {
-    if (sources.length) {
-      setReady(true);
-    }
-  }, [sources]);
+    invoke(`get_user_sources`)
+      .then((l) => {
+        // console.log('sources', l);
+        setSources(l as Source[]);
+        setReady(true);
+      });
+  }, []);
 
   useEffect(() => {
-    appConf.get<string[]>('selectedSources').then((s) => {
-      setSelectedSources(s ?? []);
-    });
+    appConf.get<string[]>('selectedSources')
+      .then((s) => {
+        setSelectedSources(s ?? []);
+      });
 
     return () => {
       appConf.save();
@@ -73,77 +56,62 @@ export function Builds() {
   }, []);
 
   return (
-    <section className={clsx(s.builds, 'flex flex-col')}>
-      <TooltipProvider>
-        <div className={clsx(s.sourceList, 'ml-4')}>
-          {sources.map(({ source, source_version }) => {
-            const sourceId = `source_${source.value}`;
-            const checked = selectedSources.includes(source.value);
-            const color = getColorForMode(source.isAram, source.isUrf);
+    <section className={s.builds}>
+      <div className={s.sourceList}>
+        <Checkbox.Group
+          label="Select Source(s)"
+          value={selectedSources}
+          // @ts-ignore
+          onChange={onSelectChange}
+        >
+          {sources.map((i) => {
+            let isSR = !i.source.isAram && !i.source.isUrf;
 
             return (
-              <div className="flex items-center gap-2 my-4" key={sourceId}>
-                <Checkbox
-                  className={s.checkbox}
-                  id={sourceId}
-                  checked={checked}
-                  onCheckedChange={() => onCheck(source.value)}
-                />
-                <label
-                  htmlFor={sourceId}
-                  className="flex text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-1.5"
-                >
-                  {source.label}
-                  <div
-                    className={clsx(
-                      'flex text-xs px-1.5 py-0.5 rounded-lg text-white',
-                      `bg-${color}-500`
-                    )}
-                  >
-                    {source_version}
-                  </div>
-                </label>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className={clsx(s.modes)}>
-          {ModeGroup.map((mode) => {
-            return (
-              <div
-                key={mode.value}
-                className={clsx('pr-3 flex items-center italic')}
+              <Checkbox
+                key={i.source.value}
+                className={s.source}
+                // @ts-ignore
+                value={i.source.value}
               >
-                <div
-                  className={clsx(
-                    `bg-${mode.color}-300`,
-                    'w-3 h-3 rounded-full mr-1'
-                  )}
-                />
-                {mode.name}
-              </div>
+                {i.source.label}
+                {isSR && <Badge variant="dot" className={s.mode}/>}
+                {i.source.isAram && <Badge variant="dot" color="success" className={s.mode}/>}
+                {i.source.isUrf && <Badge variant="dot" color="warning" className={s.mode}/>}
+                <Badge className={s.version}>{i.source_version}</Badge>
+              </Checkbox>
             );
           })}
-        </div>
+        </Checkbox.Group>
+      </div>
 
-        <div className={clsx('flex items-center gap-2 px-4')}>
-          <Tooltip>
-            <TooltipTrigger asChild={true}>
-              <Button variant={'subtle'} onClick={startImport}>
-                Apply Builds
-              </Button>
-            </TooltipTrigger>
-            {!lcuRunning && (
-              <TooltipContent>
-                <div>Please start League of Legends first</div>
-              </TooltipContent>
-            )}
-          </Tooltip>
+      <div className={s.modes}>
+        {!ready && <div className={s.prepare}>
+          <IconRotateClockwise2 className={s.spin}/>
+          Preparing...
+        </div>}
 
-          {isDev && <Button onClick={onToggleWindow}>Runes</Button>}
+        <div className={s.map}>
+          <Badge variant="dot"/> Summoner's Rift
         </div>
-      </TooltipProvider>
+        <div className={s.map}>
+          <Badge variant="dot" color="success"/> ARAM
+        </div>
+        <div className={s.map}>
+          <Badge variant="dot" color="warning"/> URF
+        </div>
+      </div>
+
+      <div className={s.btns}>
+        {/*// @ts-ignore*/}
+        <Tooltip content={lcuRunning ? `` : `Please start League of Legends first`} placement={'top'}>
+          <Button color={'primary'} onPress={goToImportResult} disabled={!lcuRunning}>Apply Builds</Button>
+        </Tooltip>
+        {isDev &&
+          (<Button flat size={'sm'} onPress={onToggleWindow}>Runes</Button>)
+        }
+      </div>
     </section>
   );
 }
+

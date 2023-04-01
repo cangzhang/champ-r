@@ -13,73 +13,33 @@ export function blockKeyCombosInProd() {
     return;
   }
 
-  document.addEventListener(
-    'keydown',
-    (ev) => {
-      const refresh = ev.ctrlKey && ev.key === 'r';
-      const print = ev.ctrlKey && ev.key === 'p';
-      const save = ev.ctrlKey && ev.key === 's';
+  document.addEventListener('keydown', ev => {
+    let refresh = ev.ctrlKey && ev.key === 'r';
+    let print = ev.ctrlKey && ev.key === 'p';
+    let save = ev.ctrlKey && ev.key === 's';
 
-      const back = ev.altKey && ev.key === 'ArrowLeft';
-      const forward = ev.altKey && ev.key === 'ArrowRight';
-      const devTool = ev.ctrlKey && ev.shiftKey && ev.key === 'i';
-      const select = ev.ctrlKey && ev.shiftKey && ev.key === 'x';
-      const capture = ev.ctrlKey && ev.shiftKey && ev.key === 's';
+    let back = ev.altKey && ev.key === 'ArrowLeft';
+    let forward = ev.altKey && ev.key === 'ArrowRight';
+    let devTool = ev.ctrlKey && ev.shiftKey && ev.key === 'i';
+    let select = ev.ctrlKey && ev.shiftKey && ev.key === 'x';
+    let capture = ev.ctrlKey && ev.shiftKey && ev.key === 's';
 
-      if (
-        refresh ||
-        print ||
-        save ||
-        back ||
-        forward ||
-        devTool ||
-        select ||
-        capture
-      ) {
-        console.log('[blockKeyCombos] blocked');
-        ev.preventDefault();
-        ev.stopPropagation();
-      }
-    },
-    true
-  );
-
-  document.addEventListener(
-    'contextmenu',
-    (ev) => {
+    if (refresh ||
+      print ||
+      save ||
+      back ||
+      forward ||
+      devTool ||
+      select ||
+      capture) {
+      console.log('[blockKeyCombos] blocked');
       ev.preventDefault();
       ev.stopPropagation();
-    },
-    true
-  );
-}
+    }
+  }, true);
 
-export const ModeGroup = [
-  {
-    name: "Summoner's Rift",
-    value: 'sr',
-    color: 'cyan',
-  },
-  {
-    name: 'ARAM',
-    value: 'aram',
-    color: 'indigo',
-  },
-  {
-    name: 'URF',
-    value: 'urf',
-    color: 'amber',
-  },
-];
-
-export function getColorForMode(isARAM: boolean, isURF: boolean) {
-  if (isARAM) {
-    return ModeGroup[1].color;
-  }
-
-  if (isURF) {
-    return ModeGroup[2].color;
-  }
-
-  return ModeGroup[0].color;
+  document.addEventListener('contextmenu', ev => {
+    ev.preventDefault();
+    ev.stopPropagation();
+  }, true);
 }
