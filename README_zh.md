@@ -46,7 +46,7 @@
 
 > 🎗️ (对于v2用户) 如果你不能运行ChampR v2，需要先安装 [webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section) 
 
-- `v2 开发版` `~10Mb` [Link](https://github.com/cangzhang/champ-r/releases)
+- `v2 开发版` `~4Mb` [Link](https://github.com/cangzhang/champ-r/releases)
 - `v1 稳定版` `~70Mb` [Download](https://github.com/cangzhang/champ-r/releases)
 
 ## 使用方法
@@ -70,32 +70,6 @@
 
 查看 https://github.com/cangzhang/champ-r/wiki/FAQ
 
-## 开发
-
-### 环境要求
-
-- [Node.js](https://nodejs.org/en/) >= 14
-
-### 安装依赖
-
-```console
-pnpm install
-```
-
-### 运行
-
-```console
-pnpm run start
-```
-
-### 编译
-
-```console
-pnpm run build:local
-```
-
 ## Star 历史
 
 [![Star History Chart](https://api.star-history.com/svg?repos=cangzhang/champ-r&type=Date)](https://star-history.com/#cangzhang/champ-r&Date)
-
-## 捐赠

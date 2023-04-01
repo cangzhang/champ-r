@@ -21,10 +21,6 @@ Yet another League of Legends helper.
 
 - 📦 Auto generate recommend champion builds
 - 🎉 Popup runes list & apply on the fly
-- ✨ i18n support
-    - 🇨🇳 `Chinese`
-    - 🇺🇸 `English`
-    - 🇫🇷 `French`
 - ℹ️ Update notifier
 - 😎 Multiple data sources for **Summoner's Rift** / **ARAM** / **URF**
     - `op.gg`
@@ -32,14 +28,16 @@ Yet another League of Legends helper.
     - `u.gg`
     - `champion.gg`
     - `murderbridge.com`
-    - `101.qq.com`
     - ...
+- ✨ i18n support (WIP for v2)
+    - 🇨🇳 `Chinese`
+    - 🇺🇸 `English`
 
 ## Download
 
 > 🎗️ (For v2 users) If you cannot run ChampR v2 directly, install [webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section) first.
 
-- `v2 nightly` `~10Mb` [Link](https://github.com/cangzhang/champ-r/releases)
+- `v2 nightly` `~4Mb` [Link](https://github.com/cangzhang/champ-r/releases)
 - `v1 Stable` `~70Mb` [Download](https://github.com/cangzhang/champ-r/releases)
 
 ## How to
@@ -72,25 +70,23 @@ Check https://github.com/cangzhang/champ-r/wiki/FAQ
 ### Install dependencies
 
 ```console
+# run as administrator
 pnpm install
 ```
 
 ### Start
 
 ```console
-pnpm run start
+pnpm tauri dev
 ```
 
 ### Build
 
 ```console
-pnpm run build:local
+pnpm tauri build
 ```
 
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=cangzhang/champ-r&type=Date)](https://star-history.com/#cangzhang/champ-r&Date)
 
-## Donation
-
-[![](./docs/afdian.jpeg)](https://afdian.net/a/alcheung)
