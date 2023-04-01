@@ -1,10 +1,9 @@
 # ChampR
 
-![champ-r](https://socialify.git.ci/cangzhang/champ-r/image?description=1&descriptionEditable=%F0%9F%90%B6%20Yet%20another%20League%20of%20Legends%20helper&font=KoHo&forks=1&logo=https%3A%2F%2Fgithub.com%2Fcangzhang%2Fchamp-r%2Fraw%2Fv1%2Fresources%2Fapp-icon.png&owner=1&pattern=Plus&stargazers=1&theme=Light)
+![ChampR](https://socialify.git.ci/cangzhang/champ-r/image?description=1&font=KoHo&forks=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fcangzhang%2Fchamp-r%2Fmain%2Fsrc-tauri%2Ficons%2F128x128%25402x.png&name=1&owner=1&pattern=Circuit%20Board&stargazers=1&theme=Auto)
 
 [![](https://img.shields.io/github/v/release/cangzhang/champ-r?label=LATEST%20VERSION&style=for-the-badge)](https://github.com/cangzhang/champ-r/releases/latest)
 [![](https://img.shields.io/github/downloads/cangzhang/champ-r/total?style=for-the-badge)](https://github.com/cangzhang/champ-r/releases)
-[![](https://img.shields.io/github/workflow/status/cangzhang/champ-r/release?style=for-the-badge&color=65C0A3)](https://github.com/cangzhang/champ-r/actions)
 
 [中文文档](./README_zh.md)
 
@@ -14,9 +13,9 @@ Yet another League of Legends helper.
 
 > ❤ Special thanks to [JetBrains](https://www.jetbrains.com/?from=champ-r) for sponsoring opensource license to this project.
 
-|                                                                   Home                                                                   |                                                                   Import Builds                                                                  |                                                                   Apply Runes                                                                   |
-|:----------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------:|
-| <img src="https://user-images.githubusercontent.com/1357073/180357424-36edd450-a3b9-42ab-9e68-e60fb5f43bb8.png" width="220" alt="home"/> | <img src="https://user-images.githubusercontent.com/1357073/180357492-776dae3a-8ad2-4f92-bb6b-999b521bae4d.png" width="220" alt="import builds"/> | <img src="https://user-images.githubusercontent.com/1357073/180359086-f479afdf-e3db-481f-a4fc-28a43452d25c.png" width="220" alt="apply runes"/> |
+|           Builds            |           Runes            |           Settings            |
+|:---------------------------:|:--------------------------:|:-----------------------------:|
+| ![](./docs/pics/Builds.png) | ![](./docs/pics/Runes.png) | ![](./docs/pics/Settings.png) |
 
 ## Features
 
