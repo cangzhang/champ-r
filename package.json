@@ -21,8 +21,8 @@
     "zustand": "^4.1.4"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.2.1",
-    "@types/node": "^16",
+    "@tauri-apps/cli": "^1.2.3",
+    "@types/node": "^18",
     "@types/react": "^18.0.6",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^1.3.0",

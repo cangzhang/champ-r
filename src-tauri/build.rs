@@ -4,6 +4,6 @@ extern crate embed_resource;
 fn main() {
     tauri_build::build();
 
-    // #[cfg(target_os = "windows")]
-    // embed_resource::compile("champr-manifest.rc");
+    #[cfg(target_os = "windows")]
+    embed_resource::compile("champr-manifest.rc");
 }
