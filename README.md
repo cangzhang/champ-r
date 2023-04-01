@@ -70,13 +70,13 @@ Check https://github.com/cangzhang/champ-r/wiki/FAQ
 ### Install dependencies
 
 ```console
-# run as administrator
 pnpm install
 ```
 
 ### Start
 
 ```console
+# run as administrator
 pnpm tauri dev
 ```
 
