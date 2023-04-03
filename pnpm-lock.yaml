@@ -5,10 +5,10 @@ specifiers:
   '@tabler/icons': ^1.105.0
   '@tauri-apps/api': ^1.2.0
   '@tauri-apps/cli': ^1.2.3
-  '@types/node': ^18
-  '@types/react': ^18.0.6
+  '@types/node': ^18.15.11
+  '@types/react': ^18.0.14
   '@types/react-dom': ^18.0.6
-  '@vitejs/plugin-react': ^1.3.0
+  '@vitejs/plugin-react': ^1.3.2
   autoprefixer: ^10.4.11
   clsx: ^1.2.1
   postcss: ^8.4.16
@@ -19,7 +19,7 @@ specifiers:
   sass: ^1.55.0
   tauri-plugin-store-api: github:tauri-apps/tauri-plugin-store#dev
   typescript: ^4.8.3
-  vite: ^2.9.9
+  vite: ^2.9.12
   zustand: ^4.1.4
 
 dependencies:
@@ -1230,7 +1230,7 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.21.4
-      caniuse-lite: 1.0.30001402
+      caniuse-lite: 1.0.30001473
       fraction.js: 4.2.0
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -1255,7 +1255,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001355
+      caniuse-lite: 1.0.30001473
       electron-to-chromium: 1.4.160
       escalade: 3.1.1
       node-releases: 2.0.5
@@ -1267,18 +1267,14 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001402
+      caniuse-lite: 1.0.30001473
       electron-to-chromium: 1.4.254
       node-releases: 2.0.6
       update-browserslist-db: 1.0.9_browserslist@4.21.4
     dev: true
 
-  /caniuse-lite/1.0.30001355:
-    resolution: {integrity: sha512-Sd6pjJHF27LzCB7pT7qs+kuX2ndurzCzkpJl6Qct7LPSZ9jn0bkOA8mdgMgmqnQAWLVOOGjLpc+66V57eLtb1g==}
-    dev: true
-
-  /caniuse-lite/1.0.30001402:
-    resolution: {integrity: sha512-Mx4MlhXO5NwuvXGgVb+hg65HZ+bhUYsz8QtDGDo2QmaJS2GBX47Xfi2koL86lc8K+l+htXeTEB/Aeqvezoo6Ew==}
+  /caniuse-lite/1.0.30001473:
+    resolution: {integrity: sha512-ewDad7+D2vlyy+E4UJuVfiBsU69IL+8oVmTuZnH5Q6CIUbxNfI50uVpRHbUPDD6SUaN2o0Lh4DhTrvLG/Tn1yg==}
     dev: true
 
   /chalk/2.4.2:
