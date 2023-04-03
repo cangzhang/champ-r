@@ -4,7 +4,7 @@ import { IconMinus, IconX } from '@tabler/icons';
 import { Avatar } from '@nextui-org/react';
 import cn from 'clsx';
 
-import Logo from '../../assets/icon.png';
+import Logo from 'src/assets/icon.png';
 
 import s from './style.module.scss';
 

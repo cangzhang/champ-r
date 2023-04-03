@@ -5,12 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Dropdown, Tooltip, Badge } from '@nextui-org/react';
 import { Toaster } from 'react-hot-toast';
 
-import { DDragon, RuneSlot, Source } from '../../interfaces';
-import { appConf } from '../../config';
-import { blockKeyCombosInProd } from '../../helper';
+import { DDragon, RuneSlot, Source } from 'src/interfaces';
+import { appConf } from 'src/config';
+import { blockKeyCombosInProd } from 'src/helper';
 
-import { RunePreview } from '../RunePreview/RunePreview';
-import { Toolbar } from '../Toolbar/Toolbar';
+import { RunePreview } from 'src/views/RunePreview/RunePreview';
+import { Toolbar } from 'src/views/Toolbar/Toolbar';
 
 import s from './style.module.scss';
 import { appWindow } from '@tauri-apps/api/window';
@@ -31,7 +31,7 @@ export function RuneOverview() {
       return;
     }
 
-    let r: any = await invoke(`get_available_perks_for_champion`, { sourceName: [...curSource][0], championAlias });
+    const r: any = await invoke(`get_available_perks_for_champion`, { sourceName: [...curSource][0], championAlias });
     setPerks(r);
   }, [championAlias, curSource]);
 
@@ -41,7 +41,7 @@ export function RuneOverview() {
     }
 
     setRunesReforged(ddragon.rune_list);
-    let selectedSources: string[] = await appConf.get('selectedSources');
+    const selectedSources: string[] = await appConf.get('selectedSources');
     let availableSources = ddragon.source_list;
     if (selectedSources?.length > 0) {
       availableSources = ddragon.source_list.filter(i => selectedSources.includes(i.source.value));
@@ -49,7 +49,7 @@ export function RuneOverview() {
     setSources(availableSources);
     setVersion(ddragon.official_version);
 
-    let sourceList = ddragon.source_list;
+    const sourceList = ddragon.source_list;
 
     let runeSource: string = await appConf.get('runeSource');
     if (!runeSource || !selectedSources.includes(runeSource)) {
@@ -59,7 +59,7 @@ export function RuneOverview() {
   }, []);
 
   useEffect(() => {
-    let sourceTab: string = [...curSource][0];
+    const sourceTab: string = [...curSource][0];
     if (sourceTab) {
       appConf.set('runeSource', sourceTab);
       appConf.save();
@@ -105,8 +105,8 @@ export function RuneOverview() {
     }
   }, [championId]);
 
-  let selectedSource = useMemo(() => [...curSource].join(''), [curSource]);
-  let source = sources.find(i => i.source.value === selectedSource);
+  const selectedSource = useMemo(() => [...curSource].join(''), [curSource]);
+  const source = sources.find(i => i.source.value === selectedSource);
 
   return (
     <>

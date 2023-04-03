@@ -8,6 +8,11 @@ export default defineConfig({
     port: 3030,
   },
   plugins: [react()],
+  resolve:{
+    alias:{
+      'src' : resolve(__dirname, './src')
+    },
+  },
   build: {
     assetsInlineLimit: Infinity,
     rollupOptions: {

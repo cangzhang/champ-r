@@ -9,7 +9,7 @@ import { Button, Tooltip } from '@nextui-org/react';
 import cn from 'clsx';
 import { IconSettings, IconBuildingFortress, IconPlugConnected, IconPlugOff } from '@tabler/icons';
 
-import { useAppStore } from '../../store';
+import { useAppStore } from 'src/store';
 
 export function NavMenu() {
   const navigate = useNavigate();

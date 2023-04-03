@@ -1,0 +1,4 @@
+node_modules/
+dist/
+!src/**/*.ts
+!src/**/*.tsx

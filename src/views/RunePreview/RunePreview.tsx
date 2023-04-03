@@ -8,8 +8,8 @@ import cn from 'clsx';
 import { IconCheck, IconRotateClockwise2, IconSword } from '@tabler/icons';
 import toast from 'react-hot-toast';
 
-import { PerkPage, Rune, RuneSlot } from '../../interfaces';
-import { sleep } from '../../helper';
+import { PerkPage, Rune, RuneSlot } from 'src/interfaces';
+import { sleep } from 'src/helper';
 // import SimpleBar from 'simplebar-react';
 
 interface RRune extends Rune {
@@ -37,8 +37,8 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
   const [processing, setProcessing] = useState<{ [key: number]: ApplyStage }>({});
 
   const getSlots = useCallback((perk: PerkPage) => {
-    let primary = runesReforged.find(i => i.id === perk.primaryStyleId);
-    let sub = runesReforged.find(i => i.id === perk.subStyleId);
+    const primary = runesReforged.find(i => i.id === perk.primaryStyleId);
+    const sub = runesReforged.find(i => i.id === perk.subStyleId);
 
     return {
       primary,
@@ -48,7 +48,7 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
 
   const applyPerk = useCallback((p: PerkPage, idx: number) => {
     setProcessing(s => {
-      let ss = {...s};
+      const ss = {...s};
       ss[idx] = ApplyStage.Processing;
       return ss;
     });
@@ -56,22 +56,22 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
     .finally(async () => {
       await sleep(600);
       setProcessing(s => {
-        let ss = {...s};
+        const ss = {...s};
         ss[idx] = ApplyStage.Done;
         return ss;
       });
       toast.success('Applied');
       await sleep(600);
       setProcessing(s => {
-        let ss = {...s};
+        const ss = {...s};
         ss[idx] = ApplyStage.Normal;
         return ss;
       });
     });
   }, []);
 
-  let runesRef = useMemo(() => {
-    let r: { [key: number]: RRune } = {};
+  const runesRef = useMemo(() => {
+    const r: { [key: number]: RRune } = {};
     runesReforged.forEach(i => {
       i.slots.forEach(j => {
         j.runes.forEach(k => {
@@ -90,8 +90,8 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
     <div className={s.previewCard}>
       {
         perks.map((p, idx) => {
-          let {primary, sub} = getSlots(p);
-          let stage = processing[idx];
+          const {primary, sub} = getSlots(p);
+          const stage = processing[idx];
 
           return (
             <div className={s.item} key={idx}>
@@ -106,7 +106,7 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
               {p.selectedPerkIds
               .filter(i => runesRef[i]?.parent === primary.id)
               .map(i => {
-                let rune = runesRef[i];
+                const rune = runesRef[i];
                 return (
                   <img
                     key={i}
@@ -128,7 +128,7 @@ export function RunePreview({perks, runesReforged}: { perks: PerkPage[], runesRe
               {p.selectedPerkIds
               .filter(i => runesRef[i]?.parent === sub.id)
               .map(i => {
-                let rune = runesRef[i];
+                const rune = runesRef[i];
                 return (
                   <img
                     key={i}

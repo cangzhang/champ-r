@@ -6,10 +6,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Badge, Tooltip } from '@nextui-org/react';
 
-import { appConf } from '../../config';
-import { isDev } from '../../helper';
-import { Source } from '../../interfaces';
-import { useAppStore } from '../../store';
+import { appConf } from 'src/config';
+import { isDev } from 'src/helper';
+import { Source } from 'src/interfaces';
+import { useAppStore } from 'src/store';
 import { IconRotateClockwise2 } from '@tabler/icons';
 
 export function Builds() {
@@ -25,7 +25,7 @@ export function Builds() {
   };
 
   const goToImportResult = () => {
-    let selected = selectedSources.join(',');
+    const selected = selectedSources.join(',');
     navigate(`/import?sources=${selected}`);
   };
 
@@ -65,7 +65,7 @@ export function Builds() {
           onChange={onSelectChange}
         >
           {sources.map((i) => {
-            let isSR = !i.source.isAram && !i.source.isUrf;
+            const isSR = !i.source.isAram && !i.source.isUrf;
 
             return (
               <Checkbox

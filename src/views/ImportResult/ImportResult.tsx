@@ -9,15 +9,15 @@ import { IconArrowLeft } from '@tabler/icons';
 
 export function ImportResult() {
   const [result, setResult] = useState<any[]>([]);
-  let ids = useRef(new Set()).current;
-  let [searchParams] = useSearchParams();
+  const ids = useRef(new Set()).current;
+  const [searchParams] = useSearchParams();
 
   const applyBuilds = useCallback((sources: string[]) => {
     invoke(`apply_builds`, {sources});
   }, []);
 
   const updateResult = useCallback((payload: any) => {
-    let id = payload.id;
+    const id = payload.id;
     if (ids.has(payload.id)) {
       return;
     }
@@ -46,7 +46,7 @@ export function ImportResult() {
   }, [updateResult]);
 
   useEffect(() => {
-    let sources = searchParams.get('sources').split(',');
+    const sources = searchParams.get('sources').split(',');
     applyBuilds(sources);
   }, [applyBuilds]);
 

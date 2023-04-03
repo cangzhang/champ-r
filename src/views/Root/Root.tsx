@@ -9,16 +9,16 @@ import {
   Route,
 } from 'react-router-dom';
 
-import { useAppStore } from '../../store';
-import { blockKeyCombosInProd } from '../../helper';
+import { useAppStore } from 'src/store';
+import { blockKeyCombosInProd } from 'src/helper';
 
-import { Builds } from '../Builds/Builds';
-import { Settings } from '../Settings/Settings';
-import { NavMenu } from '../NavMenu/NavMenu';
-import { ImportResult } from '../ImportResult/ImportResult';
+import { Builds } from 'src/views/Builds/Builds';
+import { Settings } from 'src/views/Settings/Settings';
+import { NavMenu } from 'src/views/NavMenu/NavMenu';
+import { ImportResult } from 'src/views/ImportResult/ImportResult';
 
 export function Root() {
-  let toggleLcuStatus = useAppStore(s => s.toggleLcuStatus);
+  const toggleLcuStatus = useAppStore(s => s.toggleLcuStatus);
 
   useEffect(() => {
     blockKeyCombosInProd();
@@ -28,7 +28,7 @@ export function Root() {
     let unlisten = () => {
     };
     listen(`webview::lol_running_status`, (data) => {
-      let [running] = data.payload as any[];
+      const [running] = data.payload as any[];
       console.log('lcu running: ', running);
       toggleLcuStatus(running);
     }).then(un => {
