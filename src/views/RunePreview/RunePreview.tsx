@@ -4,7 +4,7 @@ import { invoke } from '@tauri-apps/api';
 
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@nextui-org/react';
-import cn from 'classnames';
+import cn from 'clsx';
 import { IconCheck, IconRotateClockwise2, IconSword } from '@tabler/icons';
 import toast from 'react-hot-toast';
 

@@ -2,7 +2,7 @@ import { appWindow } from '@tauri-apps/api/window';
 
 import { IconMinus, IconX } from '@tabler/icons';
 import { Avatar } from '@nextui-org/react';
-import cn from 'classnames';
+import cn from 'clsx';
 
 import Logo from '../../assets/icon.png';
 

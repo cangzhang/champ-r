@@ -30,9 +30,10 @@
   align-items: center;
   margin-bottom: 1rem;
   font-size: 14px;
+  padding-right: 1em;
 
   .map {
-    margin-right: 1ex;
+    margin-right: 0.6ex;
   }
 }
 
@@ -41,7 +42,7 @@
   align-items: center;
 
   > * {
-    margin-right: 10px;
+    margin-right: 1em;
   }
 }
 

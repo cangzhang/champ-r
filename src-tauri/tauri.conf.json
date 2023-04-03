@@ -57,12 +57,12 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true
     },
     "windows": [
       {
         "height": 500,
-        "width": 450,
+        "width": 420,
         "fullscreen": false,
         "resizable": false,
         "title": "ChampR",

@@ -108,7 +108,7 @@ export function Builds() {
           <Button color={'primary'} onPress={goToImportResult} disabled={!lcuRunning}>Apply Builds</Button>
         </Tooltip>
         {isDev &&
-          (<Button flat size={'sm'} onPress={onToggleWindow}>Runes</Button>)
+          (<Button flat auto size={'sm'} onPress={onToggleWindow}>Runes</Button>)
         }
       </div>
     </section>

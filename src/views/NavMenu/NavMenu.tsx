@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Tooltip } from '@nextui-org/react';
 
-import cn from 'classnames';
+import cn from 'clsx';
 import { IconSettings, IconBuildingFortress, IconPlugConnected, IconPlugOff } from '@tabler/icons';
 
 import { useAppStore } from '../../store';
