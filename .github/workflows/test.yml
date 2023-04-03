@@ -25,43 +25,23 @@ jobs:
       - name: Get Current Date
         if: matrix.platform == 'windows-latest'
         run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16
-      - name: Setup Rust
+
+      - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Cache Cargo State
-        uses: actions/cache@v2
-        env:
-          cache-name: cargo_state
+          profile: minimal
+          override: true
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ~/.cargo/bin
-          key: ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
-          restore-keys: |
-            ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}-
-            ${{ matrix.platform }}-stable-${{ env.cache-name }}-
-            ${{ matrix.platform }}-stable-
-            ${{ matrix.platform }}-
-      - name: Cache Cargo Target
-        uses: actions/cache@v2
-        env:
-          cache-name: cargo_bundler
+          workspaces: src-tauri
+
+      - name: Install Node
+        uses: actions/setup-node@v1
         with:
-          path: src-tauri/target
-          # Add date to the cache to keep it up to date
-          key: ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('src-tauri/Cargo.lock') }}-${{ env.CURRENT_DATE }}
-          # Restore from outdated cache for speed
-          restore-keys: |
-            ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('src-tauri/Cargo.lock') }}
-            ${{ matrix.platform }}-stable-${{ env.cache-name }}-
-            ${{ matrix.platform }}-stable-
-            ${{ matrix.platform }}-
+          node-version: 16
 
       - name: Build
         env:
