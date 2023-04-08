@@ -1,6 +1,6 @@
 [package]
 name = "champr"
-version = "2.0.0"
+version = "2.0.1"
 description = "Another League of Legends helper"
 authors = ["Al Cheung<cangzan@gmail.com>"]
 license = "LGPL-2.1 license"
