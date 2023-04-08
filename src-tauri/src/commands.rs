@@ -1,6 +1,7 @@
-use std::sync::mpsc;
+use std::{sync::mpsc, vec};
 
 use rand::Rng;
+use serde::{Serialize, Deserialize};
 use serde_json::json;
 use tauri::{async_runtime, command, AppHandle, Manager, State, Window};
 
@@ -94,21 +95,6 @@ pub async fn get_ddragon_data(
 ) -> Result<page_data::PageData, ()> {
     let s = state.0.lock().unwrap();
     let p = s.page_data.lock().unwrap();
-    // if !p.ready {
-    //     let (tx, rx) = mpsc::channel();
-    //     async_runtime::spawn(async move {
-    //         let r = page_data::PageData::init().await;
-    //         println!("[get_ddragon_data] init");
-    //         let _ = tx.send(r.unwrap());
-    //     });
-
-    //     let (ready, s, r, v, c) = rx.recv().unwrap();
-    //     p.ready = ready;
-    //     p.source_list = s;
-    //     p.rune_list = r;
-    //     p.official_version = v;
-    //     p.champion_map = c;
-    // }
 
     Ok(p.clone())
 }
@@ -118,22 +104,6 @@ pub fn get_user_sources(state: State<'_, state::GlobalState>) -> Vec<page_data::
     let s = state.0.lock().unwrap();
     let p = s.page_data.lock().unwrap();
 
-    // if !p.ready {
-    //     let (tx, rx) = mpsc::channel();
-    //     async_runtime::spawn(async move {
-    //         let r = page_data::PageData::init().await;
-    //         println!("[commands::get_user_sources] ddragon data init");
-    //         let _ = tx.send(r.unwrap());
-    //     });
-
-    //     let (ready, s, r, v, c) = rx.recv().unwrap();
-    //     p.ready = ready;
-    //     p.source_list = s;
-    //     p.rune_list = r;
-    //     p.official_version = v;
-    //     p.champion_map = c;
-    // }
-
     p.source_list.clone()
 }
 
@@ -141,21 +111,6 @@ pub fn get_user_sources(state: State<'_, state::GlobalState>) -> Vec<page_data::
 pub fn get_runes_reforged(state: State<'_, state::GlobalState>) -> Vec<web::RuneListItem> {
     let s = state.0.lock().unwrap();
     let p = s.page_data.lock().unwrap();
-    // if !p.ready {
-    //     let (tx, rx) = mpsc::channel();
-    //     async_runtime::spawn(async move {
-    //         let r = page_data::PageData::init().await;
-    //         println!("ddragon data init");
-    //         let _ = tx.send(r.unwrap());
-    //     });
-
-    //     let (ready, s, r, v, c) = rx.recv().unwrap();
-    //     p.ready = ready;
-    //     p.source_list = s;
-    //     p.rune_list = r;
-    //     p.official_version = v;
-    //     p.champion_map = c;
-    // }
 
     p.rune_list.clone()
 }
@@ -186,3 +141,66 @@ pub fn update_app_auto_start(state: State<'_, state::GlobalState>, auto_start: b
 //         state.init(&handle);
 //     });
 // }
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+struct ApplyFixResult {
+    pub applied: bool,
+    pub ready: bool,
+}
+
+#[command]
+pub async fn check_and_fix_tencent_server(app_handle: AppHandle) {
+    let main_win = app_handle.get_window("main").unwrap();
+
+    async_runtime::spawn(async move {
+        if let Ok(ready) = cmd::check_if_server_ready().await {
+            if !ready {
+                let r = cmd::fix_tencent_server().await;
+                
+                if let Ok(r) = r {
+                    let _ = &main_win.emit("main::applied_fix_to_tencent_server", ApplyFixResult {
+                        applied: true,
+                        ready: r,
+                    });
+                } else {
+                    let _ = &main_win.emit("main::applied_fix_to_tencent_server", ApplyFixResult {
+                        applied: false,
+                        ready,
+                    });
+                    println!("[commands::applied_fix_to_tencent_server] failed");
+                }
+            } else {
+                let _ = &main_win.emit("main::applied_fix_to_tencent_server", ApplyFixResult {
+                    applied: false,
+                    ready: true,
+                });
+                println!("[commands::applied_fix_to_tencent_server] already");
+            }
+        } else {
+            println!("[commands::check_and_fix_tencent_server] check_if_server_ready: failed");
+        }
+    });
+}
+
+#[command]
+pub async fn test_connectivity(app_handle: AppHandle) {
+    let main_win = app_handle.get_window("main").unwrap();
+
+    async_runtime::spawn(async move {
+        if let Ok(connected) = cmd::test_connectivity().await {
+            let _ = &main_win.emit("main::test_connectivity", connected);
+        } else {
+            println!("[commands::test_connectivity] test failed");
+        }
+    });
+}
+
+#[command]
+pub async fn check_if_lol_running(app_handle: AppHandle) {
+    let main_win = app_handle.get_window("main").unwrap();
+
+    async_runtime::spawn(async move {
+        let running = cmd::check_if_lol_running();
+        let _ = &main_win.emit("webview::lol_running_status", (running, ()));
+    });
+}

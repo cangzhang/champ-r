@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
 import { useEffect } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
@@ -20,18 +21,15 @@ export function Root() {
   }, []);
 
   useEffect(() => {
-    let unlisten = () => {};
+    invoke('check_if_lol_running');
+  }, []);
+
+  useEffect(() => {
     listen(`webview::lol_running_status`, (data) => {
       const [running] = data.payload as any[];
       console.log('lcu running: ', running);
       toggleLcuStatus(running);
-    }).then((un) => {
-      unlisten = un;
     });
-
-    // return () => {
-    //   unlisten();
-    // };
   }, []);
 
   return (

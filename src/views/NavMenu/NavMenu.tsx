@@ -5,9 +5,7 @@ import {
   IconPlugOff,
   IconSettings,
 } from '@tabler/icons';
-import { listen } from '@tauri-apps/api/event';
 import cn from 'clsx';
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAppStore } from 'src/store';
@@ -42,9 +40,7 @@ export function NavMenu() {
         <Tooltip
           placement={'right'}
           content={
-            lcuRunning
-              ? `Connected to LoL Client`
-              : `Disconnected with LoL Client`
+            lcuRunning ? `Detected LoL Client Running` : `LoL Client not Found`
           }
         >
           {lcuRunning ? (

@@ -152,6 +152,9 @@ fn main() {
             commands::random_runes,
             commands::apply_perk,
             commands::update_app_auto_start,
+            commands::check_and_fix_tencent_server,
+            commands::test_connectivity,
+            commands::check_if_lol_running,
         ])
         .run(context)
         .expect("error while running tauri application");

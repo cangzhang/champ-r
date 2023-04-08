@@ -168,7 +168,7 @@ pub async fn spawn_league_client(
     println!("[spawn] auth: {} {}", token, port);
 
     let stdout = Command::new("./LeagueClient.exe")
-        .args([token, port])
+        .args(["watch", token, port])
         .creation_flags(0x08000000)
         .stdout(Stdio::piped())
         .spawn()?
@@ -217,6 +217,124 @@ pub async fn spawn_league_client(
 #[cfg(not(target_os = "windows"))]
 pub async fn spawn_league_client() -> anyhow::Result<()> {
     Ok(())
+}
+
+#[cfg(target_os = "windows")]
+pub async fn check_if_server_ready() -> anyhow::Result<bool> {
+    use std::io::{BufRead, BufReader, Error, ErrorKind};
+    use std::os::windows::process::CommandExt;
+    use std::process::{Command, Stdio};
+
+    let CommandLineOutput {
+        dir, is_tencent, ..
+    } = get_commandline();
+
+    if dir.is_empty() {
+        println!("[cmd::check_if_tencent_server_ready] cannot get lcu install dir");
+        return Ok(false);
+    }
+
+    let is_tencent_arg = if is_tencent { "1" } else { "0" };
+    let stdout = Command::new("./LeagueClient.exe")
+        .args(["check", &dir, is_tencent_arg])
+        .creation_flags(0x08000000)
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output."))?;
+
+    let mut ready = true;
+    let reader = BufReader::new(stdout);
+    reader
+        .lines()
+        .filter_map(|line| line.ok())
+        .for_each(|line| {
+            if line.starts_with("=== tencent_sucks") {
+                ready = false;
+            }
+        });
+
+    Ok(ready)
+}
+
+#[cfg(not(target_os = "windows"))]
+pub async fn check_if_server_ready(win: Option<&tauri::Window>) -> anyhow::Result<bool> {
+    Ok(true);
+}
+
+#[cfg(target_os = "windows")]
+pub async fn fix_tencent_server() -> anyhow::Result<bool> {
+    use std::io::{BufRead, BufReader, Error, ErrorKind};
+    use std::os::windows::process::CommandExt;
+    use std::process::{Command, Stdio};
+
+    let CommandLineOutput { dir, .. } = get_commandline();
+
+    let stdout = Command::new("./LeagueClient.exe")
+        .args(["fix", &dir])
+        .creation_flags(0x08000000)
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output."))?;
+
+    let mut ready = false;
+    let reader = BufReader::new(stdout);
+    reader
+        .lines()
+        .filter_map(|line| line.ok())
+        .for_each(|line| {
+            if line.starts_with("=== tencent_fucked") {
+                ready = true;
+            }
+        });
+
+    Ok(ready)
+}
+
+#[cfg(not(target_os = "windows"))]
+pub async fn fix_tencent_server() -> anyhow::Result<bool> {
+    Ok(true)
+}
+
+#[cfg(target_os = "windows")]
+pub async fn test_connectivity() -> anyhow::Result<bool> {
+    use std::io::{BufRead, BufReader, Error, ErrorKind};
+    use std::os::windows::process::CommandExt;
+    use std::process::{Command, Stdio};
+
+    let CommandLineOutput { port, token, .. } = get_commandline();
+
+    let stdout = Command::new("./LeagueClient.exe")
+        .args(["test", &token, &port])
+        .creation_flags(0x08000000)
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output."))?;
+
+    let mut connected = false;
+    let reader = BufReader::new(stdout);
+    reader
+        .lines()
+        .filter_map(|line| line.ok())
+        .for_each(|line| {
+            if line.starts_with("=== connected") {
+                connected = true;
+            }
+        });
+
+    Ok(connected)
+}
+
+#[cfg(not(target_os = "windows"))]
+pub async fn test_connectivity() -> anyhow::Result<bool> {
+    Ok(true)
+}
+
+pub fn check_if_lol_running() -> bool {
+    let CommandLineOutput { port, token, .. } = get_commandline();
+    !token.is_empty() && !port.is_empty()
 }
 
 #[cfg(test)]

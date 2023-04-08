@@ -1,6 +1,8 @@
 import { Badge, Button, Checkbox, Tooltip } from '@nextui-org/react';
+import { Modal } from '@nextui-org/react';
 import { IconRotateClockwise2 } from '@tabler/icons';
 import { invoke } from '@tauri-apps/api';
+import { Event, listen } from '@tauri-apps/api/event';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +17,7 @@ export function Builds() {
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const navigate = useNavigate();
   const lcuRunning = useAppStore((s) => s.lcuRunning);
@@ -34,9 +37,13 @@ export function Builds() {
     appConf.save();
   }, []);
 
+  const onCheckLcuReady = useCallback(() => {
+    invoke(`test_connectivity`);
+    invoke(`check_and_fix_tencent_server`);
+  }, []);
+
   useEffect(() => {
     invoke(`get_user_sources`).then((l) => {
-      // console.log('sources', l);
       setSources(l as Source[]);
       setReady(true);
     });
@@ -50,6 +57,30 @@ export function Builds() {
     return () => {
       appConf.save();
     };
+  }, []);
+
+  useEffect(() => {
+    invoke(`check_and_fix_tencent_server`);
+
+    listen(
+      'main::applied_fix_to_tencent_server',
+      (r: Event<{ applied: boolean; ready: boolean }>) => {
+        console.log('applied_fix_to_tencent_server', r);
+        const { payload } = r;
+        if (payload.applied) {
+          setShowModal(true);
+        }
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    listen('main::test_connectivity', (r) => {
+      const { payload } = r;
+      if (payload) {
+        setShowModal(false);
+      }
+    });
   }, []);
 
   return (
@@ -90,12 +121,11 @@ export function Builds() {
         {!ready && (
           <div className={s.prepare}>
             <IconRotateClockwise2 className={s.spin} />
-            Preparing...
           </div>
         )}
 
         <div className={s.map}>
-          <Badge variant="dot" /> Summoner's Rift
+          <Badge variant="dot" /> {`Summoner's Rift`}
         </div>
         <div className={s.map}>
           <Badge variant="dot" color="success" /> ARAM
@@ -125,6 +155,18 @@ export function Builds() {
           </Button>
         )}
       </div>
+      <Modal
+        open={showModal}
+        preventClose={true}
+        onClose={() => setShowModal(false)}
+      >
+        <Modal.Body>
+          <div>Please restart League of Legends to make ChampR work.</div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onPress={onCheckLcuReady}>Re-Check</Button>
+        </Modal.Footer>
+      </Modal>
     </section>
   );
 }
