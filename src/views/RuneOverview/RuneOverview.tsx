@@ -1,19 +1,18 @@
-import { listen } from '@tauri-apps/api/event';
+import { Avatar, Badge, Dropdown, Tooltip } from '@nextui-org/react';
 import { invoke } from '@tauri-apps/api';
-
+import { listen } from '@tauri-apps/api/event';
+import { appWindow } from '@tauri-apps/api/window';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, Dropdown, Tooltip, Badge } from '@nextui-org/react';
 import { Toaster } from 'react-hot-toast';
-
-import { DDragon, RuneSlot, Source } from 'src/interfaces';
-import { appConf } from 'src/config';
-import { blockKeyCombosInProd } from 'src/helper';
 
 import { RunePreview } from 'src/views/RunePreview/RunePreview';
 import { Toolbar } from 'src/views/Toolbar/Toolbar';
 
+import { appConf } from 'src/config';
+import { blockKeyCombosInProd } from 'src/helper';
+import { DDragon, RuneSlot, Source } from 'src/interfaces';
+
 import s from './style.module.scss';
-import { appWindow } from '@tauri-apps/api/window';
 
 export function RuneOverview() {
   const [championId, setChampionId] = useState(0);
@@ -31,7 +30,10 @@ export function RuneOverview() {
       return;
     }
 
-    const r: any = await invoke(`get_available_perks_for_champion`, { sourceName: [...curSource][0], championAlias });
+    const r: any = await invoke(`get_available_perks_for_champion`, {
+      sourceName: [...curSource][0],
+      championAlias,
+    });
     setPerks(r);
   }, [championAlias, curSource]);
 
@@ -44,7 +46,9 @@ export function RuneOverview() {
     const selectedSources: string[] = await appConf.get('selectedSources');
     let availableSources = ddragon.source_list;
     if (selectedSources?.length > 0) {
-      availableSources = ddragon.source_list.filter(i => selectedSources.includes(i.source.value));
+      availableSources = ddragon.source_list.filter((i) =>
+        selectedSources.includes(i.source.value)
+      );
     }
     setSources(availableSources);
     setVersion(ddragon.official_version);
@@ -72,11 +76,14 @@ export function RuneOverview() {
 
   useEffect(() => {
     let unlisten: () => any = () => null;
-    listen('popup_window::selected_champion', ({ payload }: { payload: any }) => {
-      console.log(`popup_window::selected_champion`, payload);
-      setChampionId(payload.champion_id);
-      setChampionAlias(payload.champion_alias);
-    }).then(un => {
+    listen(
+      'popup_window::selected_champion',
+      ({ payload }: { payload: any }) => {
+        console.log(`popup_window::selected_champion`, payload);
+        setChampionId(payload.champion_id);
+        setChampionAlias(payload.champion_alias);
+      }
+    ).then((un) => {
       unlisten = un;
     });
 
@@ -106,16 +113,18 @@ export function RuneOverview() {
   }, [championId]);
 
   const selectedSource = useMemo(() => [...curSource].join(''), [curSource]);
-  const source = sources.find(i => i.source.value === selectedSource);
+  const source = sources.find((i) => i.source.value === selectedSource);
 
   return (
     <>
-      <Toolbar/>
+      <Toolbar />
       <div className={s.overviewContainer}>
         <div className={s.header}>
           {/*// @ts-ignore */}
           <Tooltip content={championAlias} placement={'bottom'}>
-            <Avatar src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}/>
+            <Avatar
+              src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}
+            />
           </Tooltip>
 
           <Dropdown>
@@ -132,19 +141,38 @@ export function RuneOverview() {
               onSelectionChange={setCurSource}
             >
               {sources.map((i: any) => (
-                <Dropdown.Item key={i.source.value}>{i.source.label}</Dropdown.Item>
+                <Dropdown.Item key={i.source.value}>
+                  {i.source.label}
+                </Dropdown.Item>
               ))}
             </Dropdown.Menu>
           </Dropdown>
 
-          {source?.source.isAram && <><Badge variant="dot" color={'success'}/>ARAM</>}
-          {source?.source.isUrf && <><Badge variant="dot" color={'warning'}/>URF</>}
-          {(!source?.source.isAram && !source?.source.isUrf) && <><Badge variant="dot"/>Summoner's Rift</>}
+          {source?.source.isAram && (
+            <>
+              <Badge variant="dot" color={'success'} />
+              ARAM
+            </>
+          )}
+          {source?.source.isUrf && (
+            <>
+              <Badge variant="dot" color={'warning'} />
+              URF
+            </>
+          )}
+          {!source?.source.isAram && !source?.source.isUrf && (
+            <>
+              <Badge variant="dot" />
+              Summoner's Rift
+            </>
+          )}
         </div>
 
-        {runesReforged.length > 0 && <RunePreview perks={perks} runesReforged={runesReforged}/>}
+        {runesReforged.length > 0 && (
+          <RunePreview perks={perks} runesReforged={runesReforged} />
+        )}
 
-        <Toaster position="bottom-center"/>
+        <Toaster position="bottom-center" />
       </div>
     </>
   );

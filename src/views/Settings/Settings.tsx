@@ -1,7 +1,6 @@
-import { invoke } from '@tauri-apps/api';
-
-import { useEffect, useState } from 'react';
 import { Container, Switch, SwitchEvent } from '@nextui-org/react';
+import { invoke } from '@tauri-apps/api';
+import { useEffect, useState } from 'react';
 
 import { appConf } from 'src/config';
 
@@ -13,7 +12,7 @@ export function Settings() {
   const onChange = (ev: SwitchEvent) => {
     const v = ev.target.checked;
     setAutoStart(v);
-    
+
     invoke('update_app_auto_start', { autoStart: v });
     appConf.set(`autoStart`, v).then(() => {
       appConf.save();
@@ -21,7 +20,7 @@ export function Settings() {
   };
 
   useEffect(() => {
-    appConf.get<boolean>(`autoStart`).then(s => {
+    appConf.get<boolean>(`autoStart`).then((s) => {
       setAutoStart(s);
     });
   }, []);
@@ -29,10 +28,7 @@ export function Settings() {
   return (
     <Container className={s.container}>
       <div className={s.option}>
-        <Switch
-          checked={autoStart}
-          onChange={onChange}
-        />
+        <Switch checked={autoStart} onChange={onChange} />
         Auto Start
       </div>
     </Container>

@@ -6,7 +6,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "prepare": "husky install",
+    "prettier": "prettier --write ./src"
   },
   "dependencies": {
     "@nextui-org/react": "1.0.0-beta.12",
@@ -22,6 +24,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.2.3",
+    "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "@types/node": "^18.15.11",
     "@types/react": "^18.0.14",
     "@types/react-dom": "^18.0.6",
@@ -37,6 +40,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.0",
     "postcss": "^8.4.16",
     "prettier": "^2.8.7",
     "sass": "^1.55.0",
