@@ -120,7 +120,6 @@ export function RuneOverview() {
       <Toolbar />
       <div className={s.overviewContainer}>
         <div className={s.header}>
-          {/*// @ts-ignore */}
           <Tooltip content={championAlias} placement={'bottom'}>
             <Avatar
               src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championAlias}.png`}
@@ -133,7 +132,6 @@ export function RuneOverview() {
             </Dropdown.Button>
             <Dropdown.Menu
               color="secondary"
-              // @ts-ignore
               disallowEmptySelection
               selectionMode="single"
               selectedKeys={curSource}
@@ -163,7 +161,7 @@ export function RuneOverview() {
           {!source?.source.isAram && !source?.source.isUrf && (
             <>
               <Badge variant="dot" />
-              Summoner's Rift
+              {`Summoner's Rift`}
             </>
           )}
         </div>
