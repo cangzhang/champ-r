@@ -1,7 +1,7 @@
 /* Beaufort for LOL Bold */
 @font-face {
   font-family: 'Beaufort for LOL';
-  src: url('/src/assets/fonts/BeaufortforLOL-Bold.woff') format('woff');
+  src: url('src/assets/fonts/BeaufortforLOL-Bold.woff') format('woff');
   font-weight: 700;
   font-style: normal;
 }
@@ -9,7 +9,7 @@
 /* Beaufort for LOL Light */
 @font-face {
   font-family: 'Beaufort for LOL';
-  src: url('/src/assets/fonts/BeaufortforLOL-Light.woff') format('woff');
+  src: url('src/assets/fonts/BeaufortforLOL-Light.woff') format('woff');
   font-weight: 200;
   font-style: normal;
 }
@@ -17,7 +17,7 @@
 /* Beaufort for LOL Medium */
 @font-face {
   font-family: 'Beaufort for LOL';
-  src: url('/src/assets/fonts/BeaufortforLOL-Medium.woff') format('woff');
+  src: url('src/assets/fonts/BeaufortforLOL-Medium.woff') format('woff');
   font-weight: 500;
   font-style: normal;
 }
@@ -25,7 +25,7 @@
 /* Beaufort for LOL Regular */
 @font-face {
   font-family: 'Beaufort for LOL';
-  src: url('/src/assets/fonts/BeaufortforLOL-Regular.woff') format('woff');
+  src: url('src/assets/fonts/BeaufortforLOL-Regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
 }
@@ -33,7 +33,7 @@
 /* Spiegel Bold */
 @font-face {
   font-family: 'Spiegel';
-  src: url('/src/assets/fonts/Spiegel-Bold.woff') format('woff');
+  src: url('src/assets/fonts/Spiegel-Bold.woff') format('woff');
   font-weight: 700;
   font-style: normal;
 }
@@ -41,7 +41,7 @@
 /* Spiegel Regular */
 @font-face {
   font-family: 'Spiegel';
-  src: url('/src/assets/fonts/Spiegel-Regular.woff') format('woff');
+  src: url('src/assets/fonts/Spiegel-Regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
 }
