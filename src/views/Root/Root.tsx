@@ -26,8 +26,7 @@ export function Root() {
 
   useEffect(() => {
     listen(`webview::lol_running_status`, (data) => {
-      const [running] = data.payload as any[];
-      console.log('lcu running: ', running);
+      const [running] = data.payload as [boolean];
       toggleLcuStatus(running);
     });
   }, []);

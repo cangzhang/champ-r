@@ -2,7 +2,7 @@ import { Badge, Button, Checkbox, Tooltip } from '@nextui-org/react';
 import { Modal } from '@nextui-org/react';
 import { IconRotateClockwise2 } from '@tabler/icons';
 import { invoke } from '@tauri-apps/api';
-import { Event, listen } from '@tauri-apps/api/event';
+import { Event, UnlistenFn, listen } from '@tauri-apps/api/event';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -60,8 +60,13 @@ export function Builds() {
   }, []);
 
   useEffect(() => {
+    if (!lcuRunning) {
+      return;
+    }
+
     invoke(`check_and_fix_tencent_server`);
 
+    let unregister: UnlistenFn;
     listen(
       'main::applied_fix_to_tencent_server',
       (r: Event<{ applied: boolean; ready: boolean }>) => {
@@ -71,8 +76,14 @@ export function Builds() {
           setShowModal(true);
         }
       }
-    );
-  }, []);
+    ).then((u) => {
+      unregister = u;
+    });
+
+    return () => {
+      unregister();
+    };
+  }, [lcuRunning]);
 
   useEffect(() => {
     listen('main::test_connectivity', (r) => {
