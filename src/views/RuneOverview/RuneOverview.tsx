@@ -139,7 +139,7 @@ export function RuneOverview() {
               onSelectionChange={setCurSource}
             >
               {sources.map((i: any) => (
-                <Dropdown.Item key={i.source.value}>
+                <Dropdown.Item key={i.source.value} className={s.menuItem}>
                   {i.source.label}
                 </Dropdown.Item>
               ))}

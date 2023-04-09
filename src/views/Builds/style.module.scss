@@ -9,8 +9,8 @@
   overflow: hidden auto;
   margin: 1rem 0 1rem;
   padding-bottom: 1ex;
-  box-shadow: rgba(27, 31, 35, 0.04) 0px 1px 0px,
-    rgba(255, 255, 255, 0.25) 0px 1px 0px inset;
+  box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0,
+    rgba(255, 255, 255, 0.25) 0 1px 0 inset;
 }
 
 .source {
@@ -27,7 +27,8 @@
 }
 
 .modes {
-  font-family: 'Spiegel-Regular', sans-serif;
+  font-family: Spiegel Bold, sans-serif;
+
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -41,7 +42,7 @@
 }
 
 .btns {
-  font-family: 'Spiegel-Regular', sans-serif;
+  font-family: Spiegel Bold, sans-serif;
   display: flex;
   align-items: center;
 
@@ -67,4 +68,8 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+.source {
+  font-family: Beaufort for LOL, sans-serif;
 }
