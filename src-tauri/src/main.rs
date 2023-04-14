@@ -42,9 +42,9 @@ fn main() {
 
     let tray_menu = SystemTrayMenu::new()
         .add_item(CustomMenuItem::new("toggle_window", "Toggle"))
-        .add_item(CustomMenuItem::new("apply_builds", "Apply Builds"))
+        // .add_item(CustomMenuItem::new("apply_builds", "Apply Builds"))
         .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(CustomMenuItem::new("quit", "Quit").accelerator("CmdOrControl+Q"));
+        .add_item(CustomMenuItem::new("quit", "Quit"));
 
     let context = tauri::generate_context!();
     // let settings = StoreBuilder::new(".settings".parse().unwrap()).build();

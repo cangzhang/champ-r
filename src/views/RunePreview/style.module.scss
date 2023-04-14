@@ -3,6 +3,8 @@
   margin: 0 5vw;
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  max-height: 72vh;
+  overflow-y: clip;
 }
 
 //.list {
