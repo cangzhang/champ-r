@@ -1,7 +1,7 @@
-use std::{sync::mpsc, vec};
+use std::{sync::mpsc, vec, thread, time};
 
 use rand::Rng;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::{async_runtime, command, AppHandle, Manager, State, Window};
 
@@ -133,15 +133,6 @@ pub fn update_app_auto_start(state: State<'_, state::GlobalState>, auto_start: b
     s.on_auto_start(Some(auto_start));
 }
 
-// #[command]
-// pub fn init_state(state: State<'_, state::GlobalState>, handle: AppHandle) {
-//     let mut state = state.0.lock().unwrap();
-//     // let s = *state;
-//     thread::spawn(move || {
-//         state.init(&handle);
-//     });
-// }
-
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 struct ApplyFixResult {
     pub applied: bool,
@@ -156,24 +147,33 @@ pub async fn check_and_fix_tencent_server(app_handle: AppHandle) {
         if let Ok(ready) = cmd::check_if_server_ready().await {
             if !ready {
                 let r = cmd::fix_tencent_server().await;
-                
+
                 if let Ok(r) = r {
-                    let _ = &main_win.emit("main::applied_fix_to_tencent_server", ApplyFixResult {
-                        applied: true,
-                        ready: r,
-                    });
+                    let _ = &main_win.emit(
+                        "main::applied_fix_to_tencent_server",
+                        ApplyFixResult {
+                            applied: true,
+                            ready: r,
+                        },
+                    );
                 } else {
-                    let _ = &main_win.emit("main::applied_fix_to_tencent_server", ApplyFixResult {
-                        applied: false,
-                        ready,
-                    });
+                    let _ = &main_win.emit(
+                        "main::applied_fix_to_tencent_server",
+                        ApplyFixResult {
+                            applied: false,
+                            ready,
+                        },
+                    );
                     println!("[commands::applied_fix_to_tencent_server] failed");
                 }
             } else {
-                let _ = &main_win.emit("main::applied_fix_to_tencent_server", ApplyFixResult {
-                    applied: false,
-                    ready: true,
-                });
+                let _ = &main_win.emit(
+                    "main::applied_fix_to_tencent_server",
+                    ApplyFixResult {
+                        applied: false,
+                        ready: true,
+                    },
+                );
                 println!("[commands::applied_fix_to_tencent_server] already");
             }
         } else {
@@ -202,5 +202,47 @@ pub async fn check_if_lol_running(app_handle: AppHandle) {
     async_runtime::spawn(async move {
         let running = cmd::check_if_lol_running();
         let _ = &main_win.emit("webview::lol_running_status", (running, ()));
+    });
+}
+
+#[command]
+pub fn init_page_data(app_handle: AppHandle, state: State<'_, state::GlobalState>) {
+    let s = state.0.lock().unwrap();
+    let s1 = s.clone();
+    let mut s2 = s.clone();
+
+    let page_data = s1.page_data.lock().unwrap();
+    if (*page_data).ready {
+        return;
+    }
+
+    let main_win = app_handle.get_window("main").unwrap();
+    async_runtime::spawn(async move {
+        if let Ok((ready, source_list, rune_list, version, champion_map)) =
+            page_data::PageData::init().await
+        {
+            s2.init_page_data(ready, &source_list, &rune_list, &version, &champion_map);
+
+            let mut auth_token = String::new();
+            loop {
+                let cmd::CommandLineOutput { token, port, .. } = cmd::get_commandline();
+                let running = !token.is_empty() && !port.is_empty();
+                println!("webview::lol_running_status: {running}");
+                let _ = main_win.emit("webview::lol_running_status", vec![running]);
+                let _ = main_win.emit("webview::user_sources", &source_list);
+
+                if !auth_token.eq(token.as_str()) {
+                    auth_token = token.clone();
+                    if !auth_token.is_empty() && !port.is_empty() {
+                        let _ =
+                            cmd::spawn_league_client(&token, &port, &champion_map, Some(&main_win))
+                                .await;
+                    } else {
+                        println!("[spawn] auth: invalid token & port");
+                    }
+                }
+                thread::sleep(time::Duration::from_secs(4));
+            }
+        }
     });
 }

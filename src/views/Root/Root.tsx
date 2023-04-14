@@ -14,7 +14,7 @@ import { useAppStore } from 'src/store';
 import s from './style.module.scss';
 
 export function Root() {
-  const toggleLcuStatus = useAppStore((s) => s.toggleLcuStatus);
+  const { toggleLcuStatus } = useAppStore();
 
   useEffect(() => {
     blockKeyCombosInProd();
@@ -22,6 +22,7 @@ export function Root() {
 
   useEffect(() => {
     invoke('check_if_lol_running');
+    invoke('init_page_data');
   }, []);
 
   useEffect(() => {
