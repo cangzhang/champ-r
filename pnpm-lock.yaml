@@ -22,7 +22,8 @@ specifiers:
   eslint-plugin-prettier: ^4.2.1
   eslint-plugin-react: ^7.32.2
   eslint-plugin-react-hooks: ^4.6.0
-  husky: ^8.0.3
+  husky: ^8.0.0
+  immer: ^9.0.21
   postcss: ^8.4.16
   prettier: ^2.8.7
   react: ^18.2.0
@@ -40,12 +41,13 @@ dependencies:
   '@tabler/icons': 1.105.0_biqbaboplfbrettd7655fr4n2y
   '@tauri-apps/api': 1.2.0
   clsx: 1.2.1
+  immer: 9.0.21
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-hot-toast: 2.4.0_biqbaboplfbrettd7655fr4n2y
   react-router-dom: 6.4.2_biqbaboplfbrettd7655fr4n2y
   tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/f0da2d1ac8370bd4cc7c1c0617175f0d5b5833a0
-  zustand: 4.1.4_react@18.2.0
+  zustand: 4.1.4_immer@9.0.21+react@18.2.0
 
 devDependencies:
   '@tauri-apps/cli': 1.2.3
@@ -2764,6 +2766,10 @@ packages:
     engines: {node: '>= 4'}
     dev: true
 
+  /immer/9.0.21:
+    resolution: {integrity: sha512-bc4NBHqOqSfRW7POMkHd51LvClaeMXpm8dx0e8oE2GORbq5aRK7Bxl4FyzVLdGtLmvLKL7BTDBG5ACQm4HWjTA==}
+    dev: false
+
   /immutable/4.1.0:
     resolution: {integrity: sha512-oNkuqVTA8jqG1Q6c+UglTOD1xhC1BtjKI7XkCXRkZHrN5m18/XsnUp8Q89GkQO/z+0WjonSvl0FLhDYftp46nQ==}
     dev: true
@@ -3803,7 +3809,7 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /zustand/4.1.4_react@18.2.0:
+  /zustand/4.1.4_immer@9.0.21+react@18.2.0:
     resolution: {integrity: sha512-k2jVOlWo8p4R83mQ+/uyB8ILPO2PCJOf+QVjcL+1PbMCk1w5OoPYpAIxy9zd93FSfmJqoH6lGdwzzjwqJIRU5A==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
@@ -3815,6 +3821,7 @@ packages:
       react:
         optional: true
     dependencies:
+      immer: 9.0.21
       react: 18.2.0
       use-sync-external-store: 1.2.0_react@18.2.0
     dev: false

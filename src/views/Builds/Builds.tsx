@@ -3,7 +3,6 @@ import { Modal } from '@nextui-org/react';
 import { IconRotateClockwise2 } from '@tabler/icons';
 import { invoke } from '@tauri-apps/api';
 import { Event, UnlistenFn, listen } from '@tauri-apps/api/event';
-import { set } from 'husky';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,12 +15,11 @@ import s from './style.module.scss';
 
 export function Builds() {
   const navigate = useNavigate();
-  const { lcuRunning } = useAppStore();
+  const { lcuRunning, sources, setSources } = useAppStore();
 
-  const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
-  const [ready, setReady] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const ready = sources.length > 0;
 
   const onToggleWindow = () => {
     invoke(`random_runes`);
@@ -50,14 +48,12 @@ export function Builds() {
 
     invoke(`get_user_sources`).then((l) => {
       setSources(l as Source[]);
-      setReady(true);
     });
   }, [lcuRunning]);
 
   useEffect(() => {
     listen('webview::user_sources', (ev) => {
       setSources(ev.payload as Source[]);
-      setReady(true);
     });
   }, []);
 
