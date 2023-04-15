@@ -1,17 +1,20 @@
 import { Button, Container } from '@nextui-org/react';
 import { IconArrowLeft } from '@tabler/icons';
 import { invoke } from '@tauri-apps/api';
-import { listen } from '@tauri-apps/api/event';
+import { UnlistenFn, listen } from '@tauri-apps/api/event';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NavLink, useSearchParams } from 'react-router-dom';
+
+import { appConf } from 'src/config';
 
 export function ImportResult() {
   const [result, setResult] = useState<any[]>([]);
   const ids = useRef(new Set()).current;
   const [searchParams] = useSearchParams();
 
-  const applyBuilds = useCallback((sources: string[]) => {
-    invoke(`apply_builds`, { sources });
+  const applyBuilds = useCallback(async (sources: string[]) => {
+    const keepOld = await appConf.get('keepOldBuilds');
+    await invoke(`apply_builds`, { sources, keepOld });
   }, []);
 
   const updateResult = useCallback((payload: any) => {
@@ -29,16 +32,16 @@ export function ImportResult() {
   }, []);
 
   useEffect(() => {
-    let unlisten = () => {};
+    let unregister: UnlistenFn;
     listen('main_window::apply_builds_result', (h) => {
       console.log(h.payload);
       updateResult(h.payload as Array<any>);
     }).then((h) => {
-      unlisten = h;
+      unregister = h;
     });
 
     return () => {
-      unlisten();
+      unregister();
     };
   }, [updateResult]);
 

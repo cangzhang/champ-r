@@ -142,7 +142,7 @@ pub async fn apply_builds(
     window: Option<&tauri::Window>,
 ) -> anyhow::Result<Vec<(bool, String, String)>> {
     let dir_path = std::path::Path::new(&dir);
-    println!("dir: {:?}", dir_path);
+    println!("dir: {:?}, keepOldBuilds: {keep_old}", dir_path);
     let path_exists = dir_path.exists();
     if path_exists && !keep_old {
         tokio::fs::remove_dir_all(dir.clone()).await?;

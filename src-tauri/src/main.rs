@@ -9,7 +9,6 @@ use serde_json::Value;
 use tauri::{
     CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
-use tauri_plugin_store::PluginBuilder;
 
 pub mod builds;
 pub mod cmd;
@@ -38,7 +37,7 @@ fn main() {
     // let settings = StoreBuilder::new(".settings".parse().unwrap()).build();
 
     tauri::Builder::default()
-        .plugin(PluginBuilder::default().build())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_single_instance::init(|_app, _argv, _cwd| {}))
         .setup(move |app| {
             let mut inner_state = state::InnerState::new();

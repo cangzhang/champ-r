@@ -30,10 +30,10 @@ export function Builds() {
     navigate(`/import?sources=${selected}`);
   };
 
-  const onSelectChange = useCallback((next: string[]) => {
+  const onSelectChange = useCallback(async (next: string[]) => {
     setSelectedSources(next);
-    appConf.set('selectedSources', next);
-    appConf.save();
+    await appConf.set('selectedSources', next);
+    await appConf.save();
   }, []);
 
   const onCheckLcuReady = useCallback(() => {

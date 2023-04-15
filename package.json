@@ -20,7 +20,7 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.0",
     "react-router-dom": "^6.4.2",
-    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#dev",
+    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store",
     "zustand": "^4.1.4"
   },
   "devDependencies": {

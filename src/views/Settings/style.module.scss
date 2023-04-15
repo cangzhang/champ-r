@@ -2,6 +2,10 @@
   display: flex;
   align-items: center;
   gap: 1ex;
+
+  &:not(:first-child) {
+    margin-top: 1rem;
+  }
 }
 
 .container {

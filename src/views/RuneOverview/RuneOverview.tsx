@@ -1,6 +1,6 @@
 import { Avatar, Badge, Dropdown, Tooltip } from '@nextui-org/react';
 import { invoke } from '@tauri-apps/api';
-import { listen } from '@tauri-apps/api/event';
+import { UnlistenFn, listen } from '@tauri-apps/api/event';
 import { appWindow } from '@tauri-apps/api/window';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
@@ -65,8 +65,9 @@ export function RuneOverview() {
   useEffect(() => {
     const sourceTab: string = [...curSource][0];
     if (sourceTab) {
-      appConf.set('runeSource', sourceTab);
-      appConf.save();
+      appConf.set('runeSource', sourceTab).then(() => {
+        appConf.save();
+      });
     }
   }, [curSource]);
 
@@ -75,7 +76,7 @@ export function RuneOverview() {
   }, []);
 
   useEffect(() => {
-    let unlisten: () => any = () => null;
+    let unregister: UnlistenFn;
     listen(
       'popup_window::selected_champion',
       ({ payload }: { payload: any }) => {
@@ -84,11 +85,11 @@ export function RuneOverview() {
         setChampionAlias(payload.champion_alias);
       }
     ).then((un) => {
-      unlisten = un;
+      unregister = un;
     });
 
     return () => {
-      unlisten();
+      unregister();
     };
   }, []);
 
