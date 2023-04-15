@@ -53,14 +53,12 @@ export function RuneOverview() {
     setSources(availableSources);
     setVersion(ddragon.official_version);
 
-    const sourceList = ddragon.source_list;
-
     let runeSource: string = await appConf.get('runeSource');
     if (!runeSource || !selectedSources.includes(runeSource)) {
-      runeSource = sourceList[0].source.value;
+      runeSource = selectedSources[0];
     }
     setCurSource(new Set([runeSource]));
-  }, []);
+  }, [championId]);
 
   useEffect(() => {
     const sourceTab: string = [...curSource][0];
@@ -129,15 +127,14 @@ export function RuneOverview() {
 
           <Dropdown>
             <Dropdown.Button flat color={'secondary'}>
-              <div className={s.curSource}>{selectedSource}</div>
+              <div className={s.curSource}>{source.source.label}</div>
             </Dropdown.Button>
             <Dropdown.Menu
               color="secondary"
               disallowEmptySelection
               selectionMode="single"
               selectedKeys={curSource}
-              // @ts-ignore
-              onSelectionChange={setCurSource}
+              onSelectionChange={(arr) => setCurSource(new Set(arr))}
             >
               {sources.map((i: any) => (
                 <Dropdown.Item key={i.source.value} className={s.menuItem}>

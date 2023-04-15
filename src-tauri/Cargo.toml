@@ -7,7 +7,7 @@ license = "LGPL-2.1 license"
 repository = "https://github.com/cangzhang/champr-rs.git"
 default-run = "champr"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.60"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
