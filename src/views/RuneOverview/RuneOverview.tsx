@@ -127,7 +127,7 @@ export function RuneOverview() {
 
           <Dropdown>
             <Dropdown.Button flat color={'secondary'}>
-              <div className={s.curSource}>{source.source.label}</div>
+              <div className={s.curSource}>{source?.source.label}</div>
             </Dropdown.Button>
             <Dropdown.Menu
               color="secondary"
