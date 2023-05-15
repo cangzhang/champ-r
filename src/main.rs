@@ -56,10 +56,11 @@ impl Application for ChampRUi {
             }
             Message::UpdateSelected(s) => {
                 let mut selected = self.selected_sources.lock().unwrap();
-                println!("{:?}, item: {s}", selected);
-
                 if !selected.contains(&s) {
                     selected.push(s);
+                } else {
+                    let index = selected.iter().position(|x| *x == s).unwrap();
+                    selected.remove(index);
                 }
             }
         }
