@@ -1,172 +1,99 @@
-use iced::alignment::{self, Alignment};
-use iced::widget::canvas::{Cursor, Frame, Text};
-use iced::widget::{
-    canvas, checkbox, column, horizontal_space, row, slider, text,
-};
-use iced::{
-    Color, Element, Font, Length, Point, Rectangle, Sandbox, Settings, Theme,
-    Vector,
+use std::sync::{Arc, Mutex};
+
+use iced::executor;
+use iced::widget::{checkbox, Column, Container, Scrollable};
+use iced::{Application, Command, Element, Font, Length, Settings, Theme};
+use sources::SourceItem;
+
+pub mod sources;
+
+const ICON_FONT: Font = Font::External {
+    name: "Icons",
+    bytes: include_bytes!("./icons.ttf"),
 };
 
 pub fn main() -> iced::Result {
-    VectorialText::run(Settings {
-        antialiasing: true,
-        ..Settings::default()
-    })
+    ChampRUi::run(Settings::default())
 }
 
-struct VectorialText {
-    state: State,
+#[derive(Default)]
+pub struct ChampRUi {
+    pub default_checkbox: bool,
+    pub custom_checkbox: bool,
+    pub source_list: Arc<Mutex<Vec<SourceItem>>>,
+    pub selected_sources: Arc<Mutex<Vec<String>>>,
 }
 
-#[derive(Debug, Clone, Copy)]
-enum Message {
-    SizeChanged(f32),
-    AngleChanged(f32),
-    ScaleChanged(f32),
-    ToggleJapanese(bool),
+#[derive(Debug)]
+pub enum Message {
+    FetchedSourceList(anyhow::Result<Vec<SourceItem>>),
+    UpdateSelected(String),
 }
 
-impl Sandbox for VectorialText {
+impl Application for ChampRUi {
+    type Executor = executor::Default;
     type Message = Message;
+    type Theme = Theme;
+    type Flags = ();
 
-    fn new() -> Self {
-        Self {
-            state: State::new(),
-        }
+    fn new(_flags: ()) -> (Self, Command<Message>) {
+        (
+            Default::default(),
+            Command::perform(sources::get_sources(), Message::FetchedSourceList),
+        )
     }
 
     fn title(&self) -> String {
-        String::from("Vectorial Text - Iced")
+        String::from("Checkbox - Iced")
     }
 
-    fn update(&mut self, message: Message) {
+    fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::SizeChanged(size) => {
-                self.state.size = size;
+            Message::FetchedSourceList(resp) => {
+                if let Ok(sources) = resp {
+                    *self.source_list.lock().unwrap() = sources;
+                }
             }
-            Message::AngleChanged(angle) => {
-                self.state.angle = angle;
-            }
-            Message::ScaleChanged(scale) => {
-                self.state.scale = scale;
-            }
-            Message::ToggleJapanese(use_japanese) => {
-                self.state.use_japanese = use_japanese;
+            Message::UpdateSelected(s) => {
+                let mut selected = self.selected_sources.lock().unwrap();
+                println!("{:?}, item: {s}", selected);
+
+                if !selected.contains(&s) {
+                    selected.push(s);
+                }
             }
         }
+        Command::none()
     }
 
     fn view(&self) -> Element<Message> {
-        let slider_with_label = |label, range, value, message: fn(f32) -> _| {
-            column![
-                row![
-                    text(label),
-                    horizontal_space(Length::Fill),
-                    text(format!("{:.2}", value))
-                ],
-                slider(range, value, message).step(0.01)
-            ]
-            .width(Length::Fill)
-            .spacing(2)
-        };
+        let sources = self.source_list.lock().unwrap();
+        let selected = self.selected_sources.lock().unwrap();
 
-        column![
-            canvas(&self.state).width(Length::Fill).height(Length::Fill),
-            column![
-                checkbox(
-                    "Use Japanese 日文",
-                    self.state.use_japanese,
-                    Message::ToggleJapanese
-                ),
-                row![
-                    slider_with_label(
-                        "Size",
-                        2.0..=80.0,
-                        self.state.size,
-                        Message::SizeChanged,
-                    ),
-                    slider_with_label(
-                        "Angle",
-                        0.0..=360.0,
-                        self.state.angle,
-                        Message::AngleChanged,
-                    ),
-                    slider_with_label(
-                        "Scale",
-                        1.0..=20.0,
-                        self.state.scale,
-                        Message::ScaleChanged,
-                    ),
-                ]
-                .spacing(20),
-            ]
-            .align_items(Alignment::Center)
-            .spacing(10)
-        ]
-        .spacing(10)
-        .padding(20)
-        .into()
-    }
+        let mut col = Column::new().width(Length::Fill);
+        for item in sources.clone() {
+            let label = item.label.clone();
+            let value = item.value.clone();
+            let checked = selected.contains(&value);
 
-    fn theme(&self) -> Theme {
-        Theme::Dark
-    }
-}
-
-struct State {
-    size: f32,
-    angle: f32,
-    scale: f32,
-    use_japanese: bool,
-}
-
-impl State {
-    pub fn new() -> Self {
-        Self {
-            size: 40.0,
-            angle: 0.0,
-            scale: 1.0,
-            use_japanese: false,
+            let custom_checkbox = checkbox(label, checked, move |_checked| {
+                Message::UpdateSelected(value.clone())
+            })
+            .icon(checkbox::Icon {
+                font: ICON_FONT,
+                code_point: '\u{e901}',
+                size: None,
+            });
+            col = col.push(custom_checkbox);
         }
-    }
-}
+        let scroll_list = Scrollable::new(col)
+            .width(Length::Fill)
+            .height(Length::Fill);
+        let content = Column::new().push(scroll_list);
 
-impl<Message> canvas::Program<Message> for State {
-    type State = ();
-
-    fn draw(
-        &self,
-        _state: &Self::State,
-        _theme: &Theme,
-        text_cache: &canvas::text::Cache,
-        bounds: Rectangle,
-        _cursor: Cursor,
-    ) -> Vec<canvas::Geometry> {
-        let mut frame = Frame::new(bounds.size());
-        let center = bounds.center();
-
-        frame.translate(Vector::new(center.x, center.y));
-        frame.scale(self.scale);
-        frame.rotate(self.angle * std::f32::consts::PI / 180.0);
-
-        frame.fill_text(
-            text_cache,
-            Text {
-                position: Point::ORIGIN,
-                color: Color::WHITE,
-                font: Font::Default,
-                size: self.size,
-                content: String::from(if self.use_japanese {
-                    "日文版本：ベクトルテキスト🎉"
-                } else {
-                    "Vectorial Text! 🎉"
-                }),
-                horizontal_alignment: alignment::Horizontal::Center,
-                vertical_alignment: alignment::Vertical::Center,
-            },
-        );
-
-        vec![frame.into_geometry()]
+        Container::new(content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into()
     }
 }

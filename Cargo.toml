@@ -6,4 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { git = "https://github.com/iced-rs/iced.git", branch = "vectorial-text", features = ["canvas", "debug"] }
+anyhow = "1.0.71"
+iced = { version = "0.9.0", features = ["tokio", "image"] }
+reqwest = { version = "0.11", features = ["json", "stream"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_with = { version = "3.0", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
