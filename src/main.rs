@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
-use iced::window::{Position, PlatformSpecific};
-use iced::{executor, window};
 use iced::widget::{checkbox, Column, Container, Scrollable};
+use iced::window::{PlatformSpecific, Position};
+use iced::{executor, window};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 use sources::SourceItem;
 
@@ -25,9 +25,7 @@ pub fn main() -> iced::Result {
             platform_specific: PlatformSpecific::default(),
         },
         flags: (),
-        default_font: Some(include_bytes!(
-            "./subset/sarasa-mono-sc-regular.subset.ttf"
-        )),
+        default_font: Some(include_bytes!("./subset/sarasa-mono-sc-regular.subset.ttf")),
         default_text_size: 16.,
         text_multithreading: true,
         antialiasing: false,
@@ -91,15 +89,17 @@ impl Application for ChampRUi {
         let sources = self.source_list.lock().unwrap();
         let selected = self.selected_sources.lock().unwrap();
 
-        let mut col = Column::new().width(Length::Fill);
+        let mut col = Column::new().width(Length::Fill).spacing(8.).padding(16.);
         for item in sources.clone() {
-            let label = format!("数据 {:?}", item.label);
+            let label = item.label.clone();
             let value = item.value.clone();
             let checked = selected.contains(&value);
 
             let cbox = checkbox(label, checked, move |_checked| {
                 Message::UpdateSelected(value.clone())
-            });
+            })
+            .text_size(20.)
+            .spacing(6.);
             col = col.push(cbox);
         }
         let scroll_list = Scrollable::new(col)
