@@ -1,19 +1,39 @@
 use std::sync::{Arc, Mutex};
 
-use iced::executor;
+use iced::window::{Position, PlatformSpecific};
+use iced::{executor, window};
 use iced::widget::{checkbox, Column, Container, Scrollable};
-use iced::{Application, Command, Element, Font, Length, Settings, Theme};
+use iced::{Application, Command, Element, Length, Settings, Theme};
 use sources::SourceItem;
 
 pub mod sources;
 
-const ICON_FONT: Font = Font::External {
-    name: "Icons",
-    bytes: include_bytes!("./icons.ttf"),
-};
-
 pub fn main() -> iced::Result {
-    ChampRUi::run(Settings::default())
+    ChampRUi::run(Settings {
+        id: None,
+        window: window::Settings {
+            size: (600, 500),
+            min_size: Some((600, 500)),
+            position: Position::Centered,
+            max_size: None,
+            visible: true,
+            resizable: true,
+            decorations: true,
+            transparent: false,
+            always_on_top: false,
+            icon: None,
+            platform_specific: PlatformSpecific::default(),
+        },
+        flags: (),
+        default_font: Some(include_bytes!(
+            "./subset/sarasa-mono-sc-regular.subset.ttf"
+        )),
+        default_text_size: 16.,
+        text_multithreading: true,
+        antialiasing: false,
+        exit_on_close_request: true,
+        try_opengles_first: false,
+    })
 }
 
 #[derive(Default)]
@@ -73,19 +93,14 @@ impl Application for ChampRUi {
 
         let mut col = Column::new().width(Length::Fill);
         for item in sources.clone() {
-            let label = item.label.clone();
+            let label = format!("数据 {:?}", item.label);
             let value = item.value.clone();
             let checked = selected.contains(&value);
 
-            let custom_checkbox = checkbox(label, checked, move |_checked| {
+            let cbox = checkbox(label, checked, move |_checked| {
                 Message::UpdateSelected(value.clone())
-            })
-            .icon(checkbox::Icon {
-                font: ICON_FONT,
-                code_point: '\u{e901}',
-                size: None,
             });
-            col = col.push(custom_checkbox);
+            col = col.push(cbox);
         }
         let scroll_list = Scrollable::new(col)
             .width(Length::Fill)
