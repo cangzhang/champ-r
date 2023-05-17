@@ -1,15 +1,16 @@
-use std::sync::{Arc, Mutex};
+pub mod ui;
+pub mod web_service;
 
 use iced::widget::{checkbox, Column, Container, Scrollable};
 use iced::window::{PlatformSpecific, Position};
 use iced::{executor, window};
 use iced::{Application, Command, Element, Length, Settings, Theme};
-use sources::SourceItem;
 
-pub mod sources;
+use ui::ChampR;
+use web_service::{ChampionsMap, SourceItem};
 
 pub fn main() -> iced::Result {
-    ChampRUi::run(Settings {
+    ChampR::run(Settings {
         id: None,
         window: window::Settings {
             size: (600, 500),
@@ -34,21 +35,14 @@ pub fn main() -> iced::Result {
     })
 }
 
-#[derive(Default)]
-pub struct ChampRUi {
-    pub default_checkbox: bool,
-    pub custom_checkbox: bool,
-    pub source_list: Arc<Mutex<Vec<SourceItem>>>,
-    pub selected_sources: Arc<Mutex<Vec<String>>>,
-}
-
 #[derive(Debug)]
 pub enum Message {
     FetchedSourceList(anyhow::Result<Vec<SourceItem>>),
     UpdateSelected(String),
+    FetchChampionMap(anyhow::Result<ChampionsMap>),
 }
 
-impl Application for ChampRUi {
+impl Application for ChampR {
     type Executor = executor::Default;
     type Message = Message;
     type Theme = Theme;
@@ -57,12 +51,12 @@ impl Application for ChampRUi {
     fn new(_flags: ()) -> (Self, Command<Message>) {
         (
             Default::default(),
-            Command::perform(sources::get_sources(), Message::FetchedSourceList),
+            Command::perform(web_service::get_sources(), Message::FetchedSourceList),
         )
     }
 
     fn title(&self) -> String {
-        String::from("Checkbox - Iced")
+        String::from("ChampR")
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
@@ -71,6 +65,11 @@ impl Application for ChampRUi {
                 if let Ok(sources) = resp {
                     *self.source_list.lock().unwrap() = sources;
                 }
+
+                return Command::perform(
+                    web_service::fetch_champion_list(),
+                    Message::FetchChampionMap,
+                );
             }
             Message::UpdateSelected(s) => {
                 let mut selected = self.selected_sources.lock().unwrap();
@@ -79,6 +78,14 @@ impl Application for ChampRUi {
                 } else {
                     let index = selected.iter().position(|x| *x == s).unwrap();
                     selected.remove(index);
+                }
+            }
+            Message::FetchChampionMap(resp) => {
+                println!("fetching champion list");
+
+                if let Ok(c) = resp {
+                    println!("champion list, {:?}", &c.len());
+                    *self.champions_map.lock().unwrap() = c;
                 }
             }
         }
