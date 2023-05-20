@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use crate::web_service::{ChampionsMap, SourceItem};
+use crate::{source_item::SourceItem, web_service::ChampionsMap};
 
 #[derive(Default)]
 pub struct ChampR {

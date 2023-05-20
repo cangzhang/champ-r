@@ -1,14 +1,16 @@
+pub mod source_item;
 pub mod ui;
 pub mod web_service;
 
-use iced::alignment::Horizontal;
-use iced::widget::{button, checkbox, column, text, Column, Container, Row, Scrollable};
+use iced::alignment::{Horizontal, Vertical};
+use iced::widget::{button, checkbox, column, row, text, Column, Container, Row, Scrollable};
 use iced::window::{PlatformSpecific, Position};
-use iced::{executor, window, Alignment};
+use iced::{executor, window, Alignment, Padding};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 
+use source_item::SourceItem;
 use ui::ChampR;
-use web_service::{ChampionsMap, FetchError, SourceItem};
+use web_service::{ChampionsMap, FetchError};
 
 pub fn main() -> iced::Result {
     ChampR::run(Settings {
@@ -90,8 +92,8 @@ impl Application for ChampR {
         let selected = self.selected_sources.lock().unwrap();
         let champions_map = self.champions_map.lock().unwrap();
 
-        let title = text("ChampR")
-            .size(40.)
+        let title = text("ChampR - Builds, Runes AIO")
+            .size(26.)
             .width(Length::Fill)
             .horizontal_alignment(Horizontal::Center);
         let title = Row::new().push(title).padding(6).width(Length::Fill);
@@ -107,24 +109,51 @@ impl Application for ChampR {
             })
             .text_size(20.)
             .spacing(6.);
-            col = col.push(cbox);
+            let mode_text = SourceItem::get_mode_text(&item);
+            col = col.push(
+                row![
+                    cbox,
+                    row![text(mode_text)
+                        .size(16.)
+                        .vertical_alignment(Vertical::Center)]
+                ]
+                .spacing(8.),
+            );
         }
-        let scroll_list = Scrollable::new(col)
-            .width(Length::Fill)
-            .height(Length::FillPortion(3));
+        let main_row = row![
+            column![
+                row![text("Source List").size(22.)].padding(Padding::from([0, 0, 0, 16])),
+                Scrollable::new(col)
+                    .height(Length::Fill)
+                    .width(Length::Fill)
+            ]
+            .height(Length::Fill)
+            .width(Length::FillPortion(2)),
+            column![text("rune content here")]
+                .padding(8.)
+                .width(Length::FillPortion(2))
+        ]
+        .spacing(8)
+        .width(Length::Fill)
+        .height(Length::FillPortion(2));
 
         let text_info = if self.fetched_remote_data {
-            text(format!("Fetched champions map: {:?}", champions_map.len()))
+            text(format!(
+                "Fetched avaliable sources: {:?}, champions: {:?}",
+                sources.len(),
+                champions_map.len()
+            ))
         } else {
             text("Loading...")
         };
         let apply_btn = button("Apply").on_press(Message::ApplyBuilds).padding(8.);
-        let col = column![text_info, apply_btn]
+        let bot_col = column![text_info, apply_btn]
+            .spacing(8)
+            .padding(8.)
             .width(Length::Fill)
             .height(Length::FillPortion(1))
             .align_items(Alignment::Center);
-
-        let content = Column::new().push(title).push(scroll_list).push(col);
+        let content = Column::new().push(title).push(main_row).push(bot_col);
 
         Container::new(content)
             .width(Length::Fill)
