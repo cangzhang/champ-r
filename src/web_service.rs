@@ -1,10 +1,16 @@
 use std::collections::HashMap;
 
+use futures::try_join;
 use serde::{Deserialize, Serialize};
 // use serde_json::Value;
 // use serde_with::serde_as;
 
 pub const SERVICE_URL: &str = "https://ql.lbj.moe";
+
+#[derive(Debug, Clone)]
+pub enum FetchError {
+    Failed,
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -16,11 +22,15 @@ pub struct SourceItem {
     pub is_urf: Option<bool>,
 }
 
-pub async fn get_sources() -> anyhow::Result<Vec<SourceItem>> {
+pub async fn fetch_sources() -> Result<Vec<SourceItem>, FetchError> {
     let url = format!("{SERVICE_URL}/api/sources");
-    let resp = reqwest::get(url).await?;
-    let list = resp.json::<Vec<SourceItem>>().await?;
-    Ok(list)
+    if let Ok(resp) = reqwest::get(url).await {
+        if let Ok(list) = resp.json::<Vec<SourceItem>>().await {
+            return Ok(list);
+        }
+    }
+
+    Err(FetchError::Failed)
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -53,11 +63,17 @@ pub struct Image {
 
 pub type ChampionsMap = HashMap<String, ChampInfo>;
 
-pub async fn fetch_champion_list() -> anyhow::Result<ChampionsMap> {
-    let url = format!(
-        "{SERVICE_URL}/api/data-dragon/versions/champions",
-    );
-    let resp = reqwest::get(url).await?;
-    let data = resp.json::<ChampionsMap>().await?;
-    Ok(data)
+pub async fn fetch_champion_list() -> Result<ChampionsMap, FetchError> {
+    let url = format!("{SERVICE_URL}/api/data-dragon/versions/champions",);
+    if let Ok(resp) = reqwest::get(url).await {
+        if let Ok(data) = resp.json::<ChampionsMap>().await {
+            return Ok(data);
+        }
+    }
+
+    Err(FetchError::Failed)
+}
+
+pub async fn init_for_ui() -> Result<(Vec<SourceItem>, ChampionsMap), FetchError> {
+    try_join!(fetch_sources(), fetch_champion_list())
 }
