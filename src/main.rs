@@ -1,7 +1,14 @@
 pub mod source_item;
 pub mod ui;
 pub mod web_service;
+pub mod lcu;
+pub mod cmd;
 
+use core::time;
+use std::sync::{Arc, Mutex};
+use std::thread;
+
+use cmd::CommandLineOutput;
 use iced::alignment::{Horizontal, Vertical};
 use iced::widget::{button, checkbox, column, row, text, Column, Container, Row, Scrollable};
 use iced::window::{PlatformSpecific, Position};
@@ -13,6 +20,21 @@ use ui::ChampR;
 use web_service::{ChampionsMap, FetchError};
 
 pub fn main() -> iced::Result {
+    let auth_url1 = Arc::new(Mutex::new(String::new()));
+    let auth_url2 = auth_url1.clone();
+    
+    let is_tencent1 = Arc::new(Mutex::new(false));
+    let is_tencent2 = is_tencent1.clone();
+
+    thread::Builder::new().name("check_auth_task".to_string()).spawn(move || {
+        thread::sleep(time::Duration::from_secs(2));
+        let CommandLineOutput { auth_url, is_tencent, .. } = cmd::get_commandline();
+        *auth_url2.lock().unwrap() = auth_url.clone();
+        *is_tencent2.lock().unwrap() = is_tencent;
+
+        dbg!(auth_url, is_tencent);
+    }).unwrap();
+
     ChampR::run(Settings {
         id: None,
         window: window::Settings {
@@ -28,7 +50,7 @@ pub fn main() -> iced::Result {
             icon: None,
             platform_specific: PlatformSpecific::default(),
         },
-        flags: (),
+        flags: ChampR::new(auth_url1, is_tencent1),
         default_font: Some(include_bytes!("./fonts/LXGWNeoXiHei.ttf")),
         default_text_size: 14.,
         text_multithreading: true,
@@ -49,11 +71,11 @@ impl Application for ChampR {
     type Executor = executor::Default;
     type Message = Message;
     type Theme = Theme;
-    type Flags = ();
+    type Flags = ChampR;
 
-    fn new(_flags: ()) -> (Self, Command<Message>) {
+    fn new(flags: ChampR) -> (Self, Command<Message>) {
         (
-            Default::default(),
+            flags,
             Command::perform(web_service::init_for_ui(), Message::InitRemoteData),
         )
     }

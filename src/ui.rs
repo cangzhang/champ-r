@@ -8,6 +8,17 @@ pub struct ChampR {
     pub selected_sources: Arc<Mutex<Vec<String>>>,
     pub champions_map: Arc<Mutex<ChampionsMap>>,
     pub fetched_remote_data: bool,
+    pub lol_running: Arc<Mutex<bool>>,
+    pub is_tencent: Arc<Mutex<bool>>,
+    pub auth_url: Arc<Mutex<String>>,
 }
 
-impl ChampR {}
+impl ChampR {
+    pub fn new(auth_url: Arc<Mutex<String>>, is_tencent: Arc<Mutex<bool>>) -> Self {
+        Self {
+            auth_url,
+            is_tencent,
+            ..Default::default()
+        }
+    }
+}

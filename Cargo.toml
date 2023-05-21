@@ -12,10 +12,17 @@ strip = true        # Automatically strip symbols from the binary.
 
 [dependencies]
 anyhow = "1.0.71"
+base64 = "0.21.0"
 futures = "0.3.28"
 iced = { version = "0.9.0", features = ["tokio", "image"] }
+lazy_static = "1.4.0"
+powershell_script = "1.1.0"
+regex = "1.8.1"
 reqwest = { version = "0.11", features = ["json", "stream"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_with = { version = "3.0", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
+
+[build-dependencies]
+embed-resource = "2.1"
