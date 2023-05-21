@@ -1,6 +1,7 @@
 use base64::{engine::general_purpose, Engine as _};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
 
 use crate::web_service::ChampionsMap;
 
@@ -314,17 +315,6 @@ pub fn check_if_lol_running() -> bool {
     !token.is_empty() && !port.is_empty()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn run_cmd() {
-        let ret = get_commandline();
-        println!("{:?}", ret);
-    }
-}
-
 pub fn get_alias_from_champion_map(champion_map: &ChampionsMap, champion_id: i64) -> String {
     let mut ret = String::new();
     for (alias, c) in champion_map.iter() {
@@ -335,4 +325,25 @@ pub fn get_alias_from_champion_map(champion_map: &ChampionsMap, champion_id: i64
     }
 
     ret
+}
+
+pub fn start_check_cmd_task() {
+    
+}
+
+pub fn update_cmd_output_task(output: &Arc<Mutex<CommandLineOutput>>) {
+    let result = get_commandline();
+    *output.lock().unwrap() = result;
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn run_cmd() {
+        let ret = get_commandline();
+        println!("{:?}", ret);
+    }
 }

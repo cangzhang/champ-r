@@ -7,12 +7,13 @@ pub mod cmd;
 use core::time;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 
 use cmd::CommandLineOutput;
 use iced::alignment::{Horizontal, Vertical};
 use iced::widget::{button, checkbox, column, row, text, Column, Container, Row, Scrollable};
 use iced::window::{PlatformSpecific, Position};
-use iced::{executor, window, Alignment, Padding};
+use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 
 use source_item::SourceItem;
@@ -27,12 +28,15 @@ pub fn main() -> iced::Result {
     let is_tencent2 = is_tencent1.clone();
 
     thread::Builder::new().name("check_auth_task".to_string()).spawn(move || {
-        thread::sleep(time::Duration::from_secs(2));
-        let CommandLineOutput { auth_url, is_tencent, .. } = cmd::get_commandline();
-        *auth_url2.lock().unwrap() = auth_url.clone();
-        *is_tencent2.lock().unwrap() = is_tencent;
-
-        dbg!(auth_url, is_tencent);
+        let mut count = 0;
+        loop {
+            let CommandLineOutput { auth_url, is_tencent, .. } = cmd::get_commandline();
+            count += 1;
+            *auth_url2.lock().unwrap() = format!("{auth_url}, No.{count}");
+            *is_tencent2.lock().unwrap() = is_tencent;
+            dbg!(auth_url, is_tencent, count);
+            thread::sleep(time::Duration::from_secs(2));
+        }
     }).unwrap();
 
     ChampR::run(Settings {
@@ -65,6 +69,7 @@ pub enum Message {
     InitRemoteData(Result<(Vec<SourceItem>, ChampionsMap), FetchError>),
     UpdateSelected(String),
     ApplyBuilds,
+    TickRun,
 }
 
 impl Application for ChampR {
@@ -105,6 +110,7 @@ impl Application for ChampR {
             Message::ApplyBuilds => {
                 println!("apply builds");
             }
+            Message::TickRun => {}
         }
         Command::none()
     }
@@ -113,6 +119,9 @@ impl Application for ChampR {
         let sources = self.source_list.lock().unwrap();
         let selected = self.selected_sources.lock().unwrap();
         let champions_map = self.champions_map.lock().unwrap();
+        
+        let auth_url = self.auth_url.lock().unwrap();
+        let is_tencent = self.is_tencent.lock().unwrap();
 
         let title = text("ChampR - Builds, Runes AIO")
             .size(26.)
@@ -159,7 +168,7 @@ impl Application for ChampR {
         .width(Length::Fill)
         .height(Length::FillPortion(2));
 
-        let text_info = if self.fetched_remote_data {
+        let remote_data_info = if self.fetched_remote_data {
             text(format!(
                 "Fetched avaliable sources: {:?}, champions: {:?}",
                 sources.len(),
@@ -168,8 +177,9 @@ impl Application for ChampR {
         } else {
             text("Loading...")
         };
+        let lcu_info = text(format!("auth url: {auth_url}, tencent: {is_tencent}"));
         let apply_btn = button("Apply").on_press(Message::ApplyBuilds).padding(8.);
-        let bot_col = column![text_info, apply_btn]
+        let bot_col = column![remote_data_info, lcu_info, apply_btn]
             .spacing(8)
             .padding(8.)
             .width(Length::Fill)
@@ -181,5 +191,11 @@ impl Application for ChampR {
             .width(Length::Fill)
             .height(Length::Fill)
             .into()
+    }
+
+    fn subscription(&self) -> Subscription<Message> {
+        let time_subscription = iced::time::every(Duration::from_millis(1000)).map(|_| Message::TickRun);
+
+        Subscription::batch([time_subscription])
     }
 }
