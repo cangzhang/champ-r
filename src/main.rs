@@ -3,6 +3,7 @@ pub mod ui;
 pub mod web_service;
 pub mod lcu;
 pub mod cmd;
+pub mod builds;
 
 use core::time;
 use std::sync::{Arc, Mutex};
@@ -27,14 +28,20 @@ pub fn main() -> iced::Result {
     let is_tencent1 = Arc::new(Mutex::new(false));
     let is_tencent2 = is_tencent1.clone();
 
+    let lcu_dir1 = Arc::new(Mutex::new(String::new()));
+    let lcu_dir2 = lcu_dir1.clone();
+
     thread::Builder::new().name("check_auth_task".to_string()).spawn(move || {
         let mut count = 0;
         loop {
-            let CommandLineOutput { auth_url, is_tencent, .. } = cmd::get_commandline();
+            let CommandLineOutput { auth_url, is_tencent, dir, .. } = cmd::get_commandline();
             count += 1;
+            
             *auth_url2.lock().unwrap() = format!("{auth_url}, No.{count}");
             *is_tencent2.lock().unwrap() = is_tencent;
-            dbg!(auth_url, is_tencent, count);
+            *lcu_dir2.lock().unwrap() = dir.clone();
+
+            dbg!(count, auth_url, is_tencent, dir);
             thread::sleep(time::Duration::from_secs(2));
         }
     }).unwrap();
@@ -54,7 +61,7 @@ pub fn main() -> iced::Result {
             icon: None,
             platform_specific: PlatformSpecific::default(),
         },
-        flags: ChampR::new(auth_url1, is_tencent1),
+        flags: ChampR::new(auth_url1, is_tencent1, lcu_dir1),
         default_font: Some(include_bytes!("./fonts/LXGWNeoXiHei.ttf")),
         default_text_size: 14.,
         text_multithreading: true,

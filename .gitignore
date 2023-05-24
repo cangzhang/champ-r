@@ -3,3 +3,4 @@
 .vscode/
 .idea/
 *.exe
+.test/
