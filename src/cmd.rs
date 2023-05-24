@@ -1,4 +1,3 @@
-use base64::{engine::general_purpose, Engine as _};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
@@ -57,7 +56,7 @@ pub fn get_commandline() -> CommandLineOutput {
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn get_commandline() -> (String, bool, bool, String, String) {
+pub fn get_commandline() -> CommandLineOutput {
     use std::io::{BufRead, BufReader};
     use std::process::{Command, Stdio};
 
@@ -71,7 +70,6 @@ pub fn get_commandline() -> (String, bool, bool, String, String) {
     let mut auth_url = String::new();
     let mut token = String::new();
     let mut port = String::new();
-    let mut running = false;
     let mut is_tencent = false;
     {
         let stdout = cmd.stdout.as_mut().unwrap();
@@ -82,8 +80,7 @@ pub fn get_commandline() -> (String, bool, bool, String, String) {
             match line {
                 Ok(s) => {
                     if s.contains("--app-port=") {
-                        (auth_url, is_tencent, token, port) = match_stdout(&s);
-                        running = true;
+                        CommandLineOutput { auth_url, is_tencent, token, port, .. } = match_stdout(&s);
                         break;
                     }
                 }
@@ -95,7 +92,13 @@ pub fn get_commandline() -> (String, bool, bool, String, String) {
     }
     cmd.wait().unwrap();
 
-    (auth_url, running, token, port)
+    CommandLineOutput {
+        auth_url,
+        is_tencent,
+        token,
+        port,
+        ..Default::default()
+    }
 }
 
 pub fn match_stdout(stdout: &String) -> CommandLineOutput {
@@ -133,6 +136,7 @@ pub fn match_stdout(stdout: &String) -> CommandLineOutput {
 
 #[cfg(target_os = "windows")]
 pub async fn spawn_apply_rune(token: &String, port: &String, perk: &String) -> anyhow::Result<()> {
+    use base64::{engine::general_purpose, Engine as _};
     use std::{os::windows::process::CommandExt, process::Command};
 
     let perk = general_purpose::STANDARD_NO_PAD.encode(perk);
@@ -146,7 +150,7 @@ pub async fn spawn_apply_rune(token: &String, port: &String, perk: &String) -> a
 }
 
 #[cfg(not(target_os = "windows"))]
-pub async fn spawn_apply_rune(perk: String) -> anyhow::Result<()> {
+pub async fn spawn_apply_rune(_perk: String) -> anyhow::Result<()> {
     Ok(())
 }
 
@@ -327,15 +331,12 @@ pub fn get_alias_from_champion_map(champion_map: &ChampionsMap, champion_id: i64
     ret
 }
 
-pub fn start_check_cmd_task() {
-    
-}
+pub fn start_check_cmd_task() {}
 
 pub fn update_cmd_output_task(output: &Arc<Mutex<CommandLineOutput>>) {
     let result = get_commandline();
     *output.lock().unwrap() = result;
 }
-
 
 #[cfg(test)]
 mod tests {
