@@ -1,7 +1,8 @@
-use futures::StreamExt;
 use std::sync::{Arc, Mutex};
 
-use crate::{builds, source_item::SourceItem, web_service::ChampionsMap};
+use crate::{source_item::SourceItem, web_service::ChampionsMap};
+
+pub type LogItem = (String, String);
 
 #[derive(Default)]
 pub struct ChampR {
@@ -13,6 +14,7 @@ pub struct ChampR {
     pub is_tencent: Arc<Mutex<bool>>,
     pub auth_url: Arc<Mutex<String>>,
     pub lcu_dir: Arc<Mutex<String>>,
+    pub logs: Arc<Mutex<Vec<LogItem>>>, // (source, champion, position)
 }
 
 impl ChampR {
@@ -20,38 +22,14 @@ impl ChampR {
         auth_url: Arc<Mutex<String>>,
         is_tencent: Arc<Mutex<bool>>,
         lcu_dir: Arc<Mutex<String>>,
+        logs: Arc<Mutex<Vec<LogItem>>>,
     ) -> Self {
         Self {
             auth_url,
             is_tencent,
             lcu_dir,
+            logs,
             ..Default::default()
         }
-    }
-
-    pub async fn apply_builds_for_seleted_sources(&mut self) -> Result<Vec<()>, ()> {
-        let sources = self.selected_sources.clone();
-        let sources = sources.lock().unwrap();
-        let champions_map = self.champions_map.clone();
-        let champions_map = champions_map.lock().unwrap();
-        let dir = self.lcu_dir.lock().unwrap();
-
-        let mut tasks = vec![];
-        for source in sources.iter() {
-            for (champion, _v) in champions_map.iter() {
-                let dir = dir.clone();
-                let source = source.clone();
-                tasks.push(async move {
-                    let _r =
-                        builds::apply_champion_builds_from_source(&dir, &source, &champion).await;
-                });
-            }
-        }
-
-        let r = futures::stream::iter(tasks)
-            .buffer_unordered(10)
-            .collect::<Vec<()>>()
-            .await;
-        Ok(r)
     }
 }

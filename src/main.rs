@@ -1,9 +1,9 @@
+pub mod builds;
+pub mod cmd;
+pub mod lcu;
 pub mod source_item;
 pub mod ui;
 pub mod web_service;
-pub mod lcu;
-pub mod cmd;
-pub mod builds;
 
 use core::time;
 use std::sync::{Arc, Mutex};
@@ -18,33 +18,43 @@ use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 
 use source_item::SourceItem;
-use ui::ChampR;
+use ui::{ChampR, LogItem};
 use web_service::{ChampionsMap, FetchError};
 
 pub fn main() -> iced::Result {
     let auth_url1 = Arc::new(Mutex::new(String::new()));
     let auth_url2 = auth_url1.clone();
-    
+
     let is_tencent1 = Arc::new(Mutex::new(false));
     let is_tencent2 = is_tencent1.clone();
 
     let lcu_dir1 = Arc::new(Mutex::new(String::new()));
     let lcu_dir2 = lcu_dir1.clone();
 
-    thread::Builder::new().name("check_auth_task".to_string()).spawn(move || {
-        let mut count = 0;
-        loop {
-            let CommandLineOutput { auth_url, is_tencent, dir, .. } = cmd::get_commandline();
-            count += 1;
-            
-            *auth_url2.lock().unwrap() = format!("{auth_url}, No.{count}");
-            *is_tencent2.lock().unwrap() = is_tencent;
-            *lcu_dir2.lock().unwrap() = dir.clone();
+    let apply_builds_logs1 = Arc::new(Mutex::new(Vec::<LogItem>::new()));
+    // let apply_builds_logs2 = apply_builds_logs1.clone();
 
-            dbg!(count, auth_url, is_tencent, dir);
-            thread::sleep(time::Duration::from_secs(2));
-        }
-    }).unwrap();
+    thread::Builder::new()
+        .name("check_auth_task".to_string())
+        .spawn(move || {
+            let mut count = 0;
+            loop {
+                let CommandLineOutput {
+                    auth_url,
+                    is_tencent,
+                    dir,
+                    ..
+                } = cmd::get_commandline();
+                count += 1;
+
+                *auth_url2.lock().unwrap() = format!("{auth_url}, No.{count}");
+                *is_tencent2.lock().unwrap() = is_tencent;
+                *lcu_dir2.lock().unwrap() = dir.clone();
+
+                thread::sleep(time::Duration::from_secs(2));
+            }
+        })
+        .unwrap();
 
     ChampR::run(Settings {
         id: None,
@@ -61,13 +71,13 @@ pub fn main() -> iced::Result {
             icon: None,
             platform_specific: PlatformSpecific::default(),
         },
-        flags: ChampR::new(auth_url1, is_tencent1, lcu_dir1),
         default_font: Some(include_bytes!("./fonts/LXGWNeoXiHei.ttf")),
         default_text_size: 14.,
         text_multithreading: true,
         antialiasing: false,
         exit_on_close_request: true,
         try_opengles_first: false,
+        flags: ChampR::new(auth_url1, is_tencent1, lcu_dir1, apply_builds_logs1),
     })
 }
 
@@ -77,6 +87,7 @@ pub enum Message {
     UpdateSelected(String),
     ApplyBuilds,
     TickRun,
+    ApplyBuildsDone(Result<(), ()>),
 }
 
 impl Application for ChampR {
@@ -115,7 +126,29 @@ impl Application for ChampR {
                 }
             }
             Message::ApplyBuilds => {
-                println!("apply builds");
+                let logs = self.logs.clone();
+
+                let dir_gruard = self.lcu_dir.lock().unwrap();
+                let dir = dir_gruard.clone();
+                drop(dir_gruard);
+
+                let selected_sources_guard = self.selected_sources.lock().unwrap();
+                let selected_sources_clone = selected_sources_guard.clone();
+                drop(selected_sources_guard);
+
+                let champions_map_guard = self.champions_map.lock().unwrap();
+                let champions_map_clone = champions_map_guard.clone();
+                drop(champions_map_guard);
+
+                return Command::perform(
+                    async move { builds::do_nothing(selected_sources_clone, champions_map_clone, dir, logs).await },
+                    Message::ApplyBuildsDone,
+                );
+            }
+            Message::ApplyBuildsDone(resp) => {
+                if let Ok(_) = resp {
+                    println!("Done: {:?}", self.logs);
+                }
             }
             Message::TickRun => {}
         }
@@ -126,7 +159,7 @@ impl Application for ChampR {
         let sources = self.source_list.lock().unwrap();
         let selected = self.selected_sources.lock().unwrap();
         let champions_map = self.champions_map.lock().unwrap();
-        
+
         let auth_url = self.auth_url.lock().unwrap();
         let is_tencent = self.is_tencent.lock().unwrap();
 
@@ -201,7 +234,8 @@ impl Application for ChampR {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        let time_subscription = iced::time::every(Duration::from_millis(1000)).map(|_| Message::TickRun);
+        let time_subscription =
+            iced::time::every(Duration::from_millis(1000)).map(|_| Message::TickRun);
 
         Subscription::batch([time_subscription])
     }

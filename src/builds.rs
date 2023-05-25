@@ -1,8 +1,18 @@
+use futures::future; // StreamExt
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{fs, io::Write, path::Path};
+use std::{
+    fs,
+    io::Write,
+    path::Path,
+    sync::{Arc, Mutex},
+};
 
-use crate::web_service::{self, FetchError};
+use crate::{
+    ui::LogItem,
+    web_service::{self, ChampionsMap, FetchError},
+};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -74,7 +84,7 @@ pub fn empty_rune_type() -> String {
     String::new()
 }
 
-pub async fn apply_champion_builds_from_source(
+pub async fn fetch_and_apply(
     dir: &String,
     source: &String,
     champion: &String,
@@ -109,6 +119,70 @@ pub async fn apply_champion_builds_from_source(
     Ok(())
 }
 
+pub async fn batch_apply(
+    selected_sources: Vec<String>,
+    champions_map: ChampionsMap,
+    dir: String,
+    logs: Arc<Mutex<Vec<LogItem>>>,
+) -> Result<(), ()> {
+    let mut tasks = vec![];
+
+    for (champion, _) in champions_map.iter() {
+        for source in selected_sources.iter() {
+            let dir = dir.clone();
+            let source = source.clone();
+            let logs = logs.clone();
+
+            tasks.push(async move {
+                let mut logs = logs.lock().unwrap();
+                match fetch_and_apply(&dir, &source, champion).await {
+                    Ok(_) => {
+                        logs.push((source.clone(), champion.clone()));
+                    }
+                    Err(_) => {
+                        println!("[apply builds] {:?} {:?}", &source, &champion);
+                    }
+                }
+            });
+        }
+    }
+
+    future::join_all(tasks).await;
+
+    Ok(())
+}
+
+pub async fn do_nothing(
+    sources: Vec<String>,
+    champions_map: ChampionsMap,
+    dir: String,
+    logs: Arc<Mutex<Vec<LogItem>>>,
+) -> Result<(), ()> {
+    let mut tasks = vec![];
+    // let sources = sources.lock().unwrap();
+
+    for (i, _) in champions_map.iter() {
+        for source in sources.iter() {
+            let logs = logs.clone();
+            let dir = dir.clone();
+            let source = source.clone();
+
+            let task = async move {
+                std::thread::sleep(std::time::Duration::from_millis(200));
+                let mut logs = logs.lock().unwrap();
+                logs.push((source.clone(), dir.clone()));
+                dbg!(i, source.clone());
+            };
+
+            tasks.push(task);
+        }
+    }
+
+    future::join_all(tasks).await;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -116,11 +190,6 @@ mod tests {
     #[tokio::test]
     async fn apply_builds() -> Result<(), FetchError> {
         let target = String::from(".test");
-        return apply_champion_builds_from_source(
-            &target,
-            &String::from("op.gg"),
-            &String::from("Rengar"),
-        )
-        .await;
+        return fetch_and_apply(&target, &String::from("op.gg"), &String::from("Rengar")).await;
     }
 }
