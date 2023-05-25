@@ -141,7 +141,7 @@ impl Application for ChampR {
                 drop(champions_map_guard);
 
                 return Command::perform(
-                    async move { builds::do_nothing(selected_sources_clone, champions_map_clone, dir, logs).await },
+                    builds::batch_apply(selected_sources_clone, champions_map_clone, dir, logs),
                     Message::ApplyBuildsDone,
                 );
             }

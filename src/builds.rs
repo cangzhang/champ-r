@@ -1,4 +1,4 @@
-use futures::future; // StreamExt
+use futures::StreamExt;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -98,12 +98,12 @@ pub async fn fetch_and_apply(
 
     let source_name = source.replace('.', "_");
     for (idx, b) in sections.iter().enumerate() {
-        let alias = &b.alias;
+        // let alias = &b.alias;
         let pos = &b.position;
         fs::create_dir_all(&dir).unwrap();
 
         for (iidx, item) in b.item_builds.iter().enumerate() {
-            let full_path = format!("{dir}/{source_name}_{alias}_{pos}_{idx}_{iidx}.json");
+            let full_path = format!("{dir}/Game/Config/Champions/{champion}/Recommended/{source_name}_{champion}_{pos}_{idx}_{iidx}.json");
             if Path::new(&full_path).exists() {
                 let _ = fs::remove_file(&full_path);
                 let _ = fs::remove_dir_all(&full_path);
@@ -133,52 +133,23 @@ pub async fn batch_apply(
             let source = source.clone();
             let logs = logs.clone();
 
-            tasks.push(async move {
-                let mut logs = logs.lock().unwrap();
-                match fetch_and_apply(&dir, &source, champion).await {
-                    Ok(_) => {
-                        logs.push((source.clone(), champion.clone()));
-                    }
-                    Err(_) => {
-                        println!("[apply builds] {:?} {:?}", &source, &champion);
-                    }
-                }
-            });
-        }
-    }
-
-    future::join_all(tasks).await;
-
-    Ok(())
-}
-
-pub async fn do_nothing(
-    sources: Vec<String>,
-    champions_map: ChampionsMap,
-    dir: String,
-    logs: Arc<Mutex<Vec<LogItem>>>,
-) -> Result<(), ()> {
-    let mut tasks = vec![];
-    // let sources = sources.lock().unwrap();
-
-    for (i, _) in champions_map.iter() {
-        for source in sources.iter() {
-            let logs = logs.clone();
-            let dir = dir.clone();
-            let source = source.clone();
-
             let task = async move {
-                std::thread::sleep(std::time::Duration::from_millis(200));
-                let mut logs = logs.lock().unwrap();
-                logs.push((source.clone(), dir.clone()));
-                dbg!(i, source.clone());
+                let r = fetch_and_apply(&dir, &source, champion).await;
+                if let Ok(_) = r {
+                    let mut logs = logs.lock().unwrap();
+                    logs.push((source.clone(), champion.clone()));
+                } else {
+                    println!("[apply_builds] failed {:?} {:?}", &source, &champion);
+                }
             };
-
             tasks.push(task);
         }
     }
 
-    future::join_all(tasks).await;
+    futures::stream::iter(tasks)
+        .buffer_unordered(10)
+        .collect::<Vec<()>>()
+        .await;
 
     Ok(())
 }
