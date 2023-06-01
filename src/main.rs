@@ -24,6 +24,7 @@ use web_service::{ChampionsMap, FetchError};
 pub fn main() -> iced::Result {
     let auth_url1 = Arc::new(Mutex::new(String::new()));
     let auth_url2 = auth_url1.clone();
+    let auth_url3 = auth_url1.clone();
 
     let is_tencent1 = Arc::new(Mutex::new(false));
     let is_tencent2 = is_tencent1.clone();
@@ -36,25 +37,42 @@ pub fn main() -> iced::Result {
 
     thread::Builder::new()
         .name("check_auth_task".to_string())
-        .spawn(move || {
-            let mut count = 0;
-            loop {
-                let CommandLineOutput {
-                    auth_url,
-                    is_tencent,
-                    dir,
-                    ..
-                } = cmd::get_commandline();
-                count += 1;
+        .spawn(move || loop {
+            let CommandLineOutput {
+                auth_url,
+                is_tencent,
+                dir,
+                ..
+            } = cmd::get_commandline();
 
-                *auth_url2.lock().unwrap() = format!("{auth_url}, No.{count}");
-                *is_tencent2.lock().unwrap() = is_tencent;
-                *lcu_dir2.lock().unwrap() = dir.clone();
+            *auth_url2.lock().unwrap() = auth_url;
+            *is_tencent2.lock().unwrap() = is_tencent;
+            *lcu_dir2.lock().unwrap() = dir.clone();
 
-                thread::sleep(time::Duration::from_secs(2));
-            }
+            thread::sleep(time::Duration::from_secs(2));
         })
         .unwrap();
+
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    rt.block_on(async move {
+        let auth_url3 = auth_url3.clone();
+        
+        tokio::spawn(async move {
+            loop {
+                let guard = auth_url3.lock().unwrap();
+                let auth_url = guard.clone();
+                drop(guard);
+
+                if !auth_url.is_empty() {
+                    println!("make request: https://{auth_url}");
+                    // let auth_url = auth_url.clone();
+                    // let _r = lcu::get_current_champion(auth_url).await;
+                }
+
+                thread::sleep(time::Duration::from_millis(2500));
+            }
+        });
+    });
 
     ChampR::run(Settings {
         id: None,
