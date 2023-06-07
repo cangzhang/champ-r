@@ -14,7 +14,7 @@ use iced::window::{PlatformSpecific, Position};
 use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 
-use lcu::LcuClient;
+use lcu::client::LcuClient;
 use source_item::SourceItem;
 use ui::{ChampR, LogItem};
 use web_service::{ChampionsMap, FetchError};
