@@ -35,9 +35,16 @@ impl LcuClient {
             *self.lcu_dir.lock().unwrap() = dir.clone();
 
             if !auth_url.is_empty() {
-                if let Ok(champion_id) = api::get_session(&auth_url).await {
-                    dbg!(champion_id.clone());
-                    *self.cur_champion_id.lock().unwrap() = champion_id;
+                if let Ok(Some(champion_id)) = api::get_session(&auth_url).await {
+                    let mut current_champion_id = self.cur_champion_id.lock().unwrap();
+                    if current_champion_id.unwrap_or(0) != champion_id {
+                        *current_champion_id = Some(champion_id);
+                        dbg!(*current_champion_id);
+                    }
+                } else {
+                    let mut current_champion_id = self.cur_champion_id.lock().unwrap();
+                    *current_champion_id = None;
+                    dbg!(*current_champion_id);
                 }
             }
 

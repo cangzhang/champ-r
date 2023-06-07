@@ -29,8 +29,8 @@ pub fn main() -> iced::Result {
     let lcu_dir1 = Arc::new(Mutex::new(String::new()));
     let lcu_dir2 = lcu_dir1.clone();
 
-    let cur_champion_id = Arc::new(Mutex::new(None));
-    let cur_champion_id2 = cur_champion_id.clone();
+    let current_champion_id = Arc::new(Mutex::new(None));
+    let current_champion_id2 = current_champion_id.clone();
 
     let apply_builds_logs1 = Arc::new(Mutex::new(Vec::<LogItem>::new()));
     // let apply_builds_logs2 = apply_builds_logs1.clone();
@@ -38,7 +38,8 @@ pub fn main() -> iced::Result {
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(async move {
         tokio::spawn(async move {
-            let mut lcu_client = LcuClient::new(auth_url2, is_tencent2, lcu_dir2, cur_champion_id2);
+            let mut lcu_client =
+                LcuClient::new(auth_url2, is_tencent2, lcu_dir2, current_champion_id2);
             lcu_client.start().await;
         });
     });
@@ -64,7 +65,13 @@ pub fn main() -> iced::Result {
         antialiasing: false,
         exit_on_close_request: true,
         try_opengles_first: false,
-        flags: ChampR::new(auth_url1, is_tencent1, lcu_dir1, apply_builds_logs1),
+        flags: ChampR::new(
+            auth_url1,
+            is_tencent1,
+            lcu_dir1,
+            apply_builds_logs1,
+            current_champion_id,
+        ),
     })
 }
 
@@ -150,6 +157,13 @@ impl Application for ChampR {
         let auth_url = self.auth_url.lock().unwrap();
         let is_tencent = self.is_tencent.lock().unwrap();
 
+        let champion_id_guard = self.current_champion_id.lock().unwrap();
+        let champion_id = format!("{}", champion_id_guard.unwrap_or(0));
+        let champion_alias = match champions_map.iter().find(|(_, v)| v.key == champion_id) {
+            Some((_, v)) => v.id.clone(),
+            None => String::new(),
+        };
+
         let title = text("ChampR - Builds, Runes AIO")
             .size(26.)
             .width(Length::Fill)
@@ -187,9 +201,12 @@ impl Application for ChampR {
             ]
             .height(Length::Fill)
             .width(Length::FillPortion(2)),
-            column![text("rune content here")]
-                .padding(8.)
-                .width(Length::FillPortion(2))
+            column![
+                text("rune content here"),
+                text(format!(" current champion is: {champion_alias}"))
+            ]
+            .padding(8.)
+            .width(Length::FillPortion(2))
         ]
         .spacing(8)
         .width(Length::Fill)

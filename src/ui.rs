@@ -15,6 +15,7 @@ pub struct ChampR {
     pub auth_url: Arc<Mutex<String>>,
     pub lcu_dir: Arc<Mutex<String>>,
     pub logs: Arc<Mutex<Vec<LogItem>>>, // (source, champion, position)
+    pub current_champion_id: Arc<Mutex<Option<u64>>>,
 }
 
 impl ChampR {
@@ -23,12 +24,14 @@ impl ChampR {
         is_tencent: Arc<Mutex<bool>>,
         lcu_dir: Arc<Mutex<String>>,
         logs: Arc<Mutex<Vec<LogItem>>>,
+        current_champion_id: Arc<Mutex<Option<u64>>>
     ) -> Self {
         Self {
             auth_url,
             is_tencent,
             lcu_dir,
             logs,
+            current_champion_id,
             ..Default::default()
         }
     }
