@@ -2,8 +2,6 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 
-use crate::web_service::ChampionsMap;
-
 const APP_PORT_KEY: &str = "--app-port=";
 const TOKEN_KEY: &str = "--remoting-auth-token=";
 const REGION_KEY: &str = "--region=";
@@ -155,58 +153,6 @@ pub async fn spawn_apply_rune(_perk: String) -> anyhow::Result<()> {
 }
 
 #[cfg(target_os = "windows")]
-pub async fn spawn_league_client(
-    token: &String,
-    port: &String,
-    champion_map: &ChampionsMap,
-) -> anyhow::Result<()> {
-    use std::io::{BufRead, BufReader, Error, ErrorKind};
-    use std::os::windows::process::CommandExt;
-    use std::path::Path;
-    use std::process::{Command, Stdio};
-
-    println!(
-        "[spawn] LeagueClient eixsts? {:?}",
-        Path::new("./LeagueClient.exe").exists()
-    );
-    println!("[spawn] auth: {} {}", token, port);
-
-    let stdout = Command::new("./LeagueClient.exe")
-        .args(["watch", token, port])
-        .creation_flags(0x08000000)
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output."))?;
-
-    let reader = BufReader::new(stdout);
-    let mut champ_id: i64 = 0;
-    reader
-        .lines()
-        .filter_map(|line| line.ok())
-        .for_each(|line| {
-            if line.starts_with("=== champion id:") {
-                let champ_id_str = line.trim().replace("=== champion id:", "");
-                champ_id = champ_id_str.parse().unwrap();
-
-                if champ_id > 0 {
-                    println!("[watch champ select] {champ_id}");
-                    let _champion_alias = get_alias_from_champion_map(champion_map, champ_id);
-                } else {
-                    // #[cfg(not(debug_assertions))]
-                }
-            }
-        });
-
-    Ok(())
-}
-
-#[cfg(not(target_os = "windows"))]
-pub async fn spawn_league_client() -> anyhow::Result<()> {
-    Ok(())
-}
-
-#[cfg(target_os = "windows")]
 pub async fn check_if_server_ready() -> anyhow::Result<bool> {
     use std::io::{BufRead, BufReader, Error, ErrorKind};
     use std::os::windows::process::CommandExt;
@@ -317,18 +263,6 @@ pub async fn test_connectivity() -> anyhow::Result<bool> {
 pub fn check_if_lol_running() -> bool {
     let CommandLineOutput { port, token, .. } = get_commandline();
     !token.is_empty() && !port.is_empty()
-}
-
-pub fn get_alias_from_champion_map(champion_map: &ChampionsMap, champion_id: i64) -> String {
-    let mut ret = String::new();
-    for (alias, c) in champion_map.iter() {
-        if c.key.eq(&champion_id.to_string()) {
-            ret = alias.to_string();
-            break;
-        }
-    }
-
-    ret
 }
 
 pub fn start_check_cmd_task() {}

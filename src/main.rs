@@ -5,9 +5,11 @@ pub mod source_item;
 pub mod ui;
 pub mod web_service;
 
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use builds::Rune;
 use iced::alignment::{Horizontal, Vertical};
 use iced::widget::{button, checkbox, column, row, text, Column, Container, Row, Scrollable};
 use iced::window::{PlatformSpecific, Position};
@@ -20,17 +22,26 @@ use ui::{ChampR, LogItem};
 use web_service::{ChampionsMap, FetchError};
 
 pub fn main() -> iced::Result {
+    let champions_map1: Arc<Mutex<ChampionsMap>> = Arc::new(Mutex::new(HashMap::new()));
+    let champions_map2 = champions_map1.clone();
+
+    // lcu auth
     let auth_url1 = Arc::new(Mutex::new(String::new()));
     let auth_url2 = auth_url1.clone();
-
     let is_tencent1 = Arc::new(Mutex::new(false));
     let is_tencent2 = is_tencent1.clone();
-
     let lcu_dir1 = Arc::new(Mutex::new(String::new()));
     let lcu_dir2 = lcu_dir1.clone();
 
-    let current_champion_id = Arc::new(Mutex::new(None));
-    let current_champion_id2 = current_champion_id.clone();
+    // lcu session
+    let current_champion_id1 = Arc::new(Mutex::new(None));
+    let current_champion_id2 = current_champion_id1.clone();
+    let current_champion1 = Arc::new(Mutex::new(String::new()));
+    let current_champion2 = current_champion1.clone();
+    let current_champion_runes1: Arc<Mutex<Vec<Rune>>> = Arc::new(Mutex::new(vec![]));
+    let current_champion_runes2 = current_champion_runes1.clone();
+    let current_source1 = Arc::new(Mutex::new(String::from("op.gg")));
+    let current_source2 = current_source1.clone();
 
     let apply_builds_logs1 = Arc::new(Mutex::new(Vec::<LogItem>::new()));
     // let apply_builds_logs2 = apply_builds_logs1.clone();
@@ -38,8 +49,16 @@ pub fn main() -> iced::Result {
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(async move {
         tokio::spawn(async move {
-            let mut lcu_client =
-                LcuClient::new(auth_url2, is_tencent2, lcu_dir2, current_champion_id2);
+            let mut lcu_client = LcuClient::new(
+                auth_url2,
+                is_tencent2,
+                lcu_dir2,
+                current_champion_id2,
+                current_champion2,
+                champions_map2,
+                current_champion_runes2,
+                current_source2,
+            );
             lcu_client.start().await;
         });
     });
@@ -70,7 +89,11 @@ pub fn main() -> iced::Result {
             is_tencent1,
             lcu_dir1,
             apply_builds_logs1,
-            current_champion_id,
+            current_champion_id1,
+            champions_map1,
+            current_champion1,
+            current_champion_runes1,
+            current_source1,
         ),
     })
 }
@@ -157,13 +180,8 @@ impl Application for ChampR {
         let auth_url = self.auth_url.lock().unwrap();
         let is_tencent = self.is_tencent.lock().unwrap();
 
-        let champion_id_guard = self.current_champion_id.lock().unwrap();
-        let champion_id = format!("{}", champion_id_guard.unwrap_or(0));
-        let champion_alias = match champions_map.iter().find(|(_, v)| v.key == champion_id) {
-            Some((_, v)) => v.id.clone(),
-            None => String::new(),
-        };
-
+        let current_champion = self.current_champion.lock().unwrap();
+        
         let title = text("ChampR - Builds, Runes AIO")
             .size(26.)
             .width(Length::Fill)
@@ -203,7 +221,7 @@ impl Application for ChampR {
             .width(Length::FillPortion(2)),
             column![
                 text("rune content here"),
-                text(format!(" current champion is: {champion_alias}"))
+                text(format!(" current champion is: {current_champion}"))
             ]
             .padding(8.)
             .width(Length::FillPortion(2))

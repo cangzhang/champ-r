@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{source_item::SourceItem, web_service::ChampionsMap};
+use crate::{builds::Rune, source_item::SourceItem, web_service::ChampionsMap};
 
 pub type LogItem = (String, String);
 
@@ -16,6 +16,9 @@ pub struct ChampR {
     pub lcu_dir: Arc<Mutex<String>>,
     pub logs: Arc<Mutex<Vec<LogItem>>>, // (source, champion, position)
     pub current_champion_id: Arc<Mutex<Option<u64>>>,
+    pub current_champion: Arc<Mutex<String>>,
+    pub current_champion_runes: Arc<Mutex<Vec<Rune>>>,
+    pub current_source: Arc<Mutex<String>>,
 }
 
 impl ChampR {
@@ -24,7 +27,11 @@ impl ChampR {
         is_tencent: Arc<Mutex<bool>>,
         lcu_dir: Arc<Mutex<String>>,
         logs: Arc<Mutex<Vec<LogItem>>>,
-        current_champion_id: Arc<Mutex<Option<u64>>>
+        current_champion_id: Arc<Mutex<Option<u64>>>,
+        champions_map: Arc<Mutex<ChampionsMap>>,
+        current_champion: Arc<Mutex<String>>,
+        current_champion_runes: Arc<Mutex<Vec<Rune>>>,
+        current_source: Arc<Mutex<String>>,
     ) -> Self {
         Self {
             auth_url,
@@ -32,6 +39,10 @@ impl ChampR {
             lcu_dir,
             logs,
             current_champion_id,
+            champions_map,
+            current_champion,
+            current_champion_runes,
+            current_source,
             ..Default::default()
         }
     }
