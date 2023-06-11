@@ -57,14 +57,21 @@ impl LcuClient {
                 ..
             } = cmd::get_commandline();
 
-            *self.auth_url.lock().unwrap() = auth_url.clone();
-            *self.is_tencent.lock().unwrap() = is_tencent;
-            *self.lcu_dir.lock().unwrap() = dir.clone();
+            {
+                let mut auth_url_guard = self.auth_url.lock().unwrap();
+                *auth_url_guard = auth_url.clone();
+                let mut is_tencent_guard = self.is_tencent.lock().unwrap();
+                *is_tencent_guard = is_tencent;
+                let mut lcu_dir_guard = self.lcu_dir.lock().unwrap();
+                *lcu_dir_guard = dir.clone();
+            }
+
+            let mut should_fetch_runes = false;
 
             if !auth_url.is_empty() {
                 if let Ok(Some(champion_id)) = api::get_session(&auth_url).await {
-                    let mut current_champion = self.current_champion.lock().unwrap();
                     let mut current_champion_id = self.current_champion_id.lock().unwrap();
+                    let mut current_champion = self.current_champion.lock().unwrap();
 
                     if current_champion_id.unwrap_or(0) != champion_id {
                         let champions_map = self.champions_map.lock().unwrap();
@@ -73,26 +80,37 @@ impl LcuClient {
                         let champion_alias = get_champion_alias(&champions_map, champion_id);
                         dbg!(champion_id, champion_alias.clone());
                         *current_champion = champion_alias.clone();
+
+                        should_fetch_runes = true;
                     }
                 } else {
                     let mut current_champion_id = self.current_champion_id.lock().unwrap();
                     let mut current_champion = self.current_champion.lock().unwrap();
+                    let mut current_champion_runes = self.current_champion_runes.lock().unwrap();
 
                     *current_champion_id = None;
                     *current_champion = String::new();
+                    *current_champion_runes = vec![];
                 }
 
-                // let source_guard = self.current_source.lock().unwrap();
-                // let source = (*source_guard).clone();
-                // let champion_guard = self.current_champion.lock().unwrap();
-                // let champion = (*champion_guard).clone();
-                let source = String::from("op.gg");
-                let champion = String::from("Jinx");
-                if let Ok(builds) =
-                    fetch_build_file(&source, &champion).await
-                {
-                    let mut runes = self.current_champion_runes.lock().unwrap();
-                    *runes = builds.iter().flat_map(|b| b.runes.clone()).collect();
+                if should_fetch_runes {
+                    let source = {
+                        let source = self.current_source.lock().unwrap();
+                        (*source).clone()
+                    };
+                    let champion = {
+                        let champion = self.current_champion.lock().unwrap();
+                        (*champion).clone()
+                    };
+                    if let Ok(builds) = fetch_build_file(&source, &champion.clone()).await
+                    {
+                        let mut runes = {
+                            self.current_champion_runes.lock().unwrap()
+                        };
+                        *runes = builds.iter().flat_map(|b| b.runes.clone()).collect();
+                    } else {
+                        println!("failed to get builds");
+                    }
                 }
             }
 

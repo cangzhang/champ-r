@@ -181,6 +181,7 @@ impl Application for ChampR {
         let is_tencent = self.is_tencent.lock().unwrap();
 
         let current_champion = self.current_champion.lock().unwrap();
+        let runes = self.current_champion_runes.lock().unwrap();
         
         let title = text("ChampR - Builds, Runes AIO")
             .size(26.)
@@ -221,7 +222,8 @@ impl Application for ChampR {
             .width(Length::FillPortion(2)),
             column![
                 text("rune content here"),
-                text(format!(" current champion is: {current_champion}"))
+                text(format!("current champion is: {current_champion}")),
+                text(format!("runes: {:?}", runes.len())),
             ]
             .padding(8.)
             .width(Length::FillPortion(2))
