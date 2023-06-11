@@ -78,10 +78,9 @@ impl LcuClient {
 
                         *current_champion_id = Some(champion_id);
                         let champion_alias = get_champion_alias(&champions_map, champion_id);
-                        dbg!(champion_id, champion_alias.clone());
                         *current_champion = champion_alias.clone();
-
                         should_fetch_runes = true;
+                        dbg!(champion_id, champion_alias, should_fetch_runes);
                     }
                 } else {
                     let mut current_champion_id = self.current_champion_id.lock().unwrap();
@@ -104,9 +103,7 @@ impl LcuClient {
                     };
                     if let Ok(builds) = fetch_build_file(&source, &champion.clone()).await
                     {
-                        let mut runes = {
-                            self.current_champion_runes.lock().unwrap()
-                        };
+                        let mut runes = self.current_champion_runes.lock().unwrap();
                         *runes = builds.iter().flat_map(|b| b.runes.clone()).collect();
                     } else {
                         println!("failed to get builds");
