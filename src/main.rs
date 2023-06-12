@@ -16,6 +16,7 @@ use iced::window::{PlatformSpecific, Position};
 use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 
+use lcu::api::{apply_rune, LcuError};
 use lcu::client::LcuClient;
 use source_item::SourceItem;
 use ui::{ChampR, LogItem};
@@ -105,6 +106,8 @@ pub enum Message {
     ApplyBuilds,
     TickRun,
     ApplyBuildsDone(Result<(), ()>),
+    ApplyRune(String, Rune),
+    ApplyRuneDone(Result<(), LcuError>),
 }
 
 impl Application for ChampR {
@@ -167,6 +170,18 @@ impl Application for ChampR {
                     println!("Done: {:?}", self.logs);
                 }
             }
+            Message::ApplyRune(auth_url, rune) => {
+                let endpoint = format!("https://{auth_url}");
+                return Command::perform(
+                    apply_rune(endpoint.clone(), rune.clone()),
+                    Message::ApplyRuneDone,
+                );
+            }
+            Message::ApplyRuneDone(resp) => {
+                if let Err(e) = resp {
+                    dbg!("ApplyRuneError: {:?}", e);
+                }
+            }
             Message::TickRun => {}
         }
         Command::none()
@@ -182,15 +197,15 @@ impl Application for ChampR {
 
         let current_champion = self.current_champion.lock().unwrap();
         let runes = self.current_champion_runes.lock().unwrap();
-        
+
         let title = text("ChampR - Builds, Runes AIO")
             .size(26.)
             .width(Length::Fill)
             .horizontal_alignment(Horizontal::Center);
         let title = Row::new().push(title).padding(6).width(Length::Fill);
 
-        let mut col = Column::new().width(Length::Fill).spacing(8.).padding(16.);
-        for item in sources.clone() {
+        let mut source_list_col = Column::new().width(Length::Fill).spacing(8.).padding(16.);
+        for item in sources.iter() {
             let label = item.label.clone();
             let value = item.value.clone();
             let checked = selected.contains(&value);
@@ -201,7 +216,7 @@ impl Application for ChampR {
             .text_size(20.)
             .spacing(6.);
             let mode_text = SourceItem::get_mode_text(&item);
-            col = col.push(
+            source_list_col = source_list_col.push(
                 row![
                     cbox,
                     row![text(mode_text)
@@ -211,22 +226,44 @@ impl Application for ChampR {
                 .spacing(8.),
             );
         }
+
+        let mut rune_list_col = column!()
+            .height(Length::Fill)
+            .width(Length::Fill)
+            .spacing(8.)
+            .padding(16.);
+        for r in runes.iter() {
+            let row = row![
+                text(r.name.clone()).size(16.).width(Length::FillPortion(2)),
+                row![button("Apply").on_press(Message::ApplyRune(auth_url.clone(), r.clone()))]
+                    .align_items(Alignment::End)
+                    .width(Length::FillPortion(1)),
+            ]
+            .align_items(Alignment::Center);
+            rune_list_col = rune_list_col.push(row);
+        }
+
+        let rune_list_title = if current_champion.len() > 0 {
+            text(format!(
+                "Champion: {current_champion}, Runes: {:?}",
+                runes.len()
+            ))
+        } else {
+            text("Champion: None")
+        };
+
         let main_row = row![
             column![
                 row![text("Source List").size(22.)].padding(Padding::from([0, 0, 0, 16])),
-                Scrollable::new(col)
+                Scrollable::new(source_list_col)
                     .height(Length::Fill)
                     .width(Length::Fill)
             ]
             .height(Length::Fill)
             .width(Length::FillPortion(2)),
-            column![
-                text("rune content here"),
-                text(format!("current champion is: {current_champion}")),
-                text(format!("runes: {:?}", runes.len())),
-            ]
-            .padding(8.)
-            .width(Length::FillPortion(2))
+            column![rune_list_title, rune_list_col,]
+                .padding(8.)
+                .width(Length::FillPortion(2))
         ]
         .spacing(8)
         .width(Length::Fill)

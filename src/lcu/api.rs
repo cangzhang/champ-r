@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use serde_json::Value;
 
+use crate::builds::Rune;
+
 pub fn make_client() -> reqwest::Client {
     reqwest::Client::builder()
         .use_rustls_tls()
@@ -52,4 +54,59 @@ pub async fn get_session(auth_url: &String) -> Result<Option<u64>, reqwest::Erro
     };
 
     Ok(None)
+}
+
+#[derive(Debug, Clone)]
+pub enum LcuError {
+    APIError,
+}
+
+impl From<reqwest::Error> for LcuError {
+    fn from(error: reqwest::Error) -> LcuError {
+        dbg!(error);
+
+        LcuError::APIError
+    }
+}
+
+pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
+    let client = make_client();
+
+    let runes = client
+        .get(format!("{endpoint}/lol-perks/v1/pages"))
+        .version(reqwest::Version::HTTP_2)
+        .header(reqwest::header::ACCEPT, "application/json")
+        .send()
+        .await?
+        .json::<serde_json::Value>()
+        .await?;
+
+    let mut id = 0;
+    for r in runes.as_array().unwrap() {
+        if r["current"].as_bool().unwrap() {
+            id = r["id"].as_i64().unwrap();
+            break;
+        }
+        if r["isDeletable"].as_bool().unwrap() {
+            id = r["id"].as_i64().unwrap();
+        }
+    }
+
+    if id > 0 {
+        let _ = client
+            .delete(format!("{endpoint}/lol-perks/v1/pages/{id}"))
+            .version(reqwest::Version::HTTP_2)
+            .header(reqwest::header::ACCEPT, "application/json")
+            .send()
+            .await?;
+    }
+
+    let _ = client
+        .post(format!("{endpoint}/lol-perks/v1/pages"))
+        .version(reqwest::Version::HTTP_2)
+        .header(reqwest::header::ACCEPT, "application/json")
+        .json(&rune)
+        .send()
+        .await?;
+    Ok(())
 }
