@@ -309,7 +309,6 @@ impl Application for ChampR {
             .width(Length::FillPortion(2)),
             column![
                 row!(
-                    avatar_row.padding(Padding::from([0, 8, 0, 0])),
                     pick_list(
                         sources
                             .iter()
@@ -317,7 +316,8 @@ impl Application for ChampR {
                             .collect::<Vec<String>>(),
                         Some(current_source.clone()),
                         Message::OnSelectRuneSource,
-                    )
+                    ),
+                    avatar_row.padding(Padding::from([0, 8, 0, 0])),
                 )
                 .align_items(Alignment::Center)
                 .padding(Padding::from([0, 0, 16, 0])),
