@@ -100,7 +100,7 @@ pub async fn fetch_and_apply(
     for (idx, b) in sections.iter().enumerate() {
         // let alias = &b.alias;
         let pos = &b.position;
-        fs::create_dir_all(&dir).unwrap();
+        fs::create_dir_all(dir).unwrap();
 
         for (iidx, item) in b.item_builds.iter().enumerate() {
             let full_path = format!("{dir}/Game/Config/Champions/{champion}/Recommended/{source_name}_{champion}_{pos}_{idx}_{iidx}.json");
@@ -135,7 +135,7 @@ pub async fn batch_apply(
 
             let task = async move {
                 let r = fetch_and_apply(&dir, &source, champion).await;
-                if let Ok(_) = r {
+                if r.is_ok() {
                     let mut logs = logs.lock().unwrap();
                     logs.push((source.clone(), champion.clone()));
                 } else {
@@ -161,6 +161,6 @@ mod tests {
     #[tokio::test]
     async fn apply_builds() -> Result<(), FetchError> {
         let target = String::from(".test");
-        return fetch_and_apply(&target, &String::from("op.gg"), &String::from("Rengar")).await;
+        fetch_and_apply(&target, &String::from("op.gg"), &String::from("Rengar")).await
     }
 }

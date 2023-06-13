@@ -182,14 +182,14 @@ impl Application for ChampR {
                 );
             }
             Message::ApplyBuildsDone(resp) => {
-                if let Ok(_) = resp {
+                if resp.is_ok() {
                     println!("Done: {:?}", self.logs);
                 }
             }
             Message::ApplyRune(auth_url, rune) => {
                 let endpoint = format!("https://{auth_url}");
                 return Command::perform(
-                    apply_rune(endpoint.clone(), rune.clone()),
+                    apply_rune(endpoint, rune),
                     Message::ApplyRuneDone,
                 );
             }
@@ -202,10 +202,10 @@ impl Application for ChampR {
                 *self.current_source.lock().unwrap() = source.clone();
                 let current_champion = self.current_champion.lock().unwrap();
 
-                if (&current_champion).len() > 0 {
+                if current_champion.len() > 0 {
                     *self.loading_runes.lock().unwrap() = true;
                     return Command::perform(
-                        web_service::fetch_runes(source.clone(), current_champion.clone()),
+                        web_service::fetch_runes(source, current_champion.clone()),
                         Message::OnFetchedRunes,
                     );
                 }
@@ -252,7 +252,7 @@ impl Application for ChampR {
             })
             .text_size(20.)
             .spacing(6.);
-            let mode_text = SourceItem::get_mode_text(&item);
+            let mode_text = SourceItem::get_mode_text(item);
             source_list_col = source_list_col.push(
                 row![
                     cbox,

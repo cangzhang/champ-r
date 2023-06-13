@@ -61,7 +61,7 @@ impl LcuClient {
         loop {
             let fetched_remote_data = {
                 let ready_guard = self.fetched_remote_data.lock().unwrap();
-                ready_guard.clone()
+                *ready_guard
             };
             if !fetched_remote_data {
                 dbg!(fetched_remote_data);
