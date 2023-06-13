@@ -7,7 +7,7 @@ use crate::{
     builds::Rune,
     cmd::{self, CommandLineOutput},
     lcu::util::get_champion_alias,
-    web_service::{fetch_build_file, ChampionsMap},
+    web_service::{fetch_runes, ChampionsMap},
 };
 
 use super::api;
@@ -23,6 +23,7 @@ pub struct LcuClient {
     pub current_champion: Arc<Mutex<String>>,
     pub current_champion_runes: Arc<Mutex<Vec<Rune>>>,
     pub current_source: Arc<Mutex<String>>,
+    pub loading_runes: Arc<Mutex<bool>>,
 }
 
 impl LcuClient {
@@ -35,6 +36,7 @@ impl LcuClient {
         champions_map: Arc<Mutex<ChampionsMap>>,
         current_champion_runes: Arc<Mutex<Vec<Rune>>>,
         current_source: Arc<Mutex<String>>,
+        loading_runes: Arc<Mutex<bool>>,
     ) -> Self {
         Self {
             auth_url,
@@ -45,6 +47,7 @@ impl LcuClient {
             current_champion,
             current_champion_runes,
             current_source,
+            loading_runes,
         }
     }
 
@@ -66,7 +69,7 @@ impl LcuClient {
                 *lcu_dir_guard = dir.clone();
             }
 
-            let mut should_fetch_runes = false;
+            let mut should_fetch_runes: bool = false;
 
             if !auth_url.is_empty() {
                 if let Ok(Some(champion_id)) = api::get_session(&auth_url).await {
@@ -93,6 +96,9 @@ impl LcuClient {
                 }
 
                 if should_fetch_runes {
+                    let loading_runes_guard = self.loading_runes.clone();
+                    *loading_runes_guard.lock().unwrap() = true;
+
                     let source = {
                         let source = self.current_source.lock().unwrap();
                         (*source).clone()
@@ -101,13 +107,13 @@ impl LcuClient {
                         let champion = self.current_champion.lock().unwrap();
                         (*champion).clone()
                     };
-                    if let Ok(builds) = fetch_build_file(&source, &champion.clone()).await
-                    {
-                        let mut runes = self.current_champion_runes.lock().unwrap();
-                        *runes = builds.iter().flat_map(|b| b.runes.clone()).collect();
+                    if let Ok(runes) = fetch_runes(source, champion.clone()).await {
+                        *self.current_champion_runes.lock().unwrap() = runes;
                     } else {
                         println!("failed to get builds");
                     }
+
+                    *loading_runes_guard.lock().unwrap() = false;
                 }
             }
 

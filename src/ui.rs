@@ -19,6 +19,7 @@ pub struct ChampR {
     pub current_champion: Arc<Mutex<String>>,
     pub current_champion_runes: Arc<Mutex<Vec<Rune>>>,
     pub current_source: Arc<Mutex<String>>,
+    pub loading_runes: Arc<Mutex<bool>>,
 }
 
 impl ChampR {
@@ -32,6 +33,7 @@ impl ChampR {
         current_champion: Arc<Mutex<String>>,
         current_champion_runes: Arc<Mutex<Vec<Rune>>>,
         current_source: Arc<Mutex<String>>,
+        loading_runes: Arc<Mutex<bool>>,
     ) -> Self {
         Self {
             auth_url,
@@ -43,6 +45,7 @@ impl ChampR {
             current_champion,
             current_champion_runes,
             current_source,
+            loading_runes,
             ..Default::default()
         }
     }

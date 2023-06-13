@@ -10,8 +10,10 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use builds::Rune;
-use iced::alignment::{Horizontal, Vertical};
-use iced::widget::{button, checkbox, column, row, text, Column, Container, Row, Scrollable};
+use iced::alignment::{self, Horizontal, Vertical};
+use iced::widget::{
+    button, checkbox, column, pick_list, row, text, Column, Container, Row, Scrollable,
+};
 use iced::window::{PlatformSpecific, Position};
 use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
@@ -43,6 +45,8 @@ pub fn main() -> iced::Result {
     let current_champion_runes2 = current_champion_runes1.clone();
     let current_source1 = Arc::new(Mutex::new(String::from("op.gg")));
     let current_source2 = current_source1.clone();
+    let loading_runes1 = Arc::new(Mutex::new(false));
+    let loading_runes2 = loading_runes1.clone();
 
     let apply_builds_logs1 = Arc::new(Mutex::new(Vec::<LogItem>::new()));
     // let apply_builds_logs2 = apply_builds_logs1.clone();
@@ -59,6 +63,7 @@ pub fn main() -> iced::Result {
                 champions_map2,
                 current_champion_runes2,
                 current_source2,
+                loading_runes2,
             );
             lcu_client.start().await;
         });
@@ -95,6 +100,7 @@ pub fn main() -> iced::Result {
             current_champion1,
             current_champion_runes1,
             current_source1,
+            loading_runes1,
         ),
     })
 }
@@ -108,6 +114,8 @@ pub enum Message {
     ApplyBuildsDone(Result<(), ()>),
     ApplyRune(String, Rune),
     ApplyRuneDone(Result<(), LcuError>),
+    OnSelectRuneSource(String),
+    OnFetchedRunes(Result<Vec<Rune>, FetchError>),
 }
 
 impl Application for ChampR {
@@ -182,6 +190,19 @@ impl Application for ChampR {
                     dbg!("ApplyRuneError: {:?}", e);
                 }
             }
+            Message::OnSelectRuneSource(source) => {
+                *self.current_source.lock().unwrap() = source.clone();
+                let current_champion = self.current_champion.lock().unwrap();
+                *self.loading_runes.lock().unwrap() = true;
+
+                return Command::perform(web_service::fetch_runes(source.clone(), current_champion.clone()), Message::OnFetchedRunes)
+            }
+            Message::OnFetchedRunes(resp) => {
+                *self.loading_runes.lock().unwrap() = false;
+                if let Ok(runes) = resp {
+                    *self.current_champion_runes.lock().unwrap() = runes;
+                }
+            }
             Message::TickRun => {}
         }
         Command::none()
@@ -197,6 +218,8 @@ impl Application for ChampR {
 
         let current_champion = self.current_champion.lock().unwrap();
         let runes = self.current_champion_runes.lock().unwrap();
+        let loading_runes = self.loading_runes.lock().unwrap();
+        let current_source = self.current_source.lock().unwrap();
 
         let title = text("ChampR - Builds, Runes AIO")
             .size(26.)
@@ -232,22 +255,24 @@ impl Application for ChampR {
             .width(Length::Fill)
             .spacing(8.)
             .padding(16.);
-        for r in runes.iter() {
-            let row = row![
-                text(r.name.clone()).size(16.).width(Length::FillPortion(2)),
-                row![button("Apply").on_press(Message::ApplyRune(auth_url.clone(), r.clone()))]
-                    .align_items(Alignment::End)
-                    .width(Length::FillPortion(1)),
-            ]
-            .align_items(Alignment::Center);
-            rune_list_col = rune_list_col.push(row);
+        if *loading_runes {
+            rune_list_col = rune_list_col
+                .push(text("Loading runes...").horizontal_alignment(alignment::Horizontal::Center));
+        } else {
+            for r in runes.iter() {
+                let row = row![
+                    text(r.name.clone()).size(16.).width(Length::FillPortion(2)),
+                    row![button("Apply").on_press(Message::ApplyRune(auth_url.clone(), r.clone()))]
+                        .align_items(Alignment::End)
+                        .width(Length::FillPortion(1)),
+                ]
+                .align_items(Alignment::Center);
+                rune_list_col = rune_list_col.push(row);
+            }
         }
 
         let rune_list_title = if current_champion.len() > 0 {
-            text(format!(
-                "Champion: {current_champion}, Runes: {:?}",
-                runes.len()
-            ))
+            text(format!("Champion: {current_champion}"))
         } else {
             text("Champion: None")
         };
@@ -261,9 +286,17 @@ impl Application for ChampR {
             ]
             .height(Length::Fill)
             .width(Length::FillPortion(2)),
-            column![rune_list_title, rune_list_col,]
-                .padding(8.)
-                .width(Length::FillPortion(2))
+            column![
+                pick_list(
+                    sources.iter().map(|s| s.value.clone()).collect::<Vec<String>>(),
+                    Some(current_source.clone()),
+                    Message::OnSelectRuneSource,
+                ),
+                rune_list_title,
+                rune_list_col
+            ]
+            .padding(8.)
+            .width(Length::FillPortion(2))
         ]
         .spacing(8)
         .width(Length::Fill)
@@ -296,7 +329,7 @@ impl Application for ChampR {
 
     fn subscription(&self) -> Subscription<Message> {
         let time_subscription =
-            iced::time::every(Duration::from_millis(1000)).map(|_| Message::TickRun);
+            iced::time::every(Duration::from_millis(600)).map(|_| Message::TickRun);
 
         Subscription::batch([time_subscription])
     }

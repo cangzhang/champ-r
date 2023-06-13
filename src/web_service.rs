@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use futures::try_join;
 use serde::{Deserialize, Serialize};
 
-use crate::{source_item::SourceItem, builds};
+use crate::{source_item::SourceItem, builds::{self, Rune}};
 // use serde_json::Value;
 // use serde_with::serde_as;
 
@@ -79,4 +79,10 @@ pub async fn fetch_build_file(source: &String, champion: &String) -> Result<Vec<
     }
 
     Err(FetchError::Failed)
+}
+
+pub async fn fetch_runes(source: String, champion: String) -> Result<Vec<Rune>, FetchError> {
+    let builds = fetch_build_file(&source, &champion).await?;
+    let runes = builds.iter().flat_map(|b| b.runes.clone()).collect();
+    Ok(runes)
 }
