@@ -9,7 +9,6 @@ pub struct ChampR {
     pub source_list: Arc<Mutex<Vec<SourceItem>>>,
     pub selected_sources: Arc<Mutex<Vec<String>>>,
     pub champions_map: Arc<Mutex<ChampionsMap>>,
-    pub fetched_remote_data: bool,
     pub lol_running: Arc<Mutex<bool>>,
     pub is_tencent: Arc<Mutex<bool>>,
     pub auth_url: Arc<Mutex<String>>,
@@ -21,6 +20,7 @@ pub struct ChampR {
     pub current_source: Arc<Mutex<String>>,
     pub loading_runes: Arc<Mutex<bool>>,
     pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
+    pub fetched_remote_data: Arc<Mutex<bool>>,
 }
 
 impl ChampR {
@@ -36,6 +36,7 @@ impl ChampR {
         current_source: Arc<Mutex<String>>,
         loading_runes: Arc<Mutex<bool>>,
         current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
+        fetched_remote_data: Arc<Mutex<bool>>,
     ) -> Self {
         Self {
             auth_url,
@@ -49,6 +50,7 @@ impl ChampR {
             current_source,
             loading_runes,
             current_champion_avatar,
+            fetched_remote_data,
             ..Default::default()
         }
     }

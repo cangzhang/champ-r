@@ -27,6 +27,8 @@ use web_service::{ChampionsMap, FetchError};
 pub fn main() -> iced::Result {
     let champions_map1: Arc<Mutex<ChampionsMap>> = Arc::new(Mutex::new(HashMap::new()));
     let champions_map2 = champions_map1.clone();
+    let fetched_remote_data1 = Arc::new(Mutex::new(false));
+    let fetched_remote_data2 = fetched_remote_data1.clone();
 
     // lcu auth
     let auth_url1 = Arc::new(Mutex::new(String::new()));
@@ -67,6 +69,7 @@ pub fn main() -> iced::Result {
                 current_source2,
                 loading_runes2,
                 current_champion_avatar2,
+                fetched_remote_data2,
             );
             lcu_client.start().await;
         });
@@ -105,6 +108,7 @@ pub fn main() -> iced::Result {
             current_source1,
             loading_runes1,
             current_champion_avatar1,
+            fetched_remote_data1,
         ),
     })
 }
@@ -145,7 +149,7 @@ impl Application for ChampR {
                 if let Ok((sources, champions_map)) = resp {
                     *self.source_list.lock().unwrap() = sources;
                     *self.champions_map.lock().unwrap() = champions_map;
-                    self.fetched_remote_data = true;
+                    *self.fetched_remote_data.lock().unwrap() = true;
                 }
             }
             Message::UpdateSelected(s) => {
@@ -327,7 +331,7 @@ impl Application for ChampR {
         .width(Length::Fill)
         .height(Length::FillPortion(2));
 
-        let remote_data_info = if self.fetched_remote_data {
+        let remote_data_info = if *self.fetched_remote_data.lock().unwrap() {
             text(format!(
                 "Fetched avaliable sources: {:?}, champions: {:?}",
                 sources.len(),

@@ -25,6 +25,7 @@ pub struct LcuClient {
     pub current_source: Arc<Mutex<String>>,
     pub loading_runes: Arc<Mutex<bool>>,
     pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
+    pub fetched_remote_data: Arc<Mutex<bool>>,
 }
 
 impl LcuClient {
@@ -39,6 +40,7 @@ impl LcuClient {
         current_source: Arc<Mutex<String>>,
         loading_runes: Arc<Mutex<bool>>,
         current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
+        fetched_remote_data: Arc<Mutex<bool>>,
     ) -> Self {
         Self {
             auth_url,
@@ -51,11 +53,22 @@ impl LcuClient {
             current_source,
             loading_runes,
             current_champion_avatar,
+            fetched_remote_data,
         }
     }
 
     pub async fn start(&mut self) {
         loop {
+            let fetched_remote_data = {
+                let ready_guard = self.fetched_remote_data.lock().unwrap();
+                ready_guard.clone()
+            };
+            if !fetched_remote_data {
+                dbg!(fetched_remote_data);
+                thread::sleep(time::Duration::from_millis(300));
+                continue;
+            }
+
             let CommandLineOutput {
                 auth_url,
                 is_tencent,
