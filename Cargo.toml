@@ -13,6 +13,7 @@ strip = true        # Automatically strip symbols from the binary.
 
 [dependencies]
 anyhow = "1.0.71"
+bytes = "*"
 base64 = "0.21.0"
 futures = "0.3.28"
 iced = { version = "0.9.0", features = ["tokio", "image"] }

@@ -7,7 +7,7 @@ use crate::{
     builds::Rune,
     cmd::{self, CommandLineOutput},
     lcu::util::get_champion_alias,
-    web_service::{fetch_runes, ChampionsMap},
+    web_service::{fetch_champion_avatar, fetch_runes, ChampionsMap},
 };
 
 use super::api;
@@ -24,6 +24,7 @@ pub struct LcuClient {
     pub current_champion_runes: Arc<Mutex<Vec<Rune>>>,
     pub current_source: Arc<Mutex<String>>,
     pub loading_runes: Arc<Mutex<bool>>,
+    pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
 }
 
 impl LcuClient {
@@ -37,6 +38,7 @@ impl LcuClient {
         current_champion_runes: Arc<Mutex<Vec<Rune>>>,
         current_source: Arc<Mutex<String>>,
         loading_runes: Arc<Mutex<bool>>,
+        current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
     ) -> Self {
         Self {
             auth_url,
@@ -48,6 +50,7 @@ impl LcuClient {
             current_champion_runes,
             current_source,
             loading_runes,
+            current_champion_avatar,
         }
     }
 
@@ -93,6 +96,7 @@ impl LcuClient {
                     *current_champion_id = None;
                     *current_champion = String::new();
                     *current_champion_runes = vec![];
+                    *self.current_champion_avatar.lock().unwrap() = None;
                 }
 
                 if should_fetch_runes {
@@ -107,10 +111,17 @@ impl LcuClient {
                         let champion = self.current_champion.lock().unwrap();
                         (*champion).clone()
                     };
-                    if let Ok(runes) = fetch_runes(source, champion.clone()).await {
+
+                    if let Ok((runes, avatar_bytes)) = futures::future::try_join(
+                        fetch_runes(source, champion.clone()),
+                        fetch_champion_avatar(champion.clone()),
+                    )
+                    .await
+                    {
                         *self.current_champion_runes.lock().unwrap() = runes;
+                        *self.current_champion_avatar.lock().unwrap() = Some(avatar_bytes);
                     } else {
-                        println!("failed to get builds");
+                        println!("failed to get builds/avatar for {}", champion);
                     }
 
                     *loading_runes_guard.lock().unwrap() = false;

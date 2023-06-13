@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use futures::try_join;
 use serde::{Deserialize, Serialize};
 
-use crate::{source_item::SourceItem, builds::{self, Rune}};
+use crate::{
+    builds::{self, Rune},
+    source_item::SourceItem,
+};
 // use serde_json::Value;
 // use serde_with::serde_as;
 
@@ -70,7 +73,10 @@ pub async fn init_for_ui() -> Result<(Vec<SourceItem>, ChampionsMap), FetchError
     try_join!(fetch_sources(), fetch_champion_list())
 }
 
-pub async fn fetch_build_file(source: &String, champion: &String) -> Result<Vec<builds::BuildSection>, FetchError> {
+pub async fn fetch_build_file(
+    source: &String,
+    champion: &String,
+) -> Result<Vec<builds::BuildSection>, FetchError> {
     let url = format!("{SERVICE_URL}/api/detail?source={source}&champion={champion}");
     if let Ok(resp) = reqwest::get(url).await {
         if let Ok(data) = resp.json::<Vec<builds::BuildSection>>().await {
@@ -85,4 +91,17 @@ pub async fn fetch_runes(source: String, champion: String) -> Result<Vec<Rune>, 
     let builds = fetch_build_file(&source, &champion).await?;
     let runes = builds.iter().flat_map(|b| b.runes.clone()).collect();
     Ok(runes)
+}
+
+pub async fn fetch_champion_avatar(
+    champion_alias: String,
+) -> Result<bytes::Bytes, FetchError> {
+    let url = format!("https://game.gtimg.cn/images/lol/act/img/champion/{champion_alias}.png");
+    if let Ok(resp) = reqwest::get(&url).await {
+        if let Ok(bytes) = resp.bytes().await {
+            return Ok(bytes);
+        }
+    }
+    
+    Err(FetchError::Failed)
 }

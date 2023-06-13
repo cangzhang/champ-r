@@ -20,6 +20,7 @@ pub struct ChampR {
     pub current_champion_runes: Arc<Mutex<Vec<Rune>>>,
     pub current_source: Arc<Mutex<String>>,
     pub loading_runes: Arc<Mutex<bool>>,
+    pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
 }
 
 impl ChampR {
@@ -34,6 +35,7 @@ impl ChampR {
         current_champion_runes: Arc<Mutex<Vec<Rune>>>,
         current_source: Arc<Mutex<String>>,
         loading_runes: Arc<Mutex<bool>>,
+        current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
     ) -> Self {
         Self {
             auth_url,
@@ -46,6 +48,7 @@ impl ChampR {
             current_champion_runes,
             current_source,
             loading_runes,
+            current_champion_avatar,
             ..Default::default()
         }
     }

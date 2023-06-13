@@ -12,7 +12,7 @@ use std::time::Duration;
 use builds::Rune;
 use iced::alignment::{self, Horizontal, Vertical};
 use iced::widget::{
-    button, checkbox, column, pick_list, row, text, Column, Container, Row, Scrollable,
+    button, checkbox, column, image, pick_list, row, text, Column, Container, Row, Scrollable,
 };
 use iced::window::{PlatformSpecific, Position};
 use iced::{executor, window, Alignment, Padding, Subscription};
@@ -47,6 +47,8 @@ pub fn main() -> iced::Result {
     let current_source2 = current_source1.clone();
     let loading_runes1 = Arc::new(Mutex::new(false));
     let loading_runes2 = loading_runes1.clone();
+    let current_champion_avatar1 = Arc::new(Mutex::new(None));
+    let current_champion_avatar2 = current_champion_avatar1.clone();
 
     let apply_builds_logs1 = Arc::new(Mutex::new(Vec::<LogItem>::new()));
     // let apply_builds_logs2 = apply_builds_logs1.clone();
@@ -64,6 +66,7 @@ pub fn main() -> iced::Result {
                 current_champion_runes2,
                 current_source2,
                 loading_runes2,
+                current_champion_avatar2,
             );
             lcu_client.start().await;
         });
@@ -101,6 +104,7 @@ pub fn main() -> iced::Result {
             current_champion_runes1,
             current_source1,
             loading_runes1,
+            current_champion_avatar1,
         ),
     })
 }
@@ -225,6 +229,7 @@ impl Application for ChampR {
         let runes = self.current_champion_runes.lock().unwrap();
         let loading_runes = self.loading_runes.lock().unwrap();
         let current_source = self.current_source.lock().unwrap();
+        let avatar_guard = self.current_champion_avatar.lock().unwrap();
 
         let title = text("ChampR - Builds, Runes AIO")
             .size(26.)
@@ -282,6 +287,13 @@ impl Application for ChampR {
             text("Champion: None")
         };
 
+        let avatar_row = if let Some(b) = avatar_guard.clone() {
+            let handle = image::Handle::from_memory(b);
+            row!(image::viewer(handle).height(48.).width(48.))
+        } else {
+            row!()
+        };
+
         let main_row = row![
             column![
                 row![text("Source List").size(22.)].padding(Padding::from([0, 0, 0, 16])),
@@ -292,14 +304,18 @@ impl Application for ChampR {
             .height(Length::Fill)
             .width(Length::FillPortion(2)),
             column![
-                row!(pick_list(
-                    sources
-                        .iter()
-                        .map(|s| s.value.clone())
-                        .collect::<Vec<String>>(),
-                    Some(current_source.clone()),
-                    Message::OnSelectRuneSource,
-                ))
+                row!(
+                    avatar_row.padding(Padding::from([0, 8, 0, 0])),
+                    pick_list(
+                        sources
+                            .iter()
+                            .map(|s| s.value.clone())
+                            .collect::<Vec<String>>(),
+                        Some(current_source.clone()),
+                        Message::OnSelectRuneSource,
+                    )
+                )
+                .align_items(Alignment::Center)
                 .padding(Padding::from([0, 0, 16, 0])),
                 rune_list_title,
                 rune_list_col
