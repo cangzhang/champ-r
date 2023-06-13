@@ -193,9 +193,14 @@ impl Application for ChampR {
             Message::OnSelectRuneSource(source) => {
                 *self.current_source.lock().unwrap() = source.clone();
                 let current_champion = self.current_champion.lock().unwrap();
-                *self.loading_runes.lock().unwrap() = true;
 
-                return Command::perform(web_service::fetch_runes(source.clone(), current_champion.clone()), Message::OnFetchedRunes)
+                if (&current_champion).len() > 0 {
+                    *self.loading_runes.lock().unwrap() = true;
+                    return Command::perform(
+                        web_service::fetch_runes(source.clone(), current_champion.clone()),
+                        Message::OnFetchedRunes,
+                    );
+                }
             }
             Message::OnFetchedRunes(resp) => {
                 *self.loading_runes.lock().unwrap() = false;
@@ -287,15 +292,19 @@ impl Application for ChampR {
             .height(Length::Fill)
             .width(Length::FillPortion(2)),
             column![
-                pick_list(
-                    sources.iter().map(|s| s.value.clone()).collect::<Vec<String>>(),
+                row!(pick_list(
+                    sources
+                        .iter()
+                        .map(|s| s.value.clone())
+                        .collect::<Vec<String>>(),
                     Some(current_source.clone()),
                     Message::OnSelectRuneSource,
-                ),
+                ))
+                .padding(Padding::from([0, 0, 16, 0])),
                 rune_list_title,
                 rune_list_col
             ]
-            .padding(8.)
+            .padding(Padding::from([8, 0]))
             .width(Length::FillPortion(2))
         ]
         .spacing(8)
