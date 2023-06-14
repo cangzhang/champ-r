@@ -22,11 +22,13 @@ use lcu::api::{apply_rune, LcuError};
 use lcu::client::LcuClient;
 use source_item::SourceItem;
 use ui::{ChampR, LogItem};
-use web_service::{ChampionsMap, FetchError};
+use web_service::{ChampionsMap, FetchError, DataDragonRune};
 
 pub fn main() -> iced::Result {
     let champions_map1: Arc<Mutex<ChampionsMap>> = Arc::new(Mutex::new(HashMap::new()));
     let champions_map2 = champions_map1.clone();
+    let remote_rune_list1 = Arc::new(Mutex::new(Vec::<DataDragonRune>::new()));
+    let remote_rune_list2 = remote_rune_list1.clone();
     let fetched_remote_data1 = Arc::new(Mutex::new(false));
     let fetched_remote_data2 = fetched_remote_data1.clone();
 
@@ -70,6 +72,7 @@ pub fn main() -> iced::Result {
                 loading_runes2,
                 current_champion_avatar2,
                 fetched_remote_data2,
+                remote_rune_list2,
             );
             lcu_client.start().await;
         });
@@ -109,13 +112,14 @@ pub fn main() -> iced::Result {
             loading_runes1,
             current_champion_avatar1,
             fetched_remote_data1,
+            remote_rune_list1,
         ),
     })
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    InitRemoteData(Result<(Vec<SourceItem>, ChampionsMap), FetchError>),
+    InitRemoteData(Result<(Vec<SourceItem>, ChampionsMap, Vec<DataDragonRune>), FetchError>),
     UpdateSelected(String),
     ApplyBuilds,
     TickRun,
@@ -146,9 +150,11 @@ impl Application for ChampR {
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::InitRemoteData(resp) => {
-                if let Ok((sources, champions_map)) = resp {
+                if let Ok((sources, champions_map, remote_runes)) = resp {
                     *self.source_list.lock().unwrap() = sources;
                     *self.champions_map.lock().unwrap() = champions_map;
+                    *self.remote_rune_list.lock().unwrap() = remote_runes;
+                    
                     *self.fetched_remote_data.lock().unwrap() = true;
                 }
             }
@@ -204,7 +210,7 @@ impl Application for ChampR {
                 if current_champion.len() > 0 {
                     *self.loading_runes.lock().unwrap() = true;
                     return Command::perform(
-                        web_service::fetch_runes(source, current_champion.clone()),
+                        web_service::fetch_champion_runes(source, current_champion.clone()),
                         Message::OnFetchedRunes,
                     );
                 }

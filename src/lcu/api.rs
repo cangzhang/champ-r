@@ -1,9 +1,13 @@
 use std::time::Duration;
 
 use bytes::Bytes;
+use futures::future::try_join3;
 use serde_json::Value;
 
-use crate::{builds::Rune, web_service::FetchError};
+use crate::{
+    builds::Rune,
+    web_service::{DataDragonRune, FetchError},
+};
 
 pub fn make_client() -> reqwest::Client {
     reqwest::Client::builder()
@@ -72,7 +76,7 @@ impl From<reqwest::Error> for LcuError {
 
 pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
     let runes = make_get_request(&format!("{endpoint}/lol-perks/v1/pages")).await?;
-    
+
     let mut id = 0;
     for r in runes.as_array().unwrap() {
         if r["current"].as_bool().unwrap() {
@@ -83,7 +87,7 @@ pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
             id = r["id"].as_i64().unwrap();
         }
     }
-    
+
     let client = make_client();
     if id > 0 {
         let _ = client
@@ -103,7 +107,6 @@ pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
         .await?;
     Ok(())
 }
-
 
 pub async fn get_champion_avatar(endpoint: String, champion_id: u64) -> Result<Bytes, FetchError> {
     let client = make_client();
@@ -127,4 +130,39 @@ pub async fn get_rune_image(endpoint: String, icon_path: String) -> Result<Bytes
     }
 
     Err(FetchError::Failed)
+}
+
+pub async fn get_rune_preview_images(
+    endpoint: String,
+    rune: Rune,
+    remote_rune_list: Vec<DataDragonRune>,
+) -> Result<(Bytes, Bytes, Bytes), FetchError> {
+    let primary_id = get_rune_image_path(rune.primary_style_id, &remote_rune_list);
+    let sub_id = get_rune_image_path(rune.sub_style_id, &remote_rune_list);
+    let first_rune = get_rune_image_path(rune.selected_perk_ids[0], &remote_rune_list);
+
+    try_join3(
+        get_rune_image(endpoint.clone(), primary_id),
+        get_rune_image(endpoint.clone(), sub_id),
+        get_rune_image(endpoint.clone(), first_rune),
+    )
+    .await
+}
+
+pub fn get_rune_image_path(rune_id: u64, remote_rune_list: &Vec<DataDragonRune>) -> String {
+    for rune in remote_rune_list.iter() {
+        if rune.id == rune_id {
+            return rune.icon.clone();
+        }
+
+        for slot in rune.slots.iter() {
+            for rune in slot.runes.iter() {
+                if rune.id == rune_id {
+                    return rune.icon.clone();
+                }
+            }
+        }
+    }
+
+    String::new()
 }

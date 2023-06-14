@@ -7,7 +7,7 @@ use crate::{
     builds::Rune,
     cmd::{self, CommandLineOutput},
     lcu::util::get_champion_alias,
-    web_service::{fetch_runes, ChampionsMap},
+    web_service::{fetch_champion_runes, ChampionsMap, DataDragonRune},
 };
 
 use super::api::{self, get_champion_avatar};
@@ -26,6 +26,7 @@ pub struct LcuClient {
     pub loading_runes: Arc<Mutex<bool>>,
     pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
     pub fetched_remote_data: Arc<Mutex<bool>>,
+    pub remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
 }
 
 impl LcuClient {
@@ -41,6 +42,7 @@ impl LcuClient {
         loading_runes: Arc<Mutex<bool>>,
         current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
         fetched_remote_data: Arc<Mutex<bool>>,
+        remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
     ) -> Self {
         Self {
             auth_url,
@@ -54,6 +56,7 @@ impl LcuClient {
             loading_runes,
             current_champion_avatar,
             fetched_remote_data,
+            remote_rune_list,
         }
     }
 
@@ -116,7 +119,7 @@ impl LcuClient {
 
                 if should_fetch_runes {
                     *self.current_champion_avatar.lock().unwrap() = None;
-                    
+
                     let loading_runes_guard = self.loading_runes.clone();
                     *loading_runes_guard.lock().unwrap() = true;
 
@@ -134,7 +137,7 @@ impl LcuClient {
                     };
 
                     if let Ok((runes, avatar_bytes)) = futures::future::try_join(
-                        fetch_runes(source, champion.clone()),
+                        fetch_champion_runes(source, champion.clone()),
                         get_champion_avatar(auth_url, champion_id),
                     )
                     .await

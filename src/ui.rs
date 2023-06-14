@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{builds::Rune, source_item::SourceItem, web_service::ChampionsMap};
+use crate::{builds::Rune, source_item::SourceItem, web_service::{ChampionsMap, DataDragonRune}};
 
 pub type LogItem = (String, String);
 
@@ -21,6 +21,7 @@ pub struct ChampR {
     pub loading_runes: Arc<Mutex<bool>>,
     pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
     pub fetched_remote_data: Arc<Mutex<bool>>,
+    pub remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
 }
 
 impl ChampR {
@@ -37,6 +38,7 @@ impl ChampR {
         loading_runes: Arc<Mutex<bool>>,
         current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
         fetched_remote_data: Arc<Mutex<bool>>,
+        remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
     ) -> Self {
         Self {
             auth_url,
@@ -51,6 +53,7 @@ impl ChampR {
             loading_runes,
             current_champion_avatar,
             fetched_remote_data,
+            remote_rune_list,
             ..Default::default()
         }
     }
