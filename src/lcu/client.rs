@@ -7,10 +7,10 @@ use crate::{
     builds::Rune,
     cmd::{self, CommandLineOutput},
     lcu::util::get_champion_alias,
-    web_service::{fetch_champion_avatar, fetch_runes, ChampionsMap},
+    web_service::{fetch_runes, ChampionsMap},
 };
 
-use super::api;
+use super::api::{self, get_champion_avatar};
 
 pub struct LcuClient {
     pub champions_map: Arc<Mutex<ChampionsMap>>,
@@ -77,14 +77,16 @@ impl LcuClient {
             } = cmd::get_commandline();
 
             {
-                let mut auth_url_guard = self.auth_url.lock().unwrap();
-                *auth_url_guard = auth_url.clone();
-                let mut is_tencent_guard = self.is_tencent.lock().unwrap();
-                *is_tencent_guard = is_tencent;
-                let mut lcu_dir_guard = self.lcu_dir.lock().unwrap();
-                *lcu_dir_guard = dir.clone();
+                *self.auth_url.lock().unwrap() = if !auth_url.is_empty() {
+                    format!("https://{}", auth_url)
+                } else {
+                    String::new()
+                };
+                *self.is_tencent.lock().unwrap() = is_tencent;
+                *self.lcu_dir.lock().unwrap() = dir.clone();
             }
 
+            let auth_url = { self.auth_url.lock().unwrap().clone() };
             let mut should_fetch_runes: bool = false;
 
             if !auth_url.is_empty() {
@@ -113,6 +115,8 @@ impl LcuClient {
                 }
 
                 if should_fetch_runes {
+                    *self.current_champion_avatar.lock().unwrap() = None;
+                    
                     let loading_runes_guard = self.loading_runes.clone();
                     *loading_runes_guard.lock().unwrap() = true;
 
@@ -124,10 +128,14 @@ impl LcuClient {
                         let champion = self.current_champion.lock().unwrap();
                         (*champion).clone()
                     };
+                    let champion_id = {
+                        let champion_id = self.current_champion_id.lock().unwrap();
+                        (*champion_id).clone().unwrap_or(0)
+                    };
 
                     if let Ok((runes, avatar_bytes)) = futures::future::try_join(
                         fetch_runes(source, champion.clone()),
-                        fetch_champion_avatar(champion.clone()),
+                        get_champion_avatar(auth_url, champion_id),
                     )
                     .await
                     {

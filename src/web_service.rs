@@ -92,16 +92,3 @@ pub async fn fetch_runes(source: String, champion: String) -> Result<Vec<Rune>, 
     let runes = builds.iter().flat_map(|b| b.runes.clone()).collect();
     Ok(runes)
 }
-
-pub async fn fetch_champion_avatar(
-    champion_alias: String,
-) -> Result<bytes::Bytes, FetchError> {
-    let url = format!("https://game.gtimg.cn/images/lol/act/img/champion/{champion_alias}.png");
-    if let Ok(resp) = reqwest::get(&url).await {
-        if let Ok(bytes) = resp.bytes().await {
-            return Ok(bytes);
-        }
-    }
-    
-    Err(FetchError::Failed)
-}

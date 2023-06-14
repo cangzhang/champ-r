@@ -1,8 +1,9 @@
 use std::time::Duration;
 
+use bytes::Bytes;
 use serde_json::Value;
 
-use crate::builds::Rune;
+use crate::{builds::Rune, web_service::FetchError};
 
 pub fn make_client() -> reqwest::Client {
     reqwest::Client::builder()
@@ -28,7 +29,7 @@ pub async fn make_get_request(endpoint: &String) -> Result<Value, reqwest::Error
 }
 
 pub async fn get_session(auth_url: &String) -> Result<Option<u64>, reqwest::Error> {
-    let endpoint = format!("https://{auth_url}/lol-champ-select/v1/session");
+    let endpoint = format!("{auth_url}/lol-champ-select/v1/session");
     let resp = make_get_request(&endpoint).await?;
 
     if let Some(cell_id) = resp["localPlayerCellId"].as_u64() {
@@ -70,17 +71,8 @@ impl From<reqwest::Error> for LcuError {
 }
 
 pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
-    let client = make_client();
-
-    let runes = client
-        .get(format!("{endpoint}/lol-perks/v1/pages"))
-        .version(reqwest::Version::HTTP_2)
-        .header(reqwest::header::ACCEPT, "application/json")
-        .send()
-        .await?
-        .json::<serde_json::Value>()
-        .await?;
-
+    let runes = make_get_request(&format!("{endpoint}/lol-perks/v1/pages")).await?;
+    
     let mut id = 0;
     for r in runes.as_array().unwrap() {
         if r["current"].as_bool().unwrap() {
@@ -91,7 +83,8 @@ pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
             id = r["id"].as_i64().unwrap();
         }
     }
-
+    
+    let client = make_client();
     if id > 0 {
         let _ = client
             .delete(format!("{endpoint}/lol-perks/v1/pages/{id}"))
@@ -109,4 +102,29 @@ pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
         .send()
         .await?;
     Ok(())
+}
+
+
+pub async fn get_champion_avatar(endpoint: String, champion_id: u64) -> Result<Bytes, FetchError> {
+    let client = make_client();
+    let url = format!("{endpoint}/lol-game-data/assets/v1/champion-icons/{champion_id}.png");
+    if let Ok(resp) = client.get(&url).send().await {
+        if let Ok(bytes) = resp.bytes().await {
+            return Ok(bytes);
+        }
+    }
+
+    Err(FetchError::Failed)
+}
+
+pub async fn get_rune_image(endpoint: String, icon_path: String) -> Result<Bytes, FetchError> {
+    let client = make_client();
+    let url = format!("{endpoint}/lol-game-data/assets/v1/{icon_path}");
+    if let Ok(resp) = client.get(&url).send().await {
+        if let Ok(bytes) = resp.bytes().await {
+            return Ok(bytes);
+        }
+    }
+
+    Err(FetchError::Failed)
 }

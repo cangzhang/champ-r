@@ -187,9 +187,8 @@ impl Application for ChampR {
                 }
             }
             Message::ApplyRune(auth_url, rune) => {
-                let endpoint = format!("https://{auth_url}");
                 return Command::perform(
-                    apply_rune(endpoint, rune),
+                    apply_rune(auth_url, rune),
                     Message::ApplyRuneDone,
                 );
             }
@@ -358,7 +357,7 @@ impl Application for ChampR {
 
     fn subscription(&self) -> Subscription<Message> {
         let time_subscription =
-            iced::time::every(Duration::from_millis(600)).map(|_| Message::TickRun);
+            iced::time::every(Duration::from_millis(400)).map(|_| Message::TickRun);
 
         Subscription::batch([time_subscription])
     }
