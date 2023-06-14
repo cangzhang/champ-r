@@ -135,7 +135,7 @@ pub async fn get_rune_image(endpoint: String, icon_path: String) -> Result<Bytes
 pub async fn get_rune_preview_images(
     endpoint: String,
     rune: Rune,
-    remote_rune_list: Vec<DataDragonRune>,
+    remote_rune_list: &Vec<DataDragonRune>,
 ) -> Result<(Bytes, Bytes, Bytes), FetchError> {
     let primary_id = get_rune_image_path(rune.primary_style_id, &remote_rune_list);
     let sub_id = get_rune_image_path(rune.sub_style_id, &remote_rune_list);

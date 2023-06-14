@@ -10,6 +10,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use builds::Rune;
+use bytes::Bytes;
 use iced::alignment::{self, Horizontal, Vertical};
 use iced::widget::{
     button, checkbox, column, image, pick_list, row, text, Column, Container, Row, Scrollable,
@@ -53,6 +54,8 @@ pub fn main() -> iced::Result {
     let loading_runes2 = loading_runes1.clone();
     let current_champion_avatar1 = Arc::new(Mutex::new(None));
     let current_champion_avatar2 = current_champion_avatar1.clone();
+    let rune_images1 = Arc::new(Mutex::new(Vec::<(Bytes, Bytes, Bytes)>::new()));
+    let rune_images2 = rune_images1.clone();
 
     let apply_builds_logs1 = Arc::new(Mutex::new(Vec::<LogItem>::new()));
     // let apply_builds_logs2 = apply_builds_logs1.clone();
@@ -73,6 +76,7 @@ pub fn main() -> iced::Result {
                 current_champion_avatar2,
                 fetched_remote_data2,
                 remote_rune_list2,
+                rune_images2,
             );
             lcu_client.start().await;
         });
@@ -113,6 +117,7 @@ pub fn main() -> iced::Result {
             current_champion_avatar1,
             fetched_remote_data1,
             remote_rune_list1,
+            rune_images1,
         ),
     })
 }
@@ -239,6 +244,7 @@ impl Application for ChampR {
         let loading_runes = self.loading_runes.lock().unwrap();
         let current_source = self.current_source.lock().unwrap();
         let avatar_guard = self.current_champion_avatar.lock().unwrap();
+        let rune_images = self.rune_images.lock().unwrap();
 
         let title = text("ChampR - Builds, Runes AIO")
             .size(26.)
@@ -278,9 +284,21 @@ impl Application for ChampR {
             rune_list_col = rune_list_col
                 .push(text("Loading runes...").horizontal_alignment(alignment::Horizontal::Center));
         } else {
-            for r in runes.iter() {
+            for (idx, r) in runes.iter().enumerate() {
+                let rune_preview_row = if let Some(imgs) = rune_images.get(idx) {
+                    row![
+                        image::viewer(image::Handle::from_memory(imgs.0.clone())).height(32.).width(32.),
+                        image::viewer(image::Handle::from_memory(imgs.1.clone())).height(32.).width(32.),
+                        image::viewer(image::Handle::from_memory(imgs.2.clone())).height(32.).width(32.),
+                    ]
+                } else {
+                    row!()
+                };
                 let row = row![
-                    text(r.name.clone()).size(16.).width(Length::FillPortion(2)),
+                    column![
+                        text(r.name.clone()).size(16.).width(Length::FillPortion(2)),
+                        rune_preview_row,
+                    ],
                     row![button("Apply").on_press(Message::ApplyRune(auth_url.clone(), r.clone()))]
                         .align_items(Alignment::End)
                         .width(Length::FillPortion(1)),
@@ -363,7 +381,7 @@ impl Application for ChampR {
 
     fn subscription(&self) -> Subscription<Message> {
         let time_subscription =
-            iced::time::every(Duration::from_millis(400)).map(|_| Message::TickRun);
+            iced::time::every(Duration::from_millis(100)).map(|_| Message::TickRun);
 
         Subscription::batch([time_subscription])
     }

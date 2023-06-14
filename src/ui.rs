@@ -1,5 +1,7 @@
 use std::sync::{Arc, Mutex};
 
+use bytes::Bytes;
+
 use crate::{builds::Rune, source_item::SourceItem, web_service::{ChampionsMap, DataDragonRune}};
 
 pub type LogItem = (String, String);
@@ -22,6 +24,7 @@ pub struct ChampR {
     pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
     pub fetched_remote_data: Arc<Mutex<bool>>,
     pub remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
+    pub rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
 }
 
 impl ChampR {
@@ -39,6 +42,7 @@ impl ChampR {
         current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
         fetched_remote_data: Arc<Mutex<bool>>,
         remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
+        rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
     ) -> Self {
         Self {
             auth_url,
@@ -54,6 +58,7 @@ impl ChampR {
             current_champion_avatar,
             fetched_remote_data,
             remote_rune_list,
+            rune_images,
             ..Default::default()
         }
     }
