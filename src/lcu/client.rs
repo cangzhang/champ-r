@@ -139,7 +139,7 @@ impl LcuClient {
                     };
                     let champion_id = {
                         let champion_id = self.current_champion_id.lock().unwrap();
-                        (*champion_id).clone().unwrap_or(0)
+                        (*champion_id).unwrap_or(0)
                     };
 
                     if let Ok((runes, avatar_bytes)) = futures::future::try_join(

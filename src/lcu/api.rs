@@ -137,9 +137,9 @@ pub async fn get_rune_preview_images(
     rune: Rune,
     remote_rune_list: &Vec<DataDragonRune>,
 ) -> Result<(Bytes, Bytes, Bytes), FetchError> {
-    let primary_id = get_rune_image_path(rune.primary_style_id, &remote_rune_list);
-    let sub_id = get_rune_image_path(rune.sub_style_id, &remote_rune_list);
-    let first_rune = get_rune_image_path(rune.selected_perk_ids[0], &remote_rune_list);
+    let primary_id = get_rune_image_path(rune.primary_style_id, remote_rune_list);
+    let sub_id = get_rune_image_path(rune.sub_style_id, remote_rune_list);
+    let first_rune = get_rune_image_path(rune.selected_perk_ids[0], remote_rune_list);
 
     try_join3(
         get_rune_image(endpoint.clone(), primary_id),
