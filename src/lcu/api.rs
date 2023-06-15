@@ -6,7 +6,7 @@ use serde_json::Value;
 
 use crate::{
     builds::Rune,
-    web_service::{DataDragonRune, FetchError},
+    web::{DataDragonRune, FetchError},
 };
 
 pub fn make_client() -> reqwest::Client {

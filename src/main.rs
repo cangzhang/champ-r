@@ -1,9 +1,9 @@
 pub mod builds;
 pub mod cmd;
 pub mod lcu;
-pub mod source_item;
+pub mod source;
 pub mod ui;
-pub mod web_service;
+pub mod web;
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -21,9 +21,9 @@ use iced::{Application, Command, Element, Length, Settings, Theme};
 
 use lcu::api::{apply_rune, LcuError};
 use lcu::client::LcuClient;
-use source_item::SourceItem;
+use source::SourceItem;
 use ui::{ChampR, LogItem};
-use web_service::{ChampionsMap, DataDragonRune, FetchError};
+use web::{ChampionsMap, DataDragonRune, FetchError};
 
 pub fn main() -> iced::Result {
     let champions_map1: Arc<Mutex<ChampionsMap>> = Arc::new(Mutex::new(HashMap::new()));
@@ -144,7 +144,7 @@ impl Application for ChampR {
     fn new(flags: ChampR) -> (Self, Command<Message>) {
         (
             flags,
-            Command::perform(web_service::init_for_ui(), Message::InitRemoteData),
+            Command::perform(web::init_for_ui(), Message::InitRemoteData),
         )
     }
 
@@ -212,7 +212,7 @@ impl Application for ChampR {
                 if current_champion.len() > 0 {
                     *self.loading_runes.lock().unwrap() = true;
                     return Command::perform(
-                        web_service::fetch_champion_runes(source, current_champion.clone()),
+                        web::fetch_champion_runes(source, current_champion.clone()),
                         Message::OnFetchedRunes,
                     );
                 }

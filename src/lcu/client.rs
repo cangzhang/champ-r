@@ -9,7 +9,7 @@ use crate::{
     builds::Rune,
     cmd::{self, CommandLineOutput},
     lcu::util::get_champion_alias,
-    web_service::{fetch_champion_runes, ChampionsMap, DataDragonRune},
+    web::{fetch_champion_runes, ChampionsMap, DataDragonRune},
 };
 
 use super::api::{self, get_champion_avatar, get_rune_preview_images};

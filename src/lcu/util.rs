@@ -1,4 +1,4 @@
-use crate::web_service::ChampionsMap;
+use crate::web::ChampionsMap;
 
 pub fn get_champion_alias(champions_map: &ChampionsMap, champion_id: u64) -> String {
     let champion_id_str = format!("{champion_id}");

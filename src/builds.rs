@@ -11,7 +11,7 @@ use std::{
 
 use crate::{
     ui::LogItem,
-    web_service::{self, ChampionsMap, FetchError},
+    web::{self, ChampionsMap, FetchError},
 };
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -89,7 +89,7 @@ pub async fn fetch_and_apply(
     source: &String,
     champion: &String,
 ) -> Result<(), FetchError> {
-    let sections = match web_service::fetch_build_file(source, champion).await {
+    let sections = match web::fetch_build_file(source, champion).await {
         Ok(s) => s,
         Err(_) => {
             return Err(FetchError::Failed);
