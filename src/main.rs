@@ -323,11 +323,12 @@ impl Application for ChampR {
 
         let main_row = row![
             column![
-                row![text("Source List").size(22.)].padding(Padding::from([0, 0, 0, 16])),
+                row![text("Sources of Builds").size(22.)].padding(Padding::from([0, 0, 0, 16])),
                 Scrollable::new(source_list_col)
                     .height(Length::Fill)
                     .width(Length::Fill)
             ]
+            .padding(Padding::from([16, 0]))
             .height(Length::Fill)
             .width(Length::FillPortion(2)),
             column![
@@ -365,7 +366,7 @@ impl Application for ChampR {
             text("Loading...")
         };
         let lcu_info = text(format!("auth url: {auth_url}, tencent: {is_tencent}"));
-        let apply_btn = button("Apply").on_press(Message::ApplyBuilds).padding(8.);
+        let apply_btn = button("Apply Builds!").on_press(Message::ApplyBuilds).padding(8.);
         let bot_col = column![remote_data_info, lcu_info, apply_btn]
             .spacing(8)
             .padding(8.)

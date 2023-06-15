@@ -112,7 +112,7 @@ pub async fn fetch_and_apply(
             let mut f = fs::File::create(&full_path).unwrap();
             let buf = serde_json::to_string_pretty(&item).unwrap();
             f.write_all(buf[..].as_bytes()).unwrap();
-            println!("[builds::apply_builds_from_local] saved to: {}", &full_path);
+            println!("[builds::apply_builds_from_remote] saved to: {}", &full_path);
         }
     }
 
