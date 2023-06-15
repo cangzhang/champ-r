@@ -124,6 +124,7 @@ impl LcuClient {
 
                 if should_fetch_runes {
                     *self.current_champion_avatar.lock().unwrap() = None;
+                    *self.current_champion_runes.lock().unwrap() = vec![];
 
                     let loading_runes_guard = self.loading_runes.clone();
                     *loading_runes_guard.lock().unwrap() = true;
@@ -158,6 +159,7 @@ impl LcuClient {
                         };
                         let auth_url = { self.auth_url.lock().unwrap().clone() };
 
+                        *rune_images_guard.lock().unwrap() = vec![];
                         tokio::task::spawn(async move {
                             let mut rune_images = vec![];
 

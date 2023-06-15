@@ -11,9 +11,9 @@ use std::time::Duration;
 
 use builds::Rune;
 use bytes::Bytes;
-use iced::alignment::{self, Horizontal, Vertical};
+use iced::alignment;
 use iced::widget::{
-    button, checkbox, column, image, pick_list, row, text, Column, Container, Row, Scrollable,
+    button, checkbox, column, image, pick_list, row, text, Column, Container, Scrollable,
 };
 use iced::window::{PlatformSpecific, Position};
 use iced::{executor, window, Alignment, Padding, Subscription};
@@ -23,7 +23,7 @@ use lcu::api::{apply_rune, LcuError};
 use lcu::client::LcuClient;
 use source_item::SourceItem;
 use ui::{ChampR, LogItem};
-use web_service::{ChampionsMap, FetchError, DataDragonRune};
+use web_service::{ChampionsMap, DataDragonRune, FetchError};
 
 pub fn main() -> iced::Result {
     let champions_map1: Arc<Mutex<ChampionsMap>> = Arc::new(Mutex::new(HashMap::new()));
@@ -159,7 +159,7 @@ impl Application for ChampR {
                     *self.source_list.lock().unwrap() = sources;
                     *self.champions_map.lock().unwrap() = champions_map;
                     *self.remote_rune_list.lock().unwrap() = remote_runes;
-                    
+
                     *self.fetched_remote_data.lock().unwrap() = true;
                 }
             }
@@ -198,10 +198,7 @@ impl Application for ChampR {
                 }
             }
             Message::ApplyRune(auth_url, rune) => {
-                return Command::perform(
-                    apply_rune(auth_url, rune),
-                    Message::ApplyRuneDone,
-                );
+                return Command::perform(apply_rune(auth_url, rune), Message::ApplyRuneDone);
             }
             Message::ApplyRuneDone(resp) => {
                 if let Err(e) = resp {
@@ -239,18 +236,12 @@ impl Application for ChampR {
         let auth_url = self.auth_url.lock().unwrap();
         let is_tencent = self.is_tencent.lock().unwrap();
 
-        let current_champion = self.current_champion.lock().unwrap();
+        // let current_champion = self.current_champion.lock().unwrap();
         let runes = self.current_champion_runes.lock().unwrap();
         let loading_runes = self.loading_runes.lock().unwrap();
         let current_source = self.current_source.lock().unwrap();
         let avatar_guard = self.current_champion_avatar.lock().unwrap();
         let rune_images = self.rune_images.lock().unwrap();
-
-        let title = text("ChampR - Builds, Runes AIO")
-            .size(26.)
-            .width(Length::Fill)
-            .horizontal_alignment(Horizontal::Center);
-        let title = Row::new().push(title).padding(6).width(Length::Fill);
 
         let mut source_list_col = Column::new().width(Length::Fill).spacing(8.).padding(16.);
         for item in sources.iter() {
@@ -263,15 +254,16 @@ impl Application for ChampR {
             })
             .text_size(20.)
             .spacing(6.);
-            let mode_text = SourceItem::get_mode_text(item);
+            let icon = SourceItem::get_mode_icon(item);
             source_list_col = source_list_col.push(
                 row![
                     cbox,
-                    row![text(mode_text)
-                        .size(16.)
-                        .vertical_alignment(Vertical::Center)]
+                    row![image(image::Handle::from_memory(icon))
+                        .height(16.)
+                        .width(16.)]
                 ]
-                .spacing(8.),
+                .spacing(8.)
+                .align_items(Alignment::Center),
             );
         }
 
@@ -282,23 +274,37 @@ impl Application for ChampR {
             .padding(16.);
         if *loading_runes {
             rune_list_col = rune_list_col
-                .push(text("Loading runes...").horizontal_alignment(alignment::Horizontal::Center));
+                .push(text("Loading runes...").horizontal_alignment(alignment::Horizontal::Center))
+                .height(Length::Fill);
         } else {
             for (idx, r) in runes.iter().enumerate() {
-                let rune_preview_row = if let Some(imgs) = rune_images.get(idx) {
-                    row![
-                        image::viewer(image::Handle::from_memory(imgs.0.clone())).height(32.).width(32.),
-                        image::viewer(image::Handle::from_memory(imgs.1.clone())).height(32.).width(32.),
-                        image::viewer(image::Handle::from_memory(imgs.2.clone())).height(32.).width(32.),
-                    ]
-                } else {
-                    row!()
-                };
+                let rune_preview_row =
+                    if let Some((primary_img, sub_img, first_img)) = rune_images.get(idx) {
+                        row![
+                            image(image::Handle::from_memory(primary_img.clone()))
+                                .height(28.)
+                                .width(28.),
+                            image(image::Handle::from_memory(first_img.clone()))
+                                .height(36.)
+                                .width(36.),
+                            image(image::Handle::from_memory(sub_img.clone()))
+                                .height(28.)
+                                .width(28.),
+                        ]
+                        .align_items(Alignment::Center)
+                    } else {
+                        row!()
+                    };
+                let rune_title = format!(
+                    "Position: {}, Pick: {}, Win: {}",
+                    r.position, r.pick_count, r.win_rate
+                );
                 let row = row![
                     column![
-                        text(r.name.clone()).size(16.).width(Length::FillPortion(2)),
+                        text(rune_title).size(14.).width(Length::FillPortion(2)),
                         rune_preview_row,
-                    ],
+                    ]
+                    .width(Length::FillPortion(2)),
                     row![button("Apply").on_press(Message::ApplyRune(auth_url.clone(), r.clone()))]
                         .align_items(Alignment::End)
                         .width(Length::FillPortion(1)),
@@ -308,17 +314,11 @@ impl Application for ChampR {
             }
         }
 
-        let rune_list_title = if current_champion.len() > 0 {
-            text(format!("Champion: {current_champion}"))
-        } else {
-            text("Champion: None")
-        };
-
         let avatar_row = if let Some(b) = avatar_guard.clone() {
             let handle = image::Handle::from_memory(b);
-            row!(image::viewer(handle).height(48.).width(48.))
+            row!(image(handle).height(36.).width(36.))
         } else {
-            row!()
+            row!().height(36.)
         };
 
         let main_row = row![
@@ -344,8 +344,9 @@ impl Application for ChampR {
                 )
                 .align_items(Alignment::Center)
                 .padding(Padding::from([0, 0, 16, 0])),
-                rune_list_title,
-                rune_list_col
+                Scrollable::new(rune_list_col)
+                    .height(Length::Fill)
+                    .width(Length::Fill)
             ]
             .padding(Padding::from([8, 0]))
             .width(Length::FillPortion(2))
@@ -371,7 +372,7 @@ impl Application for ChampR {
             .width(Length::Fill)
             .height(Length::FillPortion(1))
             .align_items(Alignment::Center);
-        let content = Column::new().push(title).push(main_row).push(bot_col);
+        let content = Column::new().push(main_row).push(bot_col);
 
         Container::new(content)
             .width(Length::Fill)

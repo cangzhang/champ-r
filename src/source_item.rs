@@ -10,6 +10,10 @@ pub struct SourceItem {
     pub is_urf: Option<bool>,
 }
 
+const SR_ICON: &'static [u8] = include_bytes!("../assets/sr.png");
+const ARAM_ICON: &'static [u8] = include_bytes!("../assets/aram.png");
+const URF_ICON: &'static [u8] = include_bytes!("../assets/urf.png");
+
 impl SourceItem {
     pub fn get_mode_text(s: &Self) -> &'static str {
         if let Some(true) = s.is_aram {
@@ -20,5 +24,16 @@ impl SourceItem {
         }
 
         "SR"
+    }
+
+    pub fn get_mode_icon(s: &Self) -> &'static [u8] {
+        if let Some(true) = s.is_aram {
+            return ARAM_ICON;
+        }
+        if let Some(true) = s.is_urf {
+            return URF_ICON;
+        }
+
+        SR_ICON
     }
 }
