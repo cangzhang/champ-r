@@ -149,7 +149,7 @@ impl Application for ChampR {
     }
 
     fn title(&self) -> String {
-        String::from("ChampR - Builds, Runes, All in One")
+        String::from("ChampR - Builds, Runes, All in One, v2.0.2-b1")
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
