@@ -1,5 +1,6 @@
 pub mod builds;
 pub mod cmd;
+pub mod fonts;
 pub mod lcu;
 pub mod source;
 pub mod ui;
@@ -13,7 +14,7 @@ use builds::Rune;
 use bytes::Bytes;
 use iced::alignment;
 use iced::widget::{
-    button, checkbox, column, image, pick_list, row, text, Column, Container, Scrollable,
+    button, checkbox, column, image, pick_list, row, text, tooltip, Column, Container, Scrollable,
 };
 use iced::window::{PlatformSpecific, Position};
 use iced::{executor, window, Alignment, Padding, Subscription};
@@ -97,8 +98,8 @@ pub fn main() -> iced::Result {
             icon: None,
             platform_specific: PlatformSpecific::default(),
         },
-        default_font: Some(include_bytes!("./fonts/LXGWNeoXiHei.ttf")),
-        default_text_size: 14.,
+        default_font: Some(fonts::SARSA_MONO_REGULAR_BYTES),
+        default_text_size: 18.,
         text_multithreading: true,
         antialiasing: false,
         exit_on_close_request: true,
@@ -173,6 +174,10 @@ impl Application for ChampR {
                 }
             }
             Message::ApplyBuilds => {
+                if !(*self.auth_url.lock().unwrap()).is_empty() {
+                    return Command::none();
+                }
+
                 let logs = self.logs.clone();
                 let lcu_dir = { self.lcu_dir.lock().unwrap().clone() };
                 let selected_sources = { self.selected_sources.lock().unwrap().clone() };
@@ -225,7 +230,8 @@ impl Application for ChampR {
         let champions_map = self.champions_map.lock().unwrap();
 
         let auth_url = self.auth_url.lock().unwrap();
-        let is_tencent = self.is_tencent.lock().unwrap();
+        // let is_tencent = self.is_tencent.lock().unwrap();
+        let lol_running = if auth_url.is_empty() { false } else { true };
 
         // let current_champion = self.current_champion.lock().unwrap();
         let runes = self.current_champion_runes.lock().unwrap();
@@ -314,7 +320,10 @@ impl Application for ChampR {
 
         let main_row = row![
             column![
-                row![text("Sources of Builds").size(22.)].padding(Padding::from([0, 0, 0, 16])),
+                row![text("Sources of Builds")
+                    .size(22.)
+                    .font(fonts::SARSA_MONO_BOLD)]
+                .padding(Padding::from([0, 0, 0, 16])),
                 Scrollable::new(source_list_col)
                     .height(Length::Fill)
                     .width(Length::Fill)
@@ -356,11 +365,25 @@ impl Application for ChampR {
         } else {
             text("Loading...")
         };
-        let lcu_info = text(format!("auth url: {auth_url}, tencent: {is_tencent}"));
-        let apply_btn = button("Apply Builds!")
-            .on_press(Message::ApplyBuilds)
-            .padding(8.);
-        let bot_col = column![remote_data_info, lcu_info, apply_btn]
+
+        let apply_btn = button(
+            text(fonts::IconChar::Rocket.as_str())
+                .font(fonts::ICON_FONT)
+                .horizontal_alignment(alignment::Horizontal::Center)
+                .vertical_alignment(alignment::Vertical::Center),
+        )
+        .on_press(Message::ApplyBuilds)
+        .padding(8.);
+
+        let lcu_connect_info = if lol_running {
+            format!("Connected to League of Legends.")
+        } else {
+            format!("Not connected to League of Legends.")
+        };
+        let btn_with_tooltip = row!(tooltip(apply_btn, "Apply Build!", tooltip::Position::Top))
+            .padding(Padding::from([16, 0, 0, 0]));
+
+        let bot_col = column![remote_data_info, text(lcu_connect_info), btn_with_tooltip]
             .spacing(8)
             .padding(8.)
             .width(Length::Fill)

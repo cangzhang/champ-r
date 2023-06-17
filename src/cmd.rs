@@ -48,8 +48,11 @@ pub fn get_commandline() -> CommandLineOutput {
         .output()
     {
         if output.status.success() {
-            let utf8_output = str::from_utf8(&output.stdout).expect("Output was not valid UTF-8");
-            return match_stdout(&String::from(utf8_output));
+            if let Ok(utf8_output) = str::from_utf8(&output.stdout) {
+                if !utf8_output.is_empty() {
+                    return match_stdout(&String::from(utf8_output));
+                }
+            }
         }
     }
 
