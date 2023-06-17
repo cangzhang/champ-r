@@ -1,11 +1,13 @@
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use std::str;
 use std::sync::{Arc, Mutex};
 
 const APP_PORT_KEY: &str = "--app-port=";
 const TOKEN_KEY: &str = "--remoting-auth-token=";
 const REGION_KEY: &str = "--region=";
 const DIR_KEY: &str = "--install-directory=";
+const LCU_COMMAND: &str = "Get-CimInstance Win32_Process -Filter \"name = 'LeagueClientUx.exe'\" | Select-Object -ExpandProperty CommandLine";
 
 lazy_static! {
     static ref PORT_REGEXP: regex::Regex = regex::Regex::new(r"--app-port=\d+").unwrap();
@@ -31,25 +33,28 @@ pub struct CommandLineOutput {
 
 #[cfg(target_os = "windows")]
 pub fn get_commandline() -> CommandLineOutput {
-    let cmd_str = r#"Get-CimInstance Win32_Process -Filter "name = 'LeagueClientUx.exe'"| Select-Object -ExpandProperty CommandLine"#;
-    match powershell_script::run(cmd_str) {
-        Ok(output) => {
-            if let Some(stdout) = output.stdout() {
-                match_stdout(&stdout)
-            } else {
-                println!("[cmd] got nothing from output, maybe lcu is stopped");
-                CommandLineOutput {
-                    ..Default::default()
-                }
-            }
+    use std::process::Command;
+
+    if let Ok(output) = Command::new("powershell")
+        .args(&[
+            "-ExecutionPolicy",
+            "Bypass",
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            LCU_COMMAND,
+        ])
+        .output()
+    {
+        if output.status.success() {
+            let utf8_output = str::from_utf8(&output.stdout).expect("Output was not valid UTF-8");
+            return match_stdout(&String::from(utf8_output));
         }
-        Err(e) => {
-            println!("Error: {}", e);
-            println!("[cmd] maybe you should run it with admin privilege");
-            CommandLineOutput {
-                ..Default::default()
-            }
-        }
+    }
+
+    CommandLineOutput {
+        ..Default::default()
     }
 }
 
@@ -78,7 +83,13 @@ pub fn get_commandline() -> CommandLineOutput {
             match line {
                 Ok(s) => {
                     if s.contains("--app-port=") {
-                        CommandLineOutput { auth_url, is_tencent, token, port, .. } = match_stdout(&s);
+                        CommandLineOutput {
+                            auth_url,
+                            is_tencent,
+                            token,
+                            port,
+                            ..
+                        } = match_stdout(&s);
                         break;
                     }
                 }
@@ -116,6 +127,11 @@ pub fn match_stdout(stdout: &String) -> CommandLineOutput {
     let is_tencent = region.eq("TENCENT");
     let dir_match = DIR_REGEXP.find(stdout).unwrap();
     let dir = dir_match.as_str().replace(DIR_KEY, "");
+
+    // dbg!(dir.clone());
+    // let (utf8_bytes, _, _) = encoding_rs::GBK.decode(dir.clone().as_bytes());
+    // let utf8_string = String::from_utf8_lossy(&utf8_bytes).into_owned();
+
     let dir = dir.replace('\"', "");
     let dir = if is_tencent {
         format!("{dir}/..")
