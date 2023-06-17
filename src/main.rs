@@ -12,11 +12,11 @@ use std::time::Duration;
 
 use builds::Rune;
 use bytes::Bytes;
-use iced::alignment;
 use iced::widget::{
     button, checkbox, column, image, pick_list, row, text, tooltip, Column, Container, Scrollable,
 };
 use iced::window::{PlatformSpecific, Position};
+use iced::{alignment, theme};
 use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 
@@ -375,14 +375,15 @@ impl Application for ChampR {
         .on_press(Message::ApplyBuilds)
         .padding(8.);
 
+        let btn_with_tooltip =
+            row![tooltip(apply_btn, "Apply Build!", tooltip::Position::Top).gap(5).style(theme::Container::Box)]
+                .padding(Padding::from([16, 0, 0, 0]));
+
         let lcu_connect_info = if lol_running {
             format!("Connected to League of Legends.")
         } else {
             format!("Not connected to League of Legends.")
         };
-        let btn_with_tooltip = row!(tooltip(apply_btn, "Apply Build!", tooltip::Position::Top))
-            .padding(Padding::from([16, 0, 0, 0]));
-
         let bot_col = column![remote_data_info, text(lcu_connect_info), btn_with_tooltip]
             .spacing(8)
             .padding(8.)
