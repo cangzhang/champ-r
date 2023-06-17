@@ -3,6 +3,7 @@ pub mod cmd;
 pub mod fonts;
 pub mod lcu;
 pub mod source;
+pub mod styles;
 pub mod ui;
 pub mod web;
 
@@ -373,11 +374,16 @@ impl Application for ChampR {
                 .vertical_alignment(alignment::Vertical::Center),
         )
         .on_press(Message::ApplyBuilds)
-        .padding(8.);
+        .padding(8.)
+        .width(Length::Fixed(80.))
+        .style(theme::Button::Custom(Box::new(
+            styles::button::CustomIconButtonStyle,
+        )));
 
-        let btn_with_tooltip =
-            row![tooltip(apply_btn, "Apply Build!", tooltip::Position::Top).gap(5).style(theme::Container::Box)]
-                .padding(Padding::from([16, 0, 0, 0]));
+        let btn_with_tooltip = row![tooltip(apply_btn, "Apply Builds!", tooltip::Position::Top)
+            .gap(5)
+            .style(theme::Container::Box)]
+        .padding(Padding::from([16, 0, 0, 0]));
 
         let lcu_connect_info = if lol_running {
             format!("Connected to League of Legends.")
