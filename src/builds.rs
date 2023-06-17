@@ -5,8 +5,7 @@ use serde_json::Value;
 use std::{
     fs,
     io::Write,
-    path::Path,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex}, path::Path,
 };
 
 use crate::{
@@ -95,24 +94,25 @@ pub async fn fetch_and_apply(
             return Err(FetchError::Failed);
         }
     };
-
+    
+    let parent_dir = format!("{dir}/Game/Config/Champions/{champion}/Recommended");
+    let _result = fs::create_dir_all(&parent_dir);
+    
     let source_name = source.replace('.', "_");
     for (idx, b) in sections.iter().enumerate() {
         // let alias = &b.alias;
         let pos = &b.position;
-        fs::create_dir_all(dir).unwrap();
-
         for (iidx, item) in b.item_builds.iter().enumerate() {
-            let full_path = format!("{dir}/Game/Config/Champions/{champion}/Recommended/{source_name}_{champion}_{pos}_{idx}_{iidx}.json");
-            if Path::new(&full_path).exists() {
-                let _ = fs::remove_file(&full_path);
-                let _ = fs::remove_dir_all(&full_path);
-            }
-
+            let full_path = format!("{parent_dir}/{source_name}_{champion}_{pos}_{idx}_{iidx}.json");
             let mut f = fs::File::create(&full_path).unwrap();
+
             let buf = serde_json::to_string_pretty(&item).unwrap();
             f.write_all(buf[..].as_bytes()).unwrap();
-            println!("[builds::apply_builds_from_remote] saved to: {}", &full_path);
+            
+            println!(
+                "[builds::apply_builds_from_remote] saved to: {}",
+                &full_path
+            );
         }
     }
 
@@ -126,6 +126,13 @@ pub async fn batch_apply(
     logs: Arc<Mutex<Vec<LogItem>>>,
 ) -> Result<(), ()> {
     let mut tasks = vec![];
+
+    let folder = format!("{dir}/Game/Config/Champions/");
+    if Path::new(&folder).exists() {
+        let _ = fs::remove_dir_all(&folder);
+    } else {
+        let _ = fs::create_dir_all(&folder);
+    }
 
     for (champion, _) in champions_map.iter() {
         for source in selected_sources.iter() {

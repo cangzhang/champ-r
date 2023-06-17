@@ -174,21 +174,12 @@ impl Application for ChampR {
             }
             Message::ApplyBuilds => {
                 let logs = self.logs.clone();
-
-                let dir_gruard = self.lcu_dir.lock().unwrap();
-                let dir = dir_gruard.clone();
-                drop(dir_gruard);
-
-                let selected_sources_guard = self.selected_sources.lock().unwrap();
-                let selected_sources_clone = selected_sources_guard.clone();
-                drop(selected_sources_guard);
-
-                let champions_map_guard = self.champions_map.lock().unwrap();
-                let champions_map_clone = champions_map_guard.clone();
-                drop(champions_map_guard);
+                let lcu_dir = { self.lcu_dir.lock().unwrap().clone() };
+                let selected_sources = { self.selected_sources.lock().unwrap().clone() };
+                let champions_map = { self.champions_map.lock().unwrap().clone() };
 
                 return Command::perform(
-                    builds::batch_apply(selected_sources_clone, champions_map_clone, dir, logs),
+                    builds::batch_apply(selected_sources, champions_map, lcu_dir, logs),
                     Message::ApplyBuildsDone,
                 );
             }
@@ -366,7 +357,9 @@ impl Application for ChampR {
             text("Loading...")
         };
         let lcu_info = text(format!("auth url: {auth_url}, tencent: {is_tencent}"));
-        let apply_btn = button("Apply Builds!").on_press(Message::ApplyBuilds).padding(8.);
+        let apply_btn = button("Apply Builds!")
+            .on_press(Message::ApplyBuilds)
+            .padding(8.);
         let bot_col = column![remote_data_info, lcu_info, apply_btn]
             .spacing(8)
             .padding(8.)
