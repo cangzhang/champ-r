@@ -36,7 +36,7 @@ pub fn get_commandline() -> CommandLineOutput {
     use std::process::Command;
 
     if let Ok(output) = Command::new("powershell")
-        .args(&[
+        .args([
             "-ExecutionPolicy",
             "Bypass",
             "-NoLogo",

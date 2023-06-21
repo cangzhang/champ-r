@@ -232,7 +232,7 @@ impl Application for ChampR {
 
         let auth_url = self.auth_url.lock().unwrap();
         // let is_tencent = self.is_tencent.lock().unwrap();
-        let lol_running = if auth_url.is_empty() { false } else { true };
+        let lol_running = !auth_url.is_empty();
 
         // let current_champion = self.current_champion.lock().unwrap();
         let runes = self.current_champion_runes.lock().unwrap();
@@ -386,9 +386,9 @@ impl Application for ChampR {
         .padding(Padding::from([16, 0, 0, 0]));
 
         let lcu_connect_info = if lol_running {
-            format!("Connected to League of Legends.")
+            "Connected to League of Legends.".to_string()
         } else {
-            format!("Not connected to League of Legends.")
+            "Not connected to League of Legends.".to_string()
         };
         let bot_col = column![remote_data_info, text(lcu_connect_info), btn_with_tooltip]
             .spacing(8)
