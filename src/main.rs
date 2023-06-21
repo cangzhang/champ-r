@@ -175,7 +175,7 @@ impl Application for ChampR {
                 }
             }
             Message::ApplyBuilds => {
-                if !(*self.auth_url.lock().unwrap()).is_empty() {
+                if (*self.auth_url.lock().unwrap()).is_empty() || !(*self.fetched_remote_data.lock().unwrap()) {
                     return Command::none();
                 }
 
