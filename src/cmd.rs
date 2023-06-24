@@ -33,7 +33,7 @@ pub struct CommandLineOutput {
 
 #[cfg(target_os = "windows")]
 pub fn get_commandline() -> CommandLineOutput {
-    use std::process::Command;
+    use std::{os::windows::process::CommandExt, process::Command};
 
     if let Ok(output) = Command::new("powershell")
         .args([
@@ -42,9 +42,12 @@ pub fn get_commandline() -> CommandLineOutput {
             "-NoLogo",
             "-NoProfile",
             "-NonInteractive",
+            "-WindowStyle",
+            "Hidden",
             "-Command",
             LCU_COMMAND,
         ])
+        .creation_flags(0x08000000)
         .output()
     {
         if output.status.success() {
