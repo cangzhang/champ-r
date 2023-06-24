@@ -359,7 +359,7 @@ impl Application for ChampR {
 
         let remote_data_info = if *self.fetched_remote_data.lock().unwrap() {
             text(format!(
-                "Fetched avaliable sources: {:?}, champions: {:?}",
+                "Fetched available sources: {:?}, champions: {:?}",
                 sources.len(),
                 champions_map.len()
             ))
