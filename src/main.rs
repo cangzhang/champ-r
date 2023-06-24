@@ -25,6 +25,7 @@ use iced::window::{PlatformSpecific, Position};
 use iced::{alignment, theme};
 use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
+use iced_native::Event;
 
 use lcu::api::{apply_rune, LcuError};
 use lcu::client::LcuClient;
@@ -108,7 +109,7 @@ pub fn main() -> iced::Result {
         default_text_size: 18.,
         text_multithreading: true,
         antialiasing: false,
-        exit_on_close_request: true,
+        exit_on_close_request: false,
         try_opengles_first: false,
         flags: ChampR::new(
             auth_url1,
@@ -140,6 +141,7 @@ pub enum Message {
     ApplyRuneDone(Result<(), LcuError>),
     OnSelectRuneSource(String),
     OnFetchedRunes(Result<Vec<Rune>, FetchError>),
+    EventOccurred(iced_native::Event),
 }
 
 impl Application for ChampR {
@@ -223,6 +225,11 @@ impl Application for ChampR {
                 *self.loading_runes.lock().unwrap() = false;
                 if let Ok(runes) = resp {
                     *self.current_champion_runes.lock().unwrap() = runes;
+                }
+            }
+            Message::EventOccurred(event) => {
+                if let Event::Window(window::Event::CloseRequested) = event {
+                    std::process::exit(0);
                 }
             }
             Message::TickRun => {}
@@ -412,7 +419,9 @@ impl Application for ChampR {
     fn subscription(&self) -> Subscription<Message> {
         let time_subscription =
             iced::time::every(Duration::from_millis(100)).map(|_| Message::TickRun);
+        
+        let ev_subscription = iced_native::subscription::events().map(Message::EventOccurred);
 
-        Subscription::batch([time_subscription])
+        Subscription::batch([time_subscription, ev_subscription])
     }
 }
