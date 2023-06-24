@@ -238,6 +238,7 @@ dependencies = [
  "futures",
  "iced",
  "iced_native",
+ "image",
  "lazy_static",
  "regex",
  "reqwest",

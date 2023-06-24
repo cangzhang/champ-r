@@ -10,6 +10,7 @@ pub mod lcu;
 pub mod source;
 pub mod styles;
 pub mod ui;
+pub mod util;
 pub mod web;
 
 use std::collections::HashMap;
@@ -90,6 +91,7 @@ pub fn main() -> iced::Result {
         });
     });
 
+    let window_icon = util::load_icon();
     ChampR::run(Settings {
         id: None,
         window: window::Settings {
@@ -102,7 +104,7 @@ pub fn main() -> iced::Result {
             decorations: true,
             transparent: false,
             always_on_top: false,
-            icon: None,
+            icon: Some(window_icon),
             platform_specific: PlatformSpecific::default(),
         },
         default_font: Some(fonts::SARSA_MONO_REGULAR_BYTES),
@@ -158,7 +160,7 @@ impl Application for ChampR {
     }
 
     fn title(&self) -> String {
-        String::from("ChampR - Builds, Runes, All in One. v2.0.2-b3")
+        String::from("ChampR - Builds, Runes, All in One. v2.0.2-b4")
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
@@ -182,7 +184,9 @@ impl Application for ChampR {
                 }
             }
             Message::ApplyBuilds => {
-                if (*self.auth_url.lock().unwrap()).is_empty() || !(*self.fetched_remote_data.lock().unwrap()) {
+                if (*self.auth_url.lock().unwrap()).is_empty()
+                    || !(*self.fetched_remote_data.lock().unwrap())
+                {
                     return Command::none();
                 }
 
@@ -419,7 +423,7 @@ impl Application for ChampR {
     fn subscription(&self) -> Subscription<Message> {
         let time_subscription =
             iced::time::every(Duration::from_millis(100)).map(|_| Message::TickRun);
-        
+
         let ev_subscription = iced_native::subscription::events().map(Message::EventOccurred);
 
         Subscription::batch([time_subscription, ev_subscription])
