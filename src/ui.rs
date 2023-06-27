@@ -25,6 +25,7 @@ pub struct ChampR {
     pub fetched_remote_data: Arc<Mutex<bool>>,
     pub remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
     pub rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
+    pub applying_builds: bool,
 }
 
 impl ChampR {

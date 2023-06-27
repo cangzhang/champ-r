@@ -4,6 +4,8 @@ use bytes::Bytes;
 use futures::future::try_join3;
 use serde_json::Value;
 
+use tracing::{info};
+
 use crate::{
     builds::Rune,
     web::{DataDragonRune, FetchError},
@@ -68,7 +70,7 @@ pub enum LcuError {
 
 impl From<reqwest::Error> for LcuError {
     fn from(error: reqwest::Error) -> LcuError {
-        dbg!(error);
+        info!("{:?}", error);
 
         LcuError::APIError
     }

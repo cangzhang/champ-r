@@ -26,6 +26,9 @@ serde_with = { version = "3.0", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 iced_native = "0.10.3"
 image = "0.24.6"
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"
+tracing-appender = "0.2.2"
 
 [build-dependencies]
 embed-resource = "2.1"

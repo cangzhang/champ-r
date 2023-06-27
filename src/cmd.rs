@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::str;
 use std::sync::{Arc, Mutex};
 
+use tracing::{info};
+
 const APP_PORT_KEY: &str = "--app-port=";
 const TOKEN_KEY: &str = "--remoting-auth-token=";
 const REGION_KEY: &str = "--region=";
@@ -100,7 +102,7 @@ pub fn get_commandline() -> CommandLineOutput {
                     }
                 }
                 Err(e) => {
-                    println!("[cmd::get_commandline] {:?}", e);
+                    info!("[cmd::get_commandline] {:?}", e);
                 }
             }
         }
@@ -134,7 +136,6 @@ pub fn match_stdout(stdout: &String) -> CommandLineOutput {
     let dir_match = DIR_REGEXP.find(stdout).unwrap();
     let dir = dir_match.as_str().replace(DIR_KEY, "");
 
-    // dbg!(dir.clone());
     // let (utf8_bytes, _, _) = encoding_rs::GBK.decode(dir.clone().as_bytes());
     // let utf8_string = String::from_utf8_lossy(&utf8_bytes).into_owned();
 
@@ -185,7 +186,7 @@ pub async fn check_if_server_ready() -> anyhow::Result<bool> {
     } = get_commandline();
 
     if dir.is_empty() {
-        println!("[cmd::check_if_tencent_server_ready] cannot get lcu install dir");
+        info!("[cmd::check_if_tencent_server_ready] cannot get lcu install dir");
         return Ok(false);
     }
 

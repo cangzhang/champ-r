@@ -28,6 +28,10 @@ use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 use iced_native::Event;
 
+use tracing::{info};
+use tracing_appender::rolling::{RollingFileAppender, Rotation};
+use tracing_subscriber::{FmtSubscriber};
+
 use lcu::api::{apply_rune, LcuError};
 use lcu::client::LcuClient;
 use source::SourceItem;
@@ -35,6 +39,25 @@ use ui::{ChampR, LogItem};
 use web::{ChampionsMap, DataDragonRune, FetchError};
 
 pub fn main() -> iced::Result {
+    if cfg!(debug_assertions) {
+        tracing_subscriber::fmt::init();
+    } else {
+        let file_appender = RollingFileAppender::new(
+            Rotation::DAILY,
+            "logs",  // Directory where log files are stored
+            "log",   // Log file name prefix
+        );
+        // Create a non-blocking writer
+        let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+        // Set up a subscriber with the file appender
+        let subscriber = FmtSubscriber::builder()
+            .with_writer(non_blocking)
+            .finish();
+        // Set the global subscriber
+        tracing::subscriber::set_global_default(subscriber)
+            .expect("Failed to set global tracing subscriber");
+    }
+
     let champions_map1: Arc<Mutex<ChampionsMap>> = Arc::new(Mutex::new(HashMap::new()));
     let champions_map2 = champions_map1.clone();
     let remote_rune_list1 = Arc::new(Mutex::new(Vec::<DataDragonRune>::new()));
@@ -184,17 +207,23 @@ impl Application for ChampR {
                 }
             }
             Message::ApplyBuilds => {
-                if (*self.auth_url.lock().unwrap()).is_empty()
-                    || !(*self.fetched_remote_data.lock().unwrap())
-                {
+                let disconnected = self.auth_url.lock().unwrap().is_empty();
+                let data_ready = *self.fetched_remote_data.lock().unwrap();
+                let has_nothing_selected = self.selected_sources.lock().unwrap().is_empty();
+                let applying = self.applying_builds;
+
+                if disconnected || !data_ready || has_nothing_selected || applying {
                     return Command::none();
                 }
+
+                info!("apply start");
 
                 let logs = self.logs.clone();
                 let lcu_dir = { self.lcu_dir.lock().unwrap().clone() };
                 let selected_sources = { self.selected_sources.lock().unwrap().clone() };
                 let champions_map = { self.champions_map.lock().unwrap().clone() };
 
+                self.applying_builds = true;
                 return Command::perform(
                     builds::batch_apply(selected_sources, champions_map, lcu_dir, logs),
                     Message::ApplyBuildsDone,
@@ -202,15 +231,16 @@ impl Application for ChampR {
             }
             Message::ApplyBuildsDone(resp) => {
                 if resp.is_ok() {
-                    println!("Done: {:?}", self.logs);
+                    info!("Apply builds done: {:?}", self.logs);
                 }
+                self.applying_builds = false;
             }
             Message::ApplyRune(auth_url, rune) => {
                 return Command::perform(apply_rune(auth_url, rune), Message::ApplyRuneDone);
             }
             Message::ApplyRuneDone(resp) => {
                 if let Err(e) = resp {
-                    dbg!("ApplyRuneError: {:?}", e);
+                    info!("ApplyRuneError: {:?}", e);
                 }
             }
             Message::OnSelectRuneSource(source) => {

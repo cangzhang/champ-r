@@ -5,6 +5,8 @@ use std::{
 
 use bytes::Bytes;
 
+use tracing::{info};
+
 use crate::{
     builds::Rune,
     cmd::{self, CommandLineOutput},
@@ -72,7 +74,7 @@ impl LcuClient {
                 *ready_guard
             };
             if !fetched_remote_data {
-                dbg!(fetched_remote_data);
+                info!("{:?}", fetched_remote_data);
                 thread::sleep(time::Duration::from_millis(300));
                 continue;
             }
@@ -109,7 +111,7 @@ impl LcuClient {
                         let champion_alias = get_champion_alias(&champions_map, champion_id);
                         *current_champion = champion_alias.clone();
                         should_fetch_runes = true;
-                        dbg!(champion_id, champion_alias, should_fetch_runes);
+                        info!("{champion_id}, {champion_alias}, {should_fetch_runes}");
                     }
                 } else {
                     let mut current_champion_id = self.current_champion_id.lock().unwrap();
@@ -171,7 +173,7 @@ impl LcuClient {
                             *rune_images_guard.lock().unwrap() = rune_images;
                         });
                     } else {
-                        println!("failed to get builds/avatar for {}", champion);
+                        info!("failed to get builds/avatar for {}", champion);
                     }
 
                     *loading_runes_guard.lock().unwrap() = false;

@@ -7,6 +7,7 @@ use std::{
     io::Write,
     sync::{Arc, Mutex}, path::Path,
 };
+use tracing::{info};
 
 use crate::{
     ui::LogItem,
@@ -109,7 +110,7 @@ pub async fn fetch_and_apply(
             let buf = serde_json::to_string_pretty(&item).unwrap();
             f.write_all(buf[..].as_bytes()).unwrap();
             
-            println!(
+            info!(
                 "[builds::apply_builds_from_remote] saved to: {}",
                 &full_path
             );
@@ -141,12 +142,13 @@ pub async fn batch_apply(
             let logs = logs.clone();
 
             let task = async move {
+                info!("[apply_builds] started {:?} {:?}", &source, &champion);
                 let r = fetch_and_apply(&dir, &source, champion).await;
                 if r.is_ok() {
                     let mut logs = logs.lock().unwrap();
                     logs.push((source.clone(), champion.clone()));
                 } else {
-                    println!("[apply_builds] failed {:?} {:?}", &source, &champion);
+                    info!("[apply_builds] failed {:?} {:?}", &source, &champion);
                 }
             };
             tasks.push(task);
