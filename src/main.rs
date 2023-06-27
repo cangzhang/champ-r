@@ -39,22 +39,24 @@ use ui::{ChampR, LogItem};
 use web::{ChampionsMap, DataDragonRune, FetchError};
 
 pub fn main() -> iced::Result {
-    if cfg!(debug_assertions) {
-        tracing_subscriber::fmt::init();
-    } else {
-        let file_appender = RollingFileAppender::new(
-            Rotation::DAILY,
-            "logs", // Directory where log files are stored
-            "log",  // Log file name prefix
-        );
-        // Create a non-blocking writer
-        let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
-        // Set up a subscriber with the file appender
-        let subscriber = FmtSubscriber::builder().with_writer(non_blocking).finish();
-        // Set the global subscriber
-        tracing::subscriber::set_global_default(subscriber)
-            .expect("Failed to set global tracing subscriber");
-    }
+    let file_appender = RollingFileAppender::new(
+        Rotation::DAILY,
+        "logs", // Directory where log files are stored
+        "log",  // Log file name prefix
+    );
+    // Create a non-blocking writer
+    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+    // Set up a subscriber with the file appender
+    #[allow(unused_variables)]
+    let subscriber = FmtSubscriber::builder().with_writer(non_blocking).finish();
+    // Set the global subscriber
+    #[cfg(not(debug_assertions))]
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("Failed to set global tracing subscriber");
+
+    #[cfg(debug_assertions)]
+    tracing_subscriber::fmt::init();
+    
 
     let champions_map1: Arc<Mutex<ChampionsMap>> = Arc::new(Mutex::new(HashMap::new()));
     let champions_map2 = champions_map1.clone();
