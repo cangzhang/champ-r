@@ -5,7 +5,7 @@ use std::{
 
 use bytes::Bytes;
 
-use tracing::{info};
+use tracing::info;
 
 use crate::{
     builds::Rune,

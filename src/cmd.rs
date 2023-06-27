@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::str;
 use std::sync::{Arc, Mutex};
 
-use tracing::{info};
+use tracing::info;
 
 const APP_PORT_KEY: &str = "--app-port=";
 const TOKEN_KEY: &str = "--remoting-auth-token=";

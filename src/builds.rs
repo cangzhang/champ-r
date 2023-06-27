@@ -7,7 +7,7 @@ use std::{
     io::Write,
     sync::{Arc, Mutex}, path::Path,
 };
-use tracing::{info};
+use tracing::info;
 
 use crate::{
     ui::LogItem,

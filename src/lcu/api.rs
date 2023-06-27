@@ -4,7 +4,7 @@ use bytes::Bytes;
 use futures::future::try_join3;
 use serde_json::Value;
 
-use tracing::{info};
+use tracing::info;
 
 use crate::{
     builds::Rune,

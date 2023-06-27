@@ -28,9 +28,9 @@ use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 use iced_native::Event;
 
-use tracing::{info};
+use tracing::info;
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
-use tracing_subscriber::{FmtSubscriber};
+use tracing_subscriber::FmtSubscriber;
 
 use lcu::api::{apply_rune, LcuError};
 use lcu::client::LcuClient;
@@ -44,15 +44,13 @@ pub fn main() -> iced::Result {
     } else {
         let file_appender = RollingFileAppender::new(
             Rotation::DAILY,
-            "logs",  // Directory where log files are stored
-            "log",   // Log file name prefix
+            "logs", // Directory where log files are stored
+            "log",  // Log file name prefix
         );
         // Create a non-blocking writer
         let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
         // Set up a subscriber with the file appender
-        let subscriber = FmtSubscriber::builder()
-            .with_writer(non_blocking)
-            .finish();
+        let subscriber = FmtSubscriber::builder().with_writer(non_blocking).finish();
         // Set the global subscriber
         tracing::subscriber::set_global_default(subscriber)
             .expect("Failed to set global tracing subscriber");
@@ -212,12 +210,12 @@ impl Application for ChampR {
                 let has_nothing_selected = self.selected_sources.lock().unwrap().is_empty();
                 let applying = self.applying_builds;
 
+                info!("disconnected: {disconnected}, data_ready: {data_ready}, has_nothing_selected: {has_nothing_selected}, applying: {applying}");
                 if disconnected || !data_ready || has_nothing_selected || applying {
                     return Command::none();
                 }
 
-                info!("apply start");
-
+                info!("Apply builds start");
                 let logs = self.logs.clone();
                 let lcu_dir = { self.lcu_dir.lock().unwrap().clone() };
                 let selected_sources = { self.selected_sources.lock().unwrap().clone() };
