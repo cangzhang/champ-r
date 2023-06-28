@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::str;
 use std::sync::{Arc, Mutex};
 
-use tracing::info;
+use tracing::{info, error};
 
 const APP_PORT_KEY: &str = "--app-port=";
 const TOKEN_KEY: &str = "--remoting-auth-token=";
@@ -37,28 +37,28 @@ pub struct CommandLineOutput {
 pub fn get_commandline() -> CommandLineOutput {
     use std::{os::windows::process::CommandExt, process::Command};
 
-    if let Ok(output) = Command::new("powershell")
-        .args([
-            "-ExecutionPolicy",
-            "Bypass",
-            "-NoLogo",
-            "-NoProfile",
-            "-NonInteractive",
-            "-WindowStyle",
-            "Hidden",
-            "-Command",
-            LCU_COMMAND,
-        ])
-        .creation_flags(0x08000000)
-        .output()
-    {
-        if output.status.success() {
-            if let Ok(utf8_output) = str::from_utf8(&output.stdout) {
-                if !utf8_output.is_empty() {
-                    return match_stdout(&String::from(utf8_output));
-                }
+    match Command::new("powershell")
+    .args([
+        "-ExecutionPolicy",
+        "Bypass",
+        "-NoLogo",
+        "-NoProfile",
+        "-NonInteractive",
+        "-WindowStyle",
+        "Hidden",
+        "-Command",
+        LCU_COMMAND,
+    ])
+    .creation_flags(0x08000000)
+    .output() {
+        Ok(output) => {
+            if output.status.success() {
+                let output = String::from_utf8_lossy(&output.stdout);
+                info!("cmd output: {:?}", &output);
+                return match_stdout(&String::from(output));
             }
         }
+        Err(err) => error!("cmd error: {:?}", err)
     }
 
     CommandLineOutput {
