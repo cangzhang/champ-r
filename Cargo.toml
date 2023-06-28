@@ -30,5 +30,6 @@ tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
 tracing-appender = "0.2.2"
 
-[build-dependencies]
+[target.'cfg(windows)'.build-dependencies]
 embed-resource = "2.1"
+winres = "0.1"
