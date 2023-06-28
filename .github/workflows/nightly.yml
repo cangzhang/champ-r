@@ -1,0 +1,25 @@
+name: Nightly Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Compile
+        id: compile
+        uses: rust-build/rust-build.action@v1.4.3
+        with:
+          RUSTTARGET: x86_64-pc-windows-gnu
+          UPLOAD_MODE: none
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Binary
+          path: |
+            ${{ steps.compile.outputs.BUILT_ARCHIVE }}
+            ${{ steps.compile.outputs.BUILT_CHECKSUM }}
