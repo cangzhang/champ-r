@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::str;
 use std::sync::{Arc, Mutex};
 
-use tracing::{info, error};
+use tracing::{error, info};
 
 const APP_PORT_KEY: &str = "--app-port=";
 const TOKEN_KEY: &str = "--remoting-auth-token=";
@@ -38,27 +38,30 @@ pub fn get_commandline() -> CommandLineOutput {
     use std::{os::windows::process::CommandExt, process::Command};
 
     match Command::new("powershell")
-    .args([
-        "-ExecutionPolicy",
-        "Bypass",
-        "-NoLogo",
-        "-NoProfile",
-        "-NonInteractive",
-        "-WindowStyle",
-        "Hidden",
-        "-Command",
-        LCU_COMMAND,
-    ])
-    .creation_flags(0x08000000)
-    .output() {
+        .args([
+            "-ExecutionPolicy",
+            "Bypass",
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-WindowStyle",
+            "Hidden",
+            "-Command",
+            LCU_COMMAND,
+        ])
+        .creation_flags(0x08000000)
+        .output()
+    {
         Ok(output) => {
             if output.status.success() {
                 let output = String::from_utf8_lossy(&output.stdout);
                 info!("cmd output: {:?}", &output);
-                return match_stdout(&String::from(output));
+                if !output.is_empty() {
+                    return match_stdout(&String::from(output));
+                }
             }
         }
-        Err(err) => error!("cmd error: {:?}", err)
+        Err(err) => error!("cmd error: {:?}", err),
     }
 
     CommandLineOutput {
@@ -119,31 +122,42 @@ pub fn get_commandline() -> CommandLineOutput {
 }
 
 pub fn match_stdout(stdout: &String) -> CommandLineOutput {
-    let port_match = PORT_REGEXP.find(stdout).unwrap();
-    let port = port_match.as_str().replace(APP_PORT_KEY, "");
-    let token_match = TOKEN_REGEXP.find(stdout).unwrap();
-    let token = token_match
-        .as_str()
-        .replace(TOKEN_KEY, "")
-        .replace(['\\', '\"'], "");
-    let auth_url = make_auth_url(&token, &port);
-    let region_match = REGION_REGEXP.find(stdout).unwrap();
-    let region = region_match
-        .as_str()
-        .replace(REGION_KEY, "")
-        .replace(['\\', '\"'], "");
-    let is_tencent = region.eq("TENCENT");
-    let dir_match = DIR_REGEXP.find(stdout).unwrap();
-    let dir = dir_match.as_str().replace(DIR_KEY, "");
-
-    // let (utf8_bytes, _, _) = encoding_rs::GBK.decode(dir.clone().as_bytes());
-    // let utf8_string = String::from_utf8_lossy(&utf8_bytes).into_owned();
-
-    let dir = dir.replace('\"', "");
-    let dir = if is_tencent {
-        format!("{dir}/..")
+    let port = if let Some(port_match) = PORT_REGEXP.find(stdout) {
+        port_match.as_str().replace(APP_PORT_KEY, "")
     } else {
-        format!("{dir}/")
+        "0".to_string()
+    };
+    let token = if let Some(token_match) = TOKEN_REGEXP.find(stdout) {
+        token_match
+            .as_str()
+            .replace(TOKEN_KEY, "")
+            .replace(['\\', '\"'], "")
+    } else {
+        "".to_string()
+    };
+    
+    let auth_url = make_auth_url(&token, &port);
+
+    let is_tencent = if let Some(region_match) = REGION_REGEXP.find(stdout) {
+        let region = region_match
+            .as_str()
+            .replace(REGION_KEY, "")
+            .replace(['\\', '\"'], "");
+        region.eq("TENCENT")
+    } else {
+        false
+    };
+
+    let raw_dir = if let Some(dir_match) = DIR_REGEXP.find(stdout) {
+        dir_match.as_str().replace(DIR_KEY, "")
+    } else {
+        "".to_string()
+    };
+    let output_dir = raw_dir.replace('\"', "");
+    let dir = if is_tencent {
+        format!("{output_dir}/..")
+    } else {
+        format!("{output_dir}/")
     };
 
     CommandLineOutput {
