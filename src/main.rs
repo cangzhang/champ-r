@@ -20,7 +20,7 @@ use std::time::Duration;
 use builds::Rune;
 use bytes::Bytes;
 use iced::widget::{
-    button, checkbox, column, image, pick_list, row, text, tooltip, Column, Container, Scrollable,
+    button, checkbox, column, image, pick_list, row, scrollable, text, tooltip, Column, Container,
 };
 use iced::window::{PlatformSpecific, Position};
 use iced::{alignment, theme};
@@ -56,7 +56,6 @@ pub fn main() -> iced::Result {
 
     #[cfg(debug_assertions)]
     tracing_subscriber::fmt::init();
-    
 
     let champions_map1: Arc<Mutex<ChampionsMap>> = Arc::new(Mutex::new(HashMap::new()));
     let champions_map2 = champions_map1.clone();
@@ -312,10 +311,10 @@ impl Application for ChampR {
         }
 
         let mut rune_list_col = column!()
-            .height(Length::Fill)
+            // .height(Length::Fill)
             .width(Length::Fill)
-            .spacing(8.)
-            .padding(16.);
+            .spacing(8.);
+
         if *loading_runes {
             rune_list_col = rune_list_col
                 .push(text("Loading runes...").horizontal_alignment(alignment::Horizontal::Center))
@@ -332,8 +331,8 @@ impl Application for ChampR {
                                 .height(36.)
                                 .width(36.),
                             image(image::Handle::from_memory(sub_img.clone()))
-                                .height(28.)
-                                .width(28.),
+                                .height(26.)
+                                .width(26.),
                         ]
                         .align_items(Alignment::Center)
                     } else {
@@ -353,7 +352,8 @@ impl Application for ChampR {
                         .align_items(Alignment::End)
                         .width(Length::FillPortion(1)),
                 ]
-                .align_items(Alignment::Center);
+                .align_items(Alignment::Center)
+                .height(Length::Fixed(60.));
                 rune_list_col = rune_list_col.push(row);
             }
         }
@@ -371,7 +371,7 @@ impl Application for ChampR {
                     .size(22.)
                     .font(fonts::SARSA_MONO_BOLD)]
                 .padding(Padding::from([0, 0, 0, 16])),
-                Scrollable::new(source_list_col)
+                scrollable(source_list_col)
                     .height(Length::Fill)
                     .width(Length::Fill)
             ]
@@ -391,13 +391,16 @@ impl Application for ChampR {
                     avatar_row.padding(Padding::from([0, 8, 0, 0])),
                 )
                 .align_items(Alignment::Center)
+                .spacing(16.)
                 .padding(Padding::from([0, 0, 16, 0])),
-                Scrollable::new(rune_list_col)
-                    .height(Length::Fill)
+                // .height(Length::FillPortion(1)),
+                scrollable(rune_list_col)
                     .width(Length::Fill)
+                    .height(Length::Fill)
             ]
-            .padding(Padding::from([8, 0]))
+            .padding(Padding::from([8, 16, 8, 0]))
             .width(Length::FillPortion(2))
+            .height(Length::Fill)
         ]
         .spacing(8)
         .width(Length::Fill)
