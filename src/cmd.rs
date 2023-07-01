@@ -121,7 +121,7 @@ pub fn get_commandline() -> CommandLineOutput {
     }
 }
 
-pub fn match_stdout(stdout: &String) -> CommandLineOutput {
+pub fn match_stdout(stdout: &str) -> CommandLineOutput {
     let port = if let Some(port_match) = PORT_REGEXP.find(stdout) {
         port_match.as_str().replace(APP_PORT_KEY, "")
     } else {
@@ -217,7 +217,7 @@ pub async fn check_if_server_ready() -> anyhow::Result<bool> {
     let reader = BufReader::new(stdout);
     reader
         .lines()
-        .filter_map(|line| line.ok())
+        .map_while(Result::ok)
         .for_each(|line| {
             if line.starts_with("=== tencent_sucks") {
                 ready = false;
@@ -247,7 +247,7 @@ pub async fn fix_tencent_server() -> anyhow::Result<bool> {
     let reader = BufReader::new(stdout);
     reader
         .lines()
-        .filter_map(|line| line.ok())
+        .map_while(Result::ok)
         .for_each(|line| {
             if line.starts_with("=== tencent_fucked") {
                 ready = true;
@@ -282,7 +282,7 @@ pub async fn test_connectivity() -> anyhow::Result<bool> {
     let reader = BufReader::new(stdout);
     reader
         .lines()
-        .filter_map(|line| line.ok())
+        .map_while(Result::ok)
         .for_each(|line| {
             if line.starts_with("=== connected") {
                 connected = true;
