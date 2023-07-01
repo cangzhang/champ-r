@@ -408,12 +408,18 @@ impl Application for ChampR {
 
         let remote_data_info = if *self.fetched_remote_data.lock().unwrap() {
             text(format!(
-                "Fetched available sources: {:?}, champions: {:?}",
+                "Fetched: Available sources {:?}, Champions {:?}",
                 sources.len(),
                 champions_map.len()
             ))
         } else {
             text("Loading...")
+        };
+
+        let import_builds_info_text = if self.applying_builds {
+            "Applying builds..."
+        } else {
+            ""
         };
 
         let apply_btn = button(
@@ -431,20 +437,24 @@ impl Application for ChampR {
 
         let btn_with_tooltip = row![tooltip(apply_btn, "Apply Builds!", tooltip::Position::Top)
             .gap(5)
-            .style(theme::Container::Box)]
-        .padding(Padding::from([16, 0, 0, 0]));
+            .style(theme::Container::Box)];
 
         let lcu_connect_info = if lol_running {
             "Connected to League of Legends.".to_string()
         } else {
-            "Not connected to League of Legends.".to_string()
+            "Disconnected.".to_string()
         };
-        let bot_col = column![remote_data_info, text(lcu_connect_info), btn_with_tooltip]
-            .spacing(8)
-            .padding(8.)
-            .width(Length::Fill)
-            .height(Length::FillPortion(1))
-            .align_items(Alignment::Center);
+        let bot_col = column![
+            remote_data_info,
+            text(lcu_connect_info),
+            row!(import_builds_info_text).height(Length::Fixed(20.)),
+            btn_with_tooltip
+        ]
+        .spacing(8)
+        .padding(8.)
+        .width(Length::Fill)
+        .height(Length::FillPortion(1))
+        .align_items(Alignment::Center);
         let content = Column::new().push(main_row).push(bot_col);
 
         Container::new(content)

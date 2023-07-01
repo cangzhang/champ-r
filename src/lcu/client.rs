@@ -5,7 +5,7 @@ use std::{
 
 use bytes::Bytes;
 
-use tracing::info;
+use tracing::{info, error};
 
 use crate::{
     builds::Rune,
@@ -74,7 +74,6 @@ impl LcuClient {
                 *ready_guard
             };
             if !fetched_remote_data {
-                info!("{:?}", fetched_remote_data);
                 thread::sleep(time::Duration::from_millis(300));
                 continue;
             }
@@ -173,7 +172,7 @@ impl LcuClient {
                             *rune_images_guard.lock().unwrap() = rune_images;
                         });
                     } else {
-                        info!("failed to get builds/avatar for {}", champion);
+                        error!("failed to get builds/avatar for {}", champion);
                     }
 
                     *loading_runes_guard.lock().unwrap() = false;
