@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use bytes::Bytes;
 
-use crate::{builds::Rune, source::SourceItem, web::{ChampionsMap, DataDragonRune}};
+use crate::{builds::Rune, source::SourceItem, web::{ChampionsMap, DataDragonRune}, config};
 
 pub type LogItem = (String, String);
 
@@ -19,7 +19,7 @@ pub struct ChampR {
     pub current_champion_id: Arc<Mutex<Option<u64>>>,
     pub current_champion: Arc<Mutex<String>>,
     pub current_champion_runes: Arc<Mutex<Vec<Rune>>>,
-    pub current_source: Arc<Mutex<String>>,
+    pub app_config: Arc<Mutex<config::Config>>,
     pub loading_runes: Arc<Mutex<bool>>,
     pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
     pub fetched_remote_data: Arc<Mutex<bool>>,
@@ -38,7 +38,7 @@ impl ChampR {
         champions_map: Arc<Mutex<ChampionsMap>>,
         current_champion: Arc<Mutex<String>>,
         current_champion_runes: Arc<Mutex<Vec<Rune>>>,
-        current_source: Arc<Mutex<String>>,
+        app_config: Arc<Mutex<config::Config>>,
         loading_runes: Arc<Mutex<bool>>,
         current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
         fetched_remote_data: Arc<Mutex<bool>>,
@@ -54,7 +54,7 @@ impl ChampR {
             champions_map,
             current_champion,
             current_champion_runes,
-            current_source,
+            app_config,
             loading_runes,
             current_champion_avatar,
             fetched_remote_data,

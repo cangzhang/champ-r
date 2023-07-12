@@ -12,6 +12,7 @@ pub mod styles;
 pub mod ui;
 pub mod util;
 pub mod web;
+pub mod config;
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -57,6 +58,10 @@ pub fn main() -> iced::Result {
     #[cfg(debug_assertions)]
     tracing_subscriber::fmt::init();
 
+    let conf = config::read_and_init();
+    let app_config1 = Arc::new(Mutex::new(conf));
+    let app_config2 = app_config1.clone();
+
     let champions_map1: Arc<Mutex<ChampionsMap>> = Arc::new(Mutex::new(HashMap::new()));
     let champions_map2 = champions_map1.clone();
     let remote_rune_list1 = Arc::new(Mutex::new(Vec::<DataDragonRune>::new()));
@@ -79,8 +84,6 @@ pub fn main() -> iced::Result {
     let current_champion2 = current_champion1.clone();
     let current_champion_runes1: Arc<Mutex<Vec<Rune>>> = Arc::new(Mutex::new(vec![]));
     let current_champion_runes2 = current_champion_runes1.clone();
-    let current_source1 = Arc::new(Mutex::new(String::from("op.gg")));
-    let current_source2 = current_source1.clone();
     let loading_runes1 = Arc::new(Mutex::new(false));
     let loading_runes2 = loading_runes1.clone();
     let current_champion_avatar1 = Arc::new(Mutex::new(None));
@@ -102,7 +105,7 @@ pub fn main() -> iced::Result {
                 current_champion2,
                 champions_map2,
                 current_champion_runes2,
-                current_source2,
+                app_config2,
                 loading_runes2,
                 current_champion_avatar2,
                 fetched_remote_data2,
@@ -144,7 +147,7 @@ pub fn main() -> iced::Result {
             champions_map1,
             current_champion1,
             current_champion_runes1,
-            current_source1,
+            app_config1,
             loading_runes1,
             current_champion_avatar1,
             fetched_remote_data1,
@@ -182,7 +185,7 @@ impl Application for ChampR {
     }
 
     fn title(&self) -> String {
-        String::from("ChampR - Builds, Runes, All in One. v2.0.2-b6")
+        String::from("ChampR - Builds, Runes, All in One. v2.0.2-b7")
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
@@ -197,19 +200,16 @@ impl Application for ChampR {
                 }
             }
             Message::UpdateSelected(s) => {
-                let mut selected = self.selected_sources.lock().unwrap();
-                if !selected.contains(&s) {
-                    selected.push(s);
-                } else {
-                    let index = selected.iter().position(|x| *x == s).unwrap();
-                    selected.remove(index);
-                }
+                let mut app_config = self.app_config.lock().unwrap();
+                app_config.update_select_sources(s);
             }
             Message::ApplyBuilds => {
                 let disconnected = self.auth_url.lock().unwrap().is_empty();
                 let data_ready = *self.fetched_remote_data.lock().unwrap();
-                let has_nothing_selected = self.selected_sources.lock().unwrap().is_empty();
                 let applying = self.applying_builds;
+
+                let app_config = self.app_config.lock().unwrap();
+                let has_nothing_selected = app_config.selected_sources.is_empty();
 
                 info!("disconnected: {disconnected}, data_ready: {data_ready}, has_nothing_selected: {has_nothing_selected}, applying: {applying}");
                 if disconnected || !data_ready || has_nothing_selected || applying {
@@ -219,12 +219,11 @@ impl Application for ChampR {
                 info!("Apply builds start");
                 let logs = self.logs.clone();
                 let lcu_dir = { self.lcu_dir.lock().unwrap().clone() };
-                let selected_sources = { self.selected_sources.lock().unwrap().clone() };
                 let champions_map = { self.champions_map.lock().unwrap().clone() };
 
                 self.applying_builds = true;
                 return Command::perform(
-                    builds::batch_apply(selected_sources, champions_map, lcu_dir, logs),
+                    builds::batch_apply(app_config.selected_sources.clone(), champions_map, lcu_dir, logs),
                     Message::ApplyBuildsDone,
                 );
             }
@@ -243,9 +242,10 @@ impl Application for ChampR {
                 }
             }
             Message::OnSelectRuneSource(source) => {
-                *self.current_source.lock().unwrap() = source.clone();
-                let current_champion = self.current_champion.lock().unwrap();
+                let mut app_config = self.app_config.lock().unwrap();
+                app_config.set_rune_source(source.clone());
 
+                let current_champion = self.current_champion.lock().unwrap();
                 if current_champion.len() > 0 {
                     *self.loading_runes.lock().unwrap() = true;
                     return Command::perform(
@@ -272,19 +272,21 @@ impl Application for ChampR {
 
     fn view(&self) -> Element<Message> {
         let sources = self.source_list.lock().unwrap();
-        let selected = self.selected_sources.lock().unwrap();
         let champions_map = self.champions_map.lock().unwrap();
-
+        
         let auth_url = self.auth_url.lock().unwrap();
         // let is_tencent = self.is_tencent.lock().unwrap();
         let lol_running = !auth_url.is_empty();
-
+        
         // let current_champion = self.current_champion.lock().unwrap();
         let runes = self.current_champion_runes.lock().unwrap();
         let loading_runes = self.loading_runes.lock().unwrap();
-        let current_source = self.current_source.lock().unwrap();
         let avatar_guard = self.current_champion_avatar.lock().unwrap();
         let rune_images = self.rune_images.lock().unwrap();
+        
+        let app_config = self.app_config.lock().unwrap();
+        let current_rune_source = app_config.rune_source.clone();
+        let selected = app_config.selected_sources.clone();
 
         let mut source_list_col = Column::new().width(Length::Fill).spacing(8.).padding(16.);
         for item in sources.iter() {
@@ -385,7 +387,7 @@ impl Application for ChampR {
                             .iter()
                             .map(|s| s.value.clone())
                             .collect::<Vec<String>>(),
-                        Some(current_source.clone()),
+                        Some(current_rune_source.clone()),
                         Message::OnSelectRuneSource,
                     ),
                     avatar_row.padding(Padding::from([0, 8, 0, 0])),

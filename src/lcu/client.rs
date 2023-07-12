@@ -11,7 +11,7 @@ use crate::{
     builds::Rune,
     cmd::{self, CommandLineOutput},
     lcu::util::get_champion_alias,
-    web::{fetch_champion_runes, ChampionsMap, DataDragonRune},
+    web::{fetch_champion_runes, ChampionsMap, DataDragonRune}, config,
 };
 
 use super::api::{self, get_champion_avatar, get_rune_preview_images};
@@ -26,12 +26,12 @@ pub struct LcuClient {
     pub current_champion_id: Arc<Mutex<Option<u64>>>,
     pub current_champion: Arc<Mutex<String>>,
     pub current_champion_runes: Arc<Mutex<Vec<Rune>>>,
-    pub current_source: Arc<Mutex<String>>,
     pub loading_runes: Arc<Mutex<bool>>,
     pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
     pub fetched_remote_data: Arc<Mutex<bool>>,
     pub remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
     pub rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
+    pub app_config: Arc<Mutex<config::Config>>,
 }
 
 impl LcuClient {
@@ -43,7 +43,7 @@ impl LcuClient {
         current_champion: Arc<Mutex<String>>,
         champions_map: Arc<Mutex<ChampionsMap>>,
         current_champion_runes: Arc<Mutex<Vec<Rune>>>,
-        current_source: Arc<Mutex<String>>,
+        app_config: Arc<Mutex<config::Config>>,
         loading_runes: Arc<Mutex<bool>>,
         current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
         fetched_remote_data: Arc<Mutex<bool>>,
@@ -58,7 +58,7 @@ impl LcuClient {
             current_champion_id,
             current_champion,
             current_champion_runes,
-            current_source,
+            app_config,
             loading_runes,
             current_champion_avatar,
             fetched_remote_data,
@@ -131,8 +131,8 @@ impl LcuClient {
                     *loading_runes_guard.lock().unwrap() = true;
 
                     let source = {
-                        let source = self.current_source.lock().unwrap();
-                        (*source).clone()
+                        let conf = self.app_config.lock().unwrap();
+                        conf.rune_source.clone()
                     };
                     let champion = {
                         let champion = self.current_champion.lock().unwrap();
