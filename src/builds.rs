@@ -89,7 +89,7 @@ pub async fn fetch_and_apply(
     source: &String,
     champion: &String,
 ) -> Result<(), FetchError> {
-    let sections = match web::fetch_build_file(source, champion).await {
+    let sections = match web::fetch_build_file(source, champion, true).await {
         Ok(s) => s,
         Err(_) => {
             return Err(FetchError::Failed);

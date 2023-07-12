@@ -10,7 +10,7 @@ use crate::{
 // use serde_json::Value;
 // use serde_with::serde_as;
 
-pub const SERVICE_URL: &str = "https://ql.lbj.moe";
+pub const SERVICE_URL: &str = "https://ql-rs.lbj.moe";
 
 #[derive(Debug, Clone)]
 pub enum FetchError {
@@ -59,7 +59,7 @@ pub struct Image {
 pub type ChampionsMap = HashMap<String, ChampInfo>;
 
 pub async fn fetch_champion_list() -> Result<ChampionsMap, FetchError> {
-    let url = format!("{SERVICE_URL}/api/data-dragon/versions/champions",);
+    let url = format!("{SERVICE_URL}/api/data-dragon/champions",);
     if let Ok(resp) = reqwest::get(url).await {
         if let Ok(data) = resp.json::<ChampionsMap>().await {
             return Ok(data);
@@ -82,8 +82,10 @@ pub async fn init_for_ui(
 pub async fn fetch_build_file(
     source: &String,
     champion: &String,
+    fetch_build: bool,
 ) -> Result<Vec<builds::BuildSection>, FetchError> {
-    let url = format!("{SERVICE_URL}/api/detail?source={source}&champion={champion}");
+    let path = if fetch_build { "builds" } else { "runes" };
+    let url = format!("{SERVICE_URL}/api/source/{source}/{path}/{champion}");
     if let Ok(resp) = reqwest::get(url).await {
         if let Ok(data) = resp.json::<Vec<builds::BuildSection>>().await {
             return Ok(data);
@@ -97,7 +99,7 @@ pub async fn fetch_champion_runes(
     source: String,
     champion: String,
 ) -> Result<Vec<Rune>, FetchError> {
-    let builds = fetch_build_file(&source, &champion).await?;
+    let builds = fetch_build_file(&source, &champion, false).await?;
     let runes = builds.iter().flat_map(|b| b.runes.clone()).collect();
     Ok(runes)
 }
