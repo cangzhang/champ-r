@@ -387,7 +387,7 @@ impl Application for ChampR {
                             .iter()
                             .map(|s| s.value.clone())
                             .collect::<Vec<String>>(),
-                        Some(current_rune_source.clone()),
+                        Some(current_rune_source),
                         Message::OnSelectRuneSource,
                     ),
                     avatar_row.padding(Padding::from([0, 8, 0, 0])),

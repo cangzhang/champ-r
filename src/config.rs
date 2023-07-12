@@ -52,7 +52,7 @@ pub fn read_and_init() -> Config {
     }
 
     fs::remove_file(CONFIG_FILE_PATH).unwrap();
-    return init_conf_file();
+    init_conf_file()
 }
 
 impl Config {
