@@ -5,6 +5,7 @@
 
 pub mod builds;
 pub mod cmd;
+pub mod config;
 pub mod fonts;
 pub mod lcu;
 pub mod source;
@@ -12,7 +13,6 @@ pub mod styles;
 pub mod ui;
 pub mod util;
 pub mod web;
-pub mod config;
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -222,8 +222,15 @@ impl Application for ChampR {
                 let champions_map = { self.champions_map.lock().unwrap().clone() };
 
                 self.applying_builds = true;
+                let is_tencent = self.is_tencent.lock().unwrap();
                 return Command::perform(
-                    builds::batch_apply(app_config.selected_sources.clone(), champions_map, lcu_dir, logs),
+                    builds::batch_apply(
+                        app_config.selected_sources.clone(),
+                        champions_map,
+                        lcu_dir,
+                        *is_tencent,
+                        logs,
+                    ),
                     Message::ApplyBuildsDone,
                 );
             }
@@ -273,17 +280,16 @@ impl Application for ChampR {
     fn view(&self) -> Element<Message> {
         let sources = self.source_list.lock().unwrap();
         let champions_map = self.champions_map.lock().unwrap();
-        
+
         let auth_url = self.auth_url.lock().unwrap();
-        // let is_tencent = self.is_tencent.lock().unwrap();
         let lol_running = !auth_url.is_empty();
-        
+
         // let current_champion = self.current_champion.lock().unwrap();
         let runes = self.current_champion_runes.lock().unwrap();
         let loading_runes = self.loading_runes.lock().unwrap();
         let avatar_guard = self.current_champion_avatar.lock().unwrap();
         let rune_images = self.rune_images.lock().unwrap();
-        
+
         let app_config = self.app_config.lock().unwrap();
         let current_rune_source = app_config.rune_source.clone();
         let selected = app_config.selected_sources.clone();

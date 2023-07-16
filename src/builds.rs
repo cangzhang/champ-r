@@ -5,7 +5,8 @@ use serde_json::Value;
 use std::{
     fs,
     io::Write,
-    sync::{Arc, Mutex}, path::Path,
+    path::Path,
+    sync::{Arc, Mutex},
 };
 use tracing::info;
 
@@ -95,21 +96,22 @@ pub async fn fetch_and_apply(
             return Err(FetchError::Failed);
         }
     };
-    
-    let parent_dir = format!("{dir}/Game/Config/Champions/{champion}/Recommended");
+
+    let parent_dir = format!("{dir}/{champion}/Recommended");
     let _result = fs::create_dir_all(&parent_dir);
-    
+
     let source_name = source.replace('.', "_");
     for (idx, b) in sections.iter().enumerate() {
         // let alias = &b.alias;
         let pos = &b.position;
         for (iidx, item) in b.item_builds.iter().enumerate() {
-            let full_path = format!("{parent_dir}/{source_name}_{champion}_{pos}_{idx}_{iidx}.json");
+            let full_path =
+                format!("{parent_dir}/{source_name}_{champion}_{pos}_{idx}_{iidx}.json");
             let mut f = fs::File::create(&full_path).unwrap();
 
             let buf = serde_json::to_string_pretty(&item).unwrap();
             f.write_all(buf[..].as_bytes()).unwrap();
-            
+
             info!(
                 "[builds::apply_builds_from_remote] saved to: {}",
                 &full_path
@@ -124,11 +126,16 @@ pub async fn batch_apply(
     selected_sources: Vec<String>,
     champions_map: ChampionsMap,
     dir: String,
+    is_tencent: bool,
     logs: Arc<Mutex<Vec<LogItem>>>,
 ) -> Result<(), ()> {
     let mut tasks = vec![];
 
-    let folder = format!("{dir}/Game/Config/Champions/");
+    let folder = if is_tencent {
+        format!("{dir}/Game/Config/Champions")
+    } else {
+        format!("{dir}/Config/Champions")
+    };
     if Path::new(&folder).exists() {
         let _ = fs::remove_dir_all(&folder);
     } else {
@@ -137,13 +144,13 @@ pub async fn batch_apply(
 
     for (champion, _) in champions_map.iter() {
         for source in selected_sources.iter() {
-            let dir = dir.clone();
             let source = source.clone();
             let logs = logs.clone();
+            let config_folder = folder.clone();
 
             let task = async move {
                 info!("[apply_builds] started {:?} {:?}", &source, &champion);
-                let r = fetch_and_apply(&dir, &source, champion).await;
+                let r = fetch_and_apply(&config_folder, &source, champion).await;
                 if r.is_ok() {
                     let mut logs = logs.lock().unwrap();
                     logs.push((source.clone(), champion.clone()));
