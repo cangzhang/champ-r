@@ -99,7 +99,7 @@ pub fn get_commandline() -> CommandLineOutput {
                             is_tencent,
                             token,
                             port,
-                            ..
+                            // ..
                         } = match_stdout(&s);
                         break;
                     }
