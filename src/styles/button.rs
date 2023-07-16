@@ -10,7 +10,7 @@ impl button::StyleSheet for CustomIconButtonStyle {
         Appearance {
             border_radius: 180.,
             border_width: 1.,
-            border_color: color!(229, 231, 235).into(),
+            border_color: color!(229, 231, 235),
             background: Some(color!(79, 85, 193).into()),
             text_color: Color::WHITE,
             ..Appearance::default()
