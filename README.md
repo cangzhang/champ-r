@@ -1,6 +1,6 @@
 # ChampR
 
-![ChampR](https://socialify.git.ci/cangzhang/champ-r/image?description=1&font=KoHo&forks=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fcangzhang%2Fchamp-r%2Fmain%2Fsrc%2Ficon%402x.png&name=1&owner=1&pattern=Circuit%20Board&stargazers=1&theme=Auto)
+![ChampR](https://socialify.git.ci/cangzhang/champ-r/image?description=1&font=KoHo&forks=1&language=1&owner=1&stargazers=1)
 
 [![](https://img.shields.io/github/v/release/cangzhang/champ-r?label=LATEST%20VERSION&style=for-the-badge)](https://github.com/cangzhang/champ-r/releases/latest)
 [![](https://img.shields.io/github/downloads/cangzhang/champ-r/total?style=for-the-badge)](https://github.com/cangzhang/champ-r/releases)
