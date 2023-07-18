@@ -39,6 +39,8 @@ use source::SourceItem;
 use ui::{ChampR, LogItem};
 use web::{ChampionsMap, DataDragonRune, FetchError};
 
+pub const VERSION: &str = "v2.0.2-b7";
+
 pub fn main() -> iced::Result {
     let file_appender = RollingFileAppender::new(
         Rotation::DAILY,
@@ -183,7 +185,7 @@ impl Application for ChampR {
     }
 
     fn title(&self) -> String {
-        String::from("ChampR - Builds, Runes, All in One. v2.0.2-b7")
+        format!("ChampR - Builds, Runes, All in One. {VERSION}")
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
@@ -373,7 +375,7 @@ impl Application for ChampR {
 
         let main_row = row![
             column![
-                row![text("Sources of Builds")
+                row![text("Sources of Build")
                     .size(22.)
                     .font(fonts::SARSA_MONO_BOLD)]
                 .padding(Padding::from([0, 0, 0, 16])),
@@ -410,16 +412,23 @@ impl Application for ChampR {
         ]
         .spacing(8)
         .width(Length::Fill)
-        .height(Length::FillPortion(2));
+        .height(Length::FillPortion(10));
 
-        let remote_data_info = if *self.fetched_remote_data.lock().unwrap() {
-            text(format!(
-                "Fetched: Available sources {:?}, Champions {:?}",
+        let remote_data_info_text = if *self.fetched_remote_data.lock().unwrap() {
+            format!(
+                "Available sources {:?}, Champions {:?}",
                 sources.len(),
                 champions_map.len()
-            ))
+            )
         } else {
-            text("Loading...")
+            String::from("Loading...")
+        };
+        let remote_data_info = text(remote_data_info_text).size(16.);
+
+        let lcu_connect_info = if lol_running {
+            "Connected to League of Legends."
+        } else {
+            "Disconnected."
         };
 
         let import_builds_info_text = if self.applying_builds {
@@ -428,41 +437,51 @@ impl Application for ChampR {
             ""
         };
 
-        let apply_btn = button(
+        let mut apply_btn = button(
             text(fonts::IconChar::Rocket.as_str())
                 .font(fonts::ICON_FONT)
                 .horizontal_alignment(alignment::Horizontal::Center)
                 .vertical_alignment(alignment::Vertical::Center),
         )
-        .on_press(Message::ApplyBuilds)
         .padding(8.)
         .width(Length::Fixed(80.))
         .style(theme::Button::Custom(Box::new(
             styles::button::CustomIconButtonStyle,
         )));
+        if !self.applying_builds {
+            apply_btn = apply_btn.on_press(Message::ApplyBuilds);
+        };
 
-        let btn_with_tooltip = row![tooltip(apply_btn, "Apply Builds!", tooltip::Position::Top)
+        let tooltip_text = if self.applying_builds {
+            "Processing"
+        } else {
+            "Apply Builds"
+        };
+        let btn_with_tooltip = row![tooltip(apply_btn, tooltip_text, tooltip::Position::Top)
             .gap(5)
             .style(theme::Container::Box)];
 
-        let lcu_connect_info = if lol_running {
-            "Connected to League of Legends.".to_string()
-        } else {
-            "Disconnected.".to_string()
-        };
-        let bot_col = column![
+        let info_and_btn_col = column![
             remote_data_info,
-            text(lcu_connect_info),
-            row!(import_builds_info_text).height(Length::Fixed(20.)),
+            text(lcu_connect_info).size(16.),
+            row!(text(import_builds_info_text).size(16.)),
             btn_with_tooltip
         ]
         .spacing(8)
         .padding(8.)
+        .align_items(Alignment::Center)
         .width(Length::Fill)
-        .height(Length::FillPortion(1))
-        .align_items(Alignment::Center);
-        let content = Column::new().push(main_row).push(bot_col);
+        .height(Length::FillPortion(4));
 
+        let bot_row = row![text(format!("{VERSION}"))]
+            .align_items(Alignment::Center)
+            .width(Length::Fill)
+            .height(Length::FillPortion(1));
+
+        let content = Column::new()
+            .push(main_row)
+            .push(info_and_btn_col)
+            .push(bot_row);
         Container::new(content)
             .width(Length::Fill)
             .height(Length::Fill)
