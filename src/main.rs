@@ -134,10 +134,7 @@ pub fn main() -> iced::Result {
         },
         default_font: Some(fonts::SARSA_MONO_REGULAR_BYTES),
         default_text_size: 18.,
-        text_multithreading: true,
-        antialiasing: false,
         exit_on_close_request: false,
-        try_opengles_first: false,
         flags: ChampR::new(
             auth_url1,
             is_tencent1,
@@ -154,6 +151,7 @@ pub fn main() -> iced::Result {
             remote_rune_list1,
             rune_images1,
         ),
+        ..Default::default()
     })
 }
 
