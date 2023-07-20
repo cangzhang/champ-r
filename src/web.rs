@@ -1,14 +1,15 @@
 use std::collections::HashMap;
 
 use futures::future::try_join3;
+use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
+use tracing::error;
 
 use crate::{
     builds::{self, Rune},
     source::SourceItem,
+    util::VERSION,
 };
-// use serde_json::Value;
-// use serde_with::serde_as;
 
 pub const SERVICE_URL: &str = "https://ql-rs.lbj.moe";
 
@@ -139,4 +140,35 @@ pub async fn fetch_data_dragon_runes() -> Result<Vec<DataDragonRune>, FetchError
     }
 
     Err(FetchError::Failed)
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LatestRelease {
+    pub name: String,
+    pub tag_name: String,
+    pub html_url: String,
+}
+
+pub async fn fetch_latest_release() -> Result<LatestRelease, FetchError> {
+    let client = reqwest::Client::new();
+
+    match client
+        .get(format!(
+            "https://api.github.com/repos/cangzhang/champ-r/releases/latest"
+        ))
+        .header(USER_AGENT, format!("ChampR {VERSION}"))
+        .send()
+        .await
+    {
+        Ok(resp) => {
+            return resp.json::<LatestRelease>().await.map_err(|err| {
+                error!("latest release serialize: {:?}", err);
+                FetchError::Failed
+            });
+        }
+        Err(err) => {
+            error!("fetch latest release: {:?}", err);
+            Err(FetchError::Failed)
+        }
+    }
 }

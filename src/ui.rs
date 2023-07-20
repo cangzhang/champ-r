@@ -26,6 +26,7 @@ pub struct ChampR {
     pub remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
     pub rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
     pub applying_builds: bool,
+    pub remote_version_info: Arc<Mutex<(String, String)>>,
 }
 
 impl ChampR {
@@ -44,6 +45,7 @@ impl ChampR {
         fetched_remote_data: Arc<Mutex<bool>>,
         remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
         rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
+        remote_version_info: Arc<Mutex<(String, String)>>,
     ) -> Self {
         Self {
             auth_url,
@@ -60,7 +62,23 @@ impl ChampR {
             fetched_remote_data,
             remote_rune_list,
             rune_images,
+            remote_version_info,
             ..Default::default()
         }
+    }
+
+    pub fn open_web(url: String) {
+        #[cfg(target_os = "windows")]
+        std::process::Command::new("explorer")
+            .arg(url)
+            .spawn()
+            .unwrap();
+        #[cfg(target_os = "macos")]
+        std::process::Command::new("open").arg(url).spawn().unwrap();
+        #[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
+        std::process::Command::new("xdg-open")
+            .arg(url)
+            .spawn()
+            .unwrap();
     }
 }

@@ -20,12 +20,16 @@ pub const ICON_FONT: Font = Font::External {
 
 pub enum IconChar {
     Rocket,
+    InfoFill,
+    InfoCircle,
 }
 
 impl IconChar {
     pub fn as_str(&self) -> char {
         match self {
             IconChar::Rocket => '\u{f845}',
+            IconChar::InfoFill => '\u{f430}',
+            IconChar::InfoCircle => '\u{f431}',
         }
     }
 }

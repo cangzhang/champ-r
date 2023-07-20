@@ -37,9 +37,8 @@ use lcu::api::{apply_rune, LcuError};
 use lcu::client::LcuClient;
 use source::SourceItem;
 use ui::{ChampR, LogItem};
+use util::VERSION;
 use web::{ChampionsMap, DataDragonRune, FetchError};
-
-pub const VERSION: &str = "v2.0.2-b7";
 
 pub fn main() -> iced::Result {
     let file_appender = RollingFileAppender::new(
@@ -96,6 +95,9 @@ pub fn main() -> iced::Result {
     let apply_builds_logs1 = Arc::new(Mutex::new(Vec::<LogItem>::new()));
     // let apply_builds_logs2 = apply_builds_logs1.clone();
 
+    let remote_version_info1 = Arc::new(Mutex::new((String::new(), String::new())));
+    let remote_version_info2 = remote_version_info1.clone();
+
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(async move {
         tokio::spawn(async move {
@@ -115,6 +117,25 @@ pub fn main() -> iced::Result {
                 rune_images2,
             );
             lcu_client.start().await;
+        });
+
+        tokio::spawn(async move {
+            loop {
+                match web::fetch_latest_release().await {
+                    Ok(resp) => {
+                        let web::LatestRelease {
+                            tag_name, html_url, ..
+                        } = resp;
+                        if !tag_name.eq(VERSION) {
+                            info!("new version available: {tag_name} {html_url}");
+                            *remote_version_info2.lock().unwrap() = (tag_name, html_url);
+                        }
+                    }
+                    Err(_) => (),
+                }
+
+                tokio::time::sleep(Duration::from_secs(10 * 60)).await;
+            }
         });
     });
 
@@ -152,6 +173,7 @@ pub fn main() -> iced::Result {
             fetched_remote_data1,
             remote_rune_list1,
             rune_images1,
+            remote_version_info1,
         ),
         ..Default::default()
     })
@@ -169,6 +191,7 @@ pub enum Message {
     OnSelectRuneSource(String),
     OnFetchedRunes(Result<Vec<Rune>, FetchError>),
     EventOccurred(iced_native::Event),
+    OpenUrlForLatestRelease,
 }
 
 impl Application for ChampR {
@@ -271,6 +294,10 @@ impl Application for ChampR {
                 if let Event::Window(window::Event::CloseRequested) = event {
                     std::process::exit(0);
                 }
+            }
+            Message::OpenUrlForLatestRelease => {
+                let (_tag, html_url) = self.remote_version_info.lock().unwrap().clone();
+                ChampR::open_web(html_url);
             }
             Message::TickRun => {}
         }
@@ -473,7 +500,20 @@ impl Application for ChampR {
         .width(Length::Fill)
         .height(Length::FillPortion(4));
 
-        let bot_row = row![text(format!("{VERSION}"))]
+        let (tag_name, _html_url) = self.remote_version_info.lock().unwrap().clone();
+        let got_new_version = !tag_name.is_empty();
+
+        let mut bot_row = row![text(format!("Version {VERSION}")).size(16)];
+        if got_new_version {
+            bot_row = bot_row.push(button(
+                text(fonts::IconChar::InfoCircle.as_str())
+                    .font(fonts::ICON_FONT)
+                    .size(16)
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .vertical_alignment(alignment::Vertical::Center),
+            ).on_press(Message::OpenUrlForLatestRelease));
+        }
+        let bot_row = bot_row
             .align_items(Alignment::Center)
             .width(Length::Fill)
             .height(Length::FillPortion(1));
