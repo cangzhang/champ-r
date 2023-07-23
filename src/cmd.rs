@@ -55,7 +55,10 @@ pub fn get_commandline() -> CommandLineOutput {
         Ok(output) => {
             if output.status.success() {
                 let output = String::from_utf8_lossy(&output.stdout);
-                info!("cmd output: {:?}", &output);
+                
+                #[cfg(not(debug_assertions))]
+                info!("output: {:?}", &output);
+                
                 if !output.is_empty() {
                     return match_stdout(&String::from(output));
                 }

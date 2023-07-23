@@ -29,6 +29,7 @@ use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
 use iced_native::Event;
 
+use styles::style_tuple::{StyleTuple, StyleVariant};
 use tracing::info;
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
 use tracing_subscriber::FmtSubscriber;
@@ -472,8 +473,8 @@ impl Application for ChampR {
         )
         .padding(8.)
         .width(Length::Fixed(80.))
-        .style(theme::Button::Custom(Box::new(
-            styles::button::CustomIconButtonStyle,
+        .style(<StyleTuple as Into<iced::theme::Button>>::into(StyleTuple(
+            StyleVariant::BigIconButton,
         )));
         if !self.applying_builds {
             apply_btn = apply_btn.on_press(Message::ApplyBuilds);
@@ -505,13 +506,25 @@ impl Application for ChampR {
 
         let mut bot_row = row![text(format!("Version {VERSION}")).size(16)];
         if got_new_version {
-            bot_row = bot_row.push(button(
-                text(fonts::IconChar::InfoCircle.as_str())
-                    .font(fonts::ICON_FONT)
-                    .size(16)
-                    .horizontal_alignment(alignment::Horizontal::Center)
-                    .vertical_alignment(alignment::Vertical::Center),
-            ).on_press(Message::OpenUrlForLatestRelease));
+            bot_row = bot_row.push(
+                tooltip(
+                    button(
+                        text(fonts::IconChar::InfoCircle.as_str())
+                            .font(fonts::ICON_FONT)
+                            .size(16)
+                            .horizontal_alignment(alignment::Horizontal::Center)
+                            .vertical_alignment(alignment::Vertical::Center),
+                    )
+                    .on_press(Message::OpenUrlForLatestRelease)
+                    .style(<StyleTuple as Into<iced::theme::Button>>::into(StyleTuple(
+                        StyleVariant::IconButton,
+                    ))),
+                    "A newer version is available, click to download",
+                    tooltip::Position::Top,
+                )
+                .gap(5)
+                .style(theme::Container::Box),
+            );
         }
         let bot_row = bot_row
             .align_items(Alignment::Center)
