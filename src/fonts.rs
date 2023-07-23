@@ -22,6 +22,7 @@ pub enum IconChar {
     Rocket,
     InfoFill,
     InfoCircle,
+    GitHub,
 }
 
 impl IconChar {
@@ -30,6 +31,7 @@ impl IconChar {
             IconChar::Rocket => '\u{f845}',
             IconChar::InfoFill => '\u{f430}',
             IconChar::InfoCircle => '\u{f431}',
+            IconChar::GitHub => '\u{f3ed}',
         }
     }
 }

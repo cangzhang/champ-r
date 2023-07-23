@@ -30,6 +30,7 @@ impl button::StyleSheet for StyleTuple {
                 border_color: Color::WHITE,
                 border_radius: 6., 
                 border_width: 1., 
+                background: Color::WHITE.into(),
                 ..Appearance::default()
             },
             StyleTuple(_) => Appearance {

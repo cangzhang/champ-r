@@ -504,9 +504,9 @@ impl Application for ChampR {
         let (tag_name, _html_url) = self.remote_version_info.lock().unwrap().clone();
         let got_new_version = !tag_name.is_empty();
 
-        let mut bot_row = row![text(format!("Version {VERSION}")).size(16)];
+        let mut footer_row = row![text(format!("Version {VERSION}")).size(16)];
         if got_new_version {
-            bot_row = bot_row.push(
+            footer_row = footer_row.push(
                 tooltip(
                     button(
                         text(fonts::IconChar::InfoCircle.as_str())
@@ -526,15 +526,27 @@ impl Application for ChampR {
                 .style(theme::Container::Box),
             );
         }
-        let bot_row = bot_row
+        let footer_row = footer_row
+            .push(button(
+                text(fonts::IconChar::GitHub.as_str())
+                    .font(fonts::ICON_FONT)
+                    .size(20)
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .vertical_alignment(alignment::Vertical::Center),
+            ))
+            .spacing(10.)
             .align_items(Alignment::Center)
             .width(Length::Fill)
             .height(Length::FillPortion(1));
+        let footer_container = Container::new(footer_row)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(theme::Container::Box);
 
         let content = Column::new()
             .push(main_row)
             .push(info_and_btn_col)
-            .push(bot_row);
+            .push(footer_container);
         Container::new(content)
             .width(Length::Fill)
             .height(Length::Fill)
