@@ -24,10 +24,10 @@ use iced::widget::{
     button, checkbox, column, image, pick_list, row, scrollable, text, tooltip, Column, Container,
 };
 use iced::window::{PlatformSpecific, Position};
-use iced::{alignment, theme};
+use iced::Event;
+use iced::{alignment, font, subscription, theme};
 use iced::{executor, window, Alignment, Padding, Subscription};
 use iced::{Application, Command, Element, Length, Settings, Theme};
-use iced_native::Event;
 
 use styles::style_tuple::{StyleTuple, StyleVariant};
 use tracing::info;
@@ -140,7 +140,7 @@ pub fn main() -> iced::Result {
         });
     });
 
-    let window_icon = util::load_icon();
+    let _window_icon = util::load_icon();
     ChampR::run(Settings {
         id: None,
         window: window::Settings {
@@ -152,12 +152,11 @@ pub fn main() -> iced::Result {
             resizable: true,
             decorations: true,
             transparent: false,
-            always_on_top: false,
-            icon: Some(window_icon),
             platform_specific: PlatformSpecific::default(),
+            // icon: Some(window_icon),
+            ..Default::default()
         },
-        default_font: Some(fonts::SARSA_MONO_REGULAR_BYTES),
-        default_text_size: 18.,
+        default_text_size: 16.,
         exit_on_close_request: false,
         flags: ChampR::new(
             auth_url1,
@@ -191,8 +190,9 @@ pub enum Message {
     ApplyRuneDone(Result<(), LcuError>),
     OnSelectRuneSource(String),
     OnFetchedRunes(Result<Vec<Rune>, FetchError>),
-    EventOccurred(iced_native::Event),
+    EventOccurred(Event),
     OpenUrlForLatestRelease,
+    FontLoaded(Result<(), font::Error>),
 }
 
 impl Application for ChampR {
@@ -204,7 +204,11 @@ impl Application for ChampR {
     fn new(flags: ChampR) -> (Self, Command<Message>) {
         (
             flags,
-            Command::perform(web::init_for_ui(), Message::InitRemoteData),
+            Command::batch([
+                font::load(include_bytes!("../assets/fonts/bootstrap-icons.ttf").as_slice())
+                    .map(Message::FontLoaded),
+                Command::perform(web::init_for_ui(), Message::InitRemoteData),
+            ]),
         )
     }
 
@@ -300,6 +304,7 @@ impl Application for ChampR {
                 let (_tag, html_url) = self.remote_version_info.lock().unwrap().clone();
                 ChampR::open_web(html_url);
             }
+            Message::FontLoaded(_) => {}
             Message::TickRun => {}
         }
         Command::none()
@@ -403,10 +408,7 @@ impl Application for ChampR {
 
         let main_row = row![
             column![
-                row![text("Sources of Build")
-                    .size(22.)
-                    .font(fonts::SARSA_MONO_BOLD)]
-                .padding(Padding::from([0, 0, 0, 16])),
+                row![text("Sources of Build").size(22.)].padding(Padding::from([0, 0, 0, 16])),
                 scrollable(source_list_col)
                     .height(Length::Fill)
                     .width(Length::Fill)
@@ -557,7 +559,7 @@ impl Application for ChampR {
         let time_subscription =
             iced::time::every(Duration::from_millis(100)).map(|_| Message::TickRun);
 
-        let ev_subscription = iced_native::subscription::events().map(Message::EventOccurred);
+        let ev_subscription = subscription::events().map(Message::EventOccurred);
 
         Subscription::batch([time_subscription, ev_subscription])
     }

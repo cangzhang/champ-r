@@ -1,8 +1,9 @@
 use iced::{
+    color,
     widget::button::{self, Appearance},
-    Theme,
+    Color, Theme,
 };
-use iced_native::{color, Color};
+// use iced_native::{color, Color};
 
 use super::style_tuple::{StyleTuple, StyleVariant};
 
@@ -18,19 +19,19 @@ impl button::StyleSheet for StyleTuple {
     fn active(&self, _style: &Self::Style) -> Appearance {
         match self {
             StyleTuple(StyleVariant::BigIconButton) => Appearance {
-                border_radius: 180.,
+                border_radius: 180.0.into(),
                 border_width: 1.,
                 border_color: color!(229, 231, 235),
                 background: Some(color!(79, 85, 193).into()),
                 text_color: Color::WHITE,
                 ..Appearance::default()
             },
-            StyleTuple(StyleVariant::IconButton) => Appearance { 
+            StyleTuple(StyleVariant::IconButton) => Appearance {
                 text_color: Color::BLACK,
                 border_color: Color::WHITE,
-                border_radius: 6., 
-                border_width: 1., 
-                background: Color::WHITE.into(),
+                border_radius: 6.0.into(),
+                border_width: 1.,
+                background: Some(Color::WHITE.into()),
                 ..Appearance::default()
             },
             StyleTuple(_) => Appearance {
