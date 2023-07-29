@@ -11,7 +11,7 @@ pub mod lcu;
 pub mod source;
 pub mod styles;
 pub mod ui;
-pub mod util;
+pub mod utils;
 pub mod web;
 
 use std::collections::HashMap;
@@ -38,7 +38,7 @@ use lcu::api::{apply_rune, LcuError};
 use lcu::client::LcuClient;
 use source::SourceItem;
 use ui::{ChampR, LogItem};
-use util::VERSION;
+use utils::VERSION;
 use web::{ChampionsMap, DataDragonRune, FetchError};
 
 pub fn main() -> iced::Result {
@@ -140,7 +140,7 @@ pub fn main() -> iced::Result {
         });
     });
 
-    let _window_icon = util::load_icon();
+    let window_icon = utils::load_icon();
     ChampR::run(Settings {
         id: None,
         window: window::Settings {
@@ -153,10 +153,10 @@ pub fn main() -> iced::Result {
             decorations: true,
             transparent: false,
             platform_specific: PlatformSpecific::default(),
-            // icon: Some(window_icon),
+            icon: Some(window_icon),
             ..Default::default()
         },
-        default_text_size: 16.,
+        default_text_size: 14.,
         exit_on_close_request: false,
         flags: ChampR::new(
             auth_url1,
@@ -336,7 +336,7 @@ impl Application for ChampR {
             let cbox = checkbox(label, checked, move |_checked| {
                 Message::UpdateSelected(value.clone())
             })
-            .text_size(20.)
+            .text_size(16.)
             .spacing(6.);
             let icon = SourceItem::get_mode_icon(item);
             source_list_col = source_list_col.push(
@@ -408,7 +408,7 @@ impl Application for ChampR {
 
         let main_row = row![
             column![
-                row![text("Sources of Build").size(22.)].padding(Padding::from([0, 0, 0, 16])),
+                row![text("Sources of Build").size(20.)].padding(Padding::from([0, 0, 0, 16])),
                 scrollable(source_list_col)
                     .height(Length::Fill)
                     .width(Length::Fill)
@@ -453,7 +453,7 @@ impl Application for ChampR {
         } else {
             String::from("Loading...")
         };
-        let remote_data_info = text(remote_data_info_text).size(16.);
+        let remote_data_info = text(remote_data_info_text).size(14.);
 
         let lcu_connect_info = if lol_running {
             "Connected to League of Legends."
@@ -493,8 +493,8 @@ impl Application for ChampR {
 
         let info_and_btn_col = column![
             remote_data_info,
-            text(lcu_connect_info).size(16.),
-            row!(text(import_builds_info_text).size(16.)),
+            text(lcu_connect_info).size(14.),
+            row!(text(import_builds_info_text).size(14.)),
             btn_with_tooltip
         ]
         .spacing(8)
@@ -506,7 +506,7 @@ impl Application for ChampR {
         let (tag_name, _html_url) = self.remote_version_info.lock().unwrap().clone();
         let got_new_version = !tag_name.is_empty();
 
-        let mut footer_row = row![text(format!("Version {VERSION}")).size(16)];
+        let mut footer_row = row![text(format!("Version {VERSION}"))];
         if got_new_version {
             footer_row = footer_row.push(
                 tooltip(
