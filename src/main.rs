@@ -5,6 +5,7 @@
 
 pub mod builds;
 pub mod cmd;
+pub mod components;
 pub mod config;
 pub mod fonts;
 pub mod lcu;
@@ -20,8 +21,10 @@ use std::time::Duration;
 
 use builds::Rune;
 use bytes::Bytes;
+use components::modal::Modal;
 use iced::widget::{
-    button, checkbox, column, image, pick_list, row, scrollable, text, tooltip, Column, Container,
+    button, checkbox, column, container, image, pick_list, row, scrollable, text, tooltip, Column,
+    Container,
 };
 use iced::window::{PlatformSpecific, Position};
 use iced::Event;
@@ -193,6 +196,7 @@ pub enum Message {
     EventOccurred(Event),
     OpenUrlForLatestRelease,
     FontLoaded(Result<(), font::Error>),
+    ToggleRuneModal,
 }
 
 impl Application for ChampR {
@@ -304,8 +308,10 @@ impl Application for ChampR {
                 let (_tag, html_url) = self.remote_version_info.lock().unwrap().clone();
                 ChampR::open_web(html_url);
             }
-            Message::FontLoaded(_) => {}
-            Message::TickRun => {}
+            Message::ToggleRuneModal => {
+                self.show_rune_modal = !self.show_rune_modal;
+            }
+            _ => {}
         }
         Command::none()
     }
@@ -317,7 +323,7 @@ impl Application for ChampR {
         let auth_url = self.auth_url.lock().unwrap();
         let lol_running = !auth_url.is_empty();
 
-        // let current_champion = self.current_champion.lock().unwrap();
+        let current_champion = self.current_champion.lock().unwrap();
         let runes = self.current_champion_runes.lock().unwrap();
         let loading_runes = self.loading_runes.lock().unwrap();
         let avatar_guard = self.current_champion_avatar.lock().unwrap();
@@ -356,90 +362,15 @@ impl Application for ChampR {
             .width(Length::Fill)
             .spacing(8.);
 
-        if *loading_runes {
-            rune_list_col = rune_list_col
-                .push(text("Loading runes...").horizontal_alignment(alignment::Horizontal::Center))
-                .height(Length::Fill);
-        } else {
-            for (idx, r) in runes.iter().enumerate() {
-                let rune_preview_row =
-                    if let Some((primary_img, sub_img, first_img)) = rune_images.get(idx) {
-                        row![
-                            image(image::Handle::from_memory(primary_img.clone()))
-                                .height(28.)
-                                .width(28.),
-                            image(image::Handle::from_memory(first_img.clone()))
-                                .height(36.)
-                                .width(36.),
-                            image(image::Handle::from_memory(sub_img.clone()))
-                                .height(26.)
-                                .width(26.),
-                        ]
-                        .align_items(Alignment::Center)
-                    } else {
-                        row!()
-                    };
-                let rune_title = format!(
-                    "Position: {}, Pick: {}, Win: {}",
-                    r.position, r.pick_count, r.win_rate
-                );
-                let row = row![
-                    column![
-                        text(rune_title).size(14.).width(Length::FillPortion(2)),
-                        rune_preview_row,
-                    ]
-                    .width(Length::FillPortion(2)),
-                    row![button("Apply").on_press(Message::ApplyRune(auth_url.clone(), r.clone()))]
-                        .align_items(Alignment::End)
-                        .width(Length::FillPortion(1)),
-                ]
-                .align_items(Alignment::Center)
-                .height(Length::Fixed(60.));
-                rune_list_col = rune_list_col.push(row);
-            }
-        }
-
-        let avatar_row = if let Some(b) = avatar_guard.clone() {
-            let handle = image::Handle::from_memory(b);
-            row!(image(handle).height(36.).width(36.))
-        } else {
-            row!().height(36.)
-        };
-
-        let main_row = row![
-            column![
-                row![text("Sources of Build").size(20.)].padding(Padding::from([0, 0, 0, 16])),
-                scrollable(source_list_col)
-                    .height(Length::Fill)
-                    .width(Length::Fill)
-            ]
-            .padding(Padding::from([16, 0]))
-            .height(Length::Fill)
-            .width(Length::FillPortion(2)),
-            column![
-                row!(
-                    pick_list(
-                        sources
-                            .iter()
-                            .map(|s| s.value.clone())
-                            .collect::<Vec<String>>(),
-                        Some(current_rune_source),
-                        Message::OnSelectRuneSource,
-                    ),
-                    avatar_row.padding(Padding::from([0, 8, 0, 0])),
-                )
-                .align_items(Alignment::Center)
-                .spacing(16.)
-                .padding(Padding::from([0, 0, 16, 0])),
-                // .height(Length::FillPortion(1)),
-                scrollable(rune_list_col)
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-            ]
-            .padding(Padding::from([8, 16, 8, 0]))
-            .width(Length::FillPortion(2))
-            .height(Length::Fill)
+        let main_row = row![column![
+            row![text("Sources of Build").size(20.)].padding(Padding::from([0, 0, 0, 16])),
+            scrollable(source_list_col)
+                .height(Length::Fill)
+                .width(Length::Fill)
         ]
+        .padding(Padding::from([16, 0]))
+        .height(Length::Fill)
+        .width(Length::FillPortion(2)),]
         .spacing(8)
         .width(Length::Fill)
         .height(Length::FillPortion(10));
@@ -549,10 +480,99 @@ impl Application for ChampR {
             .push(main_row)
             .push(info_and_btn_col)
             .push(footer_container);
-        Container::new(content)
+        let main_container = Container::new(content)
             .width(Length::Fill)
-            .height(Length::Fill)
-            .into()
+            .height(Length::Fill);
+
+        if !current_champion.is_empty() {
+            if *loading_runes {
+                rune_list_col = rune_list_col
+                    .push(
+                        text("Loading runes...")
+                            .horizontal_alignment(alignment::Horizontal::Center),
+                    )
+                    .height(Length::Fill);
+            } else {
+                for (idx, r) in runes.iter().enumerate() {
+                    let rune_preview_row =
+                        if let Some((primary_img, sub_img, first_img)) = rune_images.get(idx) {
+                            row![
+                                image(image::Handle::from_memory(primary_img.clone()))
+                                    .height(28.)
+                                    .width(28.),
+                                image(image::Handle::from_memory(first_img.clone()))
+                                    .height(36.)
+                                    .width(36.),
+                                image(image::Handle::from_memory(sub_img.clone()))
+                                    .height(26.)
+                                    .width(26.),
+                            ]
+                            .align_items(Alignment::Center)
+                        } else {
+                            row!()
+                        };
+                    let rune_title = format!(
+                        "Position: {}, Pick: {}, Win: {}",
+                        r.position, r.pick_count, r.win_rate
+                    );
+                    let row = row![
+                        column![
+                            text(rune_title).size(14.).width(Length::FillPortion(2)),
+                            rune_preview_row,
+                        ]
+                        .width(Length::FillPortion(2)),
+                        row![button("Apply")
+                            .on_press(Message::ApplyRune(auth_url.clone(), r.clone()))]
+                        .align_items(Alignment::End)
+                        .width(Length::FillPortion(1)),
+                    ]
+                    .align_items(Alignment::Center)
+                    .height(Length::Fixed(60.));
+                    rune_list_col = rune_list_col.push(row);
+                }
+            }
+
+            let avatar_row = if let Some(b) = avatar_guard.clone() {
+                let handle = image::Handle::from_memory(b);
+                row!(image(handle).height(36.).width(36.))
+            } else {
+                row!().height(36.)
+            };
+
+            let modal = container(
+                column![
+                    row!(
+                        pick_list(
+                            sources
+                                .iter()
+                                .map(|s| s.value.clone())
+                                .collect::<Vec<String>>(),
+                            Some(current_rune_source),
+                            Message::OnSelectRuneSource,
+                        ),
+                        avatar_row.padding(Padding::from([0, 8, 0, 0])),
+                    )
+                    .align_items(Alignment::Center)
+                    .spacing(16.)
+                    .padding(Padding::from([0, 0, 16, 0])),
+                    scrollable(rune_list_col)
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                ]
+                .padding(Padding::from([8, 16, 8, 0]))
+                .width(Length::FillPortion(2))
+                .height(Length::Fill),
+            )
+            .width(300)
+            .padding(10)
+            .style(theme::Container::Box);
+
+            Modal::new(main_container, modal)
+                .on_blur(Message::ToggleRuneModal)
+                .into()
+        } else {
+            main_container.into()
+        }
     }
 
     fn subscription(&self) -> Subscription<Message> {

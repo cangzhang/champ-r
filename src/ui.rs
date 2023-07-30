@@ -2,7 +2,12 @@ use std::sync::{Arc, Mutex};
 
 use bytes::Bytes;
 
-use crate::{builds::Rune, source::SourceItem, web::{ChampionsMap, DataDragonRune}, config};
+use crate::{
+    builds::Rune,
+    config,
+    source::SourceItem,
+    web::{ChampionsMap, DataDragonRune},
+};
 
 pub type LogItem = (String, String);
 
@@ -27,6 +32,7 @@ pub struct ChampR {
     pub rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
     pub applying_builds: bool,
     pub remote_version_info: Arc<Mutex<(String, String)>>,
+    pub show_rune_modal: bool,
 }
 
 impl ChampR {
