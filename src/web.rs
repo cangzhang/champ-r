@@ -153,18 +153,16 @@ pub async fn fetch_latest_release() -> Result<LatestRelease, FetchError> {
     let client = reqwest::Client::new();
 
     match client
-        .get(format!(
-            "https://api.github.com/repos/cangzhang/champ-r/releases/latest"
-        ))
+        .get("https://api.github.com/repos/cangzhang/champ-r/releases/latest".to_string())
         .header(USER_AGENT, format!("ChampR {VERSION}"))
         .send()
         .await
     {
         Ok(resp) => {
-            return resp.json::<LatestRelease>().await.map_err(|err| {
+            resp.json::<LatestRelease>().await.map_err(|err| {
                 error!("latest release serialize: {:?}", err);
                 FetchError::Failed
-            });
+            })
         }
         Err(err) => {
             error!("fetch latest release: {:?}", err);

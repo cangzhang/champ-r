@@ -9,6 +9,6 @@ pub struct StyleTuple(pub StyleVariant);
 
 impl Clone for StyleTuple {
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        Self(self.0)
     }
 }
