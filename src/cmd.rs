@@ -81,7 +81,7 @@ pub fn get_commandline() -> CommandLineOutput {
 
     let cmd_str = r#"ps -A | grep LeagueClientUx | grep remoting-auth-token="#;
     let mut cmd = Command::new("sh")
-        .args(&["-c", cmd_str])
+        .args(["-c", cmd_str])
         .stdout(Stdio::piped())
         .spawn()
         .unwrap();
