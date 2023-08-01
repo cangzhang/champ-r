@@ -33,6 +33,7 @@ pub struct ChampR {
     pub applying_builds: bool,
     pub remote_version_info: Arc<Mutex<(String, String)>>,
     pub show_rune_modal: bool,
+    pub random_champion: Arc<Mutex<String>>
 }
 
 impl ChampR {
@@ -86,5 +87,15 @@ impl ChampR {
             .arg(url)
             .spawn()
             .unwrap();
+    }
+
+    pub fn random_rune(&mut self) {
+        use rand::prelude::*;
+
+        let champions_map = self.champions_map.lock().unwrap();
+        let values = champions_map.iter().map(|(_k, v)| v).collect::<Vec<_>>();
+        let rand_champ = values.choose(&mut thread_rng()).unwrap().to_owned();
+        *self.current_champion.lock().unwrap() = rand_champ.id.clone();
+        *self.current_champion_id.lock().unwrap() = Some(rand_champ.key.parse::<u64>().unwrap());
     }
 }

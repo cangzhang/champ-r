@@ -32,6 +32,7 @@ tracing-appender = "0.2.2"
 lyon_algorithms = "1"
 once_cell = "1"
 toml = "0.7.6"
+rand = "0.8.5"
 
 [target.'cfg(windows)'.build-dependencies]
 embed-resource = "2.1"

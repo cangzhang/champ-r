@@ -7,6 +7,7 @@ pub enum IconChar {
     InfoFill,
     InfoCircle,
     GitHub,
+    Shuffle,
 }
 
 impl IconChar {
@@ -16,6 +17,7 @@ impl IconChar {
             IconChar::InfoFill => '\u{f430}',
             IconChar::InfoCircle => '\u{f431}',
             IconChar::GitHub => '\u{f3ed}',
+            IconChar::Shuffle => '\u{f544}',
         }
     }
 }

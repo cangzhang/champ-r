@@ -112,10 +112,7 @@ pub async fn fetch_and_apply(
             let buf = serde_json::to_string_pretty(&item).unwrap();
             f.write_all(buf[..].as_bytes()).unwrap();
 
-            info!(
-                "[builds::apply_builds_from_remote] saved to: {}",
-                &full_path
-            );
+            info!("builds saved to: {}", &full_path);
         }
     }
 
@@ -154,6 +151,7 @@ pub async fn batch_apply(
                 if r.is_ok() {
                     let mut logs = logs.lock().unwrap();
                     logs.push((source.clone(), champion.clone()));
+                    drop(logs);
                 } else {
                     info!("[apply_builds] failed {:?} {:?}", &source, &champion);
                 }

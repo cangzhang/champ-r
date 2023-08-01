@@ -317,6 +317,7 @@ dependencies = [
  "lazy_static",
  "lyon_algorithms",
  "once_cell",
+ "rand",
  "regex",
  "reqwest",
  "serde",

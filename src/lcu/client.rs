@@ -5,8 +5,10 @@ use std::{
 
 use bytes::Bytes;
 
+#[allow(unused_imports)]
 use tracing::{info, error};
 
+#[allow(unused_imports)]
 use crate::{
     builds::Rune,
     cmd::{self, CommandLineOutput},
@@ -14,8 +16,10 @@ use crate::{
     web::{fetch_champion_runes, ChampionsMap, DataDragonRune}, config,
 };
 
+#[allow(unused_imports)]
 use super::api::{self, get_champion_avatar, get_rune_preview_images};
 
+#[derive(Default)]
 pub struct LcuClient {
     pub champions_map: Arc<Mutex<ChampionsMap>>,
     // lcu auth
@@ -32,6 +36,7 @@ pub struct LcuClient {
     pub remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
     pub rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
     pub app_config: Arc<Mutex<config::Config>>,
+    pub random_champion: Arc<Mutex<String>>,
 }
 
 impl LcuClient {
@@ -64,6 +69,7 @@ impl LcuClient {
             fetched_remote_data,
             remote_rune_list,
             rune_images,
+            ..Default::default()
         }
     }
 
@@ -96,9 +102,16 @@ impl LcuClient {
             }
 
             let auth_url = { self.auth_url.lock().unwrap().clone() };
+            #[allow(unused_mut, unused_variables)]
             let mut should_fetch_runes: bool = false;
 
-            if !auth_url.is_empty() {
+            #[cfg(debug_assertions)]
+            let should_continue = true;
+            #[cfg(not(debug_assertions))]
+            let should_continue = !auth_url.is_empty();
+
+            if should_continue {
+                #[cfg(not(debug_assertions))]
                 if let Ok(Some(champion_id)) = api::get_session(&auth_url).await {
                     let mut current_champion_id = self.current_champion_id.lock().unwrap();
                     let mut current_champion = self.current_champion.lock().unwrap();
@@ -123,6 +136,12 @@ impl LcuClient {
                     *self.current_champion_avatar.lock().unwrap() = None;
                 }
 
+                let current_champion = self.current_champion.lock().unwrap().clone();
+                let random_champion = self.random_champion.lock().unwrap().clone();
+
+                #[cfg(debug_assertions)]
+                let should_fetch_runes = random_champion.eq(&current_champion);
+
                 if should_fetch_runes {
                     *self.current_champion_avatar.lock().unwrap() = None;
                     *self.current_champion_runes.lock().unwrap() = vec![];
@@ -142,6 +161,8 @@ impl LcuClient {
                         let champion_id = self.current_champion_id.lock().unwrap();
                         (*champion_id).unwrap_or(0)
                     };
+
+                    *self.random_champion.lock().unwrap() = champion.clone();
 
                     if let Ok((runes, avatar_bytes)) = futures::future::try_join(
                         fetch_champion_runes(source, champion.clone()),
@@ -179,7 +200,7 @@ impl LcuClient {
                 }
             }
 
-            thread::sleep(time::Duration::from_millis(2500));
+            thread::sleep(time::Duration::from_millis(2000));
         }
     }
 }

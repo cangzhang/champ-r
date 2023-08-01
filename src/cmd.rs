@@ -3,12 +3,14 @@ use serde::{Deserialize, Serialize};
 use std::str;
 use std::sync::{Arc, Mutex};
 
+#[allow(unused_imports)]
 use tracing::{error, info};
 
 const APP_PORT_KEY: &str = "--app-port=";
 const TOKEN_KEY: &str = "--remoting-auth-token=";
 const REGION_KEY: &str = "--region=";
 const DIR_KEY: &str = "--install-directory=";
+#[allow(dead_code)]
 const LCU_COMMAND: &str = "Get-CimInstance Win32_Process -Filter \"name = 'LeagueClientUx.exe'\" | Select-Object -ExpandProperty CommandLine";
 
 lazy_static! {

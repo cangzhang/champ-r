@@ -197,6 +197,7 @@ pub enum Message {
     OpenUrlForLatestRelease,
     FontLoaded(Result<(), font::Error>),
     ToggleRuneModal,
+    RandomChampion,
 }
 
 impl Application for ChampR {
@@ -236,22 +237,27 @@ impl Application for ChampR {
                 app_config.update_select_sources(s);
             }
             Message::ApplyBuilds => {
-                let disconnected = self.auth_url.lock().unwrap().is_empty();
-                let data_ready = *self.fetched_remote_data.lock().unwrap();
-                let applying = self.applying_builds;
-
                 let app_config = self.app_config.lock().unwrap();
-                let has_nothing_selected = app_config.selected_sources.is_empty();
-
-                info!("disconnected: {disconnected}, data_ready: {data_ready}, has_nothing_selected: {has_nothing_selected}, applying: {applying}");
+                #[allow(unused)]
+                let (disconnected, data_ready, applying, has_nothing_selected) = (
+                    self.auth_url.lock().unwrap().is_empty(),
+                    *self.fetched_remote_data.lock().unwrap(),
+                    self.applying_builds,
+                    app_config.selected_sources.is_empty(),
+                );
+                #[cfg(not(debug_assertions))]
                 if disconnected || !data_ready || has_nothing_selected || applying {
                     return Command::none();
                 }
 
                 info!("Apply builds start");
                 let logs = self.logs.clone();
-                let lcu_dir = { self.lcu_dir.lock().unwrap().clone() };
                 let champions_map = { self.champions_map.lock().unwrap().clone() };
+
+                #[cfg(debug_assertions)]
+                let lcu_dir = String::from(".local_builds");
+                #[cfg(not(debug_assertions))]
+                let lcu_dir = { self.lcu_dir.lock().unwrap().clone() };
 
                 self.applying_builds = true;
                 let is_tencent = self.is_tencent.lock().unwrap();
@@ -310,6 +316,9 @@ impl Application for ChampR {
             }
             Message::ToggleRuneModal => {
                 self.show_rune_modal = !self.show_rune_modal;
+            }
+            Message::RandomChampion => {
+                self.random_rune();
             }
             _ => {}
         }
@@ -391,7 +400,6 @@ impl Application for ChampR {
         } else {
             "Disconnected."
         };
-
         let import_builds_info_text = if self.applying_builds {
             "Applying builds..."
         } else {
@@ -409,7 +417,7 @@ impl Application for ChampR {
         .style(<StyleTuple as Into<iced::theme::Button>>::into(StyleTuple(
             StyleVariant::BigIconButton,
         )));
-        if !self.applying_builds {
+        if !self.applying_builds || cfg!(debug_assertions) {
             apply_btn = apply_btn.on_press(Message::ApplyBuilds);
         };
 
@@ -417,10 +425,20 @@ impl Application for ChampR {
             "Processing"
         } else {
             "Apply Builds"
-        };
-        let btn_with_tooltip = row![tooltip(apply_btn, tooltip_text, tooltip::Position::Top)
+        };        
+
+        let mut btn_with_tooltip = row![tooltip(apply_btn, tooltip_text, tooltip::Position::Top)
             .gap(5)
             .style(theme::Container::Box)];
+        if cfg!(debug_assertions) {
+            let shuffle_btn = button(
+                text(fonts::IconChar::Shuffle.as_str())
+                    .font(fonts::ICON_FONT)
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .vertical_alignment(alignment::Vertical::Center),
+            ).on_press(Message::RandomChampion);
+            btn_with_tooltip = btn_with_tooltip.push(shuffle_btn);
+        }
 
         let info_and_btn_col = column![
             remote_data_info,
