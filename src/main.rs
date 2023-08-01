@@ -102,6 +102,9 @@ pub fn main() -> iced::Result {
     let remote_version_info1 = Arc::new(Mutex::new((String::new(), String::new())));
     let remote_version_info2 = remote_version_info1.clone();
 
+    let show_rune_modal1 = Arc::new(Mutex::new(false));
+    let show_rune_modal2 = show_rune_modal1.clone();
+
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(async move {
         tokio::spawn(async move {
@@ -119,6 +122,7 @@ pub fn main() -> iced::Result {
                 fetched_remote_data2,
                 remote_rune_list2,
                 rune_images2,
+                show_rune_modal2,
             );
             lcu_client.start().await;
         });
@@ -177,6 +181,7 @@ pub fn main() -> iced::Result {
             remote_rune_list1,
             rune_images1,
             remote_version_info1,
+            show_rune_modal1,
         ),
         ..Default::default()
     })
@@ -315,7 +320,8 @@ impl Application for ChampR {
                 ChampR::open_web(html_url);
             }
             Message::ToggleRuneModal => {
-                self.show_rune_modal = !self.show_rune_modal;
+                let prev = self.show_rune_modal.lock().unwrap().clone();
+                *self.show_rune_modal.lock().unwrap() = !prev;
             }
             Message::RandomChampion => {
                 self.random_rune();
@@ -332,7 +338,6 @@ impl Application for ChampR {
         let auth_url = self.auth_url.lock().unwrap();
         let lol_running = !auth_url.is_empty();
 
-        let current_champion = self.current_champion.lock().unwrap();
         let runes = self.current_champion_runes.lock().unwrap();
         let loading_runes = self.loading_runes.lock().unwrap();
         let avatar_guard = self.current_champion_avatar.lock().unwrap();
@@ -425,9 +430,9 @@ impl Application for ChampR {
             "Processing"
         } else {
             "Apply Builds"
-        };        
+        };
 
-        let mut btn_with_tooltip = row![tooltip(apply_btn, tooltip_text, tooltip::Position::Top)
+        let mut control_btn_group = row![tooltip(apply_btn, tooltip_text, tooltip::Position::Top)
             .gap(5)
             .style(theme::Container::Box)];
         if cfg!(debug_assertions) {
@@ -436,15 +441,16 @@ impl Application for ChampR {
                     .font(fonts::ICON_FONT)
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .vertical_alignment(alignment::Vertical::Center),
-            ).on_press(Message::RandomChampion);
-            btn_with_tooltip = btn_with_tooltip.push(shuffle_btn);
+            )
+            .on_press(Message::RandomChampion);
+            control_btn_group = control_btn_group.push(shuffle_btn);
         }
 
         let info_and_btn_col = column![
             remote_data_info,
             text(lcu_connect_info).size(14.),
             row!(text(import_builds_info_text).size(14.)),
-            btn_with_tooltip
+            control_btn_group
         ]
         .spacing(8)
         .padding(8.)
@@ -502,7 +508,8 @@ impl Application for ChampR {
             .width(Length::Fill)
             .height(Length::Fill);
 
-        if !current_champion.is_empty() {
+        let show_rune_modal = self.show_rune_modal.lock().unwrap().clone();
+        if show_rune_modal {
             if *loading_runes {
                 rune_list_col = rune_list_col
                     .push(
@@ -569,6 +576,14 @@ impl Application for ChampR {
                             Message::OnSelectRuneSource,
                         ),
                         avatar_row.padding(Padding::from([0, 8, 0, 0])),
+                        button(
+                            text(fonts::IconChar::X.as_str())
+                                .font(fonts::ICON_FONT)
+                                .size(16)
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .vertical_alignment(alignment::Vertical::Center),
+                        )
+                        .on_press(Message::ToggleRuneModal)
                     )
                     .align_items(Alignment::Center)
                     .spacing(16.)
@@ -586,7 +601,7 @@ impl Application for ChampR {
             .style(theme::Container::Box);
 
             Modal::new(main_container, modal)
-                .on_blur(Message::ToggleRuneModal)
+                // .on_blur(Message::ToggleRuneModal)
                 .into()
         } else {
             main_container.into()

@@ -32,8 +32,8 @@ pub struct ChampR {
     pub rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
     pub applying_builds: bool,
     pub remote_version_info: Arc<Mutex<(String, String)>>,
-    pub show_rune_modal: bool,
-    pub random_champion: Arc<Mutex<String>>
+    pub random_champion: Arc<Mutex<String>>,
+    pub show_rune_modal: Arc<Mutex<bool>>,
 }
 
 impl ChampR {
@@ -53,6 +53,7 @@ impl ChampR {
         remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
         rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
         remote_version_info: Arc<Mutex<(String, String)>>,
+        show_rune_modal: Arc<Mutex<bool>>,
     ) -> Self {
         Self {
             auth_url,
@@ -70,6 +71,7 @@ impl ChampR {
             remote_rune_list,
             rune_images,
             remote_version_info,
+            show_rune_modal,
             ..Default::default()
         }
     }

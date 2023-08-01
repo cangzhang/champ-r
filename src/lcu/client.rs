@@ -6,14 +6,15 @@ use std::{
 use bytes::Bytes;
 
 #[allow(unused_imports)]
-use tracing::{info, error};
+use tracing::{error, info};
 
 #[allow(unused_imports)]
 use crate::{
     builds::Rune,
     cmd::{self, CommandLineOutput},
+    config,
     lcu::util::get_champion_alias,
-    web::{fetch_champion_runes, ChampionsMap, DataDragonRune}, config,
+    web::{fetch_champion_runes, ChampionsMap, DataDragonRune},
 };
 
 #[allow(unused_imports)]
@@ -37,6 +38,7 @@ pub struct LcuClient {
     pub rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
     pub app_config: Arc<Mutex<config::Config>>,
     pub random_champion: Arc<Mutex<String>>,
+    pub show_rune_modal: Arc<Mutex<bool>>,
 }
 
 impl LcuClient {
@@ -54,6 +56,7 @@ impl LcuClient {
         fetched_remote_data: Arc<Mutex<bool>>,
         remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
         rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
+        show_rune_modal: Arc<Mutex<bool>>,
     ) -> Self {
         Self {
             auth_url,
@@ -69,6 +72,7 @@ impl LcuClient {
             fetched_remote_data,
             remote_rune_list,
             rune_images,
+            show_rune_modal,
             ..Default::default()
         }
     }
@@ -104,9 +108,10 @@ impl LcuClient {
             let auth_url = { self.auth_url.lock().unwrap().clone() };
             #[allow(unused_mut, unused_variables)]
             let mut should_fetch_runes: bool = false;
+            let current_champion = self.current_champion.lock().unwrap().clone();
 
             #[cfg(debug_assertions)]
-            let should_continue = true;
+            let should_continue = !current_champion.is_empty();
             #[cfg(not(debug_assertions))]
             let should_continue = !auth_url.is_empty();
 
@@ -136,13 +141,14 @@ impl LcuClient {
                     *self.current_champion_avatar.lock().unwrap() = None;
                 }
 
-                let current_champion = self.current_champion.lock().unwrap().clone();
                 let random_champion = self.random_champion.lock().unwrap().clone();
 
                 #[cfg(debug_assertions)]
-                let should_fetch_runes = random_champion.eq(&current_champion);
+                let should_fetch_runes = !current_champion.eq(&random_champion);
 
                 if should_fetch_runes {
+                    *self.show_rune_modal.lock().unwrap() = true;
+
                     *self.current_champion_avatar.lock().unwrap() = None;
                     *self.current_champion_runes.lock().unwrap() = vec![];
 
@@ -173,12 +179,8 @@ impl LcuClient {
                         *self.current_champion_runes.lock().unwrap() = runes.clone();
                         *self.current_champion_avatar.lock().unwrap() = Some(avatar_bytes);
 
-                        let remote_rune_list = {
-                            self.remote_rune_list.lock().unwrap().clone()
-                        };
-                        let rune_images_guard = {
-                            self.rune_images.clone()
-                        };
+                        let remote_rune_list = { self.remote_rune_list.lock().unwrap().clone() };
+                        let rune_images_guard = { self.rune_images.clone() };
                         let auth_url = { self.auth_url.lock().unwrap().clone() };
 
                         *rune_images_guard.lock().unwrap() = vec![];
@@ -186,7 +188,13 @@ impl LcuClient {
                             let mut rune_images = vec![];
 
                             for rune in runes.iter() {
-                                if let Ok(rune_image) = get_rune_preview_images(auth_url.clone(), rune.clone(), &remote_rune_list).await {
+                                if let Ok(rune_image) = get_rune_preview_images(
+                                    auth_url.clone(),
+                                    rune.clone(),
+                                    &remote_rune_list,
+                                )
+                                .await
+                                {
                                     rune_images.push(rune_image);
                                 }
                             }
