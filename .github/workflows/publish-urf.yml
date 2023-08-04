@@ -2,7 +2,7 @@ name: 🐳 Publish URF
 
 on:
   workflow_run:
-    # workflows: ["Scheduled Publish"]
+    workflows: ["Scheduled Publish"]
     types:
       - completed
 
