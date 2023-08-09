@@ -320,7 +320,7 @@ impl Application for ChampR {
                 ChampR::open_web(html_url);
             }
             Message::ToggleRuneModal => {
-                let prev = self.show_rune_modal.lock().unwrap().clone();
+                let prev = *self.show_rune_modal.lock().unwrap();
                 *self.show_rune_modal.lock().unwrap() = !prev;
             }
             Message::RandomChampion => {
@@ -511,7 +511,7 @@ impl Application for ChampR {
             .width(Length::Fill)
             .height(Length::Fill);
 
-        let show_rune_modal = self.show_rune_modal.lock().unwrap().clone();
+        let show_rune_modal = *self.show_rune_modal.lock().unwrap();
         if show_rune_modal {
             if *loading_runes {
                 rune_list_col = rune_list_col
