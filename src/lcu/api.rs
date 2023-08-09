@@ -7,7 +7,7 @@ use serde_json::Value;
 use tracing::info;
 
 use crate::{
-    builds::Rune,
+    builds::{Rune, ItemBuild},
     web::{DataDragonRune, FetchError},
 };
 
@@ -107,6 +107,10 @@ pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
         .json(&rune)
         .send()
         .await?;
+    Ok(())
+}
+
+pub async fn appy_rune_and_builds(endpoint: String, rune: Rune, builds: Vec<ItemBuild>) -> Result<(), LcuError> {
     Ok(())
 }
 
