@@ -8,6 +8,7 @@ use bytes::Bytes;
 #[allow(unused_imports)]
 use tracing::{error, info};
 
+use crate::builds::BuildData;
 #[allow(unused_imports)]
 use crate::{
     builds::Rune,
@@ -30,7 +31,7 @@ pub struct LcuClient {
     // current session
     pub current_champion_id: Arc<Mutex<Option<u64>>>,
     pub current_champion: Arc<Mutex<String>>,
-    pub current_champion_runes: Arc<Mutex<Vec<Rune>>>,
+    pub current_champion_build_data: Arc<Mutex<BuildData>>,
     pub loading_runes: Arc<Mutex<bool>>,
     pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
     pub fetched_remote_data: Arc<Mutex<bool>>,
@@ -49,7 +50,7 @@ impl LcuClient {
         current_champion_id: Arc<Mutex<Option<u64>>>,
         current_champion: Arc<Mutex<String>>,
         champions_map: Arc<Mutex<ChampionsMap>>,
-        current_champion_runes: Arc<Mutex<Vec<Rune>>>,
+        current_champion_build_data: Arc<Mutex<BuildData>>,
         app_config: Arc<Mutex<config::Config>>,
         loading_runes: Arc<Mutex<bool>>,
         current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
@@ -65,7 +66,7 @@ impl LcuClient {
             champions_map,
             current_champion_id,
             current_champion,
-            current_champion_runes,
+            current_champion_build_data,
             app_config,
             loading_runes,
             current_champion_avatar,
@@ -133,11 +134,11 @@ impl LcuClient {
                 } else {
                     let mut current_champion_id = self.current_champion_id.lock().unwrap();
                     let mut current_champion = self.current_champion.lock().unwrap();
-                    let mut current_champion_runes = self.current_champion_runes.lock().unwrap();
+                    let mut current_champion_build_data = self.current_champion_build_data.lock().unwrap();
 
                     *current_champion_id = None;
                     *current_champion = String::new();
-                    *current_champion_runes = vec![];
+                    *current_champion_build_data = vec![];
                     *self.current_champion_avatar.lock().unwrap() = None;
                 }
 
@@ -150,7 +151,7 @@ impl LcuClient {
                     *self.show_rune_modal.lock().unwrap() = true;
 
                     *self.current_champion_avatar.lock().unwrap() = None;
-                    *self.current_champion_runes.lock().unwrap() = vec![];
+                    *self.current_champion_build_data.lock().unwrap() = BuildData::default();
 
                     let loading_runes_guard = self.loading_runes.clone();
                     *loading_runes_guard.lock().unwrap() = true;
@@ -170,36 +171,33 @@ impl LcuClient {
 
                     *self.random_champion.lock().unwrap() = champion.clone();
 
-                    if let Ok((runes, avatar_bytes)) = futures::future::try_join(
+                    if let Ok((champion_data, avatar_bytes)) = futures::future::try_join(
                         fetch_champion_runes(source, champion.clone()),
                         get_champion_avatar(auth_url, champion_id),
                     )
                     .await
                     {
-                        *self.current_champion_runes.lock().unwrap() = runes.clone();
+                        *self.current_champion_build_data.lock().unwrap() = champion_data.clone();
                         *self.current_champion_avatar.lock().unwrap() = Some(avatar_bytes);
-
+                        
+                        let BuildData(runes, _builds) = champion_data;
                         let remote_rune_list = { self.remote_rune_list.lock().unwrap().clone() };
-                        let rune_images_guard = { self.rune_images.clone() };
                         let auth_url = { self.auth_url.lock().unwrap().clone() };
+                        let rune_images_guard = { self.rune_images.clone() };
+                        let mut rune_images = vec![];
 
-                        *rune_images_guard.lock().unwrap() = vec![];
-                        tokio::task::spawn(async move {
-                            let mut rune_images = vec![];
-
-                            for rune in runes.iter() {
-                                if let Ok(rune_image) = get_rune_preview_images(
-                                    auth_url.clone(),
-                                    rune.clone(),
-                                    &remote_rune_list,
-                                )
-                                .await
-                                {
-                                    rune_images.push(rune_image);
-                                }
+                        for rune in runes.iter() {
+                            if let Ok(rune_image) = get_rune_preview_images(
+                                auth_url.clone(),
+                                rune.clone(),
+                                &remote_rune_list,
+                            )
+                            .await
+                            {
+                                rune_images.push(rune_image);
                             }
-                            *rune_images_guard.lock().unwrap() = rune_images;
-                        });
+                        }
+                        *rune_images_guard.lock().unwrap() = rune_images;
                     } else {
                         error!("failed to get builds/avatar for {}", champion);
                     }

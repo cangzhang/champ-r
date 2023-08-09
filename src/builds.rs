@@ -168,6 +168,9 @@ pub async fn batch_apply(
     Ok(())
 }
 
+#[derive(Default, Debug, Clone)]
+pub struct BuildData(pub Vec<Rune>, pub Vec<ItemBuild>);
+
 #[cfg(test)]
 mod tests {
     use super::*;

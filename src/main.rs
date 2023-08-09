@@ -19,7 +19,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use builds::Rune;
+use builds::{Rune, BuildData};
 use bytes::Bytes;
 use components::modal::Modal;
 use iced::widget::{
@@ -87,8 +87,8 @@ pub fn main() -> iced::Result {
     let current_champion_id2 = current_champion_id1.clone();
     let current_champion1 = Arc::new(Mutex::new(String::new()));
     let current_champion2 = current_champion1.clone();
-    let current_champion_runes1: Arc<Mutex<Vec<Rune>>> = Arc::new(Mutex::new(vec![]));
-    let current_champion_runes2 = current_champion_runes1.clone();
+    let current_champion_build_data1: Arc<Mutex<BuildData>> = Arc::new(Mutex::new(BuildData::default()));
+    let current_champion_build_data2 = current_champion_build_data1.clone();
     let loading_runes1 = Arc::new(Mutex::new(false));
     let loading_runes2 = loading_runes1.clone();
     let current_champion_avatar1 = Arc::new(Mutex::new(None));
@@ -115,7 +115,7 @@ pub fn main() -> iced::Result {
                 current_champion_id2,
                 current_champion2,
                 champions_map2,
-                current_champion_runes2,
+                current_champion_build_data2,
                 app_config2,
                 loading_runes2,
                 current_champion_avatar2,
@@ -173,7 +173,7 @@ pub fn main() -> iced::Result {
             current_champion_id1,
             champions_map1,
             current_champion1,
-            current_champion_runes1,
+            current_champion_build_data1,
             app_config1,
             loading_runes1,
             current_champion_avatar1,
@@ -197,7 +197,7 @@ pub enum Message {
     ApplyRune(String, Rune),
     ApplyRuneDone(Result<(), LcuError>),
     OnSelectRuneSource(String),
-    OnFetchedRunes(Result<Vec<Rune>, FetchError>),
+    OnFetchedRunes(Result<BuildData, FetchError>),
     EventOccurred(Event),
     OpenUrlForLatestRelease,
     FontLoaded(Result<(), font::Error>),
@@ -306,8 +306,8 @@ impl Application for ChampR {
             }
             Message::OnFetchedRunes(resp) => {
                 *self.loading_runes.lock().unwrap() = false;
-                if let Ok(runes) = resp {
-                    *self.current_champion_runes.lock().unwrap() = runes;
+                if let Ok(data) = resp {
+                    *self.current_champion_build_data.lock().unwrap() = data;
                 }
             }
             Message::EventOccurred(event) => {
@@ -338,7 +338,7 @@ impl Application for ChampR {
         let auth_url = self.auth_url.lock().unwrap();
         let lol_running = !auth_url.is_empty();
 
-        let runes = self.current_champion_runes.lock().unwrap();
+        let champion_data = self.current_champion_build_data.lock().unwrap();
         let loading_runes = self.loading_runes.lock().unwrap();
         let avatar_guard = self.current_champion_avatar.lock().unwrap();
         let rune_images = self.rune_images.lock().unwrap();
@@ -442,6 +442,9 @@ impl Application for ChampR {
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .vertical_alignment(alignment::Vertical::Center),
             )
+            .style(<StyleTuple as Into<iced::theme::Button>>::into(StyleTuple(
+                StyleVariant::IconButton,
+            )))
             .on_press(Message::RandomChampion);
             control_btn_group = control_btn_group.push(shuffle_btn);
         }
@@ -518,7 +521,7 @@ impl Application for ChampR {
                     )
                     .height(Length::Fill);
             } else {
-                for (idx, r) in runes.iter().enumerate() {
+                for (idx, r) in champion_data.0.iter().enumerate() {
                     let rune_preview_row =
                         if let Some((primary_img, sub_img, first_img)) = rune_images.get(idx) {
                             row![
@@ -536,9 +539,14 @@ impl Application for ChampR {
                         } else {
                             row!()
                         };
+                    let position_text = if r.position.is_empty() {
+                        String::new()
+                    } else {
+                        format!("Position: {},", r.position)
+                    };
                     let rune_title = format!(
-                        "Position: {}, Pick: {}, Win: {}",
-                        r.position, r.pick_count, r.win_rate
+                        "{} Pick: {}, Win: {}",
+                        position_text, r.pick_count, r.win_rate
                     );
                     let row = row![
                         column![
@@ -546,8 +554,14 @@ impl Application for ChampR {
                             rune_preview_row,
                         ]
                         .width(Length::FillPortion(2)),
-                        row![button("Apply")
-                            .on_press(Message::ApplyRune(auth_url.clone(), r.clone()))]
+                        row![button(
+                            text(fonts::IconChar::Download.as_str())
+                                .font(fonts::ICON_FONT)
+                                .size(16)
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .vertical_alignment(alignment::Vertical::Center),
+                        )
+                        .on_press(Message::ApplyRune(auth_url.clone(), r.clone()))]
                         .align_items(Alignment::End)
                         .width(Length::FillPortion(1)),
                     ]
@@ -596,6 +610,7 @@ impl Application for ChampR {
                 .width(Length::FillPortion(2))
                 .height(Length::Fill),
             )
+            .height(Length::Fixed(400.))
             .width(300)
             .padding(10)
             .style(theme::Container::Box);

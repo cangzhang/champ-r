@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use tracing::error;
 
 use crate::{
-    builds::{self, Rune},
+    builds::{self, ItemBuild, BuildData},
     source::SourceItem,
     utils::VERSION,
 };
@@ -99,10 +99,11 @@ pub async fn fetch_build_file(
 pub async fn fetch_champion_runes(
     source: String,
     champion: String,
-) -> Result<Vec<Rune>, FetchError> {
-    let builds = fetch_build_file(&source, &champion, false).await?;
-    let runes = builds.iter().flat_map(|b| b.runes.clone()).collect();
-    Ok(runes)
+) -> Result<BuildData, FetchError> {
+    let meta = fetch_build_file(&source, &champion, false).await?;
+    let runes = meta.iter().flat_map(|b| b.runes.clone()).collect();
+    let builds: Vec<ItemBuild> = meta.iter().flat_map(|b| b.item_builds.clone()).collect();
+    Ok(BuildData(runes, builds))
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

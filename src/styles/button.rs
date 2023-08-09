@@ -16,60 +16,38 @@ impl button::StyleSheet for StyleTuple {
     type Style = Theme;
 
     fn active(&self, _style: &Self::Style) -> Appearance {
-        match self {
-            StyleTuple(StyleVariant::BigIconButton) => Appearance {
-                border_radius: 180.0.into(),
-                border_width: 1.,
-                border_color: color!(229, 231, 235),
-                background: Some(color!(79, 85, 193).into()),
-                text_color: Color::WHITE,
-                ..Appearance::default()
+        Appearance {
+            border_radius: match self {
+                StyleTuple(StyleVariant::BigIconButton) => 180.0.into(),
+                StyleTuple(StyleVariant::IconButton) => 6.0.into(),
+                StyleTuple(_) => 0.0.into(),
             },
-            StyleTuple(StyleVariant::IconButton) => Appearance {
-                text_color: Color::BLACK,
-                border_color: Color::WHITE,
-                border_radius: 6.0.into(),
-                border_width: 1.,
-                background: Some(Color::WHITE.into()),
-                ..Appearance::default()
+            background: match self {
+                StyleTuple(_) => Some(color!(79, 85, 193).into()),
             },
-            StyleTuple(_) => Appearance {
-                ..Appearance::default()
+            text_color: match self {
+                StyleTuple(StyleVariant::BigIconButton) => Color::WHITE,
+                StyleTuple(StyleVariant::IconButton) => Color::WHITE,
+                StyleTuple(_) => Color::BLACK,
             },
+            ..Appearance::default()
         }
     }
 
     fn hovered(&self, style: &Self::Style) -> Appearance {
-        match self {
-            StyleTuple(StyleVariant::BigIconButton) => Appearance {
-                text_color: Color::WHITE,
-                background: Some(color!(79, 85, 193, 0.9).into()),
-                ..self.active(style)
+        Appearance {
+            text_color: match self {
+                StyleTuple(StyleVariant::BigIconButton) => Color::WHITE,
+                StyleTuple(StyleVariant::IconButton) => Color::WHITE,
+                StyleTuple(_) => Color::BLACK,
             },
-            StyleTuple(StyleVariant::IconButton) => Appearance {
-                background: Some(color!(244, 244, 245).into()),
-                ..self.active(style)
-            },
-            StyleTuple(_) => Appearance {
-                ..self.active(style)
-            },
+            ..self.active(style)
         }
     }
 
     fn pressed(&self, style: &Self::Style) -> Appearance {
-        match self {
-            StyleTuple(StyleVariant::BigIconButton) => Appearance {
-                text_color: Color::WHITE,
-                background: Some(color!(79, 85, 193, 0.8).into()),
-                ..self.active(style)
-            },
-            StyleTuple(StyleVariant::IconButton) => Appearance {
-                background: Some(color!(244, 244, 245).into()),
-                ..self.active(style)
-            },
-            StyleTuple(_) => Appearance {
-                ..self.active(style)
-            },
+        Appearance {
+            ..self.active(style)
         }
     }
 }
