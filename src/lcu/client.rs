@@ -138,7 +138,7 @@ impl LcuClient {
 
                     *current_champion_id = None;
                     *current_champion = String::new();
-                    *current_champion_build_data = vec![];
+                    *current_champion_build_data = BuildData::default();
                     *self.current_champion_avatar.lock().unwrap() = None;
                 }
 

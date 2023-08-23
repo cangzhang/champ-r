@@ -14,6 +14,10 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: "true"
+
       - name: Build
         run: cargo build --release
 
@@ -22,13 +26,3 @@ jobs:
         with:
           path: |
             target/release/*.exe
-      
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
