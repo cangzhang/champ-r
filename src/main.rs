@@ -284,7 +284,7 @@ impl Application for ChampR {
                 self.applying_builds = false;
             }
             Message::ApplyRune(auth_url, rune) => {
-                let BuildData(_runes, builds) = self.current_champion_build_data.lock().unwrap().clone();
+                let BuildData(runes, builds) = self.current_champion_build_data.lock().unwrap().clone();
                 return Command::perform(apply_rune(auth_url, rune), Message::ApplyRuneDone);
             }
             Message::ApplyRuneDone(resp) => {
