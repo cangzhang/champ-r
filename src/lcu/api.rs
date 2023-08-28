@@ -110,7 +110,7 @@ pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
     Ok(())
 }
 
-pub async fn appy_rune_and_builds(endpoint: String, rune: Rune, builds: Vec<ItemBuild>) -> Result<(), LcuError> {
+pub async fn appy_rune_and_builds(_endpoint: String, _rune: Rune, _builds: Vec<ItemBuild>) -> Result<(), LcuError> {
     Ok(())
 }
 

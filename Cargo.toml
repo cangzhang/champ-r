@@ -33,7 +33,11 @@ lyon_algorithms = "1"
 once_cell = "1"
 toml = "0.7.6"
 rand = "0.8.5"
+slint = "1.1.1"
 
 [target.'cfg(windows)'.build-dependencies]
 embed-resource = "2.1"
 winres = "0.1"
+
+[build-dependencies]
+slint-build = "1.0"
