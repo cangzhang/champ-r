@@ -1,20 +1,20 @@
-use std::io::{Error, ErrorKind};
+// use std::io::{Error, ErrorKind};
 use std::rc::Rc;
 
-use crate::source::SourceItem;
+// use crate::source::SourceItem;
 use crate::web;
 
 use super::{AppWindow, UISource};
 use futures::FutureExt;
 use slint::{ComponentHandle, Model, ModelRc, SharedString, VecModel};
-use tokio::io::{AsyncBufReadExt, BufReader};
+// use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 #[derive(Debug)]
 pub enum Message {
-    FetchedSources(Vec<SourceItem>),
-    InitData,
     Quit,
+    InitData,
+    UpdateSelectedSources(Vec<String>),
 }
 
 pub struct UIWorker {
@@ -51,9 +51,7 @@ async fn worker_loop(
     handle: slint::Weak<AppWindow>,
 ) -> tokio::io::Result<()> {
     // let refresh_handle = tokio::task::spawn(start_task(handle.clone()));
-
     // let prepare_sources_future = prepare_sources(handle.clone()).fuse();
-
     // futures::pin_mut!(prepare_sources_future,);
 
     loop {
@@ -71,31 +69,51 @@ async fn worker_loop(
 
         match m {
             Message::InitData => {
-                println!("should init data");
-                let ui = handle.clone();
                 let sources = web::fetch_sources().await.unwrap();
-                let ui_handle = ui.unwrap();
-
-                let ui_sources = Rc::new(slint::VecModel::<UISource>::from(
-                    sources
-                        .iter()
-                        .map(|s| UISource {
-                            label: SharedString::from(&s.label),
-                            value: SharedString::from(&s.value),
-                            ..Default::default()
-                        })
-                        .collect::<Vec<_>>(),
-                ));
-
-                ui_handle.set_sources(ui_sources.into());
-
-                return Ok(());
+                let transformed_sources = sources
+                    .iter()
+                    .map(|s| UISource {
+                        label: SharedString::from(&s.label),
+                        value: SharedString::from(&s.value),
+                        ..Default::default()
+                    })
+                    .collect::<Vec<_>>();
+                handle
+                    .clone()
+                    .upgrade_in_event_loop(move |h| {
+                        h.set_sources(ModelRc::from(Rc::new(VecModel::<UISource>::from(
+                            transformed_sources,
+                        ))));
+                    })
+                    .unwrap();
             }
-            _ => return Ok(()),
-        }
+            Message::UpdateSelectedSources(selected) => {
+                handle
+                    .clone()
+                    .upgrade_in_event_loop(move |h| {
+                        let sources_rc = h.get_sources();
+
+                        let sources = sources_rc
+                            .as_any()
+                            .downcast_ref::<VecModel<UISource>>()
+                            .unwrap();
+
+                        let mut rows = vec![];
+                        for idx in 0..sources.row_count() {
+                            let s = sources.row_data(idx).unwrap();
+                            rows.push(UISource {
+                                label: s.label.clone(),
+                                value: s.value.clone(),
+                                is_aram: s.is_aram,
+                                is_urf: s.is_urf,
+                                checked: selected.contains(&s.value.to_string()),
+                            });
+                        }
+                        h.set_sources(ModelRc::from(Rc::new(VecModel::<UISource>::from(rows))));
+                    })
+                    .unwrap();
+            }
+            _ => (),
+        };
     }
 }
-
-// async fn prepare_sources(handle: slint::Weak<AppWindow>) -> tokio::io::Result<()> {
-//     Ok(())
-// }

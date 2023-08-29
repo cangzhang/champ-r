@@ -23,17 +23,10 @@ slint::include_modules!();
 
 fn main() {
     let ui = AppWindow::new().unwrap();
-
     let ui_worker = worker::UIWorker::new(&ui);
 
     let ui_handle = ui.as_weak();
-    ui.on_request_increase_value(move || {
-        let ui = ui_handle.unwrap();
-        ui.set_counter(ui.get_counter() + 1);
-    });
-
-    let ui_handle = ui.as_weak();
-    ui.on_updateChecked(move |s: SharedString, checked: bool| {
+    ui.on_update_selected_source(move |s: SharedString, checked: bool| {
         let ui = ui_handle.unwrap();
         let selected = ui.get_selected();
         println!("{}: {}, {:?}", s, checked, selected);
@@ -43,6 +36,9 @@ fn main() {
     {
         let channel = ui_worker.channel.clone();
         channel.send(Message::InitData).unwrap();
+
+        let selected = vec![String::from("op.gg"), String::from("op.gg-aram")];
+        channel.send(Message::UpdateSelectedSources(selected)).unwrap();
     }
 
     ui.run().unwrap();
