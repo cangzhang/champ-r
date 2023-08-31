@@ -2,7 +2,7 @@
 use std::rc::Rc;
 
 // use crate::source::SourceItem;
-use crate::web;
+use crate::{web, cmd::CommandLineOutput};
 
 use super::{AppWindow, UISource};
 use futures::FutureExt;
@@ -15,6 +15,7 @@ pub enum Message {
     Quit,
     InitData,
     UpdateSelectedSources(Vec<String>),
+    UpdateCommandLine(CommandLineOutput),
 }
 
 pub struct UIWorker {
@@ -110,6 +111,15 @@ async fn worker_loop(
                             });
                         }
                         h.set_sources(ModelRc::from(Rc::new(VecModel::<UISource>::from(rows))));
+                    })
+                    .unwrap();
+            }
+            Message::UpdateCommandLine(output) => {
+                handle
+                    .clone()
+                    .upgrade_in_event_loop(move |h| {
+                        h.set_auth_url(SharedString::from(&output.auth_url));
+                        h.set_is_tencent(output.is_tencent);
                     })
                     .unwrap();
             }

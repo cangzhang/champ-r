@@ -3,17 +3,16 @@
     windows_subsystem = "windows"
 )]
 
+use std::{thread, time::Duration};
+
 use slint::SharedString;
 use worker::Message;
 
 pub mod builds;
 pub mod cmd;
-pub mod components;
 pub mod config;
-pub mod fonts;
 pub mod lcu;
 pub mod source;
-pub mod styles;
 pub mod ui;
 pub mod utils;
 pub mod web;
@@ -38,7 +37,19 @@ fn main() {
         channel.send(Message::InitData).unwrap();
 
         let selected = vec![String::from("op.gg"), String::from("op.gg-aram")];
-        channel.send(Message::UpdateSelectedSources(selected)).unwrap();
+        channel
+            .send(Message::UpdateSelectedSources(selected))
+            .unwrap();
+    }
+
+    {
+        let channel = ui_worker.channel.clone();
+        thread::spawn(move || loop {
+            let output = cmd::get_commandline();
+            channel.send(Message::UpdateCommandLine(output)).unwrap();
+
+            thread::sleep(Duration::from_millis(2500));
+        });
     }
 
     ui.run().unwrap();
