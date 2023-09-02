@@ -8,7 +8,7 @@ use tracing::error;
 use crate::{
     builds::{self, ItemBuild, BuildData},
     source::SourceItem,
-    utils::VERSION,
+    constants::VERSION,
 };
 
 pub const SERVICE_URL: &str = "https://ql-rs.lbj.moe";

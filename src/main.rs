@@ -14,7 +14,7 @@ pub mod config;
 pub mod lcu;
 pub mod source;
 pub mod ui;
-pub mod utils;
+pub mod constants;
 pub mod web;
 pub mod worker;
 
