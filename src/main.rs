@@ -25,9 +25,9 @@ fn main() {
     let ui_worker = worker::UIWorker::new(&ui);
 
     let ui_handle = ui.as_weak();
-    ui.on_update_selected_source(move |s: SharedString, checked: bool| {
+    ui.global::<GlobalSettings>().on_update_selected_source(move |s: SharedString, checked: bool| {
         let ui = ui_handle.unwrap();
-        let selected = ui.get_selected();
+        let selected = ui.global::<GlobalSettings>().get_selected();
         println!("{}: {}, {:?}", s, checked, selected);
         // ui.set_selected(s, checked);
     });

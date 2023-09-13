@@ -1,4 +1,4 @@
-import { HorizontalBox, VerticalBox, ListView, StandardListView, GroupBox } from "std-widgets.slint";
+import { HorizontalBox, VerticalBox, ListView, StandardListView, GroupBox, CheckBox } from "std-widgets.slint";
 import { GlobalSettings } from "../global_settings.slint";
 import { Page } from "./page.slint";
 
@@ -24,6 +24,23 @@ export component SourceListPage inherits Page {
             //         {text: @tr("Lorem")}, {text: @tr("ipsum")},{text: @tr("dolor")},{text: @tr("sit")},{text: @tr("amet")},{text: @tr("consetetur")},
             //     ];
             // }
+
+            list-view := ListView {
+                padding-right: 24px;
+
+                for item in GlobalSettings.sources: HorizontalLayout {
+                    padding-left: 24px;
+
+                    CheckBox {
+                        text: item.label;
+                        checked: item.checked;
+                        toggled => {
+                            item.checked = self.checked;
+                            GlobalSettings.update-selected-source(item.value, self.checked);
+                        }
+                    }
+                }
+        }
         }
     }
 }
