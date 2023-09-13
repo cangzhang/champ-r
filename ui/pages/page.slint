@@ -3,7 +3,7 @@
 
 import { Switch, GridBox, ListView, ScrollView, VerticalBox } from "std-widgets.slint";
 
-import { GallerySettings } from "../gallery_settings.slint";
+import { GlobalSettings } from "../global_settings.slint";
 
 export component Page inherits VerticalBox {
     in property<string> title: "title";
@@ -23,7 +23,7 @@ export component Page inherits VerticalBox {
         Switch {
             horizontal-stretch: 0;
             text: @tr("Widgets enabled");
-            checked <=> GallerySettings.widgets-enabled;
+            checked <=> GlobalSettings.widgets-enabled;
             enabled: true;
         }
     }
