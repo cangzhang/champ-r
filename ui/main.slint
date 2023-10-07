@@ -12,7 +12,7 @@ export component AppWindow inherits Window {
     icon: @image-url("../assets/icon@2x_r.png");
     preferred-width: 700px;
     preferred-height: 500px;
-    
+
     callback request-increase-value();
 
     HorizontalLayout {
@@ -36,7 +36,7 @@ export component AppWindow inherits Window {
     //             horizontal-alignment: center;
     //         }
     //     }
-    //     HorizontalBox { 
+    //     HorizontalBox {
     //         padding-left: 28px;
 
     //         Text {
@@ -76,3 +76,21 @@ export component AppWindow inherits Window {
     //     }
     // }
 }
+
+// export component ChildWin inherits Window {
+//     preferred-width: 500px;
+//     preferred-height: 400px;
+//     always-on-top: true;
+//     title: @tr("Child window");
+
+//     HorizontalLayout {
+//         padding: 8px;
+
+//         Text {
+//             text: "Child window";
+//             font-size: 42px;
+//             font-weight: 700;
+//             horizontal-alignment: center;
+//         }
+//     }
+// }
