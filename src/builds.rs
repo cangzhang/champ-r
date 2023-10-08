@@ -10,10 +10,9 @@ use std::{
 };
 use tracing::info;
 
-use crate::{
-    ui::LogItem,
-    web::{self, ChampionsMap, FetchError},
-};
+use crate::web::{self, ChampionsMap, FetchError};
+
+pub type LogItem = (String, String);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

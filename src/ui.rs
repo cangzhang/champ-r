@@ -1,102 +1,65 @@
-use std::sync::{Arc, Mutex};
+use eframe::egui;
+use poll_promise::Promise;
 
-use bytes::Bytes;
+use crate::{source::SourceItem, web};
 
-use crate::{
-    config,
-    source::SourceItem,
-    web::{ChampionsMap, DataDragonRune}, builds::BuildData,
-};
-
-pub type LogItem = (String, String);
-
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Default)]
-pub struct ChampR {
-    pub source_list: Arc<Mutex<Vec<SourceItem>>>,
-    pub selected_sources: Arc<Mutex<Vec<String>>>,
-    pub champions_map: Arc<Mutex<ChampionsMap>>,
-    pub lol_running: Arc<Mutex<bool>>,
-    pub is_tencent: Arc<Mutex<bool>>,
-    pub auth_url: Arc<Mutex<String>>,
-    pub lcu_dir: Arc<Mutex<String>>,
-    pub logs: Arc<Mutex<Vec<LogItem>>>, // (source, champion, position)
-    pub current_champion_id: Arc<Mutex<Option<u64>>>,
-    pub current_champion: Arc<Mutex<String>>,
-    pub current_champion_build_data: Arc<Mutex<BuildData>>,
-    pub app_config: Arc<Mutex<config::Config>>,
-    pub loading_runes: Arc<Mutex<bool>>,
-    pub current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
-    pub fetched_remote_data: Arc<Mutex<bool>>,
-    pub remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
-    pub rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
-    pub applying_builds: bool,
-    pub remote_version_info: Arc<Mutex<(String, String)>>,
-    pub random_champion: Arc<Mutex<String>>,
-    pub show_rune_modal: Arc<Mutex<bool>>,
+pub struct MyApp {
+    pub sources: Vec<SourceItem>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
+
+    pub selected_sources: Vec<String>,
 }
 
-impl ChampR {
-    pub fn new(
-        auth_url: Arc<Mutex<String>>,
-        is_tencent: Arc<Mutex<bool>>,
-        lcu_dir: Arc<Mutex<String>>,
-        logs: Arc<Mutex<Vec<LogItem>>>,
-        current_champion_id: Arc<Mutex<Option<u64>>>,
-        champions_map: Arc<Mutex<ChampionsMap>>,
-        current_champion: Arc<Mutex<String>>,
-        current_champion_build_data: Arc<Mutex<BuildData>>,
-        app_config: Arc<Mutex<config::Config>>,
-        loading_runes: Arc<Mutex<bool>>,
-        current_champion_avatar: Arc<Mutex<Option<bytes::Bytes>>>,
-        fetched_remote_data: Arc<Mutex<bool>>,
-        remote_rune_list: Arc<Mutex<Vec<DataDragonRune>>>,
-        rune_images: Arc<Mutex<Vec<(Bytes, Bytes, Bytes)>>>,
-        remote_version_info: Arc<Mutex<(String, String)>>,
-        show_rune_modal: Arc<Mutex<bool>>,
-    ) -> Self {
-        Self {
-            auth_url,
-            is_tencent,
-            lcu_dir,
-            logs,
-            current_champion_id,
-            champions_map,
-            current_champion,
-            current_champion_build_data,
-            app_config,
-            loading_runes,
-            current_champion_avatar,
-            fetched_remote_data,
-            remote_rune_list,
-            rune_images,
-            remote_version_info,
-            show_rune_modal,
-            ..Default::default()
-        }
-    }
+impl eframe::App for MyApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let img_source = "https://picsum.photos/1024";
 
-    pub fn open_web(url: String) {
-        #[cfg(target_os = "windows")]
-        std::process::Command::new("explorer")
-            .arg(url)
-            .spawn()
-            .unwrap();
-        #[cfg(target_os = "macos")]
-        std::process::Command::new("open").arg(url).spawn().unwrap();
-        #[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
-        std::process::Command::new("xdg-open")
-            .arg(url)
-            .spawn()
-            .unwrap();
-    }
+        egui::CentralPanel::default().show(ctx, |ui| {
+            egui::ScrollArea::new([true, true]).show(ui, |ui| {
+                if ui.button("Random").clicked() {
+                    ctx.forget_image(img_source);
+                    ctx.request_repaint();
+                }
 
-    pub fn random_rune(&mut self) {
-        use rand::prelude::*;
+                ui.add(egui::Image::new(img_source).rounding(10.0));
 
-        let champions_map = self.champions_map.lock().unwrap();
-        let values = champions_map.iter().map(|(_k, v)| v).collect::<Vec<_>>();
-        let rand_champ = values.choose(&mut thread_rng()).unwrap().to_owned();
-        *self.current_champion.lock().unwrap() = rand_champ.id.clone();
-        *self.current_champion_id.lock().unwrap() = Some(rand_champ.key.parse::<u64>().unwrap());
+                match &self.sources_promise {
+                    Some(p) => match p.ready() {
+                        None => {
+                            ui.spinner();
+                        }
+                        Some(Ok(list)) => {
+                            self.sources = list.clone();
+
+                            let mut indexes = list.iter().map(|s| {
+                                self.selected_sources.iter().any(|x| x == &s.value)
+                            }).collect::<Vec<bool>>();
+                            for (index, checked) in indexes.iter_mut().enumerate() {
+                                let item = &list[index];
+
+                                if ui.checkbox(checked, item.label.clone()).changed() && *checked {
+                                    if *checked {
+                                        self.selected_sources.retain(|x| x != &item.value);
+                                    } else {
+                                        self.selected_sources.push(item.value.clone());
+                                    }
+                                }
+                            }
+                        }
+                        Some(Err(err)) => {
+                            println!("Error: {:?}", err);
+                        }
+                    },
+                    None => {
+                        let promise =
+                            Promise::spawn_async(async move { web::fetch_sources().await });
+                        self.sources_promise = Some(promise);
+                    }
+                };
+            });
+        });
     }
 }
