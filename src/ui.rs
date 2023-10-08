@@ -40,11 +40,11 @@ impl eframe::App for MyApp {
                             for (index, checked) in indexes.iter_mut().enumerate() {
                                 let item = &list[index];
 
-                                if ui.checkbox(checked, item.label.clone()).changed() && *checked {
+                                if ui.checkbox(checked, item.label.clone()).changed() {
                                     if *checked {
-                                        self.selected_sources.retain(|x| x != &item.value);
-                                    } else {
                                         self.selected_sources.push(item.value.clone());
+                                    } else {
+                                        self.selected_sources.retain(|x| x != &item.value);
                                     }
                                 }
                             }
