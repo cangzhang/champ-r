@@ -33,6 +33,7 @@ impl eframe::App for MyApp {
         let img_source = "https://picsum.photos/1024";
         let auth = self.auth.lock().unwrap();
         let is_tencent = auth.is_tencent;
+        let is_running = !auth.token.is_empty();
 
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
@@ -112,19 +113,21 @@ impl eframe::App for MyApp {
                 };
             });
 
-            ui.separator();
+            if is_running {
+                ui.separator();
 
-            ui.horizontal(|ui| {
-                if is_tencent {
-                    ui.image(egui::include_image!("../assets/tencent.png"))
-                        .on_hover_text("Tencent server");
-                    ui.label("Tencent League of Legends client detected.");
-                } else {
-                    ui.image(egui::include_image!("../assets/riot.png"))
-                        .on_hover_text("Riot server");
-                    ui.label("Riot League of Legends client detected.");
-                }
-            });
+                ui.horizontal(|ui| {
+                    if is_tencent {
+                        ui.image(egui::include_image!("../assets/tencent.png"))
+                            .on_hover_text("Tencent server");
+                        ui.label("Tencent League of Legends client detected.");
+                    } else {
+                        ui.image(egui::include_image!("../assets/riot.png"))
+                            .on_hover_text("Riot server");
+                        ui.label("Riot League of Legends client detected.");
+                    }
+                });
+            }
         });
     }
 }
