@@ -1,9 +1,7 @@
 use std::sync::{Arc, Mutex};
+use tokio::task::AbortHandle;
 
-use eframe::{
-    egui,
-    epaint::{vec2, Stroke},
-};
+use eframe::egui;
 use poll_promise::Promise;
 
 use crate::{cmd::CommandLineOutput, source::SourceItem, web};
@@ -17,18 +15,28 @@ pub struct MyApp {
 
     pub selected_sources: Vec<String>,
     pub auth: Arc<Mutex<CommandLineOutput>>,
+    pub lcu_task_handle: Option<AbortHandle>,
 }
 
 impl MyApp {
-    pub fn new(auth: Arc<Mutex<CommandLineOutput>>) -> Self {
+    pub fn new(auth: Arc<Mutex<CommandLineOutput>>, lcu_task_handle: Option<AbortHandle>) -> Self {
         Self {
             auth,
+            lcu_task_handle,
             ..Default::default()
         }
     }
 }
 
 impl eframe::App for MyApp {
+    fn on_close_event(&mut self) -> bool {
+        if let Some(handle) = &self.lcu_task_handle {
+            handle.abort();
+        }
+
+        true
+    }
+
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let img_source = "https://picsum.photos/1024";
         let auth = self.auth.lock().unwrap();
@@ -44,7 +52,7 @@ impl eframe::App for MyApp {
 
                 ui.add(
                     egui::Image::new(img_source)
-                        .max_size(vec2(64., 64.))
+                        .max_size(egui::vec2(64., 64.))
                         .rounding(10.0),
                 );
 
@@ -76,7 +84,7 @@ impl eframe::App for MyApp {
                                         .add(
                                             egui::Button::new(item.label.clone())
                                                 .frame(false)
-                                                .stroke(Stroke::NONE)
+                                                .stroke(egui::Stroke::NONE)
                                                 .fill(egui::Color32::TRANSPARENT),
                                         )
                                         .clicked()

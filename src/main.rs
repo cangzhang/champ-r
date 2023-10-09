@@ -28,13 +28,14 @@ async fn main() -> Result<(), eframe::Error> {
     let lcu_auth = Arc::new(Mutex::new(CommandLineOutput::default()));
     let lcu_auth_ui = lcu_auth.clone();
 
-    tokio::spawn(async move {
+    let lcu_task_join_handle = tokio::spawn(async move {
         loop {
             let auth = cmd::get_commandline();
             *lcu_auth.lock().unwrap() = auth;
-            std::thread::sleep(Duration::from_millis(2500));
+            tokio::time::sleep(Duration::from_millis(2500)).await;
         }
     });
+    let lcu_task_handle = Some(lcu_task_join_handle.abort_handle());
 
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(500.0, 400.0)),
@@ -47,7 +48,7 @@ async fn main() -> Result<(), eframe::Error> {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
 
-            let app_data = ui::MyApp::new(lcu_auth_ui);
+            let app_data = ui::MyApp::new(lcu_auth_ui, lcu_task_handle);
             Box::new(app_data)
         }),
     )
