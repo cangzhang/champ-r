@@ -19,7 +19,7 @@ async fn main() -> Result<(), eframe::Error> {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
 
     let options = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(500.0, 800.0)),
+        initial_window_size: Some(egui::vec2(500.0, 400.0)),
         ..Default::default()
     };
     eframe::run_native(
@@ -28,7 +28,7 @@ async fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
-            Box::<ui::MyApp>::default()
+            Box::new(ui::MyApp::new())
         }),
     )
 }

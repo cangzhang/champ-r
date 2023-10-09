@@ -1,4 +1,4 @@
-use eframe::egui;
+use eframe::{egui, epaint::{vec2, Stroke}};
 use poll_promise::Promise;
 
 use crate::{source::SourceItem, web};
@@ -13,6 +13,14 @@ pub struct MyApp {
     pub selected_sources: Vec<String>,
 }
 
+impl MyApp {
+    pub fn new() -> Self {
+        Self {
+            ..Default::default()
+        }
+    }
+}
+
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let img_source = "https://picsum.photos/1024";
@@ -24,7 +32,11 @@ impl eframe::App for MyApp {
                     ctx.request_repaint();
                 }
 
-                ui.add(egui::Image::new(img_source).rounding(10.0));
+                ui.add(
+                    egui::Image::new(img_source)
+                        .max_size(vec2(64., 64.))
+                        .rounding(10.0),
+                );
 
                 match &self.sources_promise {
                     Some(p) => match p.ready() {
@@ -34,23 +46,53 @@ impl eframe::App for MyApp {
                         Some(Ok(list)) => {
                             self.sources = list.clone();
 
-                            let mut indexes = list.iter().map(|s| {
-                                self.selected_sources.iter().any(|x| x == &s.value)
-                            }).collect::<Vec<bool>>();
+                            let mut indexes = list
+                                .iter()
+                                .map(|s| self.selected_sources.iter().any(|x| x == &s.value))
+                                .collect::<Vec<bool>>();
                             for (index, checked) in indexes.iter_mut().enumerate() {
                                 let item = &list[index];
 
-                                if ui.checkbox(checked, item.label.clone()).changed() {
-                                    if *checked {
-                                        self.selected_sources.push(item.value.clone());
-                                    } else {
-                                        self.selected_sources.retain(|x| x != &item.value);
+                                ui.horizontal(|ui| {
+                                    if ui.checkbox(checked, "").changed() {
+                                        if *checked {
+                                            self.selected_sources.push(item.value.clone());
+                                        } else {
+                                            self.selected_sources.retain(|x| x != &item.value);
+                                        }
                                     }
-                                }
+
+                                    if ui
+                                        .add(
+                                            egui::Button::new(item.label.clone())
+                                                .frame(false)
+                                                .stroke(Stroke::NONE)
+                                                .fill(egui::Color32::TRANSPARENT),
+                                        )
+                                        .clicked()
+                                    {
+                                        if *checked {
+                                            self.selected_sources.retain(|x| x != &item.value);
+                                        } else {
+                                            self.selected_sources.push(item.value.clone());
+                                        }
+                                    }
+
+                                    if item.is_aram.unwrap_or_default() {
+                                        ui.image(egui::include_image!("../assets/aram.png"))
+                                            .on_hover_text("All Random All Mid");
+                                    } else if item.is_urf.unwrap_or_default() {
+                                        ui.image(egui::include_image!("../assets/urf.png"))
+                                            .on_hover_text("Ultra Rapid Fire");
+                                    } else {
+                                        ui.image(egui::include_image!("../assets/sr.png"))
+                                            .on_hover_text("Summoner's Rift");
+                                    }
+                                });
                             }
                         }
                         Some(Err(err)) => {
-                            println!("Error: {:?}", err);
+                            ui.label(format!("Failed to fetch sources: {:?}", err));
                         }
                     },
                     None => {
