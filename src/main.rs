@@ -47,8 +47,7 @@ async fn main() -> Result<(), eframe::Error> {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
 
-            let mut app_data = ui::MyApp::new();
-            app_data.auth = lcu_auth_ui;
+            let app_data = ui::MyApp::new(lcu_auth_ui);
             Box::new(app_data)
         }),
     )

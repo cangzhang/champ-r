@@ -20,8 +20,9 @@ pub struct MyApp {
 }
 
 impl MyApp {
-    pub fn new() -> Self {
+    pub fn new(auth: Arc<Mutex<CommandLineOutput>>) -> Self {
         Self {
+            auth,
             ..Default::default()
         }
     }
@@ -112,9 +113,18 @@ impl eframe::App for MyApp {
             });
 
             ui.separator();
-            if is_tencent {
-                ui.label("Tencent League of Legends client detected.");
-            }
+
+            ui.horizontal(|ui| {
+                if is_tencent {
+                    ui.image(egui::include_image!("../assets/tencent.png"))
+                        .on_hover_text("Tencent server");
+                    ui.label("Tencent League of Legends client detected.");
+                } else {
+                    ui.image(egui::include_image!("../assets/riot.png"))
+                        .on_hover_text("Riot server");
+                    ui.label("Riot League of Legends client detected.");
+                }
+            });
         });
     }
 }
