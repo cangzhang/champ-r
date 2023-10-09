@@ -1,7 +1,12 @@
-use eframe::{egui, epaint::{vec2, Stroke}};
+use std::sync::{Arc, Mutex};
+
+use eframe::{
+    egui,
+    epaint::{vec2, Stroke},
+};
 use poll_promise::Promise;
 
-use crate::{source::SourceItem, web};
+use crate::{cmd::CommandLineOutput, source::SourceItem, web};
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Default)]
@@ -11,6 +16,7 @@ pub struct MyApp {
     pub sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
 
     pub selected_sources: Vec<String>,
+    pub auth: Arc<Mutex<CommandLineOutput>>,
 }
 
 impl MyApp {
@@ -24,6 +30,8 @@ impl MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let img_source = "https://picsum.photos/1024";
+        let auth = self.auth.lock().unwrap();
+        let is_tencent = auth.is_tencent;
 
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
@@ -102,6 +110,11 @@ impl eframe::App for MyApp {
                     }
                 };
             });
+
+            ui.separator();
+            if is_tencent {
+                ui.label("Tencent League of Legends client detected.");
+            }
         });
     }
 }

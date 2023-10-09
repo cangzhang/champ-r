@@ -3,6 +3,12 @@
     windows_subsystem = "windows"
 )]
 
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
+
+use cmd::CommandLineOutput;
 use eframe::egui;
 
 pub mod builds;
@@ -16,7 +22,19 @@ pub mod web;
 
 #[tokio::main]
 async fn main() -> Result<(), eframe::Error> {
-    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
+    // Log to stderr (if you run with `RUST_LOG=debug`).
+    env_logger::init();
+
+    let lcu_auth = Arc::new(Mutex::new(CommandLineOutput::default()));
+    let lcu_auth_ui = lcu_auth.clone();
+
+    tokio::spawn(async move {
+        loop {
+            let auth = cmd::get_commandline();
+            *lcu_auth.lock().unwrap() = auth;
+            std::thread::sleep(Duration::from_millis(2500));
+        }
+    });
 
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(500.0, 400.0)),
@@ -25,10 +43,13 @@ async fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "ChampR",
         options,
-        Box::new(|cc| {
+        Box::new(move |cc| {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
-            Box::new(ui::MyApp::new())
+
+            let mut app_data = ui::MyApp::new();
+            app_data.auth = lcu_auth_ui;
+            Box::new(app_data)
         }),
     )
 }
