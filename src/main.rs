@@ -37,13 +37,13 @@ async fn main() -> Result<(), eframe::Error> {
     });
     let lcu_task_handle = Some(lcu_task_join_handle.abort_handle());
 
-    let options = eframe::NativeOptions {
+    let main_win_opts = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(500.0, 400.0)),
         ..Default::default()
     };
     eframe::run_native(
         "ChampR",
-        options,
+        main_win_opts,
         Box::new(move |cc| {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
@@ -51,5 +51,7 @@ async fn main() -> Result<(), eframe::Error> {
             let app_data = ui::MyApp::new(lcu_auth_ui, lcu_task_handle);
             Box::new(app_data)
         }),
-    )
+    )?;
+
+    Ok(())
 }
