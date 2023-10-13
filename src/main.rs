@@ -18,6 +18,7 @@ pub mod constants;
 pub mod lcu;
 pub mod source;
 pub mod ui;
+pub mod ui_rune;
 pub mod web;
 
 #[tokio::main]
