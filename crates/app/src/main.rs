@@ -1,6 +1,6 @@
 #[tokio::main]
 async fn main() -> Result<(), ()> {
-    source_window::run().await.unwrap();
-    rune_window::run().await.unwrap();
+    source_gui::run().await.unwrap();
+    rune_gui::run().await.unwrap();
     Ok(())
 }

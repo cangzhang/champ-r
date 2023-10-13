@@ -162,8 +162,8 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "futures",
- "rune_window",
- "source_window",
+ "rune_gui",
+ "source_gui",
  "tokio",
 ]
 
@@ -2507,7 +2507,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rune_window"
+name = "rune_gui"
 version = "0.1.0"
 dependencies = [
  "eframe",
@@ -2898,7 +2898,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "source_window"
+name = "source_gui"
 version = "0.1.0"
 dependencies = [
  "anyhow",

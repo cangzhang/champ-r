@@ -1,6 +1,7 @@
 [workspace]
+resolver = "2"
 members = [
-    "crates/source_window",
-    "crates/rune_window",
+    "crates/source_gui",
+    "crates/rune_gui",
     "crates/app",
 ]
