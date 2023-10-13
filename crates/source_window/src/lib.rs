@@ -18,11 +18,9 @@ pub mod constants;
 pub mod lcu;
 pub mod source;
 pub mod ui;
-pub mod ui_rune;
 pub mod web;
 
-#[tokio::main]
-async fn main() -> Result<(), eframe::Error> {
+pub async fn run() -> Result<(), eframe::Error> {
     // Log to stderr (if you run with `RUST_LOG=debug`).
     env_logger::init();
 

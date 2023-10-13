@@ -10,9 +10,9 @@ pub struct SourceItem {
     pub is_urf: Option<bool>,
 }
 
-const SR_ICON: &[u8] = include_bytes!("../assets/sr.png");
-const ARAM_ICON: &[u8] = include_bytes!("../assets/aram.png");
-const URF_ICON: &[u8] = include_bytes!("../assets/urf.png");
+const SR_ICON: &[u8] = include_bytes!("../../../assets/sr.png");
+const ARAM_ICON: &[u8] = include_bytes!("../../../assets/aram.png");
+const URF_ICON: &[u8] = include_bytes!("../../../assets/urf.png");
 
 impl SourceItem {
     pub fn get_mode_text(s: &Self) -> &'static str {

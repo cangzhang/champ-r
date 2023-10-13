@@ -158,6 +158,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c7d0618f0e0b7e8ff11427422b64564d5fb0be1940354bfe2e0529b18a9d9b8"
 
 [[package]]
+name = "app"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "rune_window",
+ "source_window",
+ "tokio",
+]
+
+[[package]]
 name = "arboard"
 version = "3.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -505,37 +515,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ced0551234e87afee12411d535648dd89d2e7f34c78b753395567aff3d447ff"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "champr"
-version = "2.0.2"
-dependencies = [
- "anyhow",
- "base64 0.21.0",
- "bytes",
- "eframe",
- "egui_extras",
- "embed-resource",
- "env_logger",
- "futures",
- "image",
- "lazy_static",
- "lyon_algorithms",
- "once_cell",
- "poll-promise",
- "rand",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "serde_with",
- "tokio",
- "toml 0.7.6",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
- "winres",
 ]
 
 [[package]]
@@ -2528,6 +2507,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rune_window"
+version = "0.1.0"
+dependencies = [
+ "eframe",
+ "egui_extras",
+ "env_logger",
+ "tokio",
+]
+
+[[package]]
 name = "rustc_version"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2906,6 +2895,37 @@ checksum = "64a4a911eed85daf18834cfaa86a79b7d266ff93ff5ba14005426219480ed662"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "source_window"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64 0.21.0",
+ "bytes",
+ "eframe",
+ "egui_extras",
+ "embed-resource",
+ "env_logger",
+ "futures",
+ "image",
+ "lazy_static",
+ "lyon_algorithms",
+ "once_cell",
+ "poll-promise",
+ "rand",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "tokio",
+ "toml 0.7.6",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "winres",
 ]
 
 [[package]]

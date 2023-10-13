@@ -97,13 +97,13 @@ impl eframe::App for MyApp {
                                     }
 
                                     if item.is_aram.unwrap_or_default() {
-                                        ui.image(egui::include_image!("../assets/aram.png"))
+                                        ui.image(egui::include_image!("../../../assets/aram.png"))
                                             .on_hover_text("All Random All Mid");
                                     } else if item.is_urf.unwrap_or_default() {
-                                        ui.image(egui::include_image!("../assets/urf.png"))
+                                        ui.image(egui::include_image!("../../../assets/urf.png"))
                                             .on_hover_text("Ultra Rapid Fire");
                                     } else {
-                                        ui.image(egui::include_image!("../assets/sr.png"))
+                                        ui.image(egui::include_image!("../../../assets/sr.png"))
                                             .on_hover_text("Summoner's Rift");
                                     }
                                 });
@@ -126,11 +126,11 @@ impl eframe::App for MyApp {
 
                 ui.horizontal(|ui| {
                     if is_tencent {
-                        ui.image(egui::include_image!("../assets/tencent.png"))
+                        ui.image(egui::include_image!("../../../assets/tencent.png"))
                             .on_hover_text("Tencent server");
                         ui.label("Tencent League of Legends client detected.");
                     } else {
-                        ui.image(egui::include_image!("../assets/riot.png"))
+                        ui.image(egui::include_image!("../../../assets/riot.png"))
                             .on_hover_text("Riot server");
                         ui.label("Riot League of Legends client detected.");
                     }
