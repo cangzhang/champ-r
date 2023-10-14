@@ -1,54 +1,92 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
-
 use eframe::egui;
+use std::sync::{Arc, Mutex};
 
-pub async fn run() -> Result<(), eframe::Error> {
-    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
-    let options = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(320.0, 240.0)),
-        ..Default::default()
-    };
-    eframe::run_native(
-        "My egui App",
-        options,
-        Box::new(|cc| {
-            // This gives us image support:
-            egui_extras::install_image_loaders(&cc.egui_ctx);
 
-            Box::<MyApp>::default()
-        }),
-    )?;
-    Ok(())
+fn slow_process(state_clone: Arc<Mutex<State>>) {
+    loop {
+        std::thread::sleep(std::time::Duration::from_millis(2500));
+        let mut state = state_clone.lock().unwrap();
+        *state = State {
+            duration: 2500,
+            show_decoration: !state.show_decoration,
+            should_update: true,
+            ctx: state.ctx.clone(),
+        };
+
+        let ctx = &state.ctx;
+        match ctx {
+            Some(x) => {
+                x.request_repaint();
+            },
+            None => panic!("error in Option<>"),
+        };
+        drop(state);
+    }
 }
 
-pub struct MyApp {
-    name: String,
-    age: u32,
+struct State {
+    duration: u64,
+    show_decoration: bool,
+    should_update: bool,
+    ctx: Option<egui::Context>,
 }
 
-impl Default for MyApp {
-    fn default() -> Self {
+impl State {
+    pub fn new() -> Self {
         Self {
-            name: "Arthur".to_owned(),
-            age: 42,
+            duration: 0,
+            ctx: None,
+            show_decoration: true,
+            should_update: false,
         }
     }
 }
 
-impl eframe::App for MyApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("My egui Application");
-            ui.horizontal(|ui| {
-                let name_label = ui.label("Your name: ");
-                ui.text_edit_singleline(&mut self.name)
-                    .labelled_by(name_label.id);
-            });
-            ui.add(egui::Slider::new(&mut self.age, 0..=120).text("age"));
-            if ui.button("Click each year").clicked() {
-                self.age += 1;
-            }
-            ui.label(format!("Hello '{}', age {}", self.name, self.age));
+pub struct App {
+    state: Arc<Mutex<State>>, 
+}
+
+impl App {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        let state = Arc::new(Mutex::new(State::new()));
+        state.lock().unwrap().ctx = Some(cc.egui_ctx.clone());
+        let state_clone = state.clone();
+        std::thread::spawn(move || {
+            slow_process(state_clone);
         });
+        Self {
+            state,
+        }
     }
+}
+
+impl eframe::App for App {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        let mut st = self.state.lock().unwrap();
+        let should_update = st.should_update;
+        if should_update {
+            frame.set_decorations(st.show_decoration);
+            *st = State {
+                duration: 2500,
+                show_decoration: st.show_decoration,
+                should_update: false,
+                ctx: st.ctx.clone(),
+            };
+        }
+        drop(st);
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.label(format!("woke up after {}ms", self.state.lock().unwrap().duration));
+        });
+        println!(".");
+    }
+}
+
+pub fn run() -> Result<(), eframe::Error> {
+    let native_options = eframe::NativeOptions::default();
+    eframe::run_native(
+        "eframe template",
+        native_options,
+        Box::new(|cc| Box::new(App::new(cc))),
+    )
 }
