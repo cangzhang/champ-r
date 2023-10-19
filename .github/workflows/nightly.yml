@@ -2,7 +2,9 @@ name: Nightly Build
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - build
 
 jobs:
   build-win:
