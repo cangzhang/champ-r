@@ -1,92 +1,105 @@
 use eframe::egui;
-use std::sync::{Arc, Mutex};
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
+use tokio::task::AbortHandle;
 
+use lcu::cmd::{self, CommandLineOutput};
 
-fn slow_process(state_clone: Arc<Mutex<State>>) {
+async fn watch(ui_ctx: Arc<Mutex<Option<egui::Context>>>, lcu_auth: Arc<Mutex<CommandLineOutput>>) {
     loop {
-        std::thread::sleep(std::time::Duration::from_millis(2500));
-        let mut state = state_clone.lock().unwrap();
-        *state = State {
-            duration: 2500,
-            show_decoration: !state.show_decoration,
-            should_update: true,
-            ctx: state.ctx.clone(),
-        };
+        println!(".");
+        let mut repaint = false;
 
-        let ctx = &state.ctx;
-        match ctx {
-            Some(x) => {
-                x.request_repaint();
-            },
-            None => panic!("error in Option<>"),
-        };
-        drop(state);
-    }
-}
-
-struct State {
-    duration: u64,
-    show_decoration: bool,
-    should_update: bool,
-    ctx: Option<egui::Context>,
-}
-
-impl State {
-    pub fn new() -> Self {
-        Self {
-            duration: 0,
-            ctx: None,
-            show_decoration: true,
-            should_update: false,
+        {
+            let cmd_output = cmd::get_commandline();
+            let mut ui_auth = lcu_auth.lock().unwrap();
+            if !cmd_output.auth_url.eq(&ui_auth.auth_url) {
+                *ui_auth = cmd_output;
+                repaint = true;
+            }
         }
+
+        {
+            if repaint {
+                let ui_ctx = ui_ctx.lock().unwrap();
+                let ctx = ui_ctx.as_ref();
+                match ctx {
+                    Some(x) => {
+                        x.request_repaint();
+                    }
+                    _ => (),
+                };
+            }
+        }
+
+        tokio::time::sleep(Duration::from_millis(2500)).await;
     }
 }
 
+#[derive(Default)]
 pub struct App {
-    state: Arc<Mutex<State>>, 
+    pub url: String,
+    pub lcu_auth: Arc<Mutex<CommandLineOutput>>,
+    pub lcu_task_handle: Option<AbortHandle>,
 }
 
 impl App {
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let state = Arc::new(Mutex::new(State::new()));
-        state.lock().unwrap().ctx = Some(cc.egui_ctx.clone());
-        let state_clone = state.clone();
-        std::thread::spawn(move || {
-            slow_process(state_clone);
-        });
+    pub fn new(
+        lcu_task_handle: Option<AbortHandle>,
+        lcu_auth: Arc<Mutex<CommandLineOutput>>,
+    ) -> Self {
         Self {
-            state,
+            lcu_task_handle,
+            lcu_auth,
+            ..Default::default()
         }
     }
 }
 
 impl eframe::App for App {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        let mut st = self.state.lock().unwrap();
-        let should_update = st.should_update;
-        if should_update {
-            frame.set_decorations(st.show_decoration);
-            *st = State {
-                duration: 2500,
-                show_decoration: st.show_decoration,
-                should_update: false,
-                ctx: st.ctx.clone(),
-            };
+    fn on_close_event(&mut self) -> bool {
+        if let Some(handle) = &self.lcu_task_handle {
+            handle.abort();
         }
-        drop(st);
+
+        true
+    }
+
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let auth = self.lcu_auth.lock().unwrap();
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.label(format!("woke up after {}ms", self.state.lock().unwrap().duration));
+            ui.label(format!("AUTH: {:?}", auth.auth_url));
         });
-        println!(".");
     }
 }
 
-pub fn run() -> Result<(), eframe::Error> {
+pub struct AppContext {
+    pub ctx: Arc<Mutex<Option<egui::Context>>>,
+    pub auth: Arc<Mutex<CommandLineOutput>>,
+}
+
+pub async fn run() -> Result<(), eframe::Error> {
+    let ui_cc: Arc<Mutex<Option<egui::Context>>> = Arc::new(Mutex::new(None));
+    let ui_cc_clone = ui_cc.clone();
+
+    let lcu_auth = Arc::new(Mutex::new(CommandLineOutput::default()));
+    let lcu_auth_ui = lcu_auth.clone();
+    let watch_task_handle = tokio::spawn(async move {
+        watch(ui_cc, lcu_auth).await;
+    });
+    let lcu_task_handle = Some(watch_task_handle.abort_handle());
+
     let native_options = eframe::NativeOptions::default();
     eframe::run_native(
-        "eframe template",
+        "Runes",
         native_options,
-        Box::new(|cc| Box::new(App::new(cc))),
-    )
+        Box::new(move |cc| {
+            ui_cc_clone.lock().unwrap().replace(cc.egui_ctx.clone());
+            Box::new(App::new(lcu_task_handle, lcu_auth_ui))
+        }),
+    )?;
+    Ok(())
 }

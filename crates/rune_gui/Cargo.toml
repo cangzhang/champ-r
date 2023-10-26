@@ -12,3 +12,4 @@ eframe = { version = "0.23.0", features = [
 env_logger = "0.10.0"
 egui_extras = { version = "0.23.0", features = ["all_loaders"] }
 tokio = { version = "1", features = ["full"] }
+lcu = { path = "../lcu" }

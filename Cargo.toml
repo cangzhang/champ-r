@@ -4,4 +4,5 @@ members = [
     "crates/source_gui",
     "crates/rune_gui",
     "crates/app",
+    "crates/lcu",
 ]
