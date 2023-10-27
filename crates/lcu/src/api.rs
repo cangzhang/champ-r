@@ -2,12 +2,13 @@ use std::time::Duration;
 
 use bytes::Bytes;
 use futures::future::try_join3;
+use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 
 use tracing::info;
 
 use crate::{
-    builds::{Rune, ItemBuild},
+    builds::{ItemBuild, Rune},
     web::{DataDragonRune, FetchError},
 };
 
@@ -110,7 +111,11 @@ pub async fn apply_rune(endpoint: String, rune: Rune) -> Result<(), LcuError> {
     Ok(())
 }
 
-pub async fn appy_rune_and_builds(_endpoint: String, _rune: Rune, _builds: Vec<ItemBuild>) -> Result<(), LcuError> {
+pub async fn appy_rune_and_builds(
+    _endpoint: String,
+    _rune: Rune,
+    _builds: Vec<ItemBuild>,
+) -> Result<(), LcuError> {
     Ok(())
 }
 
@@ -171,4 +176,61 @@ pub fn get_rune_image_path(rune_id: u64, remote_rune_list: &Vec<DataDragonRune>)
     }
 
     String::new()
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Ownership {
+    pub loyalty_reward: bool,
+    pub owned: bool,
+    pub rental: Rental,
+    #[serde(rename = "xboxGPReward")]
+    pub xbox_gpreward: bool,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Rental {
+    pub end_date: i64,
+    pub purchase_date: f64,
+    pub rented: bool,
+    pub win_count_remaining: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnedChampion {
+    pub active: bool,
+    pub alias: String,
+    pub ban_vo_path: String,
+    pub base_load_screen_path: String,
+    pub base_splash_path: String,
+    pub bot_enabled: bool,
+    pub choose_vo_path: String,
+    pub disabled_queues: Vec<Value>,
+    pub free_to_play: bool,
+    pub id: i64,
+    pub name: String,
+    pub ownership: Ownership,
+    pub purchased: f64,
+    pub ranked_play_enabled: bool,
+    pub roles: Vec<String>,
+    pub square_portrait_path: String,
+    pub stinger_sfx_path: String,
+    pub title: String,
+}
+
+pub async fn list_owned_champions(endpoint: &String) -> Result<Vec<OwnedChampion>, LcuError> {
+    let client = make_client();
+    let url = format!("{endpoint}/lol-champions/v1/owned-champions-minimal");
+    let list = client
+        .get(&url)
+        .version(reqwest::Version::HTTP_2)
+        .header(reqwest::header::ACCEPT, "application/json")
+        .send()
+        .await?
+        .json::<Vec<OwnedChampion>>()
+        .await?;
+
+    Ok(list)
 }

@@ -6,10 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+lcu = { path = "../lcu" }
 eframe = { version = "0.23.0", features = [
     "__screenshot", # __screenshot is so we can dump a screenshot using EFRAME_SCREENSHOT_TO
 ] }
 env_logger = "0.10.0"
 egui_extras = { version = "0.23.0", features = ["all_loaders"] }
 tokio = { version = "1", features = ["full"] }
-lcu = { path = "../lcu" }
+poll-promise = { version = "0.3.0", features = ["tokio"] }
+image = { version = "0.24.6", default-features = false, features = [
+    "jpeg",
+    "png",
+] }
+bytes = "*"

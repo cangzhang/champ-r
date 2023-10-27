@@ -1705,6 +1705,7 @@ dependencies = [
  "regex",
  "reqwest",
  "serde",
+ "serde_derive",
  "serde_json",
  "serde_with",
  "tokio",
@@ -2530,10 +2531,13 @@ dependencies = [
 name = "rune_gui"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "eframe",
  "egui_extras",
  "env_logger",
+ "image",
  "lcu",
+ "poll-promise",
  "tokio",
 ]
 
