@@ -5,6 +5,7 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
+lcu = { path = "../lcu" }
 anyhow = "1.0.71"
 bytes = "*"
 base64 = "0.21.0"

@@ -2932,6 +2932,7 @@ dependencies = [
  "futures",
  "image",
  "lazy_static",
+ "lcu",
  "lyon_algorithms",
  "once_cell",
  "poll-promise",

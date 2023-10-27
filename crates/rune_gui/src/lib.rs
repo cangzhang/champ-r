@@ -5,7 +5,10 @@ use std::{
 };
 use tokio::task::AbortHandle;
 
-use lcu::cmd::{self, CommandLineOutput};
+use lcu::{
+    api,
+    cmd::{self, CommandLineOutput},
+};
 
 async fn watch(ui_ctx: Arc<Mutex<Option<egui::Context>>>, lcu_auth: Arc<Mutex<CommandLineOutput>>) {
     loop {
@@ -16,6 +19,7 @@ async fn watch(ui_ctx: Arc<Mutex<Option<egui::Context>>>, lcu_auth: Arc<Mutex<Co
             let cmd_output = cmd::get_commandline();
             let mut ui_auth = lcu_auth.lock().unwrap();
             if !cmd_output.auth_url.eq(&ui_auth.auth_url) {
+                println!("auth_url: {}", cmd_output.auth_url);
                 *ui_auth = cmd_output;
                 repaint = true;
             }
@@ -32,6 +36,12 @@ async fn watch(ui_ctx: Arc<Mutex<Option<egui::Context>>>, lcu_auth: Arc<Mutex<Co
                     _ => (),
                 };
             }
+        }
+
+        let auth_url = lcu_auth.lock().unwrap().auth_url.clone();
+        let full_url = format!("https://{}", auth_url);
+        if let Ok(Some(champion_id)) = api::get_session(&full_url).await {
+            println!("champion_id: {}", champion_id);
         }
 
         tokio::time::sleep(Duration::from_millis(2500)).await;

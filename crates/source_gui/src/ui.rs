@@ -4,7 +4,7 @@ use tokio::task::AbortHandle;
 use eframe::egui;
 use poll_promise::Promise;
 
-use crate::{cmd::CommandLineOutput, source::SourceItem, web};
+use lcu::{cmd::CommandLineOutput, source::SourceItem, web};
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Default)]
