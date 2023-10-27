@@ -9,6 +9,7 @@ use tokio::task::AbortHandle;
 
 use lcu::{
     api,
+    asset_loader::AssetLoader,
     cmd::{self, CommandLineOutput},
 };
 use lcu::{
@@ -117,8 +118,9 @@ impl eframe::App for App {
 
                 let cid = self.champion_id.lock().unwrap().unwrap_or_default();
                 if cid > 0 {
-                    let champion_avatar_url =
-                        format!("{full_auth_url}/lol-game-data/assets/v1/champion-icons/{cid}.png");
+                    let champion_avatar_url = format!(
+                        "lcu-{full_auth_url}/lol-game-data/assets/v1/champion-icons/{cid}.png"
+                    );
                     ui.add(
                         egui::Image::new(champion_avatar_url)
                             .max_size(egui::vec2(64., 64.))
@@ -178,6 +180,9 @@ pub async fn run() -> Result<(), eframe::Error> {
         Box::new(move |cc| {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
+            let _ = &cc
+                .egui_ctx
+                .add_bytes_loader(Arc::new(AssetLoader::default()));
 
             ui_cc_clone.lock().unwrap().replace(cc.egui_ctx.clone());
             Box::new(App::new(lcu_task_handle, lcu_auth_ui, champion_id_ui))
