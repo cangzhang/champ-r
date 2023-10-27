@@ -23,7 +23,6 @@ pub fn insecure_agent() -> ureq::Agent {
         .with_safe_defaults()
         .with_custom_certificate_verifier(Arc::new(NoCertificateVerification))
         .with_no_client_auth();
-    let agent = ureq::builder().tls_config(Arc::new(config)).build();
-
-    agent
+    
+    ureq::builder().tls_config(Arc::new(config)).build()
 }
