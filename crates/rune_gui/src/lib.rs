@@ -95,14 +95,6 @@ impl App {
 }
 
 impl eframe::App for App {
-    fn on_close_event(&mut self) -> bool {
-        if let Some(handle) = &self.lcu_task_handle {
-            handle.abort();
-        }
-
-        true
-    }
-
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let auth = self.lcu_auth.lock().unwrap();
         let connected_to_lcu = !auth.auth_url.is_empty();
@@ -155,6 +147,14 @@ impl eframe::App for App {
                 };
             }
         });
+    }
+
+    fn on_close_event(&mut self) -> bool {
+        if let Some(handle) = &self.lcu_task_handle {
+            handle.abort();
+        }
+
+        true
     }
 }
 

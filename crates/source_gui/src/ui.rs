@@ -29,14 +29,6 @@ impl MyApp {
 }
 
 impl eframe::App for MyApp {
-    fn on_close_event(&mut self) -> bool {
-        if let Some(handle) = &self.lcu_task_handle {
-            handle.abort();
-        }
-
-        true
-    }
-
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let img_source = "https://picsum.photos/1024";
         let auth = self.auth.lock().unwrap();
@@ -137,5 +129,13 @@ impl eframe::App for MyApp {
                 });
             }
         });
+    }
+
+    fn on_close_event(&mut self) -> bool {
+        if let Some(handle) = &self.lcu_task_handle {
+            handle.abort();
+        }
+
+        true
     }
 }
