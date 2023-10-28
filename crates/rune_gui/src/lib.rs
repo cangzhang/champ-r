@@ -8,12 +8,10 @@ use std::{
 use tokio::task::AbortHandle;
 
 use lcu::{
-    api,
+    api::{self, SummonerChampion},
     asset_loader::AssetLoader,
     cmd::{self, CommandLineOutput},
-};
-use lcu::{
-    api::{LcuError, OwnedChampion},
+    lcu_error::LcuError,
     web::FetchError,
 };
 
@@ -72,9 +70,9 @@ pub struct App {
     pub url: String,
     pub lcu_auth: Arc<Mutex<CommandLineOutput>>,
     pub lcu_task_handle: Option<AbortHandle>,
-    pub owned_champions: Vec<OwnedChampion>,
+    pub all_champions: Vec<SummonerChampion>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    pub owned_champions_promise: Option<Promise<Result<Vec<OwnedChampion>, LcuError>>>,
+    pub fetch_all_champions_promise: Option<Promise<Result<Vec<SummonerChampion>, LcuError>>>,
     pub champion_id: Arc<Mutex<Option<u64>>>,
     pub champion_avatar_promise: Option<Promise<Result<Bytes, FetchError>>>,
 }
@@ -118,21 +116,16 @@ impl eframe::App for App {
                             .max_size(egui::vec2(64., 64.))
                             .rounding(10.0),
                     );
-                    // ui.add(
-                    //     egui::Image::new("https://picsum.photos/64")
-                    //         .max_size(egui::vec2(64., 64.))
-                    //         .rounding(10.0),
-                    // );
                 }
 
-                match &self.owned_champions_promise {
+                match &self.fetch_all_champions_promise {
                     Some(p) => match p.ready() {
                         None => {
                             ui.spinner();
                         }
-                        Some(Ok(owned_champions)) => {
-                            self.owned_champions = owned_champions.clone();
-                            ui.label(format!("owned champion count: {}", owned_champions.len()));
+                        Some(Ok(all_champions)) => {
+                            self.all_champions = all_champions.clone();
+                            ui.label(format!("champion count: {}", all_champions.len()));
                         }
                         Some(Err(err)) => {
                             ui.label(format!("Failed to list owned champions: {:?}", err));
@@ -140,9 +133,11 @@ impl eframe::App for App {
                     },
                     None => {
                         let promise = Promise::spawn_async(async move {
-                            api::list_owned_champions(&full_auth_url).await
+                            let summoner = api::get_current_summoner(&full_auth_url).await?;
+                            println!("summoner: {:?}", summoner.summoner_id);
+                            api::list_available_champions(&full_auth_url, summoner.summoner_id).await
                         });
-                        self.owned_champions_promise = Some(promise);
+                        self.fetch_all_champions_promise = Some(promise);
                     }
                 };
             }
@@ -166,7 +161,6 @@ pub async fn run() -> Result<(), eframe::Error> {
     let lcu_auth_ui = lcu_auth.clone();
     let champion_id = Arc::new(Mutex::new(None));
     let champion_id_ui = champion_id.clone();
-    // let owned_champions: Arc<Mutex<Vec<OwnedChampion>>> = Arc::new(Mutex::new(vec![]));
 
     let watch_task_handle = tokio::spawn(async move {
         watch(ui_cc, lcu_auth, champion_id).await;

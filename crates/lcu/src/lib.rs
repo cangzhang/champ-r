@@ -6,3 +6,4 @@ pub mod constants;
 pub mod source;
 pub mod ureq_agent;
 pub mod web;
+pub mod lcu_error;
