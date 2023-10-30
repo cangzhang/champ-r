@@ -12,7 +12,8 @@ use lcu::{
     asset_loader::AssetLoader,
     cmd::{self, CommandLineOutput},
     lcu_error::LcuError,
-    web::FetchError,
+    source::SourceItem,
+    web::{self, FetchError},
 };
 
 async fn watch(
@@ -75,6 +76,10 @@ pub struct App {
     pub fetch_all_champions_promise: Option<Promise<Result<Vec<SummonerChampion>, LcuError>>>,
     pub champion_id: Arc<Mutex<Option<u64>>>,
     pub champion_avatar_promise: Option<Promise<Result<Bytes, FetchError>>>,
+    pub selected_source: String,
+    pub sources: Vec<SourceItem>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
 }
 
 impl App {
@@ -135,11 +140,46 @@ impl eframe::App for App {
                         let promise = Promise::spawn_async(async move {
                             let summoner = api::get_current_summoner(&full_auth_url).await?;
                             println!("summoner: {:?}", summoner.summoner_id);
-                            api::list_available_champions(&full_auth_url, summoner.summoner_id).await
+                            api::list_available_champions(&full_auth_url, summoner.summoner_id)
+                                .await
                         });
                         self.fetch_all_champions_promise = Some(promise);
                     }
                 };
+
+                ui.horizontal(|ui| {
+                    ui.label("Sources");
+                    match &self.sources_promise {
+                        Some(p) => match p.ready() {
+                            None => {
+                                ui.spinner();
+                            }
+                            Some(Ok(list)) => {
+                                self.sources = list.clone();
+                                egui::ComboBox::new("Source", "")
+                                    .width(200.)
+                                    .selected_text(&self.selected_source)
+                                    .show_ui(ui, |ui| {
+                                        list.iter().for_each(|item| {
+                                            ui.selectable_value(
+                                                &mut self.selected_source,
+                                                item.value.clone(),
+                                                &item.label,
+                                            );
+                                        });
+                                    });
+                            }
+                            Some(Err(err)) => {
+                                ui.label(format!("Failed to fetch sources: {:?}", err));
+                            }
+                        },
+                        None => {
+                            let promise =
+                                Promise::spawn_async(async move { web::fetch_sources().await });
+                            self.sources_promise = Some(promise);
+                        }
+                    };
+                });
             }
         });
     }
