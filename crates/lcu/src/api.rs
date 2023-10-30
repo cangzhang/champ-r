@@ -43,16 +43,16 @@ pub async fn make_get_request<T: DeserializeOwned>(endpoint: &String) -> Result<
         .map_err(LcuError::from)
 }
 
-pub async fn get_session(auth_url: &String) -> Result<Option<u64>, LcuError> {
+pub async fn get_session(auth_url: &String) -> Result<Option<i64>, LcuError> {
     let endpoint = format!("{auth_url}/lol-champ-select/v1/session");
     let resp: Value = make_get_request(&endpoint).await?;
 
-    if let Some(cell_id) = resp["localPlayerCellId"].as_u64() {
+    if let Some(cell_id) = resp["localPlayerCellId"].as_i64() {
         let my_team = resp["myTeam"].as_array().unwrap();
         for i in my_team {
-            let id = i["cellId"].as_u64().unwrap();
+            let id = i["cellId"].as_i64().unwrap();
             if id == cell_id {
-                let champ_id = i.get("championId").unwrap().as_u64().unwrap();
+                let champ_id = i.get("championId").unwrap().as_i64().unwrap();
                 return Ok(Some(champ_id));
             }
         }
@@ -60,9 +60,9 @@ pub async fn get_session(auth_url: &String) -> Result<Option<u64>, LcuError> {
         let actions = resp["actions"].as_array().unwrap();
         for row in actions {
             for i in row.as_array().unwrap() {
-                let id = i["actorCellId"].as_u64().unwrap();
+                let id = i["actorCellId"].as_i64().unwrap();
                 if id == cell_id && i["type"].as_str().unwrap() != "ban" {
-                    let champ_id = i.get("championId").unwrap().as_u64().unwrap();
+                    let champ_id = i.get("championId").unwrap().as_i64().unwrap();
                     return Ok(Some(champ_id));
                 }
             }

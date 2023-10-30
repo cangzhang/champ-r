@@ -10,6 +10,7 @@ use tokio::task::AbortHandle;
 use lcu::{
     api::{self, SummonerChampion},
     asset_loader::AssetLoader,
+    builds,
     cmd::{self, CommandLineOutput},
     lcu_error::LcuError,
     source::SourceItem,
@@ -19,7 +20,8 @@ use lcu::{
 async fn watch(
     ui_ctx: Arc<Mutex<Option<egui::Context>>>,
     lcu_auth: Arc<Mutex<CommandLineOutput>>,
-    champion_id: Arc<Mutex<Option<u64>>>,
+    champion_id: Arc<Mutex<Option<i64>>>,
+    champion_changed: Arc<Mutex<bool>>,
 ) {
     loop {
         println!(".");
@@ -43,6 +45,7 @@ async fn watch(
                 *champion_id.lock().unwrap() = Some(cid);
                 repaint = true;
                 println!("current champion id: {}", cid);
+                *champion_changed.lock().unwrap() = true;
             }
         } else {
             *champion_id.lock().unwrap() = None;
@@ -74,24 +77,31 @@ pub struct App {
     pub all_champions: Vec<SummonerChampion>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub fetch_all_champions_promise: Option<Promise<Result<Vec<SummonerChampion>, LcuError>>>,
-    pub champion_id: Arc<Mutex<Option<u64>>>,
+    pub champion_id: Arc<Mutex<Option<i64>>>,
+    pub champion_changed: Arc<Mutex<bool>>,
     pub champion_avatar_promise: Option<Promise<Result<Bytes, FetchError>>>,
     pub selected_source: String,
     pub sources: Vec<SourceItem>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    pub sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
+    pub fetch_sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
+    pub builds: Vec<builds::BuildSection>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub fetch_build_file_promise:
+        Option<Promise<Result<Vec<builds::BuildSection>, web::FetchError>>>,
 }
 
 impl App {
     pub fn new(
         lcu_task_handle: Option<AbortHandle>,
         lcu_auth: Arc<Mutex<CommandLineOutput>>,
-        champion_id: Arc<Mutex<Option<u64>>>,
+        champion_id: Arc<Mutex<Option<i64>>>,
+        champion_changed: Arc<Mutex<bool>>,
     ) -> Self {
         Self {
             lcu_task_handle,
             lcu_auth,
             champion_id,
+            champion_changed,
             ..Default::default()
         }
     }
@@ -101,12 +111,12 @@ impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let auth = self.lcu_auth.lock().unwrap();
         let connected_to_lcu = !auth.auth_url.is_empty();
-
         let full_auth_url = if connected_to_lcu {
             format!("https://{}", auth.auth_url)
         } else {
             String::new()
         };
+
         egui::CentralPanel::default().show(ctx, |ui| {
             if connected_to_lcu {
                 ui.label(format!("AUTH: {:?}", full_auth_url));
@@ -149,23 +159,30 @@ impl eframe::App for App {
 
                 ui.horizontal(|ui| {
                     ui.label("Sources");
-                    match &self.sources_promise {
+                    match &self.fetch_sources_promise {
                         Some(p) => match p.ready() {
                             None => {
                                 ui.spinner();
                             }
                             Some(Ok(list)) => {
                                 self.sources = list.clone();
+                                let prev_selected = self.selected_source.clone();
                                 egui::ComboBox::new("Source", "")
                                     .width(200.)
                                     .selected_text(&self.selected_source)
                                     .show_ui(ui, |ui| {
                                         list.iter().for_each(|item| {
-                                            ui.selectable_value(
-                                                &mut self.selected_source,
-                                                item.value.clone(),
-                                                &item.label,
-                                            );
+                                            if ui
+                                                .selectable_value(
+                                                    &mut self.selected_source,
+                                                    item.value.clone(),
+                                                    &item.label,
+                                                )
+                                                .clicked()
+                                                && !item.value.eq(&prev_selected)
+                                            {
+                                                self.fetch_build_file_promise = None;
+                                            };
                                         });
                                     });
                             }
@@ -176,10 +193,49 @@ impl eframe::App for App {
                         None => {
                             let promise =
                                 Promise::spawn_async(async move { web::fetch_sources().await });
-                            self.sources_promise = Some(promise);
+                            self.fetch_sources_promise = Some(promise);
                         }
                     };
                 });
+
+                if *self.champion_changed.lock().unwrap() {
+                    self.fetch_build_file_promise = None;
+                }
+                if !self.selected_source.is_empty()
+                    && self.champion_id.lock().unwrap().unwrap_or_default() > 0
+                {
+                    match &self.fetch_build_file_promise {
+                        Some(p) => match p.ready() {
+                            None => {
+                                ui.spinner();
+                            }
+                            Some(Ok(builds)) => {
+                                self.builds = builds.clone();
+                                builds.iter().for_each(|build| {
+                                    build.runes.iter().for_each(|rune| {
+                                        ui.label(&rune.name);
+                                    });
+                                });
+                            }
+                            Some(Err(err)) => {
+                                ui.label(format!("Failed to fetch builds: {:?}", err));
+                            }
+                        },
+                        None => {
+                            let champion = &self.all_champions.iter().find(|c| c.id == cid);
+                            if let Some(c) = champion.clone() {
+                                let source = self.selected_source.clone();
+                                let alias = &c.alias;
+                                let champion_alias = alias.clone();
+                                let promise = Promise::spawn_async(async move {
+                                    web::fetch_build_file(&source, &champion_alias, false).await
+                                });
+                                self.fetch_build_file_promise = Some(promise);
+                                *self.champion_changed.lock().unwrap() = false;
+                            }
+                        }
+                    };
+                }
             }
         });
     }
@@ -201,9 +257,11 @@ pub async fn run() -> Result<(), eframe::Error> {
     let lcu_auth_ui = lcu_auth.clone();
     let champion_id = Arc::new(Mutex::new(None));
     let champion_id_ui = champion_id.clone();
+    let champion_changed = Arc::new(Mutex::new(false));
+    let champion_changed_ui = champion_changed.clone();
 
     let watch_task_handle = tokio::spawn(async move {
-        watch(ui_cc, lcu_auth, champion_id).await;
+        watch(ui_cc, lcu_auth, champion_id, champion_changed).await;
     });
     let lcu_task_handle = Some(watch_task_handle.abort_handle());
 
@@ -219,7 +277,12 @@ pub async fn run() -> Result<(), eframe::Error> {
                 .add_bytes_loader(Arc::new(AssetLoader::default()));
 
             ui_cc_clone.lock().unwrap().replace(cc.egui_ctx.clone());
-            Box::new(App::new(lcu_task_handle, lcu_auth_ui, champion_id_ui))
+            Box::new(App::new(
+                lcu_task_handle,
+                lcu_auth_ui,
+                champion_id_ui,
+                champion_changed_ui,
+            ))
         }),
     )?;
     Ok(())
