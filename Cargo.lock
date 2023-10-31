@@ -2557,6 +2557,7 @@ dependencies = [
  "eframe",
  "egui_extras",
  "env_logger",
+ "futures",
  "image",
  "lcu",
  "poll-promise",

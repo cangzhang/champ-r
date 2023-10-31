@@ -1,5 +1,6 @@
 use bytes::Bytes;
 use eframe::egui;
+use futures::future::join;
 use poll_promise::Promise;
 use std::{
     sync::{Arc, Mutex},
@@ -8,7 +9,7 @@ use std::{
 use tokio::task::AbortHandle;
 
 use lcu::{
-    api::{self, SummonerChampion},
+    api::{self, Perk, SummonerChampion},
     asset_loader::AssetLoader,
     builds,
     cmd::{self, CommandLineOutput},
@@ -75,8 +76,14 @@ pub struct App {
     pub lcu_auth: Arc<Mutex<CommandLineOutput>>,
     pub lcu_task_handle: Option<AbortHandle>,
     pub all_champions: Vec<SummonerChampion>,
+    pub all_perks: Vec<Perk>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    pub fetch_all_champions_promise: Option<Promise<Result<Vec<SummonerChampion>, LcuError>>>,
+    pub fetch_champions_and_perks_promise: Option<
+        Promise<(
+            Result<Vec<Perk>, LcuError>,
+            Result<Vec<SummonerChampion>, LcuError>,
+        )>,
+    >,
     pub champion_id: Arc<Mutex<Option<i64>>>,
     pub champion_changed: Arc<Mutex<bool>>,
     pub champion_avatar_promise: Option<Promise<Result<Bytes, FetchError>>>,
@@ -133,27 +140,43 @@ impl eframe::App for App {
                     );
                 }
 
-                match &self.fetch_all_champions_promise {
+                match &self.fetch_champions_and_perks_promise {
                     Some(p) => match p.ready() {
                         None => {
                             ui.spinner();
                         }
-                        Some(Ok(all_champions)) => {
-                            self.all_champions = all_champions.clone();
-                            ui.label(format!("champion count: {}", all_champions.len()));
-                        }
-                        Some(Err(err)) => {
-                            ui.label(format!("Failed to list owned champions: {:?}", err));
+                        Some((perks_result, champions_result)) => {
+                            match perks_result {
+                                Ok(perks) => {
+                                    self.all_perks = perks.clone();
+                                    ui.label(format!("perk count: {}", perks.len()));
+                                }
+                                Err(err) => {
+                                    ui.label(format!("Failed to list perks: {:?}", err));
+                                }
+                            };
+                            match champions_result {
+                                Ok(champions) => {
+                                    self.all_champions = champions.clone();
+                                    ui.label(format!("champion count: {}", champions.len()));
+                                }
+                                Err(err) => {
+                                    ui.label(format!("Failed to list owned champions: {:?}", err));
+                                }
+                            };
                         }
                     },
                     None => {
                         let promise = Promise::spawn_async(async move {
-                            let summoner = api::get_current_summoner(&full_auth_url).await?;
-                            println!("summoner: {:?}", summoner.summoner_id);
-                            api::list_available_champions(&full_auth_url, summoner.summoner_id)
-                                .await
+                            join(api::list_all_perks(&full_auth_url.clone()), async {
+                                let summoner = api::get_current_summoner(&full_auth_url).await?;
+                                println!("summoner: {:?}", summoner.summoner_id);
+                                api::list_available_champions(&full_auth_url, summoner.summoner_id)
+                                    .await
+                            })
+                            .await
                         });
-                        self.fetch_all_champions_promise = Some(promise);
+                        self.fetch_champions_and_perks_promise = Some(promise);
                     }
                 };
 
@@ -166,6 +189,10 @@ impl eframe::App for App {
                             }
                             Some(Ok(list)) => {
                                 self.sources = list.clone();
+                                if self.selected_source.is_empty() {
+                                    self.selected_source = list[0].value.clone();
+                                }
+
                                 let prev_selected = self.selected_source.clone();
                                 egui::ComboBox::new("Source", "")
                                     .width(200.)
@@ -211,9 +238,41 @@ impl eframe::App for App {
                             }
                             Some(Ok(builds)) => {
                                 self.builds = builds.clone();
+
                                 builds.iter().for_each(|build| {
                                     build.runes.iter().for_each(|rune| {
                                         ui.label(&rune.name);
+                                        ui.horizontal(|ui| {
+                                            let primary_perk = self
+                                                .all_perks
+                                                .iter()
+                                                .find(|p| p.id == rune.selected_perk_ids[0]);
+                                            let sub_perk = self
+                                                .all_perks
+                                                .iter()
+                                                .find(|p| p.id == rune.selected_perk_ids[1]);
+                                            let last_perk = self
+                                                .all_perks
+                                                .iter()
+                                                .find(|p| p.id == rune.selected_perk_ids[2]);
+
+                                            [primary_perk, sub_perk, last_perk].iter().for_each(
+                                                |perk| {
+                                                    if let Some(p) = perk {
+                                                        let perk_icon_url = format!(
+                                                            "lcu-https://{}{}",
+                                                            auth.auth_url,
+                                                            p.icon_path
+                                                        );
+                                                        ui.add(
+                                                            egui::Image::new(perk_icon_url)
+                                                                .max_size(egui::vec2(64., 64.))
+                                                                .rounding(10.0),
+                                                        );
+                                                    }
+                                                },
+                                            );
+                                        });
                                     });
                                 });
                             }

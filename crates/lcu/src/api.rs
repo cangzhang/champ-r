@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use bytes::Bytes;
-use futures::future::try_join3;
 use lazy_static::lazy_static;
 use serde::de::DeserializeOwned;
 use serde_derive::{Deserialize, Serialize};
@@ -10,7 +9,7 @@ use serde_json::Value;
 use crate::{
     builds::{ItemBuild, Rune},
     lcu_error::LcuError,
-    web::{DataDragonRune, FetchError},
+    web::FetchError,
 };
 
 lazy_static! {
@@ -114,18 +113,6 @@ pub async fn appy_rune_and_builds(
     Ok(())
 }
 
-pub async fn get_champion_avatar(endpoint: String, champion_id: u64) -> Result<Bytes, FetchError> {
-    let client = make_client();
-    let url = format!("{endpoint}/lol-game-data/assets/v1/champion-icons/{champion_id}.png");
-    if let Ok(resp) = client.get(&url).send().await {
-        if let Ok(bytes) = resp.bytes().await {
-            return Ok(bytes);
-        }
-    }
-
-    Err(FetchError::Failed)
-}
-
 pub async fn get_rune_image(endpoint: String, icon_path: String) -> Result<Bytes, FetchError> {
     let client = make_client();
     let url = format!("{endpoint}/lol-game-data/assets/v1/{icon_path}");
@@ -136,41 +123,6 @@ pub async fn get_rune_image(endpoint: String, icon_path: String) -> Result<Bytes
     }
 
     Err(FetchError::Failed)
-}
-
-pub async fn get_rune_preview_images(
-    endpoint: String,
-    rune: Rune,
-    remote_rune_list: &Vec<DataDragonRune>,
-) -> Result<(Bytes, Bytes, Bytes), FetchError> {
-    let primary_id = get_rune_image_path(rune.primary_style_id, remote_rune_list);
-    let sub_id = get_rune_image_path(rune.sub_style_id, remote_rune_list);
-    let first_rune = get_rune_image_path(rune.selected_perk_ids[0], remote_rune_list);
-
-    try_join3(
-        get_rune_image(endpoint.clone(), primary_id),
-        get_rune_image(endpoint.clone(), sub_id),
-        get_rune_image(endpoint.clone(), first_rune),
-    )
-    .await
-}
-
-pub fn get_rune_image_path(rune_id: u64, remote_rune_list: &Vec<DataDragonRune>) -> String {
-    for rune in remote_rune_list.iter() {
-        if rune.id == rune_id {
-            return rune.icon.clone();
-        }
-
-        for slot in rune.slots.iter() {
-            for rune in slot.runes.iter() {
-                if rune.id == rune_id {
-                    return rune.icon.clone();
-                }
-            }
-        }
-    }
-
-    String::new()
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -275,5 +227,25 @@ pub async fn list_available_champions(
     summoner_id: i64,
 ) -> Result<Vec<SummonerChampion>, LcuError> {
     let url = format!("{endpoint}/lol-champions/v1/inventories/{summoner_id}/champions");
+    make_get_request(&url).await
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Perk {
+    pub icon_path: String,
+    pub id: i64,
+    pub long_desc: String,
+    pub name: String,
+    pub recommendation_descriptor: String,
+    pub short_desc: String,
+    pub slot_type: String,
+    pub style_id: i64,
+    pub style_id_name: String,
+    pub tooltip: String,
+}
+
+pub async fn list_all_perks(endpoint: &String) -> Result<Vec<Perk>, LcuError> {
+    let url = format!("{endpoint}/lol-perks/v1/perks");
     make_get_request(&url).await
 }

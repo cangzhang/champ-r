@@ -19,3 +19,4 @@ image = { version = "0.24.6", default-features = false, features = [
     "png",
 ] }
 bytes = "*"
+futures = "0.3.28"
