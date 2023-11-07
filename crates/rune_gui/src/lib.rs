@@ -11,7 +11,7 @@ use tokio::task::AbortHandle;
 use lcu::{
     api::{self, Perk, SummonerChampion},
     asset_loader::AssetLoader,
-    builds,
+    builds::{self, Rune},
     cmd::{self, CommandLineOutput},
     lcu_error::LcuError,
     source::SourceItem,
@@ -95,6 +95,9 @@ pub struct App {
     #[cfg_attr(feature = "serde", serde(skip))]
     pub fetch_build_file_promise:
         Option<Promise<Result<Vec<builds::BuildSection>, web::FetchError>>>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub apply_rune_promise: Option<Promise<Result<(), LcuError>>>,
+    pub rune_to_apply: Option<Rune>,
 }
 
 impl App {
@@ -227,6 +230,7 @@ impl eframe::App for App {
 
                 if *self.champion_changed.lock().unwrap() {
                     self.fetch_build_file_promise = None;
+                    self.rune_to_apply = None;
                 }
                 if !self.selected_source.is_empty()
                     && self.champion_id.lock().unwrap().unwrap_or_default() > 0
@@ -258,11 +262,11 @@ impl eframe::App for App {
 
                                             [primary_perk, sub_perk, last_perk].iter().for_each(
                                                 |perk| {
-                                                    if let Some(p) = perk {
+                                                    if perk.is_some() {
+                                                        let p = perk.clone().unwrap();
                                                         let perk_icon_url = format!(
                                                             "lcu-https://{}{}",
-                                                            auth.auth_url,
-                                                            p.icon_path
+                                                            auth.auth_url, p.icon_path
                                                         );
                                                         ui.add(
                                                             egui::Image::new(perk_icon_url)
@@ -272,6 +276,10 @@ impl eframe::App for App {
                                                     }
                                                 },
                                             );
+
+                                            if ui.button("Apply").clicked() {
+                                                self.rune_to_apply = Some(rune.clone());
+                                            }
                                         });
                                     });
                                 });
@@ -282,7 +290,8 @@ impl eframe::App for App {
                         },
                         None => {
                             let champion = &self.all_champions.iter().find(|c| c.id == cid);
-                            if let Some(c) = champion.clone() {
+                            if champion.is_some() {
+                                let c = champion.clone().unwrap();
                                 let source = self.selected_source.clone();
                                 let alias = &c.alias;
                                 let champion_alias = alias.clone();
@@ -294,6 +303,32 @@ impl eframe::App for App {
                             }
                         }
                     };
+
+                    if self.rune_to_apply.is_some() {
+                        let rune = self.rune_to_apply.clone().unwrap();
+                        let endpoint = format!("https://{}", &auth.auth_url);
+
+                        match &self.apply_rune_promise {
+                            Some(p) => match p.ready() {
+                                None => {
+                                    ui.spinner();
+                                }
+                                Some(Ok(_)) => {
+                                    self.apply_rune_promise = None;
+                                    self.rune_to_apply = None;
+                                }
+                                Some(Err(err)) => {
+                                    println!("apply rune failed: {:?}", err);
+                                }
+                            },
+                            None => {
+                                let p = Promise::spawn_async(async move {
+                                    api::apply_rune(endpoint, rune).await
+                                });
+                                self.apply_rune_promise = Some(p);
+                            }
+                        }
+                    }
                 }
             }
         });
