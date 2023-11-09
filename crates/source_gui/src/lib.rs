@@ -36,7 +36,7 @@ pub async fn run() -> Result<(), eframe::Error> {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
 
-            let app_data = ui::MyApp::new(lcu_auth_ui, lcu_task_handle);
+            let app_data = ui::SourceApp::new(lcu_auth_ui, lcu_task_handle);
             Box::new(app_data)
         }),
     )?;

@@ -8,7 +8,7 @@ use lcu::{cmd::CommandLineOutput, source::SourceItem, web};
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Default)]
-pub struct MyApp {
+pub struct SourceApp {
     pub sources: Vec<SourceItem>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
@@ -18,7 +18,7 @@ pub struct MyApp {
     pub lcu_task_handle: Option<AbortHandle>,
 }
 
-impl MyApp {
+impl SourceApp {
     pub fn new(auth: Arc<Mutex<CommandLineOutput>>, lcu_task_handle: Option<AbortHandle>) -> Self {
         Self {
             auth,
@@ -28,7 +28,7 @@ impl MyApp {
     }
 }
 
-impl eframe::App for MyApp {
+impl eframe::App for SourceApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let img_source = "https://picsum.photos/1024";
         let auth = self.auth.lock().unwrap();
