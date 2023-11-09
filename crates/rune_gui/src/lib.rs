@@ -5,8 +5,9 @@ use std::{
 };
 
 use lcu::{
+    api,
     asset_loader::AssetLoader,
-    cmd::{self, CommandLineOutput}, api,
+    cmd::{self, CommandLineOutput},
 };
 
 pub mod ui;
@@ -15,7 +16,6 @@ async fn watch(
     ui_ctx: Arc<Mutex<Option<egui::Context>>>,
     lcu_auth: Arc<Mutex<CommandLineOutput>>,
     champion_id: Arc<Mutex<Option<i64>>>,
-    champion_changed: Arc<Mutex<bool>>,
 ) {
     loop {
         println!(".");
@@ -39,7 +39,6 @@ async fn watch(
                 *champion_id.lock().unwrap() = Some(cid);
                 repaint = true;
                 println!("current champion id: {}", cid);
-                *champion_changed.lock().unwrap() = true;
             }
         } else {
             *champion_id.lock().unwrap() = None;
@@ -71,11 +70,9 @@ pub async fn run() -> Result<(), eframe::Error> {
     let lcu_auth_ui = lcu_auth.clone();
     let champion_id = Arc::new(Mutex::new(None));
     let champion_id_ui = champion_id.clone();
-    let champion_changed = Arc::new(Mutex::new(false));
-    let champion_changed_ui = champion_changed.clone();
 
     let watch_task_handle = tokio::spawn(async move {
-        watch(ui_cc, lcu_auth, champion_id, champion_changed).await;
+        watch(ui_cc, lcu_auth, champion_id).await;
     });
     let lcu_task_handle = Some(watch_task_handle.abort_handle());
 
@@ -99,7 +96,6 @@ pub async fn run() -> Result<(), eframe::Error> {
                 lcu_task_handle,
                 lcu_auth_ui,
                 champion_id_ui,
-                champion_changed_ui,
             ))
         }),
     )?;

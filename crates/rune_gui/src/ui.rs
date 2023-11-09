@@ -29,7 +29,6 @@ pub struct RuneApp {
         )>,
     >,
     pub champion_id: Arc<Mutex<Option<i64>>>,
-    pub champion_changed: Arc<Mutex<bool>>,
     pub champion_avatar_promise: Option<Promise<Result<Bytes, FetchError>>>,
     pub selected_source: String,
     pub sources: Vec<SourceItem>,
@@ -42,6 +41,7 @@ pub struct RuneApp {
     #[cfg_attr(feature = "serde", serde(skip))]
     pub apply_rune_promise: Option<Promise<Result<(), LcuError>>>,
     pub rune_to_apply: Option<Rune>,
+    pub prev_champion_id: Option<i64>,
 }
 
 impl RuneApp {
@@ -49,13 +49,11 @@ impl RuneApp {
         lcu_task_handle: Option<AbortHandle>,
         lcu_auth: Arc<Mutex<CommandLineOutput>>,
         champion_id: Arc<Mutex<Option<i64>>>,
-        champion_changed: Arc<Mutex<bool>>,
     ) -> Self {
         Self {
             lcu_task_handle,
             lcu_auth,
             champion_id,
-            champion_changed,
             ..Default::default()
         }
     }
@@ -73,8 +71,6 @@ impl eframe::App for RuneApp {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             if connected_to_lcu {
-                ui.label(format!("AUTH: {:?}", full_auth_url));
-
                 let cid = self.champion_id.lock().unwrap().unwrap_or_default();
                 if cid > 0 {
                     let champion_avatar_url = format!(
@@ -96,7 +92,6 @@ impl eframe::App for RuneApp {
                             match perks_result {
                                 Ok(perks) => {
                                     self.all_perks = perks.clone();
-                                    ui.label(format!("perk count: {}", perks.len()));
                                 }
                                 Err(err) => {
                                     ui.label(format!("Failed to list perks: {:?}", err));
@@ -105,7 +100,6 @@ impl eframe::App for RuneApp {
                             match champions_result {
                                 Ok(champions) => {
                                     self.all_champions = champions.clone();
-                                    ui.label(format!("champion count: {}", champions.len()));
                                 }
                                 Err(err) => {
                                     ui.label(format!("Failed to list owned champions: {:?}", err));
@@ -172,9 +166,10 @@ impl eframe::App for RuneApp {
                     };
                 });
 
-                if *self.champion_changed.lock().unwrap() {
+                if self.prev_champion_id.unwrap_or_default() != cid {
                     self.fetch_build_file_promise = None;
                     self.rune_to_apply = None;
+                    self.prev_champion_id = Some(cid);
                 }
                 if !self.selected_source.is_empty()
                     && self.champion_id.lock().unwrap().unwrap_or_default() > 0
@@ -243,7 +238,6 @@ impl eframe::App for RuneApp {
                                     web::fetch_build_file(&source, &champion_alias, false).await
                                 });
                                 self.fetch_build_file_promise = Some(promise);
-                                *self.champion_changed.lock().unwrap() = false;
                             }
                         }
                     };
