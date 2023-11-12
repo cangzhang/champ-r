@@ -42,6 +42,8 @@ pub struct RuneApp {
     pub apply_rune_promise: Option<Promise<Result<(), LcuError>>>,
     pub rune_to_apply: Option<Rune>,
     pub prev_champion_id: Option<i64>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub apply_builds_from_current_source_promise: Option<Promise<Result<(), FetchError>>>,
 }
 
 impl RuneApp {
@@ -267,6 +269,47 @@ impl eframe::App for RuneApp {
                             }
                         }
                     }
+
+                    ui.horizontal(|ui| {
+                        if ui
+                            .button(format!("Apply builds from {}", self.selected_source))
+                            .clicked()
+                        {
+                            match &self.apply_builds_from_current_source_promise {
+                                Some(p) => match p.ready() {
+                                    None => {
+                                        ui.spinner();
+                                    }
+                                    Some(Ok(_)) => {
+                                        self.apply_builds_from_current_source_promise = None;
+                                    }
+                                    Some(Err(err)) => {
+                                        println!("apply builds failed: {:?}", err);
+                                    }
+                                },
+                                None => {
+                                    let dir = auth.dir.clone();
+                                    println!("dir: {}", dir);
+                                    let selected_source = self.selected_source.clone();
+                                    let champion_id = self.champion_id.lock().unwrap().unwrap_or(0);
+                                    let target_champion =
+                                        self.all_champions.iter().find(|c| c.id == champion_id);
+                                    if target_champion.is_some() {
+                                        let champion_name = target_champion.unwrap().alias.clone();
+                                        let p = Promise::spawn_async(async move {
+                                            builds::fetch_and_apply(
+                                                &dir,
+                                                &selected_source,
+                                                &champion_name,
+                                            )
+                                            .await
+                                        });
+                                        self.apply_builds_from_current_source_promise = Some(p);
+                                    }
+                                }
+                            }
+                        }
+                    });
                 }
             }
         });
