@@ -152,6 +152,7 @@ impl eframe::App for RuneApp {
                                                 && !item.value.eq(&prev_selected)
                                             {
                                                 self.fetch_build_file_promise = None;
+                                                self.apply_builds_from_current_source_promise = None;
                                             };
                                         });
                                     });
@@ -172,6 +173,7 @@ impl eframe::App for RuneApp {
                     self.fetch_build_file_promise = None;
                     self.rune_to_apply = None;
                     self.prev_champion_id = Some(cid);
+                    self.apply_builds_from_current_source_promise = None;
                 }
                 if !self.selected_source.is_empty()
                     && self.champion_id.lock().unwrap().unwrap_or_default() > 0
@@ -289,7 +291,7 @@ impl eframe::App for RuneApp {
                                 },
                                 None => {
                                     let dir = auth.dir.clone();
-                                    println!("dir: {}", dir);
+                                    let is_tencent = auth.is_tencent;
                                     let selected_source = self.selected_source.clone();
                                     let champion_id = self.champion_id.lock().unwrap().unwrap_or(0);
                                     let target_champion =
@@ -297,10 +299,11 @@ impl eframe::App for RuneApp {
                                     if target_champion.is_some() {
                                         let champion_name = target_champion.unwrap().alias.clone();
                                         let p = Promise::spawn_async(async move {
-                                            builds::fetch_and_apply(
+                                            builds::apply_builds_from_source(
                                                 &dir,
                                                 &selected_source,
                                                 &champion_name,
+                                                is_tencent,
                                             )
                                             .await
                                         });

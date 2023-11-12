@@ -84,6 +84,46 @@ pub fn empty_rune_type() -> String {
     String::new()
 }
 
+pub async fn apply_builds_from_source(
+    dir: &String,
+    source: &String,
+    champion: &String,
+    is_tencent: bool,
+) -> Result<(), FetchError> {
+    let sections = match web::fetch_build_file(source, champion, true).await {
+        Ok(s) => s,
+        Err(_) => {
+            return Err(FetchError::Failed);
+        }
+    };
+
+    let folder = if is_tencent {
+        format!("{dir}/Game/Config/Champions")
+    } else {
+        format!("{dir}/Config/Champions")
+    };
+    let parent_dir = format!("{folder}/{champion}/Recommended");
+    let _result = fs::create_dir_all(&parent_dir);
+
+    let source_name = source.replace('.', "_");
+    for (idx, b) in sections.iter().enumerate() {
+        // let alias = &b.alias;
+        let pos = &b.position;
+        for (iidx, item) in b.item_builds.iter().enumerate() {
+            let full_path =
+                format!("{parent_dir}/{source_name}_{champion}_{pos}_{idx}_{iidx}.json");
+            let mut f = fs::File::create(&full_path).unwrap();
+
+            let buf = serde_json::to_string_pretty(&item).unwrap();
+            f.write_all(buf[..].as_bytes()).unwrap();
+
+            println!("builds saved to: {}", &full_path);
+        }
+    }
+
+    Ok(())
+}
+
 pub async fn fetch_and_apply(
     dir: &String,
     source: &String,
