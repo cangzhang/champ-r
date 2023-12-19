@@ -26,7 +26,7 @@ pub async fn run() -> Result<(), eframe::Error> {
     let lcu_task_handle = Some(lcu_task_join_handle.abort_handle());
 
     let main_win_opts = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(500.0, 400.0)),
+        viewport: egui::ViewportBuilder::default().with_inner_size([500.0, 400.0]),
         ..Default::default()
     };
     eframe::run_native(

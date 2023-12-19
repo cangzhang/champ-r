@@ -21,7 +21,7 @@ base64 = "0.21.5"
 tokio = { version = "1", features = ["full"] }
 futures = "0.3.28"
 reqwest = { version = "0.11", features = ["json", "stream", "rustls-tls", "blocking"] }
-eframe = { version = "0.23.0", features = [
+eframe = { version = "0.24.1", features = [
     "__screenshot", # __screenshot is so we can dump a screenshot using EFRAME_SCREENSHOT_TO
 ] }
 log = { version = "0.4", features = ["std"] }

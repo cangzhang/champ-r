@@ -34,7 +34,7 @@ pub struct AssetLoader {
 }
 
 impl AssetLoader {
-    pub const ID: &str = egui::generate_loader_id!(AssetLoader);
+    pub const ID: &'static str = egui::generate_loader_id!(AssetLoader);
 }
 
 const PROTOCOLS: &[&str] = &["lcu-https://"];

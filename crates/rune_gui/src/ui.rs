@@ -63,6 +63,12 @@ impl RuneApp {
 
 impl eframe::App for RuneApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if ctx.input(|i| i.viewport().close_requested()) {
+            if let Some(handle) = &self.lcu_task_handle {
+                handle.abort();
+            }
+        }
+
         let auth = self.lcu_auth.lock().unwrap();
         let connected_to_lcu = !auth.auth_url.is_empty();
         let full_auth_url = if connected_to_lcu {
@@ -316,13 +322,5 @@ impl eframe::App for RuneApp {
                 }
             }
         });
-    }
-
-    fn on_close_event(&mut self) -> bool {
-        if let Some(handle) = &self.lcu_task_handle {
-            handle.abort();
-        }
-
-        true
     }
 }

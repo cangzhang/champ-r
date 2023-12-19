@@ -30,6 +30,12 @@ impl SourceApp {
 
 impl eframe::App for SourceApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if ctx.input(|i| i.viewport().close_requested()) {
+            if let Some(handle) = &self.lcu_task_handle {
+                handle.abort();
+            }
+        }
+
         let img_source = "https://picsum.photos/1024";
         let auth = self.auth.lock().unwrap();
         let is_tencent = auth.is_tencent;
@@ -129,13 +135,5 @@ impl eframe::App for SourceApp {
                 });
             }
         });
-    }
-
-    fn on_close_event(&mut self) -> bool {
-        if let Some(handle) = &self.lcu_task_handle {
-            handle.abort();
-        }
-
-        true
     }
 }

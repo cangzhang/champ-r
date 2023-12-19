@@ -77,8 +77,9 @@ pub async fn run() -> Result<(), eframe::Error> {
     let lcu_task_handle = Some(watch_task_handle.abort_handle());
 
     let native_options = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(400.0, 500.0)),
-        always_on_top: true,
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([400.0, 500.0])
+            .with_always_on_top(),
         ..Default::default()
     };
     eframe::run_native(
