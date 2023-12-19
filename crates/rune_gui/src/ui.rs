@@ -212,7 +212,7 @@ impl eframe::App for RuneApp {
                                             [primary_perk, sub_perk, last_perk].iter().for_each(
                                                 |perk| {
                                                     if perk.is_some() {
-                                                        let p = perk.clone().unwrap();
+                                                        let p = (*perk).unwrap();
                                                         let perk_icon_url = format!(
                                                             "lcu-https://{}{}",
                                                             auth.auth_url, p.icon_path
@@ -240,7 +240,7 @@ impl eframe::App for RuneApp {
                         None => {
                             let champion = &self.all_champions.iter().find(|c| c.id == cid);
                             if champion.is_some() {
-                                let c = champion.clone().unwrap();
+                                let c = (*champion).unwrap();
                                 let source = self.selected_source.clone();
                                 let alias = &c.alias;
                                 let champion_alias = alias.clone();
