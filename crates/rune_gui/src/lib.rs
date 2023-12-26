@@ -47,13 +47,9 @@ pub async fn watch(
         {
             if repaint {
                 let ui_ctx = ui_ctx.lock().unwrap();
-                let ctx = ui_ctx.as_ref();
-                match ctx {
-                    Some(x) => {
-                        x.request_repaint();
-                    }
-                    _ => (),
-                };
+                if let Some(x) = ui_ctx.as_ref() {
+                    x.request_repaint();
+                }
             }
         }
 
