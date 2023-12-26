@@ -6,6 +6,7 @@ build = "build.rs"
 
 [dependencies]
 lcu = { path = "../lcu" }
+rune_gui = { path = "../rune_gui" }
 anyhow = "1.0.71"
 bytes = "*"
 base64 = "0.21.0"

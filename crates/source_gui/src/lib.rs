@@ -1,10 +1,7 @@
-use std::{
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::sync::{Arc, Mutex, RwLock};
 
 use eframe::egui;
-use lcu::cmd::{self, CommandLineOutput};
+use lcu::cmd::CommandLineOutput;
 
 pub mod config;
 pub mod ui;
@@ -13,17 +10,19 @@ pub async fn run() -> Result<(), eframe::Error> {
     // Log to stderr (if you run with `RUST_LOG=debug`).
     env_logger::init();
 
-    let lcu_auth = Arc::new(Mutex::new(CommandLineOutput::default()));
+    let lcu_auth = Arc::new(RwLock::new(CommandLineOutput::default()));
     let lcu_auth_ui = lcu_auth.clone();
+    let lcu_auth_task = lcu_auth.clone();
 
-    let lcu_task_join_handle = tokio::spawn(async move {
-        loop {
-            let auth = cmd::get_commandline();
-            *lcu_auth.lock().unwrap() = auth;
-            tokio::time::sleep(Duration::from_millis(2500)).await;
-        }
+    let ui_cc: Arc<Mutex<Option<egui::Context>>> = Arc::new(Mutex::new(None));
+    let ui_cc_clone = ui_cc.clone();
+    let champion_id = Arc::new(RwLock::new(None));
+    let champion_id_ui = champion_id.clone();
+
+    let watch_task_handle = tokio::spawn(async move {
+        rune_gui::watch(ui_cc, lcu_auth_task, champion_id).await;
     });
-    let lcu_task_handle = Some(lcu_task_join_handle.abort_handle());
+    let lcu_task_handle = Some(watch_task_handle.abort_handle());
 
     let main_win_opts = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([500.0, 400.0]),
@@ -36,7 +35,12 @@ pub async fn run() -> Result<(), eframe::Error> {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
 
-            let app_data = ui::SourceApp::new(lcu_auth_ui, lcu_task_handle);
+            let app_data = ui::SourceApp::new(
+                lcu_auth_ui.clone(),
+                lcu_task_handle,
+                ui_cc_clone,
+                champion_id_ui,
+            );
             Box::new(app_data)
         }),
     )?;

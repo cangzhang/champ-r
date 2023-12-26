@@ -1,10 +1,16 @@
-use std::sync::{Arc, Mutex};
+use rune_gui::viewport::{render_runes_ui, RuneUIState};
+
+use std::sync::{Arc, Mutex, RwLock, atomic::{AtomicBool, Ordering}};
 use tokio::task::AbortHandle;
 
 use eframe::egui;
 use poll_promise::Promise;
 
-use lcu::{cmd::CommandLineOutput, source::SourceItem, web};
+use lcu::{
+    cmd::CommandLineOutput,
+    source::SourceItem,
+    web::{self},
+};
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Default)]
@@ -14,15 +20,29 @@ pub struct SourceApp {
     pub sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
 
     pub selected_sources: Vec<String>,
-    pub auth: Arc<Mutex<CommandLineOutput>>,
+    pub lcu_auth: Arc<RwLock<CommandLineOutput>>,
     pub lcu_task_handle: Option<AbortHandle>,
+
+    pub champion_id: Arc<RwLock<Option<i64>>>,
+
+    pub rune_viewport_ctx: Arc<Mutex<Option<egui::Context>>>,
+    // rune viewport
+    pub rune_ui_state: Arc<Mutex<RuneUIState>>,
+    pub show_rune_viewport: Arc<AtomicBool>,
 }
 
 impl SourceApp {
-    pub fn new(auth: Arc<Mutex<CommandLineOutput>>, lcu_task_handle: Option<AbortHandle>) -> Self {
+    pub fn new(
+        lcu_auth: Arc<RwLock<CommandLineOutput>>,
+        lcu_task_handle: Option<AbortHandle>,
+        rune_viewport_ctx: Arc<Mutex<Option<egui::Context>>>,
+        champion_id: Arc<RwLock<Option<i64>>>
+    ) -> Self {
         Self {
-            auth,
+            lcu_auth,
             lcu_task_handle,
+            rune_viewport_ctx,
+            champion_id,
             ..Default::default()
         }
     }
@@ -37,13 +57,43 @@ impl eframe::App for SourceApp {
         }
 
         let img_source = "https://picsum.photos/1024";
-        let auth = self.auth.lock().unwrap();
-        let is_tencent = auth.is_tencent;
-        let is_running = !auth.token.is_empty();
+
+        if self.show_rune_viewport.load(std::sync::atomic::Ordering::Relaxed) {
+            let rune_ui_state = self.rune_ui_state.clone();
+            let show_rune_viewport = self.show_rune_viewport.clone();
+            let lcu_auth = self.lcu_auth.clone();
+            let champion_id = self.champion_id.clone();
+
+            ctx.show_viewport_deferred(
+                egui::ViewportId::from_hash_of("runes_window"),
+                egui::ViewportBuilder::default()
+                    .with_title("Runes")
+                    .with_inner_size([400., 500.]),
+                move |ctx, class| {
+                    assert!(
+                        class == egui::ViewportClass::Deferred,
+                        "This egui backend doesn't support multiple viewports"
+                    );
+
+                    render_runes_ui(
+                        ctx,
+                        rune_ui_state.clone(),
+                        lcu_auth.clone(),
+                        champion_id.clone(),
+                    );
+
+                    if ctx.input(|i| i.viewport().close_requested()) {
+                        show_rune_viewport.store(false, Ordering::Relaxed);
+                    }
+                },
+            );
+        }
 
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
                 if ui.button("Random").clicked() {
+                    self.show_rune_viewport.store(true, std::sync::atomic::Ordering::Relaxed);
+
                     ctx.forget_image(img_source);
                     ctx.request_repaint();
                 }
@@ -118,6 +168,13 @@ impl eframe::App for SourceApp {
                     }
                 };
             });
+
+            let lcu_auth = {
+                let auth = self.lcu_auth.read().unwrap();
+                auth.clone()
+            };
+            let is_running = !lcu_auth.token.is_empty();
+            let is_tencent = lcu_auth.is_tencent;
 
             if is_running {
                 ui.separator();

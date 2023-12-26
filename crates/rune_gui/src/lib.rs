@@ -1,21 +1,20 @@
 use eframe::egui;
 use std::{
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, RwLock},
     time::Duration,
 };
 
 use lcu::{
     api,
-    asset_loader::AssetLoader,
     cmd::{self, CommandLineOutput},
 };
 
-pub mod ui;
+pub mod viewport;
 
-async fn watch(
+pub async fn watch(
     ui_ctx: Arc<Mutex<Option<egui::Context>>>,
-    lcu_auth: Arc<Mutex<CommandLineOutput>>,
-    champion_id: Arc<Mutex<Option<i64>>>,
+    lcu_auth: Arc<RwLock<CommandLineOutput>>,
+    champion_id: Arc<RwLock<Option<i64>>>,
 ) {
     loop {
         println!(".");
@@ -23,7 +22,7 @@ async fn watch(
 
         {
             let cmd_output = cmd::get_commandline();
-            let mut ui_auth = lcu_auth.lock().unwrap();
+            let mut ui_auth = lcu_auth.write().unwrap();
             if !cmd_output.auth_url.eq(&ui_auth.auth_url) {
                 println!("auth_url: {}", cmd_output.auth_url);
                 *ui_auth = cmd_output;
@@ -31,17 +30,17 @@ async fn watch(
             }
         }
 
-        let auth_url = lcu_auth.lock().unwrap().auth_url.clone();
+        let auth_url = { lcu_auth.read().unwrap().auth_url.clone() };
         let full_url = format!("https://{}", auth_url);
         if let Ok(Some(cid)) = api::get_session(&full_url).await {
-            let cur_id = champion_id.lock().unwrap().unwrap_or_default();
+            let cur_id = champion_id.read().unwrap().unwrap_or_default();
             if cur_id != cid {
-                *champion_id.lock().unwrap() = Some(cid);
+                *champion_id.write().unwrap() = Some(cid);
                 repaint = true;
                 println!("current champion id: {}", cid);
             }
         } else {
-            *champion_id.lock().unwrap() = None;
+            *champion_id.write().unwrap() = None;
             repaint = true;
         }
 
@@ -60,45 +59,4 @@ async fn watch(
 
         tokio::time::sleep(Duration::from_millis(2500)).await;
     }
-}
-
-pub async fn run() -> Result<(), eframe::Error> {
-    let ui_cc: Arc<Mutex<Option<egui::Context>>> = Arc::new(Mutex::new(None));
-    let ui_cc_clone = ui_cc.clone();
-
-    let lcu_auth = Arc::new(Mutex::new(CommandLineOutput::default()));
-    let lcu_auth_ui = lcu_auth.clone();
-    let champion_id = Arc::new(Mutex::new(None));
-    let champion_id_ui = champion_id.clone();
-
-    let watch_task_handle = tokio::spawn(async move {
-        watch(ui_cc, lcu_auth, champion_id).await;
-    });
-    let lcu_task_handle = Some(watch_task_handle.abort_handle());
-
-    let native_options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([400.0, 500.0])
-            .with_always_on_top(),
-        ..Default::default()
-    };
-    eframe::run_native(
-        "Runes",
-        native_options,
-        Box::new(move |cc| {
-            // This gives us image support:
-            egui_extras::install_image_loaders(&cc.egui_ctx);
-            let _ = &cc
-                .egui_ctx
-                .add_bytes_loader(Arc::new(AssetLoader::default()));
-
-            ui_cc_clone.lock().unwrap().replace(cc.egui_ctx.clone());
-            Box::new(ui::RuneApp::new(
-                lcu_task_handle,
-                lcu_auth_ui,
-                champion_id_ui,
-            ))
-        }),
-    )?;
-    Ok(())
 }
