@@ -1,5 +1,5 @@
 [package]
-name = "rune_gui"
+name = "rune_ui"
 version = "0.1.0"
 edition = "2021"
 

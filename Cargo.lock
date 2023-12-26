@@ -165,7 +165,7 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "futures",
- "rune_gui",
+ "rune_ui",
  "source_gui",
  "tokio",
 ]
@@ -2614,7 +2614,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rune_gui"
+name = "rune_ui"
 version = "0.1.0"
 dependencies = [
  "bytes",
@@ -3030,7 +3030,7 @@ dependencies = [
  "rand",
  "regex",
  "reqwest",
- "rune_gui",
+ "rune_ui",
  "serde",
  "serde_json",
  "serde_with",

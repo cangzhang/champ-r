@@ -1,4 +1,4 @@
-use rune_gui::viewport::{render_runes_ui, RuneUIState};
+use rune_ui::viewport::{render_runes_ui, RuneUIState};
 
 use std::sync::{Arc, Mutex, RwLock, atomic::{AtomicBool, Ordering}};
 use tokio::task::AbortHandle;

@@ -20,7 +20,7 @@ pub async fn run() -> Result<(), eframe::Error> {
     let champion_id_ui = champion_id.clone();
 
     let watch_task_handle = tokio::spawn(async move {
-        rune_gui::watch(ui_cc, lcu_auth_task, champion_id).await;
+        rune_ui::watch(ui_cc, lcu_auth_task, champion_id).await;
     });
     let lcu_task_handle = Some(watch_task_handle.abort_handle());
 

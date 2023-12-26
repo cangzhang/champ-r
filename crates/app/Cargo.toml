@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 source_gui = { path = "../source_gui" }
-rune_gui = { path = "../rune_gui" }
+rune_ui = { path = "../rune_ui" }
 futures = "0.3.28"
