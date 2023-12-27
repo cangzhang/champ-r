@@ -6,12 +6,12 @@ use serde::{Deserialize, Serialize};
 use tracing::error;
 
 use crate::{
-    builds::{self, ItemBuild, BuildData},
-    source::SourceItem,
+    builds::{self, BuildData, ItemBuild},
     constants::VERSION,
+    source::SourceItem,
 };
 
-pub const SERVICE_URL: &str = "https://ql-rs.lbj.moe";
+pub const SERVICE_URL: &str = "https://c.lbj.moe";
 
 #[derive(Debug, Clone)]
 pub enum FetchError {
@@ -20,13 +20,16 @@ pub enum FetchError {
 
 pub async fn fetch_sources() -> Result<Vec<SourceItem>, FetchError> {
     let url = format!("{SERVICE_URL}/api/sources");
-    if let Ok(resp) = reqwest::get(url).await {
-        if let Ok(list) = resp.json::<Vec<SourceItem>>().await {
-            return Ok(list);
+    match reqwest::get(url).await {
+        Ok(resp) => resp.json::<Vec<SourceItem>>().await.map_err(|err| {
+            error!("source list serialize: {:?}", err);
+            FetchError::Failed
+        }),
+        Err(err) => {
+            error!("fetch source list: {:?}", err);
+            Err(FetchError::Failed)
         }
     }
-
-    Err(FetchError::Failed)
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -159,12 +162,10 @@ pub async fn fetch_latest_release() -> Result<LatestRelease, FetchError> {
         .send()
         .await
     {
-        Ok(resp) => {
-            resp.json::<LatestRelease>().await.map_err(|err| {
-                error!("latest release serialize: {:?}", err);
-                FetchError::Failed
-            })
-        }
+        Ok(resp) => resp.json::<LatestRelease>().await.map_err(|err| {
+            error!("latest release serialize: {:?}", err);
+            FetchError::Failed
+        }),
         Err(err) => {
             error!("fetch latest release: {:?}", err);
             Err(FetchError::Failed)

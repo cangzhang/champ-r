@@ -6,11 +6,12 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use lcu::{
     api::{self, Perk, SummonerChampion},
+    asset_loader::AssetLoader,
     builds::{self, Rune},
     cmd::CommandLineOutput,
     lcu_error::LcuError,
     source::SourceItem,
-    web::{self, FetchError}, asset_loader::AssetLoader,
+    web::{self, FetchError},
 };
 
 #[derive(Default)]
@@ -67,20 +68,8 @@ pub fn render_runes_ui(
         if connected_to_lcu {
             let state = ui_state.clone();
             let ui_state = &mut *state.lock().unwrap();
-
+            
             let cid = champion_id.read().unwrap().unwrap_or_default();
-
-            ui.label(format!("Current champion id: {}", cid));
-
-            if cid > 0 {
-                let champion_avatar_url =
-                    format!("lcu-{full_auth_url}/lol-game-data/assets/v1/champion-icons/{cid}.png");
-                ui.add(
-                    egui::Image::new(champion_avatar_url)
-                        .max_size(egui::vec2(64., 64.))
-                        .rounding(10.0),
-                );
-            }
 
             match &ui_state.fetch_champions_and_perks_promise {
                 Some(p) => match p.ready() {
@@ -99,6 +88,21 @@ pub fn render_runes_ui(
                         match champions_result {
                             Ok(champions) => {
                                 ui_state.all_champions = champions.clone();
+
+                                if cid > 0 {
+                                    let cur_champion = champions.iter().find(|c| c.id == cid);
+                                    if let Some(champ) = cur_champion {
+                                        let champion_icon = format!(
+                                        "https://game.gtimg.cn/images/lol/act/img/champion/{}.png",
+                                        &champ.alias
+                                    );
+                                        ui.add(
+                                            egui::Image::new(champion_icon)
+                                                .max_size(egui::vec2(64., 64.))
+                                                .rounding(10.0),
+                                        );
+                                    }
+                                }
                             }
                             Err(err) => {
                                 ui.label(format!("Failed to list owned champions: {:?}", err));
@@ -110,7 +114,7 @@ pub fn render_runes_ui(
                     let promise = Promise::spawn_async(async move {
                         join(api::list_all_perks(&full_auth_url.clone()), async {
                             let summoner = api::get_current_summoner(&full_auth_url).await?;
-                            println!("summoner: {:?}", summoner.summoner_id);
+                            println!("[LCU] summoner: {:?}", summoner.summoner_id);
                             api::list_available_champions(&full_auth_url, summoner.summoner_id)
                                 .await
                         })
