@@ -83,27 +83,64 @@ pub async fn init_for_ui(
     .await
 }
 
-pub async fn fetch_build_file(
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ListBuildsResp {
+    pub id: i64,
+    pub source: String,
+    pub version: String,
+    #[serde(rename = "champion_alias")]
+    pub champion_alias: String,
+    #[serde(rename = "champion_id")]
+    pub champion_id: String,
+    pub content: Vec<builds::BuildSection>,
+}
+
+pub async fn list_builds_by_alias(
     source: &String,
     champion: &String,
-    fetch_build: bool,
 ) -> Result<Vec<builds::BuildSection>, FetchError> {
-    let path = if fetch_build { "builds" } else { "runes" };
-    let url = format!("{SERVICE_URL}/api/source/{source}/{path}/{champion}");
-    if let Ok(resp) = reqwest::get(url).await {
-        if let Ok(data) = resp.json::<Vec<builds::BuildSection>>().await {
-            return Ok(data);
+    let url = format!("{SERVICE_URL}/api/source/{source}/champion-alias/{champion}");
+    match reqwest::get(url).await {
+        Ok(resp) => match resp.json::<ListBuildsResp>().await {
+            Ok(resp) => return Ok(resp.content),
+            Err(e) => {
+                println!("list_builds_by_alias: {:?}", e);
+                Err(FetchError::Failed)
+            }
+        },
+        Err(err) => {
+            println!("fetch source list: {:?}", err);
+            Err(FetchError::Failed)
         }
     }
+}
 
-    Err(FetchError::Failed)
+pub async fn list_builds_by_id(
+    source: &String,
+    champion_id: i64,
+) -> Result<Vec<builds::BuildSection>, FetchError> {
+    let url = format!("{SERVICE_URL}/api/source/{source}/champion-id/{champion_id}");
+    match reqwest::get(url).await {
+        Ok(resp) => match resp.json::<ListBuildsResp>().await {
+            Ok(resp) => return Ok(resp.content),
+            Err(e) => {
+                println!("list_builds_by_alias: {:?}", e);
+                Err(FetchError::Failed)
+            }
+        },
+        Err(err) => {
+            println!("fetch source list: {:?}", err);
+            Err(FetchError::Failed)
+        }
+    }
 }
 
 pub async fn fetch_champion_runes(
     source: String,
     champion: String,
 ) -> Result<BuildData, FetchError> {
-    let meta = fetch_build_file(&source, &champion, false).await?;
+    let meta = list_builds_by_alias(&source, &champion).await?;
     let runes = meta.iter().flat_map(|b| b.runes.clone()).collect();
     let builds: Vec<ItemBuild> = meta.iter().flat_map(|b| b.item_builds.clone()).collect();
     Ok(BuildData(runes, builds))

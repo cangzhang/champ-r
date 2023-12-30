@@ -90,7 +90,7 @@ pub async fn apply_builds_from_source(
     champion: &String,
     is_tencent: bool,
 ) -> Result<(), FetchError> {
-    let sections = match web::fetch_build_file(source, champion, true).await {
+    let sections = match web::list_builds_by_alias(source, champion).await {
         Ok(s) => s,
         Err(_) => {
             return Err(FetchError::Failed);
@@ -129,7 +129,7 @@ pub async fn fetch_and_apply(
     source: &String,
     champion: &String,
 ) -> Result<(), FetchError> {
-    let sections = match web::fetch_build_file(source, champion, true).await {
+    let sections = match web::list_builds_by_alias(source, champion).await {
         Ok(s) => s,
         Err(_) => {
             return Err(FetchError::Failed);

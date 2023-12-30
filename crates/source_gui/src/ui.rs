@@ -1,6 +1,9 @@
 use rune_ui::viewport::{render_runes_ui, RuneUIState};
 
-use std::sync::{Arc, Mutex, RwLock, atomic::{AtomicBool, Ordering}};
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc, Mutex, RwLock,
+};
 use tokio::task::AbortHandle;
 
 use eframe::egui;
@@ -11,6 +14,8 @@ use lcu::{
     source::SourceItem,
     web::{self},
 };
+
+use crate::toogle_ui;
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Default)]
@@ -23,6 +28,7 @@ pub struct SourceApp {
     pub lcu_auth: Arc<RwLock<CommandLineOutput>>,
     pub lcu_task_handle: Option<AbortHandle>,
 
+    pub random_mode: Arc<Mutex<bool>>,
     pub champion_id: Arc<RwLock<Option<i64>>>,
 
     pub rune_viewport_ctx: Arc<Mutex<Option<egui::Context>>>,
@@ -36,13 +42,15 @@ impl SourceApp {
         lcu_auth: Arc<RwLock<CommandLineOutput>>,
         lcu_task_handle: Option<AbortHandle>,
         rune_viewport_ctx: Arc<Mutex<Option<egui::Context>>>,
-        champion_id: Arc<RwLock<Option<i64>>>
+        champion_id: Arc<RwLock<Option<i64>>>,
+        random_mode: Arc<Mutex<bool>>,
     ) -> Self {
         Self {
             lcu_auth,
             lcu_task_handle,
             rune_viewport_ctx,
             champion_id,
+            random_mode,
             ..Default::default()
         }
     }
@@ -56,9 +64,14 @@ impl eframe::App for SourceApp {
             }
         }
 
-        let img_source = "https://picsum.photos/1024";
+        if self.champion_id.read().unwrap().is_some() {
+            self.show_rune_viewport.store(true, Ordering::Relaxed);
+        }
 
-        if self.show_rune_viewport.load(std::sync::atomic::Ordering::Relaxed) {
+        if self
+            .show_rune_viewport
+            .load(std::sync::atomic::Ordering::Relaxed)
+        {
             let rune_ui_state = self.rune_ui_state.clone();
             let show_rune_viewport = self.show_rune_viewport.clone();
             let lcu_auth = self.lcu_auth.clone();
@@ -91,19 +104,6 @@ impl eframe::App for SourceApp {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
-                if ui.button("Random").clicked() {
-                    self.show_rune_viewport.store(true, std::sync::atomic::Ordering::Relaxed);
-
-                    ctx.forget_image(img_source);
-                    ctx.request_repaint();
-                }
-
-                ui.add(
-                    egui::Image::new(img_source)
-                        .max_size(egui::vec2(64., 64.))
-                        .rounding(10.0),
-                );
-
                 match &self.sources_promise {
                     Some(p) => match p.ready() {
                         None => {
@@ -189,6 +189,12 @@ impl eframe::App for SourceApp {
                             .on_hover_text("Riot server");
                         ui.label("Riot League of Legends client detected.");
                     }
+                });
+
+                let random_mode = self.random_mode.clone();
+                ui.horizontal(|ui| {
+                    ui.label("Random mode");
+                    toogle_ui::make_toggle(ui, &mut random_mode.lock().unwrap());
                 });
             }
         });

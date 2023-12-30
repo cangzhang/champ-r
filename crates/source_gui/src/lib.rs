@@ -1,9 +1,10 @@
 use std::sync::{Arc, Mutex, RwLock};
 
 use eframe::egui;
-use lcu::cmd::CommandLineOutput;
+use lcu::{cmd::CommandLineOutput, task};
 
 pub mod config;
+mod toogle_ui;
 pub mod ui;
 
 pub async fn run() -> Result<(), eframe::Error> {
@@ -19,8 +20,11 @@ pub async fn run() -> Result<(), eframe::Error> {
     let champion_id = Arc::new(RwLock::new(None));
     let champion_id_ui = champion_id.clone();
 
+    let random_mode = Arc::new(Mutex::new(false));
+    let random_mode_ui = random_mode.clone();
+
     let watch_task_handle = tokio::spawn(async move {
-        rune_ui::watch(ui_cc, lcu_auth_task, champion_id).await;
+        task::watch_auth_and_champion(ui_cc, lcu_auth_task, champion_id, random_mode).await;
     });
     let lcu_task_handle = Some(watch_task_handle.abort_handle());
 
@@ -40,6 +44,7 @@ pub async fn run() -> Result<(), eframe::Error> {
                 lcu_task_handle,
                 ui_cc_clone,
                 champion_id_ui,
+                random_mode_ui,
             );
             Box::new(app_data)
         }),

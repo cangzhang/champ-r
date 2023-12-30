@@ -33,7 +33,7 @@ pub struct RuneUIState {
     pub selected_source: String,
     pub builds: Vec<builds::BuildSection>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    pub fetch_build_file_promise:
+    pub list_builds_by_alias_promise:
         Option<Promise<Result<Vec<builds::BuildSection>, web::FetchError>>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub apply_rune_promise: Option<Promise<Result<(), LcuError>>>,
@@ -68,7 +68,7 @@ pub fn render_runes_ui(
         if connected_to_lcu {
             let state = ui_state.clone();
             let ui_state = &mut *state.lock().unwrap();
-            
+
             let cid = champion_id.read().unwrap().unwrap_or_default();
 
             match &ui_state.fetch_champions_and_perks_promise {
@@ -152,7 +152,7 @@ pub fn render_runes_ui(
                                             .clicked()
                                             && !item.value.eq(&prev_selected)
                                         {
-                                            ui_state.fetch_build_file_promise = None;
+                                            ui_state.list_builds_by_alias_promise = None;
                                             ui_state.apply_builds_from_current_source_promise =
                                                 None;
                                         };
@@ -172,13 +172,13 @@ pub fn render_runes_ui(
             });
 
             if ui_state.prev_champion_id.unwrap_or_default() != cid {
-                ui_state.fetch_build_file_promise = None;
+                ui_state.list_builds_by_alias_promise = None;
                 ui_state.rune_to_apply = None;
                 ui_state.prev_champion_id = Some(cid);
                 ui_state.apply_builds_from_current_source_promise = None;
             }
             if !ui_state.selected_source.is_empty() && cid > 0 {
-                match &ui_state.fetch_build_file_promise {
+                match &ui_state.list_builds_by_alias_promise {
                     Some(p) => match p.ready() {
                         None => {
                             ui.spinner();
@@ -239,9 +239,9 @@ pub fn render_runes_ui(
                             let alias = &c.alias;
                             let champion_alias = alias.clone();
                             let promise = Promise::spawn_async(async move {
-                                web::fetch_build_file(&source, &champion_alias, false).await
+                                web::list_builds_by_alias(&source, &champion_alias).await
                             });
-                            ui_state.fetch_build_file_promise = Some(promise);
+                            ui_state.list_builds_by_alias_promise = Some(promise);
                         }
                     }
                 };

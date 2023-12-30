@@ -1864,6 +1864,7 @@ dependencies = [
  "image",
  "lazy_static",
  "log",
+ "rand",
  "regex",
  "reqwest",
  "rustls 0.21.8",
