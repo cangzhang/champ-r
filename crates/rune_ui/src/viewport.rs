@@ -1,12 +1,15 @@
 use bytes::Bytes;
 use eframe::egui;
 use futures::future::join;
+use image::EncodableLayout;
 use poll_promise::Promise;
-use std::sync::{Arc, Mutex, RwLock};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, RwLock},
+};
 
 use lcu::{
     api::{self, Perk, SummonerChampion},
-    asset_loader::AssetLoader,
     builds::{self, Rune},
     cmd::CommandLineOutput,
     lcu_error::LcuError,
@@ -41,6 +44,9 @@ pub struct RuneUIState {
     pub prev_champion_id: Option<i64>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub apply_builds_from_current_source_promise: Option<Promise<Result<(), FetchError>>>,
+    pub rune_images: HashMap<String, Bytes>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub fetch_rune_promises: HashMap<String, Promise<Result<Bytes, web::FetchError>>>,
 }
 
 pub fn render_runes_ui(
@@ -50,7 +56,6 @@ pub fn render_runes_ui(
     champion_id: Arc<RwLock<Option<i64>>>,
 ) {
     egui_extras::install_image_loaders(ctx);
-    let _ = &ctx.add_bytes_loader(Arc::new(AssetLoader::default()));
 
     let lcu_auth = lcu_auth.read().unwrap();
     let lcu_auth_url = lcu_auth.auth_url.clone();
@@ -208,14 +213,48 @@ pub fn render_runes_ui(
                                                 if perk.is_some() {
                                                     let p = (*perk).unwrap();
                                                     let perk_icon_url = format!(
-                                                        "lcu-https://{}{}",
+                                                        "https://{}{}",
                                                         &lcu_auth_url, p.icon_path
                                                     );
-                                                    ui.add(
-                                                        egui::Image::new(perk_icon_url)
-                                                            .max_size(egui::vec2(64., 64.))
-                                                            .rounding(10.0),
-                                                    );
+                                                    let rune_image = ui_state
+                                                        .rune_images
+                                                        .get(&p.icon_path);
+                                                    if rune_image.is_none() {
+                                                        let promise = ui_state
+                                                            .fetch_rune_promises
+                                                            .get(&p.icon_path);
+                                                        match promise {
+                                                            Some(pm) => match pm.ready() {
+                                                                None => {
+                                                                    ui.spinner();
+                                                                }
+                                                                Some(Ok(b)) => {
+                                                                    ui_state.rune_images.insert(p.icon_path.clone(), b.clone());
+                                                                }
+                                                                Some(Err(_)) => {
+                                                                    println!("fetch rune image failed, {}", &p.icon_path);
+                                                                }
+                                                            },
+                                                            None => {
+                                                                ui_state.fetch_rune_promises.insert(
+                                                                    p.icon_path.clone(),
+                                                                    Promise::spawn_async(
+                                                                        async move {
+                                                                            api::fetch_rune_image(
+                                                                                &perk_icon_url,
+                                                                            )
+                                                                            .await
+                                                                        },
+                                                                    ),
+                                                                );
+                                                            }
+                                                        }
+                                                    } else if let Some(b) = rune_image {
+                                                        let pixels = b.as_bytes().to_vec();
+                                                        let img = egui::Image::from_bytes(format!("bytes://{}", &p.icon_path), pixels);
+                                                        ui.add(img);
+                                                    }
+
                                                 }
                                             },
                                         );

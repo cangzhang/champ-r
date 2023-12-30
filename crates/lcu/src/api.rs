@@ -249,3 +249,19 @@ pub async fn list_all_perks(endpoint: &String) -> Result<Vec<Perk>, LcuError> {
     let url = format!("{endpoint}/lol-perks/v1/perks");
     make_get_request(&url).await
 }
+
+pub async fn fetch_rune_image(url: &String) -> Result<Bytes, FetchError> {
+    let client = make_client();
+    match client.get(url).send().await.map_err(|_| FetchError::Failed) {
+        Ok(res) => {
+            if res.status().is_success() {
+                return res.bytes().await.map_err(|_| FetchError::Failed);
+            }
+            Err(FetchError::Failed)
+        }
+        Err(err) => {
+            println!("Error fetching rune image: {:?}", err);
+            Err(FetchError::Failed)
+        }
+    }
+}

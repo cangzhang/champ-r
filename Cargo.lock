@@ -1867,7 +1867,6 @@ dependencies = [
  "rand",
  "regex",
  "reqwest",
- "rustls 0.21.8",
  "serde",
  "serde_derive",
  "serde_json",
@@ -1876,10 +1875,7 @@ dependencies = [
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
- "ureq",
  "url",
- "webpki",
- "webpki-roots 0.25.2",
 ]
 
 [[package]]
