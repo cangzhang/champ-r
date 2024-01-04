@@ -21,7 +21,7 @@ jobs:
           cache-all-crates: "true"
 
       - name: Build
-        run: cargo build --release
+        run: cargo build -p app --release
 
       - name: Upload
         uses: actions/upload-artifact@v3
