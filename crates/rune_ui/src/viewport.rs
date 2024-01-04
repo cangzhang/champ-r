@@ -266,11 +266,11 @@ pub fn render_runes_ui(
                                                         let pixels = b.as_bytes().to_vec();
                                                         let img = if idx == 0 {
                                                             egui::Image::from_bytes(format!("bytes://{}", &icon_path), pixels)
-                                                            .fit_to_exact_size(egui::vec2(32., 32.))
-                                                            .rounding(10.0)
+                                                                .fit_to_exact_size(egui::vec2(32., 32.))
+                                                                .rounding(10.0)
                                                         } else {
                                                             egui::Image::from_bytes(format!("bytes://{}", &icon_path), pixels)
-.fit_to_exact_size(egui::vec2(20., 20.))
+                                                                .fit_to_exact_size(egui::vec2(20., 20.))
                                                                 .rounding(10.0)
                                                         };
                                                         ui.add(img);
