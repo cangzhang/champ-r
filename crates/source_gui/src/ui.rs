@@ -19,7 +19,7 @@ use crate::toogle_ui;
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Default)]
-pub struct SourceApp {
+pub struct SourceWindow {
     pub sources: Vec<SourceItem>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
@@ -37,7 +37,7 @@ pub struct SourceApp {
     pub show_rune_viewport: Arc<AtomicBool>,
 }
 
-impl SourceApp {
+impl SourceWindow {
     pub fn new(
         lcu_auth: Arc<RwLock<CommandLineOutput>>,
         lcu_task_handle: Option<AbortHandle>,
@@ -56,7 +56,7 @@ impl SourceApp {
     }
 }
 
-impl eframe::App for SourceApp {
+impl eframe::App for SourceWindow {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if ctx.input(|i| i.viewport().close_requested()) {
             if let Some(handle) = &self.lcu_task_handle {
@@ -104,6 +104,19 @@ impl eframe::App for SourceApp {
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
+            ui.vertical_centered(|ui| {
+                ui.label(
+                    egui::RichText::new("ChampR")
+                        .strong()
+                        .heading()
+                        .extra_letter_spacing(0.2)
+                        .size(24.0),
+                );
+                ui.monospace("Builds, runes, all in one");
+            });
+
+            ui.add_space(10.);
+
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
                 match &self.sources_promise {
                     Some(p) => match p.ready() {
@@ -198,6 +211,15 @@ impl eframe::App for SourceApp {
                     toogle_ui::make_toggle(ui, &mut random_mode.lock().unwrap());
                 });
             }
+        });
+
+        egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
+            ui.add_space(10.);
+            ui.vertical_centered(|ui| {
+                ui.hyperlink("https://github.com/cangzhang/champ-r");
+                ui.label("If you like it, please star ⭐ on GitHub");
+            });
+            ui.add_space(10.);
         });
     }
 }

@@ -17,7 +17,6 @@ pub async fn watch_auth_and_champion(
     random_mode: Arc<Mutex<bool>>,
 ) {
     loop {
-        println!(".");
         let mut repaint = false;
         let enabled_random_mode = random_mode.lock().unwrap().clone();
 

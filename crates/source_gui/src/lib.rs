@@ -29,7 +29,7 @@ pub async fn run() -> Result<(), eframe::Error> {
     let lcu_task_handle = Some(watch_task_handle.abort_handle());
 
     let main_win_opts = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([500.0, 400.0]),
+        viewport: egui::ViewportBuilder::default().with_inner_size([300., 400.]),
         ..Default::default()
     };
     eframe::run_native(
@@ -39,7 +39,7 @@ pub async fn run() -> Result<(), eframe::Error> {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
 
-            let app_data = ui::SourceApp::new(
+            let app_data = ui::SourceWindow::new(
                 lcu_auth_ui.clone(),
                 lcu_task_handle,
                 ui_cc_clone,
