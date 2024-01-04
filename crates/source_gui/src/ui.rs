@@ -81,7 +81,8 @@ impl eframe::App for SourceApp {
                 egui::ViewportId::from_hash_of("runes_window"),
                 egui::ViewportBuilder::default()
                     .with_title("Runes")
-                    .with_inner_size([400., 500.]),
+                    .with_inner_size([400., 500.])
+                    .with_always_on_top(),
                 move |ctx, class| {
                     assert!(
                         class == egui::ViewportClass::Deferred,
