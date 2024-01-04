@@ -3,16 +3,18 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SourceItem {
+    #[serde(alias = "name")]
     pub label: String,
+    #[serde(alias = "source")]
     pub value: String,
     pub is_aram: Option<bool>,
     #[serde(rename(serialize = "isUrf", deserialize = "isURF"))]
     pub is_urf: Option<bool>,
 }
 
-const SR_ICON: &[u8] = include_bytes!("../assets/sr.png");
-const ARAM_ICON: &[u8] = include_bytes!("../assets/aram.png");
-const URF_ICON: &[u8] = include_bytes!("../assets/urf.png");
+const SR_ICON: &[u8] = include_bytes!("../../../assets/sr.png");
+const ARAM_ICON: &[u8] = include_bytes!("../../../assets/aram.png");
+const URF_ICON: &[u8] = include_bytes!("../../../assets/urf.png");
 
 impl SourceItem {
     pub fn get_mode_text(s: &Self) -> &'static str {
