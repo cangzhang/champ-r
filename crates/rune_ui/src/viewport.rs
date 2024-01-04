@@ -21,7 +21,7 @@ use lcu::{
 pub struct RuneUIState {
     pub sources: Vec<SourceItem>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    pub fetch_sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
+    pub fetch_sources_promise: Option<Promise<Result<Vec<SourceItem>, FetchError>>>,
     pub all_champions: Vec<SummonerChampion>,
     pub all_perks: Vec<Perk>,
     pub all_styles: Vec<RuneStyle>,
@@ -39,7 +39,7 @@ pub struct RuneUIState {
     pub builds: Vec<builds::BuildSection>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub list_builds_by_alias_promise:
-        Option<Promise<Result<Vec<builds::BuildSection>, web::FetchError>>>,
+        Option<Promise<Result<Vec<builds::BuildSection>, FetchError>>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub apply_rune_promise: Option<Promise<Result<(), LcuError>>>,
     pub rune_to_apply: Option<Rune>,
@@ -48,7 +48,7 @@ pub struct RuneUIState {
     pub apply_builds_from_current_source_promise: Option<Promise<Result<(), FetchError>>>,
     pub rune_images: HashMap<String, Bytes>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    pub fetch_rune_promises: HashMap<String, Promise<Result<Bytes, web::FetchError>>>,
+    pub fetch_rune_promises: HashMap<String, Promise<Result<Bytes, FetchError>>>,
 }
 
 pub fn render_runes_ui(
@@ -100,9 +100,9 @@ pub fn render_runes_ui(
                                     let cur_champion = champions.iter().find(|c| c.id == cid);
                                     if let Some(champ) = cur_champion {
                                         let champion_icon = format!(
-                                        "https://game.gtimg.cn/images/lol/act/img/champion/{}.png",
-                                        &champ.alias
-                                    );
+                                            "https://game.gtimg.cn/images/lol/act/img/champion/{}.png",
+                                            &champ.alias
+                                        );
                                         ui.add(
                                             egui::Image::new(champion_icon)
                                                 .max_size(egui::vec2(64., 64.))
@@ -133,7 +133,7 @@ pub fn render_runes_ui(
                             api::list_available_champions(&full_auth_url, summoner.summoner_id)
                                 .await
                         }, api::list_all_styles(&full_auth_url.clone()))
-                        .await
+                            .await
                     });
                     ui_state.fetch_champions_and_perks_promise = Some(promise);
                 }
@@ -256,7 +256,7 @@ pub fn render_runes_ui(
                                                                             api::fetch_rune_image(
                                                                                 &perk_icon_url,
                                                                             )
-                                                                            .await
+                                                                                .await
                                                                         },
                                                                     ),
                                                                 );
@@ -275,7 +275,6 @@ pub fn render_runes_ui(
                                                         };
                                                         ui.add(img);
                                                     }
-
                                                 }
                                             },
                                         );
@@ -363,7 +362,7 @@ pub fn render_runes_ui(
                                             &champion_name,
                                             is_tencent,
                                         )
-                                        .await
+                                            .await
                                     });
                                     ui_state.apply_builds_from_current_source_promise = Some(p);
                                 }

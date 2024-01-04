@@ -70,7 +70,7 @@ impl eframe::App for SourceWindow {
 
         if self
             .show_rune_viewport
-            .load(std::sync::atomic::Ordering::Relaxed)
+            .load(Ordering::Relaxed)
         {
             let rune_ui_state = self.rune_ui_state.clone();
             let show_rune_viewport = self.show_rune_viewport.clone();
