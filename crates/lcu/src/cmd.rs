@@ -57,10 +57,10 @@ pub fn get_commandline() -> CommandLineOutput {
         Ok(output) => {
             if output.status.success() {
                 let output = String::from_utf8_lossy(&output.stdout);
-                
+
                 #[cfg(not(debug_assertions))]
                 info!("output: {:?}", &output);
-                
+
                 if !output.is_empty() {
                     return match_stdout(&String::from(output));
                 }
@@ -140,7 +140,7 @@ pub fn match_stdout(stdout: &str) -> CommandLineOutput {
     } else {
         "".to_string()
     };
-    
+
     let auth_url = make_auth_url(&token, &port);
 
     let is_tencent = if let Some(region_match) = REGION_REGEXP.find(stdout) {
@@ -220,14 +220,11 @@ pub async fn check_if_server_ready() -> anyhow::Result<bool> {
 
     let mut ready = true;
     let reader = BufReader::new(stdout);
-    reader
-        .lines()
-        .map_while(Result::ok)
-        .for_each(|line| {
-            if line.starts_with("=== tencent_sucks") {
-                ready = false;
-            }
-        });
+    reader.lines().map_while(Result::ok).for_each(|line| {
+        if line.starts_with("=== tencent_sucks") {
+            ready = false;
+        }
+    });
 
     Ok(ready)
 }
@@ -250,14 +247,11 @@ pub async fn fix_tencent_server() -> anyhow::Result<bool> {
 
     let mut ready = false;
     let reader = BufReader::new(stdout);
-    reader
-        .lines()
-        .map_while(Result::ok)
-        .for_each(|line| {
-            if line.starts_with("=== tencent_fucked") {
-                ready = true;
-            }
-        });
+    reader.lines().map_while(Result::ok).for_each(|line| {
+        if line.starts_with("=== tencent_fucked") {
+            ready = true;
+        }
+    });
 
     Ok(ready)
 }
@@ -285,14 +279,11 @@ pub async fn test_connectivity() -> anyhow::Result<bool> {
 
     let mut connected = false;
     let reader = BufReader::new(stdout);
-    reader
-        .lines()
-        .map_while(Result::ok)
-        .for_each(|line| {
-            if line.starts_with("=== connected") {
-                connected = true;
-            }
-        });
+    reader.lines().map_while(Result::ok).for_each(|line| {
+        if line.starts_with("=== connected") {
+            connected = true;
+        }
+    });
 
     Ok(connected)
 }

@@ -18,7 +18,7 @@ pub async fn watch_auth_and_champion(
 ) {
     loop {
         let mut repaint = false;
-        let enabled_random_mode = random_mode.lock().unwrap().clone();
+        let enabled_random_mode = *random_mode.lock().unwrap();
 
         {
             let cmd_output = cmd::get_commandline();
@@ -71,8 +71,5 @@ pub async fn watch_auth_and_champion(
 fn get_random_champion_id() -> i64 {
     use rand::seq::SliceRandom;
 
-    ALL_CHAMPION_IDS
-        .choose(&mut rand::thread_rng())
-        .unwrap()
-        .clone()
+    *ALL_CHAMPION_IDS.choose(&mut rand::thread_rng()).unwrap()
 }

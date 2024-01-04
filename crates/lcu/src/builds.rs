@@ -72,8 +72,8 @@ pub struct Rune {
     pub position: String,
     pub pick_count: u64,
     pub win_rate: String,
-    pub primary_style_id: u64,
-    pub sub_style_id: u64,
+    pub primary_style_id: i64,
+    pub sub_style_id: i64,
     pub selected_perk_ids: Vec<i64>,
     pub score: Option<f64>,
     #[serde(rename = "type", default = "empty_rune_type")]

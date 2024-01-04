@@ -103,7 +103,7 @@ pub async fn list_builds_by_alias(
     let url = format!("{SERVICE_URL}/api/source/{source}/champion-alias/{champion}");
     match reqwest::get(url).await {
         Ok(resp) => match resp.json::<ListBuildsResp>().await {
-            Ok(resp) => return Ok(resp.content),
+            Ok(resp) => Ok(resp.content),
             Err(e) => {
                 println!("list_builds_by_alias: {:?}", e);
                 Err(FetchError::Failed)
@@ -123,7 +123,7 @@ pub async fn list_builds_by_id(
     let url = format!("{SERVICE_URL}/api/source/{source}/champion-id/{champion_id}");
     match reqwest::get(url).await {
         Ok(resp) => match resp.json::<ListBuildsResp>().await {
-            Ok(resp) => return Ok(resp.content),
+            Ok(resp) => Ok(resp.content),
             Err(e) => {
                 println!("list_builds_by_alias: {:?}", e);
                 Err(FetchError::Failed)

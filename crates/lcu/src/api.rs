@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
 use bytes::Bytes;
 use lazy_static::lazy_static;
@@ -264,4 +264,42 @@ pub async fn fetch_rune_image(url: &String) -> Result<Bytes, FetchError> {
             Err(FetchError::Failed)
         }
     }
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuneStyle {
+    pub allowed_sub_styles: Vec<i64>,
+    pub asset_map: HashMap<String, String>,
+    pub default_page_name: String,
+    pub default_perks: Vec<i64>,
+    pub default_sub_style: i64,
+    pub icon_path: String,
+    pub id: i64,
+    pub id_name: String,
+    pub name: String,
+    pub slots: Vec<Slot>,
+    pub sub_style_bonus: Vec<SubStyleBonu>,
+    pub tooltip: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Slot {
+    pub perks: Vec<i64>,
+    pub slot_label: String,
+    #[serde(rename = "type")]
+    pub type_field: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SubStyleBonu {
+    pub perk_id: i64,
+    pub style_id: i64,
+}
+
+pub async fn list_all_styles(endpoint: &String) -> Result<Vec<RuneStyle>, LcuError> {
+    let url = format!("{endpoint}/lol-perks/v1/styles");
+    make_get_request(&url).await
 }

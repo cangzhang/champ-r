@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use eframe::egui;
-use futures::future::join;
+use futures::future::join3;
 use image::EncodableLayout;
 use poll_promise::Promise;
 use std::{
@@ -9,7 +9,7 @@ use std::{
 };
 
 use lcu::{
-    api::{self, Perk, SummonerChampion},
+    api::{self, Perk, RuneStyle, SummonerChampion},
     builds::{self, Rune},
     cmd::CommandLineOutput,
     lcu_error::LcuError,
@@ -24,11 +24,13 @@ pub struct RuneUIState {
     pub fetch_sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
     pub all_champions: Vec<SummonerChampion>,
     pub all_perks: Vec<Perk>,
+    pub all_styles: Vec<RuneStyle>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub fetch_champions_and_perks_promise: Option<
         Promise<(
             Result<Vec<Perk>, LcuError>,
             Result<Vec<SummonerChampion>, LcuError>,
+            Result<Vec<RuneStyle>, LcuError>,
         )>,
     >,
     pub champion_id: Arc<Mutex<Option<i64>>>,
@@ -81,7 +83,7 @@ pub fn render_runes_ui(
                     None => {
                         ui.spinner();
                     }
-                    Some((perks_result, champions_result)) => {
+                    Some((perks_result, champions_result, styles_result)) => {
                         match perks_result {
                             Ok(perks) => {
                                 ui_state.all_perks = perks.clone();
@@ -113,16 +115,24 @@ pub fn render_runes_ui(
                                 ui.label(format!("Failed to list owned champions: {:?}", err));
                             }
                         };
+                        match styles_result {
+                            Ok(styles) => {
+                                ui_state.all_styles = styles.clone();
+                            }
+                            Err(err) => {
+                                ui.label(format!("Failed to list styles: {:?}", err));
+                            }
+                        };
                     }
                 },
                 None => {
                     let promise = Promise::spawn_async(async move {
-                        join(api::list_all_perks(&full_auth_url.clone()), async {
+                        join3(api::list_all_perks(&full_auth_url.clone()), async {
                             let summoner = api::get_current_summoner(&full_auth_url).await?;
                             println!("[LCU] summoner: {:?}", summoner.summoner_id);
                             api::list_available_champions(&full_auth_url, summoner.summoner_id)
                                 .await
-                        })
+                        }, api::list_all_styles(&full_auth_url.clone()))
                         .await
                     });
                     ui_state.fetch_champions_and_perks_promise = Some(promise);
@@ -176,6 +186,8 @@ pub fn render_runes_ui(
                 };
             });
 
+            ui.separator();
+
             if ui_state.prev_champion_id.unwrap_or_default() != cid {
                 ui_state.list_builds_by_alias_promise = None;
                 ui_state.rune_to_apply = None;
@@ -200,44 +212,45 @@ pub fn render_runes_ui(
                                             .iter()
                                             .find(|p| p.id == rune.selected_perk_ids[0]);
                                         let sub_perk = ui_state
-                                            .all_perks
+                                            .all_styles
                                             .iter()
-                                            .find(|p| p.id == rune.selected_perk_ids[1]);
-                                        let last_perk = ui_state
-                                            .all_perks
-                                            .iter()
-                                            .find(|p| p.id == rune.selected_perk_ids[2]);
+                                            .find(|p| p.id == rune.sub_style_id);
 
-                                        [primary_perk, sub_perk, last_perk].iter().for_each(
-                                            |perk| {
-                                                if perk.is_some() {
-                                                    let p = (*perk).unwrap();
+                                        let icon_paths = vec![
+                                            primary_perk.map(|p| p.icon_path.clone()),
+                                            sub_perk.map(|p| p.icon_path.clone()),
+                                        ];
+
+                                        icon_paths.iter().enumerate().for_each(
+                                            |(idx, icon_path)| {
+                                                if icon_path.is_some() {
+                                                    let icon_path = icon_path.as_ref().unwrap();
                                                     let perk_icon_url = format!(
                                                         "https://{}{}",
-                                                        &lcu_auth_url, p.icon_path
+                                                        &lcu_auth_url, icon_path
                                                     );
                                                     let rune_image = ui_state
                                                         .rune_images
-                                                        .get(&p.icon_path);
+                                                        .get(icon_path);
                                                     if rune_image.is_none() {
                                                         let promise = ui_state
                                                             .fetch_rune_promises
-                                                            .get(&p.icon_path);
+                                                            .get(icon_path);
                                                         match promise {
                                                             Some(pm) => match pm.ready() {
                                                                 None => {
                                                                     ui.spinner();
                                                                 }
                                                                 Some(Ok(b)) => {
-                                                                    ui_state.rune_images.insert(p.icon_path.clone(), b.clone());
+                                                                    ui_state.rune_images.insert(icon_path.clone(), b.clone());
                                                                 }
                                                                 Some(Err(_)) => {
-                                                                    println!("fetch rune image failed, {}", &p.icon_path);
+                                                                    println!("fetch rune image failed, {}", &icon_path);
                                                                 }
                                                             },
                                                             None => {
                                                                 ui_state.fetch_rune_promises.insert(
-                                                                    p.icon_path.clone(),
+                                                                    icon_path.clone(),
                                                                     Promise::spawn_async(
                                                                         async move {
                                                                             api::fetch_rune_image(
@@ -251,7 +264,15 @@ pub fn render_runes_ui(
                                                         }
                                                     } else if let Some(b) = rune_image {
                                                         let pixels = b.as_bytes().to_vec();
-                                                        let img = egui::Image::from_bytes(format!("bytes://{}", &p.icon_path), pixels);
+                                                        let img = if idx == 0 {
+                                                            egui::Image::from_bytes(format!("bytes://{}", &icon_path), pixels)
+                                                            .fit_to_exact_size(egui::vec2(32., 32.))
+                                                            .rounding(10.0)
+                                                        } else {
+                                                            egui::Image::from_bytes(format!("bytes://{}", &icon_path), pixels)
+.fit_to_exact_size(egui::vec2(20., 20.))
+                                                                .rounding(10.0)
+                                                        };
                                                         ui.add(img);
                                                     }
 
@@ -263,6 +284,7 @@ pub fn render_runes_ui(
                                             ui_state.rune_to_apply = Some(rune.clone());
                                         }
                                     });
+                                    ui.separator();
                                 });
                             });
                         }
