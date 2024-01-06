@@ -115,7 +115,7 @@ impl eframe::App for SourceWindow {
                 ui.monospace("Builds, runes, all in one");
             });
 
-            ui.add_space(10.);
+            ui.add_space(8.);
 
             egui::ScrollArea::new([true, true]).show(ui, |ui| {
                 match &self.sources_promise {
@@ -190,9 +190,9 @@ impl eframe::App for SourceWindow {
             let is_running = !lcu_auth.token.is_empty();
             let is_tencent = lcu_auth.is_tencent;
 
+            ui.separator();
+            ui.add_space(8.);
             if is_running {
-                ui.separator();
-
                 ui.horizontal(|ui| {
                     if is_tencent {
                         ui.image(egui::include_image!("../../../assets/tencent.png"))
@@ -210,16 +210,43 @@ impl eframe::App for SourceWindow {
                     ui.label("Random mode");
                     toogle_ui::make_toggle(ui, &mut random_mode.lock().unwrap());
                 });
+            } else {
+                ui.horizontal(|ui| {
+                    ui.label("Is League client running?");
+                    ui.image(egui::include_image!("../../../assets/emojis/1f914.svg"));
+                });
             }
         });
 
         egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
-            ui.add_space(10.);
+            ui.add_space(8.);
             ui.vertical_centered(|ui| {
                 ui.hyperlink("https://github.com/cangzhang/champ-r");
                 ui.label("If you like it, please star ⭐ on GitHub");
             });
-            ui.add_space(10.);
+            ui.add_space(8.);
         });
     }
+}
+
+pub fn setup_custom_fonts(ctx: &egui::Context) {
+    // Start with the default fonts (we will be adding to them rather than replacing them).
+    let mut fonts = egui::FontDefinitions::default();
+
+    fonts.font_data.insert(
+        "Inter-Regular".to_owned(),
+        egui::FontData::from_static(include_bytes!(
+            "../../../assets/fonts/Inter-Regular.ttf"
+        )),
+    );
+
+    // Put font first (highest priority) for proportional text:
+    fonts
+        .families
+        .entry(egui::FontFamily::Proportional)
+        .or_default()
+        .insert(0, "Inter-Regular".to_owned());
+
+    // Tell egui to use these fonts:
+    ctx.set_fonts(fonts);
 }

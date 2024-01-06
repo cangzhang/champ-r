@@ -31,28 +31,30 @@ pub async fn watch_auth_and_champion(
         }
 
         let auth_url = { lcu_auth.read().unwrap().auth_url.clone() };
-        let full_url = format!("https://{}", auth_url);
-        if let Ok(Some(cid)) = api::get_session(&full_url).await {
-            let cur_id = champion_id.read().unwrap().unwrap_or_default();
-            if cur_id != cid {
-                if cur_id == 0 && enabled_random_mode {
-                    // do not clear champion id
-                } else {
-                    *champion_id.write().unwrap() = Some(cid);
-                    repaint = true;
-                }
-                println!("current champion id: {}", cid);
-            }
-        } else {
-            if enabled_random_mode {
-                if champion_id.read().unwrap().is_none() {
-                    *champion_id.write().unwrap() = Some(get_random_champion_id());
+        if !auth_url.is_empty() {
+            let full_url = format!("https://{}", auth_url);
+            if let Ok(Some(cid)) = api::get_session(&full_url).await {
+                let cur_id = champion_id.read().unwrap().unwrap_or_default();
+                if cur_id != cid {
+                    if cur_id == 0 && enabled_random_mode {
+                        // do not clear champion id
+                    } else {
+                        *champion_id.write().unwrap() = Some(cid);
+                        repaint = true;
+                    }
+                    println!("current champion id: {}", cid);
                 }
             } else {
-                *champion_id.write().unwrap() = None;
-            }
+                if enabled_random_mode {
+                    if champion_id.read().unwrap().is_none() {
+                        *champion_id.write().unwrap() = Some(get_random_champion_id());
+                    }
+                } else {
+                    *champion_id.write().unwrap() = None;
+                }
 
-            repaint = true;
+                repaint = true;
+            }
         }
 
         {

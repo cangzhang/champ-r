@@ -1,7 +1,9 @@
 use std::sync::{Arc, Mutex, RwLock};
 
 use eframe::egui;
+use eframe::egui::IconData;
 use lcu::{cmd::CommandLineOutput, task};
+use crate::ui::setup_custom_fonts;
 
 pub mod config;
 mod toogle_ui;
@@ -28,8 +30,10 @@ pub async fn run() -> Result<(), eframe::Error> {
     });
     let lcu_task_handle = Some(watch_task_handle.abort_handle());
 
+    let app_icon = load_icon_data(include_bytes!("../../../assets/logo.png"));
     let main_win_opts = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([300., 400.]),
+        viewport: egui::ViewportBuilder::default().with_inner_size([300., 400.]).with_icon(app_icon),
+        persist_window: true,
         ..Default::default()
     };
     eframe::run_native(
@@ -38,6 +42,7 @@ pub async fn run() -> Result<(), eframe::Error> {
         Box::new(move |cc| {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
+            setup_custom_fonts(&cc.egui_ctx);
 
             let app_data = ui::SourceWindow::new(
                 lcu_auth_ui.clone(),
@@ -51,4 +56,16 @@ pub async fn run() -> Result<(), eframe::Error> {
     )?;
 
     Ok(())
+}
+
+pub fn load_icon_data(image_data: &[u8]) -> IconData {
+    let image = image::load_from_memory(image_data).unwrap();
+    let image_buffer = image.to_rgba8();
+    let pixels = image_buffer.as_raw().clone();
+
+    IconData {
+        rgba: pixels,
+        width: image.width(),
+        height: image.height(),
+    }
 }
