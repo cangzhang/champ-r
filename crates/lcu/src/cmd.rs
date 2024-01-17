@@ -40,7 +40,7 @@ pub struct CommandLineOutput {
 pub fn get_commandline() -> CommandLineOutput {
     use std::{os::windows::process::CommandExt, process::Command};
 
-    match Command::new("pwsh")
+    match Command::new("powershell")
         .args([
             "-ExecutionPolicy",
             "Bypass",
