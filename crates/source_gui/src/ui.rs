@@ -68,10 +68,7 @@ impl eframe::App for SourceWindow {
             self.show_rune_viewport.store(true, Ordering::Relaxed);
         }
 
-        if self
-            .show_rune_viewport
-            .load(Ordering::Relaxed)
-        {
+        if self.show_rune_viewport.load(Ordering::Relaxed) {
             let rune_ui_state = self.rune_ui_state.clone();
             let show_rune_viewport = self.show_rune_viewport.clone();
             let lcu_auth = self.lcu_auth.clone();
@@ -158,10 +155,12 @@ impl eframe::App for SourceWindow {
                                         }
                                     }
 
-                                    if item.is_aram.unwrap_or_default() {
+                                    if item.value.ends_with("aram")
+                                        || item.value.starts_with("murderbridge")
+                                    {
                                         ui.image(egui::include_image!("../../../assets/aram.png"))
                                             .on_hover_text("All Random All Mid");
-                                    } else if item.is_urf.unwrap_or_default() {
+                                    } else if item.value.ends_with("urf") {
                                         ui.image(egui::include_image!("../../../assets/urf.png"))
                                             .on_hover_text("Ultra Rapid Fire");
                                     } else {
@@ -205,11 +204,14 @@ impl eframe::App for SourceWindow {
                     }
                 });
 
-                let random_mode = self.random_mode.clone();
-                ui.horizontal(|ui| {
-                    ui.label("Random mode");
-                    toogle_ui::make_toggle(ui, &mut random_mode.lock().unwrap());
-                });
+                #[cfg(debug_assertions)]
+                {
+                    let random_mode = self.random_mode.clone();
+                    ui.horizontal(|ui| {
+                        ui.label("Random mode");
+                        toogle_ui::make_toggle(ui, &mut random_mode.lock().unwrap());
+                    });
+                }
             } else {
                 ui.horizontal(|ui| {
                     ui.label("Is League client running?");
@@ -222,7 +224,15 @@ impl eframe::App for SourceWindow {
             ui.add_space(8.);
             ui.vertical_centered(|ui| {
                 ui.hyperlink("https://github.com/cangzhang/champ-r");
-                ui.label("If you like it, please star ⭐ on GitHub");
+                ui.spacing();
+                ui.horizontal_top(|ui| {
+                    ui.label("If you like it, please star");
+                    ui.add(
+                        egui::Image::new(egui::include_image!("../../../assets/star.svg"))
+                            .fit_to_exact_size(egui::vec2(16., 16.)),
+                    );
+                    ui.label("on GitHub");
+                });
             });
             ui.add_space(8.);
         });
@@ -235,9 +245,7 @@ pub fn setup_custom_fonts(ctx: &egui::Context) {
 
     fonts.font_data.insert(
         "Inter-Regular".to_owned(),
-        egui::FontData::from_static(include_bytes!(
-            "../../../assets/fonts/Inter-Regular.ttf"
-        )),
+        egui::FontData::from_static(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")),
     );
 
     // Put font first (highest priority) for proportional text:

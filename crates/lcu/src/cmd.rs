@@ -20,6 +20,7 @@ lazy_static! {
     static ref REGION_REGEXP: regex::Regex = regex::Regex::new(r"--region=\S+").unwrap();
     static ref DIR_REGEXP: regex::Regex =
         regex::Regex::new(r#"--install-directory=(.*?)""#).unwrap();
+    static ref MAC_DIR_REGEXP: regex::Regex = regex::Regex::new(r"--install-directory=([^\s]+).*?--").unwrap();
 }
 
 pub fn make_auth_url(token: &String, port: &String) -> String {
@@ -89,6 +90,7 @@ pub fn get_commandline() -> CommandLineOutput {
     let mut auth_url = String::new();
     let mut token = String::new();
     let mut port = String::new();
+    let mut dir = String::new();
     let mut is_tencent = false;
     {
         let stdout = cmd.stdout.as_mut().unwrap();
@@ -106,6 +108,11 @@ pub fn get_commandline() -> CommandLineOutput {
                             port,
                             ..
                         } = match_stdout(&s);
+                        dir = if let Some(dir_match) = MAC_DIR_REGEXP.find(&s) {
+                            dir_match.as_str().replace(DIR_KEY, "").replace(" --", "")
+                        } else {
+                            "".to_string()
+                        };
                         break;
                     }
                 }
@@ -122,6 +129,7 @@ pub fn get_commandline() -> CommandLineOutput {
         is_tencent,
         token,
         port,
+        dir,
         ..Default::default()
     }
 }
