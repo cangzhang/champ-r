@@ -35,6 +35,8 @@ eframe = { version = "0.24.1", features = [
 env_logger = "0.10.0"
 egui_extras = { version = "0.24.0", features = ["all_loaders"] }
 poll-promise = { version = "0.3.0", features = ["tokio"] }
+kv-log-macro = "1.0.7"
+femme = "2.2.1"
 
 [target.'cfg(windows)'.build-dependencies]
 embed-resource = "2.1"

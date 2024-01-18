@@ -30,7 +30,7 @@ pub async fn run() -> Result<(), eframe::Error> {
     });
     let lcu_task_handle = Some(watch_task_handle.abort_handle());
 
-    let app_icon = load_icon_data(include_bytes!("../../../assets/logo.png"));
+    let app_icon = load_icon_data(include_bytes!("../../../assets/icon@2x_r.png"));
     let main_win_opts = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([300., 400.]).with_icon(app_icon),
         persist_window: true,

@@ -189,8 +189,15 @@ impl eframe::App for SourceWindow {
             let is_running = !lcu_auth.token.is_empty();
             let is_tencent = lcu_auth.is_tencent;
 
+            ui.add_space(8.);
+            if ui.button("Apply Builds").clicked() {
+
+            }
+            ui.label("Apply builds from selected sources");
+
             ui.separator();
             ui.add_space(8.);
+
             if is_running {
                 ui.horizontal(|ui| {
                     if is_tencent {

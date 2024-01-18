@@ -1,9 +1,15 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io::{Cursor, self}, path::Path, fs};
 
+use anyhow::{anyhow, Context};
 use futures::future::try_join3;
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tracing::error;
+use flate2::read::GzDecoder;
+use tar::Archive;
+use kv_log_macro as log;
+use futures::future::join_all;
 
 use crate::{
     builds::{self, BuildData, ItemBuild},
@@ -207,5 +213,159 @@ pub async fn fetch_latest_release() -> Result<LatestRelease, FetchError> {
             error!("fetch latest release: {:?}", err);
             Err(FetchError::Failed)
         }
+    }
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Dist {
+    pub tarball: String,
+    pub file_count: i64,
+    pub unpacked_size: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Package {
+    pub name: String,
+    pub version: String,
+    pub source_version: String,
+    pub description: String,
+    pub dist: Dist,
+}
+
+pub async fn get_remote_package_data(source: &String) -> Result<(String, String), reqwest::Error> {
+    let r = reqwest::get(format!(
+        "https://mirrors.cloud.tencent.com/npm/@champ-r/{source}/latest"
+    ))
+    .await?;
+    let pak = r.json::<Package>().await?;
+    Ok((pak.version, pak.dist.tarball))
+}
+
+pub async fn download_and_extract_tgz(url: &str, output_dir: &str) -> io::Result<()> {
+    // Download the file
+    let response = reqwest::get(url).await.unwrap();
+    let content = response.bytes().await.unwrap();
+    // Cursor allows us to read bytes as a stream
+    let cursor = Cursor::new(content);
+    // Decompress gzip
+    let gz = GzDecoder::new(cursor);
+    // Extract tarball
+    let mut archive = Archive::new(gz);
+    archive.unpack(output_dir)?;
+
+    Ok(())
+}
+
+pub async fn read_local_build_file(file_path: String) -> anyhow::Result<Value> {
+    use tokio::fs::File;
+    use tokio::io::AsyncReadExt;
+
+    let mut file = File::open(&file_path)
+        .await
+        .with_context(|| format!("Failed to open file: {}", &file_path))?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)
+        .await
+        .with_context(|| format!("Failed to read from file: {}", &file_path))?;
+    let parsed = serde_json::from_str(&contents)
+        .with_context(|| format!("Failed to parse JSON in file: {}", &file_path))?;
+
+    Ok(parsed)
+}
+
+pub async fn read_from_local_folder(output_dir: &str) -> anyhow::Result<Vec<Vec<builds::BuildSection>>> {
+    use log::*;
+
+    let paths = std::fs::read_dir(output_dir)?
+        .filter_map(Result::ok)
+        .filter(|entry| {
+            entry.path().is_file()
+                && entry.file_name() != "package.json"
+                && entry.file_name() != "index.json"
+        })
+        .map(|entry| entry.path().into_os_string().into_string().unwrap())
+        .collect::<Vec<String>>();
+    let tasks: Vec<_> = paths
+        .into_iter()
+        .map(|p| read_local_build_file(p.clone()))
+        .collect();
+    let results = join_all(tasks).await;
+
+    let files = results
+        .into_iter()
+        .filter_map(|result| match result {
+            Ok(value) => match serde_json::from_value::<Vec<builds::BuildSection>>(value) {
+                Ok(builds) => Some(builds),
+                Err(e) => {
+                    warn!("Error: {:?}", e);
+                    None
+                }
+            },
+            Err(e) => {
+                warn!("Error: {:?}", e);
+                None
+            }
+        })
+        .collect();
+
+    Ok(files)
+}
+
+pub async fn download_npm_package_and_apply(source: &String, lol_dir: Option<String>, is_tencent: bool) -> anyhow::Result<()> {
+    let (_version, tar_url) = get_remote_package_data(source).await?;
+    
+    log::info!("found download url for {}, {}", &source, &tar_url);
+
+    let output_dir = format!(".npm/{source}");
+    let output_path = Path::new(&output_dir);
+
+    if let Err(err) = fs::create_dir_all(output_path) {
+        log::error!("create output dir: {:?}", err);
+        return Err(anyhow!("create output dir: {:?}", err));
+    }
+    
+    let _ = download_and_extract_tgz(&tar_url, &output_dir).await?;
+    let dest_folder = format!("{}/package", &output_dir);
+    let files = read_from_local_folder(&dest_folder).await?;
+    
+    log::info!("found {} builds for {}", files.len(), source);
+
+    if lol_dir.is_some() {
+        let dir = lol_dir.unwrap();
+
+        files.iter().for_each(|sections| {
+            let sections = sections.clone();
+            let alias = sections[0].alias.clone();
+            let _ = builds::apply_builds_from_data(sections, &dir.clone(), source, &alias, is_tencent);
+        });
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[tokio::test]
+    async fn apply_builds_for_riot_server() -> anyhow::Result<()> {
+        femme::with_level(femme::LevelFilter::Info);
+
+        let source = String::from("op.gg");
+        let _ = download_npm_package_and_apply(&source, Some(String::from(".local_builds")), false).await?;
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn apply_builds_for_tencent_server() -> anyhow::Result<()> {
+        femme::with_level(femme::LevelFilter::Info);
+
+        let source = String::from("op.gg");
+        let _ = download_npm_package_and_apply(&source, Some(String::from(".local_builds")), true).await?;
+
+        Ok(())
     }
 }

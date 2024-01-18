@@ -84,6 +84,41 @@ pub fn empty_rune_type() -> String {
     String::new()
 }
 
+pub fn apply_builds_from_data(
+    sections: Vec<BuildSection>,
+    dir: &String,
+    source: &String,
+    champion_alias: &String,
+    is_tencent: bool,
+) {
+    use kv_log_macro as log;
+
+    let folder = if is_tencent {
+        format!("{dir}/Game/Config/Champions")
+    } else {
+        format!("{dir}/Config/Champions")
+    };
+    let parent_dir = format!("{folder}/{champion_alias}/Recommended");
+    if let Err(err) = fs::create_dir_all(&parent_dir) {
+        log::error!("failed to create dir: {:?}", err);
+    }
+
+    let source_name = source.replace('.', "_");
+    for (idx, b) in sections.iter().enumerate() {
+        let pos = &b.position;
+        for (iidx, item) in b.item_builds.iter().enumerate() {
+            let full_path =
+                format!("{parent_dir}/{source_name}_{champion_alias}_{pos}_{idx}_{iidx}.json");
+            let mut f = fs::File::create(&full_path).unwrap();
+
+            let buf = serde_json::to_string_pretty(&item).unwrap();
+            f.write_all(buf[..].as_bytes()).unwrap();
+
+            log::info!("builds saved to: {}", &full_path);
+        }
+    }
+}
+
 pub async fn apply_builds_from_source(
     dir: &String,
     source: &String,
@@ -96,30 +131,7 @@ pub async fn apply_builds_from_source(
             return Err(FetchError::Failed);
         }
     };
-
-    let folder = if is_tencent {
-        format!("{dir}/Game/Config/Champions")
-    } else {
-        format!("{dir}/Config/Champions")
-    };
-    let parent_dir = format!("{folder}/{champion}/Recommended");
-    let _result = fs::create_dir_all(&parent_dir);
-
-    let source_name = source.replace('.', "_");
-    for (idx, b) in sections.iter().enumerate() {
-        // let alias = &b.alias;
-        let pos = &b.position;
-        for (iidx, item) in b.item_builds.iter().enumerate() {
-            let full_path =
-                format!("{parent_dir}/{source_name}_{champion}_{pos}_{idx}_{iidx}.json");
-            let mut f = fs::File::create(&full_path).unwrap();
-
-            let buf = serde_json::to_string_pretty(&item).unwrap();
-            f.write_all(buf[..].as_bytes()).unwrap();
-
-            println!("builds saved to: {}", &full_path);
-        }
-    }
+    apply_builds_from_data(sections, dir, source, champion, is_tencent);
 
     Ok(())
 }
@@ -141,7 +153,6 @@ pub async fn fetch_and_apply(
 
     let source_name = source.replace('.', "_");
     for (idx, b) in sections.iter().enumerate() {
-        // let alias = &b.alias;
         let pos = &b.position;
         for (iidx, item) in b.item_builds.iter().enumerate() {
             let full_path =
@@ -151,7 +162,7 @@ pub async fn fetch_and_apply(
             let buf = serde_json::to_string_pretty(&item).unwrap();
             f.write_all(buf[..].as_bytes()).unwrap();
 
-            info!("builds saved to: {}", &full_path);
+            info!("saved to: {}", &full_path);
         }
     }
 
