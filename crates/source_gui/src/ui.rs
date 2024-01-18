@@ -7,6 +7,7 @@ use std::sync::{
 use tokio::task::AbortHandle;
 
 use eframe::egui;
+use kv_log_macro as log;
 use poll_promise::Promise;
 
 use lcu::{
@@ -190,10 +191,14 @@ impl eframe::App for SourceWindow {
             let is_tencent = lcu_auth.is_tencent;
 
             ui.add_space(8.);
-            if ui.button("Apply Builds").clicked() {
-
+            if ui
+                .button("Apply Builds")
+                .on_hover_text("Apply builds from selected sources")
+                .clicked()
+            {
+                // TOOD: apply builds for selected sources
+                log::info!("start applying builds");
             }
-            ui.label("Apply builds from selected sources");
 
             ui.separator();
             ui.add_space(8.);

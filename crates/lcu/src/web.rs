@@ -313,7 +313,7 @@ pub async fn read_from_local_folder(output_dir: &str) -> anyhow::Result<Vec<Vec<
     Ok(files)
 }
 
-pub async fn download_npm_package_and_apply(source: &String, lol_dir: Option<String>, is_tencent: bool) -> anyhow::Result<()> {
+pub async fn download_tar_and_apply_for_source(source: &String, lol_dir: Option<String>, is_tencent: bool) -> anyhow::Result<()> {
     let (_version, tar_url) = get_remote_package_data(source).await?;
     
     log::info!("found download url for {}, {}", &source, &tar_url);
@@ -326,7 +326,7 @@ pub async fn download_npm_package_and_apply(source: &String, lol_dir: Option<Str
         return Err(anyhow!("create output dir: {:?}", err));
     }
     
-    let _ = download_and_extract_tgz(&tar_url, &output_dir).await?;
+    download_and_extract_tgz(&tar_url, &output_dir).await?;
     let dest_folder = format!("{}/package", &output_dir);
     let files = read_from_local_folder(&dest_folder).await?;
     
@@ -338,7 +338,7 @@ pub async fn download_npm_package_and_apply(source: &String, lol_dir: Option<Str
         files.iter().for_each(|sections| {
             let sections = sections.clone();
             let alias = sections[0].alias.clone();
-            let _ = builds::apply_builds_from_data(sections, &dir.clone(), source, &alias, is_tencent);
+            builds::apply_builds_from_data(sections, &dir.clone(), source, &alias, is_tencent);
         });
     }
 
@@ -354,7 +354,7 @@ mod tests {
         femme::with_level(femme::LevelFilter::Info);
 
         let source = String::from("op.gg");
-        let _ = download_npm_package_and_apply(&source, Some(String::from(".local_builds")), false).await?;
+        download_tar_and_apply_for_source(&source, Some(String::from(".local_builds")), false).await?;
 
         Ok(())
     }
@@ -364,7 +364,7 @@ mod tests {
         femme::with_level(femme::LevelFilter::Info);
 
         let source = String::from("op.gg");
-        let _ = download_npm_package_and_apply(&source, Some(String::from(".local_builds")), true).await?;
+        download_tar_and_apply_for_source(&source, Some(String::from(".local_builds")), true).await?;
 
         Ok(())
     }
