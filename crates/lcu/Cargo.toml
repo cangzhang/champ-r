@@ -21,13 +21,13 @@ base64 = "0.21.5"
 tokio = { version = "1", features = ["full"] }
 futures = "0.3.28"
 reqwest = { version = "0.11", features = ["json", "stream", "rustls-tls", "blocking"] }
-eframe = { version = "0.24.1", features = [
+eframe = { version = "0.25.0", features = [
     "__screenshot", # __screenshot is so we can dump a screenshot using EFRAME_SCREENSHOT_TO
 ] }
 log = { version = "0.4", features = ["std"] }
 url = "2.4.1"
 image = "0.24.7"
-egui_extras = { version = "0.24.0", features = ["all_loaders"] }
+egui_extras = { version = "0.25.0", features = ["all_loaders"] }
 rand = "0.8.5"
 flate2 = "1.0.28"
 tar = "0.4.40"

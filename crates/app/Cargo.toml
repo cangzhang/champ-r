@@ -10,7 +10,7 @@ tokio = { version = "1", features = ["full"] }
 source_gui = { path = "../source_gui" }
 rune_ui = { path = "../rune_ui" }
 futures = "0.3.28"
-eframe = { version = "0.24.1", features = [
+eframe = { version = "0.25.0", features = [
     "__screenshot", # __screenshot is so we can dump a screenshot using EFRAME_SCREENSHOT_TO
 ] }
 kv-log-macro = "1.0.7"

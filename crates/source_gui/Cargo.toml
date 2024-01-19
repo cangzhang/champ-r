@@ -29,11 +29,11 @@ lyon_algorithms = "1"
 once_cell = "1"
 toml = "0.7.4"
 rand = "0.8.5"
-eframe = { version = "0.24.1", features = [
+eframe = { version = "0.25.0", features = [
     "__screenshot", # __screenshot is so we can dump a screenshot using EFRAME_SCREENSHOT_TO
 ] }
 env_logger = "0.10.0"
-egui_extras = { version = "0.24.0", features = ["all_loaders"] }
+egui_extras = { version = "0.25.0", features = ["all_loaders"] }
 poll-promise = { version = "0.3.0", features = ["tokio"] }
 kv-log-macro = "1.0.7"
 femme = "2.2.1"
