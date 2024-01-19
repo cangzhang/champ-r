@@ -1,3 +1,4 @@
+use futures::future::join_all;
 use rune_ui::viewport::{render_runes_ui, RuneUIState};
 
 use std::sync::{
@@ -24,6 +25,8 @@ pub struct SourceWindow {
     pub sources: Vec<SourceItem>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub apply_builds_promise: Option<Promise<Vec<Result<(), anyhow::Error>>>>,
 
     pub selected_sources: Vec<String>,
     pub lcu_auth: Arc<RwLock<CommandLineOutput>>,
@@ -184,20 +187,51 @@ impl eframe::App for SourceWindow {
             });
 
             let lcu_auth = {
-                let auth = self.lcu_auth.read().unwrap();
+                let auth: std::sync::RwLockReadGuard<'_, CommandLineOutput> =
+                    self.lcu_auth.read().unwrap();
                 auth.clone()
             };
             let is_running = !lcu_auth.token.is_empty();
             let is_tencent = lcu_auth.is_tencent;
 
             ui.add_space(8.);
-            if ui
-                .button("Apply Builds")
-                .on_hover_text("Apply builds from selected sources")
-                .clicked()
-            {
-                // TOOD: apply builds for selected sources
-                log::info!("start applying builds");
+
+            match &self.apply_builds_promise {
+                Some(p) => match p.ready() {
+                    None => {
+                        log::info!("applying builds");
+                        ui.spinner();
+                    }
+                    Some(_results) => {
+                        log::info!("apply builds done");
+                        self.apply_builds_promise = None;
+                    }
+                },
+                None => {
+                    if ui
+                        .button("Apply Builds")
+                        .on_hover_text("Apply builds from selected sources")
+                        .clicked()
+                    {
+                        log::info!("start applying builds");
+
+                        let lol_dir = lcu_auth.dir.clone();
+                        let is_tencent = lcu_auth.is_tencent;
+                        let selected_sources = self.selected_sources.clone();
+
+                        let promise = Promise::spawn_async(async move {
+                            let tasks = selected_sources.iter().map(|source| {
+                                web::download_tar_and_apply_for_source(
+                                    source,
+                                    Some(lol_dir.clone()),
+                                    is_tencent,
+                                )
+                            });
+                            join_all(tasks).await
+                        });
+                        self.apply_builds_promise = Some(promise);
+                    }
+                }
             }
 
             ui.separator();
