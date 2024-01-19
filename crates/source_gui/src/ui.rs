@@ -196,39 +196,50 @@ impl eframe::App for SourceWindow {
 
             ui.add_space(8.);
 
-            match &self.apply_builds_promise {
-                Some(p) => match p.ready() {
+            if self.selected_sources.is_empty() {
+                ui.add_enabled_ui(false, |ui| {
+                    ui.horizontal(|ui| {
+                        if ui.button("Apply Builds").clicked() {
+                            // do nothing
+                        }
+                        ui.label("Please select at least one source");
+                    });
+                });
+            } else {
+                match &self.apply_builds_promise {
+                    Some(p) => match p.ready() {
+                        None => {
+                            ui.spinner();
+                        }
+                        Some(_results) => {
+                            log::info!("apply builds done");
+                            self.apply_builds_promise = None;
+                        }
+                    },
                     None => {
-                        ui.spinner();
-                    }
-                    Some(_results) => {
-                        log::info!("apply builds done");
-                        self.apply_builds_promise = None;
-                    }
-                },
-                None => {
-                    if ui
-                        .button("Apply Builds")
-                        .on_hover_text("Apply builds from selected sources")
-                        .clicked()
-                    {
-                        log::info!("start applying builds");
+                        if ui
+                            .button("Apply Builds")
+                            .on_hover_text("Apply builds from selected sources")
+                            .clicked()
+                        {
+                            log::info!("start applying builds");
 
-                        let lol_dir = lcu_auth.dir.clone();
-                        let is_tencent = lcu_auth.is_tencent;
-                        let selected_sources = self.selected_sources.clone();
+                            let lol_dir = lcu_auth.dir.clone();
+                            let is_tencent = lcu_auth.is_tencent;
+                            let selected_sources = self.selected_sources.clone();
 
-                        let promise = Promise::spawn_async(async move {
-                            let tasks = selected_sources.iter().map(|source| {
-                                web::download_tar_and_apply_for_source(
-                                    source,
-                                    Some(lol_dir.clone()),
-                                    is_tencent,
-                                )
+                            let promise = Promise::spawn_async(async move {
+                                let tasks = selected_sources.iter().map(|source| {
+                                    web::download_tar_and_apply_for_source(
+                                        source,
+                                        Some(lol_dir.clone()),
+                                        is_tencent,
+                                    )
+                                });
+                                join_all(tasks).await
                             });
-                            join_all(tasks).await
-                        });
-                        self.apply_builds_promise = Some(promise);
+                            self.apply_builds_promise = Some(promise);
+                        }
                     }
                 }
             }
