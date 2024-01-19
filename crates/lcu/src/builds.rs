@@ -87,7 +87,7 @@ pub fn empty_rune_type() -> String {
 pub fn apply_builds_from_data(
     sections: Vec<BuildSection>,
     dir: &String,
-    source: &String,
+    source: &str,
     champion_alias: &String,
     is_tencent: bool,
 ) {

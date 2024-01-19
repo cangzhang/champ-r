@@ -130,7 +130,6 @@ pub fn get_commandline() -> CommandLineOutput {
         token,
         port,
         dir,
-        ..Default::default()
     }
 }
 

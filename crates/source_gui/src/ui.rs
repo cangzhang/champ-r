@@ -199,7 +199,6 @@ impl eframe::App for SourceWindow {
             match &self.apply_builds_promise {
                 Some(p) => match p.ready() {
                     None => {
-                        log::info!("applying builds");
                         ui.spinner();
                     }
                     Some(_results) => {
