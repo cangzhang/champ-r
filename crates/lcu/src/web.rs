@@ -105,11 +105,7 @@ pub struct ListBuildsResp {
     pub content: Vec<builds::BuildSection>,
 }
 
-pub async fn list_builds_by_alias(
-    source: &String,
-    champion: &String,
-) -> Result<Vec<builds::BuildSection>, FetchError> {
-    let url = format!("{SERVICE_URL}/api/source/{source}/champion-alias/{champion}");
+pub async fn list_builds(url: &String) -> Result<Vec<builds::BuildSection>, FetchError> {
     match reqwest::get(url).await {
         Ok(resp) => match resp.json::<ListBuildsResp>().await {
             Ok(resp) => Ok(resp.content),
@@ -125,24 +121,20 @@ pub async fn list_builds_by_alias(
     }
 }
 
+pub async fn list_builds_by_alias(
+    source: &String,
+    champion: &String,
+) -> Result<Vec<builds::BuildSection>, FetchError> {
+    let url = format!("{SERVICE_URL}/api/source/{source}/champion-alias/{champion}");
+    list_builds(&url).await
+}
+
 pub async fn list_builds_by_id(
     source: &String,
     champion_id: i64,
 ) -> Result<Vec<builds::BuildSection>, FetchError> {
     let url = format!("{SERVICE_URL}/api/source/{source}/champion-id/{champion_id}");
-    match reqwest::get(url).await {
-        Ok(resp) => match resp.json::<ListBuildsResp>().await {
-            Ok(resp) => Ok(resp.content),
-            Err(e) => {
-                println!("list_builds_by_alias: {:?}", e);
-                Err(FetchError::Failed)
-            }
-        },
-        Err(err) => {
-            println!("fetch source list: {:?}", err);
-            Err(FetchError::Failed)
-        }
-    }
+    list_builds(&url).await
 }
 
 pub async fn fetch_champion_runes(
