@@ -1,19 +1,22 @@
-use std::{collections::HashMap, io::{Cursor, self}, path::Path, fs};
+use std::{
+    collections::HashMap,
+    fs,
+    io::{self, Cursor},
+    path::Path,
+};
 
 use anyhow::{anyhow, Context};
+use flate2::read::GzDecoder;
+use futures::future::join_all;
 use futures::future::try_join3;
+use kv_log_macro::{error, info, warn};
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use tracing::error;
-use flate2::read::GzDecoder;
 use tar::Archive;
-use kv_log_macro as log;
-use futures::future::join_all;
 
 use crate::{
     builds::{self, BuildData, ItemBuild},
-    constants::VERSION,
     source::SourceItem,
 };
 
@@ -201,7 +204,7 @@ pub async fn fetch_latest_release() -> Result<LatestRelease, FetchError> {
 
     match client
         .get("https://api.github.com/repos/cangzhang/champ-r/releases/latest".to_string())
-        .header(USER_AGENT, format!("ChampR {VERSION}"))
+        .header(USER_AGENT, "ChampR_rs")
         .send()
         .await
     {
@@ -275,10 +278,10 @@ pub async fn read_local_build_file(file_path: String) -> anyhow::Result<Value> {
     Ok(parsed)
 }
 
-pub async fn read_from_local_folder(output_dir: &str) -> anyhow::Result<Vec<Vec<builds::BuildSection>>> {
-    use log::*;
-
-    let paths = std::fs::read_dir(output_dir)?
+pub async fn read_from_local_folder(
+    output_dir: &str,
+) -> anyhow::Result<Vec<Vec<builds::BuildSection>>> {
+    let paths = fs::read_dir(output_dir)?
         .filter_map(Result::ok)
         .filter(|entry| {
             entry.path().is_file()
@@ -313,24 +316,28 @@ pub async fn read_from_local_folder(output_dir: &str) -> anyhow::Result<Vec<Vec<
     Ok(files)
 }
 
-pub async fn download_tar_and_apply_for_source(source: &String, lol_dir: Option<String>, is_tencent: bool) -> anyhow::Result<()> {
+pub async fn download_tar_and_apply_for_source(
+    source: &String,
+    lol_dir: Option<String>,
+    is_tencent: bool,
+) -> anyhow::Result<()> {
     let (_version, tar_url) = get_remote_package_data(source).await?;
-    
-    log::info!("found download url for {}, {}", &source, &tar_url);
+
+    info!("found download url for {}, {}", &source, &tar_url);
 
     let output_dir = format!(".npm/{source}");
     let output_path = Path::new(&output_dir);
 
     if let Err(err) = fs::create_dir_all(output_path) {
-        log::error!("create output dir: {:?}", err);
+        error!("create output dir: {:?}", err);
         return Err(anyhow!("create output dir: {:?}", err));
     }
-    
+
     download_and_extract_tgz(&tar_url, &output_dir).await?;
     let dest_folder = format!("{}/package", &output_dir);
     let files = read_from_local_folder(&dest_folder).await?;
-    
-    log::info!("found {} builds for {}", files.len(), source);
+
+    info!("found {} builds for {}", files.len(), source);
 
     if lol_dir.is_some() {
         let dir = lol_dir.unwrap();
@@ -348,13 +355,14 @@ pub async fn download_tar_and_apply_for_source(source: &String, lol_dir: Option<
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[tokio::test]
     async fn apply_builds_for_riot_server() -> anyhow::Result<()> {
         femme::with_level(femme::LevelFilter::Info);
 
         let source = String::from("op.gg");
-        download_tar_and_apply_for_source(&source, Some(String::from(".local_builds")), false).await?;
+        download_tar_and_apply_for_source(&source, Some(String::from(".local_builds")), false)
+            .await?;
 
         Ok(())
     }
@@ -364,7 +372,8 @@ mod tests {
         femme::with_level(femme::LevelFilter::Info);
 
         let source = String::from("op.gg");
-        download_tar_and_apply_for_source(&source, Some(String::from(".local_builds")), true).await?;
+        download_tar_and_apply_for_source(&source, Some(String::from(".local_builds")), true)
+            .await?;
 
         Ok(())
     }

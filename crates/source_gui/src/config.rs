@@ -4,7 +4,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::prelude::*;
-use tracing::{error, info};
+use kv_log_macro::{error, info};
 
 #[derive(Deserialize, Serialize, Default)]
 pub struct Config {

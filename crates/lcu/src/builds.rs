@@ -1,5 +1,6 @@
 use futures::StreamExt;
 
+use kv_log_macro::info;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
@@ -8,7 +9,6 @@ use std::{
     path::Path,
     sync::{Arc, Mutex},
 };
-use tracing::info;
 
 use crate::web::{self, ChampionsMap, FetchError};
 

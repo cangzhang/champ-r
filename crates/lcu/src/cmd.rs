@@ -4,7 +4,7 @@ use std::str;
 use std::sync::{Arc, Mutex};
 
 #[allow(unused_imports)]
-use tracing::{error, info};
+use kv_log_macro::{error, info};
 
 const APP_PORT_KEY: &str = "--app-port=";
 const TOKEN_KEY: &str = "--remoting-auth-token=";
