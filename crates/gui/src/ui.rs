@@ -1,5 +1,4 @@
 use futures::future::join_all;
-use rune_ui::viewport::{render_runes_ui, RuneUIState};
 
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -17,7 +16,10 @@ use lcu::{
     web::{self},
 };
 
-use crate::toogle_ui;
+use crate::{
+    rune_viewport::{render_runes_ui, RuneUIState},
+    toggle_ui,
+};
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Default)]
@@ -265,7 +267,7 @@ impl eframe::App for SourceWindow {
                     let random_mode = self.random_mode.clone();
                     ui.horizontal(|ui| {
                         ui.label("Random mode");
-                        toogle_ui::make_toggle(ui, &mut random_mode.lock().unwrap());
+                        toggle_ui::make_toggle(ui, &mut random_mode.lock().unwrap());
                     });
                 }
             } else {

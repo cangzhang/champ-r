@@ -7,6 +7,6 @@
 async fn main() -> Result<(), eframe::Error> {
     femme::with_level(femme::LevelFilter::Info);
 
-    source_gui::run().await?;
+    gui::run().await?;
     Ok(())
 }

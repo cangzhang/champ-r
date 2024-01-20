@@ -7,8 +7,7 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-source_gui = { path = "../source_gui" }
-rune_ui = { path = "../rune_ui" }
+gui = { path = "../gui" }
 futures = "0.3.28"
 eframe = { version = "0.25.0", features = [
     "__screenshot", # __screenshot is so we can dump a screenshot using EFRAME_SCREENSHOT_TO

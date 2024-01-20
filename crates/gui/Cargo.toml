@@ -1,12 +1,11 @@
 [package]
-name = "source_gui"
+name = "gui"
 version = "0.1.0"
 edition = "2021"
 build = "build.rs"
 
 [dependencies]
 lcu = { path = "../lcu" }
-rune_ui = { path = "../rune_ui" }
 anyhow = "1.0.71"
 bytes = "*"
 base64 = "0.21.0"
@@ -28,7 +27,6 @@ rand = "0.8.5"
 eframe = { version = "0.25.0", features = [
     "__screenshot", # __screenshot is so we can dump a screenshot using EFRAME_SCREENSHOT_TO
 ] }
-env_logger = "0.10.0"
 egui_extras = { version = "0.25.0", features = ["all_loaders"] }
 poll-promise = { version = "0.3.0", features = ["tokio"] }
 kv-log-macro = "1.0.7"

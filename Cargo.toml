@@ -1,9 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/source_gui",
-    "crates/rune_ui",
     "crates/app",
+    "crates/gui",
     "crates/lcu",
 ]
 

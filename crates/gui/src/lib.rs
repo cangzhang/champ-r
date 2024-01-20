@@ -1,12 +1,13 @@
 use std::sync::{Arc, Mutex, RwLock};
 
+use crate::ui::setup_custom_fonts;
 use eframe::egui;
 use eframe::egui::IconData;
 use lcu::{cmd::CommandLineOutput, task};
-use crate::ui::setup_custom_fonts;
 
 pub mod config;
-mod toogle_ui;
+pub mod rune_viewport;
+pub mod toggle_ui;
 pub mod ui;
 
 pub async fn run() -> Result<(), eframe::Error> {
@@ -29,7 +30,9 @@ pub async fn run() -> Result<(), eframe::Error> {
 
     let app_icon = load_icon_data(include_bytes!("../../../assets/icon@2x_r.png"));
     let main_win_opts = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([300., 480.]).with_icon(app_icon),
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([300., 480.])
+            .with_icon(app_icon),
         persist_window: true,
         ..Default::default()
     };
