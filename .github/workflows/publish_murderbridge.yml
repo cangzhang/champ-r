@@ -5,6 +5,7 @@ on:
     workflows: ["Scheduled Publish"]
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   # This workflow contains a single job called "build"
