@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/setup-node@master
         with:
-          node-version: 'lts'
+          node-version: 'lts/*'
 
       - name: Download && Execute
         env:
