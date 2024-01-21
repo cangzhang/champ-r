@@ -1,4 +1,4 @@
-name: 🐳 Publish SR
+name: 🐳 Publish OP.GG-ARAM
 
 on:
   workflow_run:
@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@master
         with:
-          node-version: '16'
+          node-version: 'lts'
 
       - name: Download && Execute
         env:
@@ -25,7 +25,7 @@ jobs:
           release_name=$(gh api -H "Accept: application/vnd.github+json" /repos/cangzhang/data-maker/releases/latest --jq ".name")
           gh release download "$release_name" -R cangzhang/data-maker -p "*-linux*" -D bin
           cd bin && chmod +x data-maker-linux-amd64 && mv data-maker* data-maker
-          ./data-maker -v && ./data-maker -sr
+          ./data-maker -v && ./data-maker -s op.gg-aram
           npm install -g --quiet @jsdevtools/npm-publish
           curl https://gist.githubusercontent.com/cangzhang/1bdb2f37e4c5770ac703ee5afec600f5/raw/ci-publish.sh -o publish.sh && chmod +x publish.sh
           ./publish.sh
