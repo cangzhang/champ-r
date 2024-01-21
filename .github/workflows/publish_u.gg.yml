@@ -2,7 +2,7 @@ name: 🐳 Publish U.GG
 
 on:
   workflow_run:
-    workflows: ["Scheduled Publish"]
+    workflows: ["Scheduled Publish", "Trigger Publish SR"]
     types:
       - completed
   workflow_dispatch:

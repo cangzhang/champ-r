@@ -2,7 +2,7 @@ name: 🐳 Publish LOLALYTICS-URF
 
 on:
   workflow_run:
-    workflows: ["Scheduled Publish"]
+    workflows: ["Scheduled Publish", "Trigger Publish URF"]
     types:
       - completed
   workflow_dispatch:
