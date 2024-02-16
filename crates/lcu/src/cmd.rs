@@ -20,7 +20,8 @@ lazy_static! {
     static ref REGION_REGEXP: regex::Regex = regex::Regex::new(r"--region=\S+").unwrap();
     static ref DIR_REGEXP: regex::Regex =
         regex::Regex::new(r#"--install-directory=(.*?)""#).unwrap();
-    static ref MAC_DIR_REGEXP: regex::Regex = regex::Regex::new(r"--install-directory=([^\s]+).*?--").unwrap();
+    static ref MAC_DIR_REGEXP: regex::Regex =
+        regex::Regex::new(r"--install-directory=([^\s]+).*?--").unwrap();
 }
 
 pub fn make_auth_url(token: &String, port: &String) -> String {
@@ -38,33 +39,23 @@ pub struct CommandLineOutput {
 
 #[cfg(target_os = "windows")]
 pub fn get_commandline() -> CommandLineOutput {
-    use std::{os::windows::process::CommandExt, process::Command};
+    use powershell_script::PsScriptBuilder;
 
-    match Command::new("powershell")
-        .args([
-            "-ExecutionPolicy",
-            "Bypass",
-            "-NoLogo",
-            "-NoProfile",
-            "-NonInteractive",
-            "-WindowStyle",
-            "Hidden",
-            "-Command",
-            LCU_COMMAND,
-        ])
-        .creation_flags(0x08000000)
-        .output()
-    {
-        Ok(output) => {
-            if output.status.success() {
-                let output = String::from_utf8_lossy(&output.stdout);
+    let ps = PsScriptBuilder::new()
+        .no_profile(true)
+        .non_interactive(true)
+        .hidden(true)
+        .print_commands(false)
+        .build();
 
-                #[cfg(not(debug_assertions))]
-                info!("output: {:?}", &output);
+    match ps.run(LCU_COMMAND) {
+        Ok(out) => {
+            let output = out.stdout();
 
-                if !output.is_empty() {
-                    return match_stdout(&String::from(output));
-                }
+            #[cfg(not(debug_assertions))]
+            info!("output: {:?}", &output);
+            if output.is_some() {
+                return match_stdout(&String::from(output.unwrap()));
             }
         }
         Err(err) => error!("cmd error: {:?}", err),
