@@ -3,8 +3,6 @@
     windows_subsystem = "windows"
 )]
 
-use futures::future::join;
-
 #[tokio::main]
 async fn main() -> Result<(), eframe::Error> {
     femme::with_level(femme::LevelFilter::Info);
