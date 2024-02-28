@@ -1,9 +1,6 @@
 use futures::future::join_all;
 
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc, Mutex, RwLock,
-};
+use std::sync::{atomic::AtomicBool, Arc, Mutex, RwLock};
 use tokio::task::AbortHandle;
 
 use eframe::egui;
@@ -16,14 +13,11 @@ use lcu::{
     web::{self},
 };
 
-use crate::{
-    rune_viewport::{render_runes_ui, RuneUIState},
-    toggle_ui,
-};
+use crate::{rune_ui::RuneUI, toggle_ui};
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Default)]
-pub struct SourceWindow {
+pub struct SourceUI {
     pub sources: Vec<SourceItem>,
     #[cfg_attr(feature = "serde", serde(skip))]
     pub sources_promise: Option<Promise<Result<Vec<SourceItem>, web::FetchError>>>,
@@ -39,11 +33,11 @@ pub struct SourceWindow {
 
     pub rune_viewport_ctx: Arc<Mutex<Option<egui::Context>>>,
     // rune viewport
-    pub rune_ui_state: Arc<Mutex<RuneUIState>>,
+    pub rune_ui_state: Arc<Mutex<RuneUI>>,
     pub show_rune_viewport: Arc<AtomicBool>,
 }
 
-impl SourceWindow {
+impl SourceUI {
     pub fn new(
         lcu_auth: Arc<RwLock<CommandLineOutput>>,
         lcu_task_handle: Option<AbortHandle>,
@@ -62,48 +56,12 @@ impl SourceWindow {
     }
 }
 
-impl eframe::App for SourceWindow {
+impl eframe::App for SourceUI {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if ctx.input(|i| i.viewport().close_requested()) {
             if let Some(handle) = &self.lcu_task_handle {
                 handle.abort();
             }
-        }
-
-        if self.champion_id.read().unwrap().is_some() {
-            self.show_rune_viewport.store(true, Ordering::Relaxed);
-        }
-
-        if self.show_rune_viewport.load(Ordering::Relaxed) {
-            let rune_ui_state = self.rune_ui_state.clone();
-            let show_rune_viewport = self.show_rune_viewport.clone();
-            let lcu_auth = self.lcu_auth.clone();
-            let champion_id = self.champion_id.clone();
-
-            ctx.show_viewport_deferred(
-                egui::ViewportId::from_hash_of("runes_window"),
-                egui::ViewportBuilder::default()
-                    .with_title("Runes")
-                    .with_inner_size([400., 500.])
-                    .with_always_on_top(),
-                move |ctx, class| {
-                    assert!(
-                        class == egui::ViewportClass::Deferred,
-                        "This egui backend doesn't support multiple viewports"
-                    );
-
-                    render_runes_ui(
-                        ctx,
-                        rune_ui_state.clone(),
-                        lcu_auth.clone(),
-                        champion_id.clone(),
-                    );
-
-                    if ctx.input(|i| i.viewport().close_requested()) {
-                        show_rune_viewport.store(false, Ordering::Relaxed);
-                    }
-                },
-            );
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
