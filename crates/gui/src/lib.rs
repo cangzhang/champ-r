@@ -9,6 +9,7 @@ pub mod config;
 pub mod rune_ui;
 pub mod toggle_ui;
 pub mod source_ui;
+pub mod wind;
 
 pub fn load_icon_data(image_data: &[u8]) -> IconData {
     let image = image::load_from_memory(image_data).unwrap();

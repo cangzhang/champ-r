@@ -31,6 +31,7 @@ egui_extras = { version = "0.25.0", features = ["all_loaders"] }
 poll-promise = { version = "0.3.0", features = ["tokio"] }
 kv-log-macro = "1.0.7"
 femme = "2.2.1"
+iced = { version = "0.12.1", features = ["multi-window", "debug" ] }
 
 [target.'cfg(windows)'.build-dependencies]
 embed-resource = "2.1"

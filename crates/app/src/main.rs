@@ -3,16 +3,11 @@
     windows_subsystem = "windows"
 )]
 
-#[tokio::main]
-async fn main() -> Result<(), eframe::Error> {
+use gui::wind::run_app;
+
+// #[tokio::main]
+fn main() {
     femme::with_level(femme::LevelFilter::Info);
 
-    tokio::spawn(async {
-        let _ = gui::run_source_ui().await;
-    });
-    tokio::spawn(async {
-        let _ = gui::run_rune_ui().await;
-    });
-
-    Ok(())
+    let _ = run_app();
 }
