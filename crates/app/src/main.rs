@@ -3,16 +3,13 @@
     windows_subsystem = "windows"
 )]
 
+use gui::run_champr;
+
 #[tokio::main]
-async fn main() -> Result<(), eframe::Error> {
+async fn main() -> Result<(), ()> {
     femme::with_level(femme::LevelFilter::Info);
 
-    tokio::spawn(async {
-        let _ = gui::run_source_ui().await;
-    });
-    tokio::spawn(async {
-        let _ = gui::run_rune_ui().await;
-    });
+    run_champr();
 
     Ok(())
 }
