@@ -3,11 +3,13 @@
     windows_subsystem = "windows"
 )]
 
-use gui::wind::run_app;
+use gui::run_champr;
 
-// #[tokio::main]
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), ()> {
     femme::with_level(femme::LevelFilter::Info);
 
-    let _ = run_app();
+    let _ = run_champr();
+
+    Ok(())
 }
