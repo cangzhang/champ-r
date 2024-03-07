@@ -9,7 +9,7 @@ use gui::run_champr;
 async fn main() -> Result<(), ()> {
     femme::with_level(femme::LevelFilter::Info);
 
-    let _ = run_champr();
+    run_champr();
 
     Ok(())
 }
