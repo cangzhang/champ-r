@@ -2,7 +2,7 @@ name: 🐳 Publish OP.GG-URF
 
 on:
   workflow_run:
-    workflows: ["Scheduled Publish", "Trigger Publish URF"]
+    workflows: ["Trigger Publish URF"]
     types:
       - completed
   workflow_dispatch:
