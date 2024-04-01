@@ -2,7 +2,7 @@ name: 🐳 Publish LOLALYTICS-ARAM
 
 on:
   workflow_run:
-    workflows: ["Scheduled Publish", "Trigger Publish ARAM"]
+    workflows: ["Trigger Publish ARAM"]
     types:
       - completed
   workflow_dispatch:

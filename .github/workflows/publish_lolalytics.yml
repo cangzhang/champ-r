@@ -2,7 +2,7 @@ name: 🐳 Publish LOLALYTICS
 
 on:
   workflow_run:
-    workflows: ["Scheduled Publish", "Trigger Publish SR"]
+    workflows: ["Trigger Publish SR"]
     types:
       - completed
   workflow_dispatch:
