@@ -3,16 +3,20 @@
     windows_subsystem = "windows"
 )]
 
-#[tokio::main]
-async fn main() -> Result<(), eframe::Error> {
+slint::include_modules!();
+
+fn main() -> Result<(), slint::PlatformError> {
     femme::with_level(femme::LevelFilter::Info);
+    
+    let ui = AppWindow::new()?;
 
-    tokio::spawn(async {
-        let _ = gui::run_source_ui().await;
-    });
-    tokio::spawn(async {
-        let _ = gui::run_rune_ui().await;
+    ui.on_request_increase_value({
+        let ui_handle = ui.as_weak();
+        move || {
+            let ui = ui_handle.unwrap();
+            ui.set_counter(ui.get_counter() + 1);
+        }
     });
 
-    Ok(())
+    ui.run()
 }

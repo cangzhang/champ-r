@@ -14,3 +14,7 @@ eframe = { version = "0.25.0", features = [
 ] }
 kv-log-macro = "1.0.7"
 femme = "2.2.1"
+slint = "1.6.0"
+
+[build-dependencies]
+slint-build = "1.6"
