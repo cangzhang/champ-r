@@ -14,7 +14,7 @@ export component AppWindow inherits Window {
 
     in-out property <[UiSource]> source-list: [];
     callback apply-builds();
-    
+
     VerticalBox {
         for source[i] in root.source-list: CheckBox {
             text: source.name;
@@ -25,6 +25,8 @@ export component AppWindow inherits Window {
         }
         
         Button {
+            height: 30px;
+            width: 200px;
             text: "Apply Selected Sources";
             clicked => {
                 root.apply-builds();

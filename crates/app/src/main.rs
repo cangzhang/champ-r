@@ -4,10 +4,10 @@
 )]
 
 use kv_log_macro::{error, info};
-use slint::{Model, Timer, VecModel};
-use std::rc::Rc;
+use slint::{Model, VecModel};
+use std::{rc::Rc, time::Duration};
 
-use lcu::web;
+use lcu::{api, cmd, web};
 
 slint::include_modules!();
 
@@ -15,14 +15,38 @@ slint::include_modules!();
 async fn main() -> Result<(), slint::PlatformError> {
     femme::with_level(femme::LevelFilter::Info);
 
+    slint::slint! {
+        import { Button, VerticalBox, CheckBox } from "std-widgets.slint";
+
+        export component RuneWindow inherits Window {
+            title: "Runes";
+            width: 400px;
+            height: 500px;
+
+            in property <string> champion;
+            in property <string> lcu-auth;
+
+            VerticalBox {
+                Text {
+                    text: root.champion;
+                }
+                Text {
+                    text: root.lcu-auth;
+                }
+            }
+        }
+    }
+
     let window = AppWindow::new()?;
+    let rune_window = RuneWindow::new()?;
 
     let weak_win = window.as_weak();
     tokio::spawn(async move {
         let sources = web::fetch_sources().await;
         match sources {
             Ok(sources) => {
-                info!("fetched sources");
+                info!("fetched source list");
+
                 let list = sources
                     .iter()
                     .map(|s| UiSource {
@@ -42,6 +66,36 @@ async fn main() -> Result<(), slint::PlatformError> {
             Err(err) => {
                 error!("Failed to fetch sources: {:?}", err);
             }
+        }
+    });
+
+    let weak_rune_window = rune_window.as_weak();
+    tokio::spawn(async move {
+        loop {
+            let cmd_output = cmd::get_commandline();
+            if cmd_output.auth_url.is_empty() {
+                tokio::time::sleep(Duration::from_millis(2500)).await;
+                continue;
+            }
+
+            let auth_url = format!("https://{}", cmd_output.auth_url);
+            if let Ok(champion_id) = api::get_session(&auth_url).await {
+                if champion_id.is_some() {
+                    weak_rune_window
+                        .upgrade_in_event_loop(move |rune_window| {
+                            rune_window.set_champion(champion_id.unwrap().to_string().into());
+                            let _ = rune_window.run();
+                        })
+                        .unwrap();
+                }
+            }
+
+            weak_rune_window
+                .upgrade_in_event_loop(move |rune_window| {
+                    rune_window.set_lcu_auth(cmd_output.auth_url.clone().into());
+                })
+                .unwrap();
+            tokio::time::sleep(Duration::from_millis(2500)).await;
         }
     });
 

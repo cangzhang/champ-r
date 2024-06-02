@@ -30,7 +30,7 @@ pub async fn watch_auth_and_champion(
             }
         }
 
-        let auth_url = { lcu_auth.read().unwrap().auth_url.clone() };
+        let auth_url: String = { lcu_auth.read().unwrap().auth_url.clone() };
         if !auth_url.is_empty() {
             let full_url = format!("https://{}", auth_url);
             if let Ok(Some(cid)) = api::get_session(&full_url).await {
