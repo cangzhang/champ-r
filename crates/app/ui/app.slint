@@ -1,16 +1,33 @@
-import { Button, VerticalBox } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox } from "std-widgets.slint";
+
+struct UiSource {
+    name: string,
+    source: string,
+    // version: string,
+    checked: bool,
+}
 
 export component AppWindow inherits Window {
-    in-out property<int> counter: 42;
-    callback request-increase-value();
+    width: 400px;
+    height: 500px;
+    title: "ChampR";
+
+    in-out property <[UiSource]> source-list: [];
+    callback apply-builds();
+    
     VerticalBox {
-        Text {
-            text: "Counter: \{root.counter}";
+        for source[i] in root.source-list: CheckBox {
+            text: source.name;
+            checked: source.checked;
+            toggled => {
+                source.checked = !source.checked;
+            }
         }
+        
         Button {
-            text: "Increase value";
+            text: "Apply Selected Sources";
             clicked => {
-                root.request-increase-value();
+                root.apply-builds();
             }
         }
     }
