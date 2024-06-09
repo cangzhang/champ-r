@@ -24,14 +24,14 @@ async fn main() -> Result<(), slint::PlatformError> {
             height: 500px;
 
             in property <string> champion;
-            in property <string> lcu-auth;
+            in property <string> lcu_auth;
 
             VerticalBox {
                 Text {
                     text: root.champion;
                 }
                 Text {
-                    text: root.lcu-auth;
+                    text: root.lcu_auth;
                 }
             }
         }
@@ -69,11 +69,18 @@ async fn main() -> Result<(), slint::PlatformError> {
         }
     });
 
+    let weak_win = window.as_weak();
     let weak_rune_window = rune_window.as_weak();
     tokio::spawn(async move {
         loop {
             let cmd_output = cmd::get_commandline();
             if cmd_output.auth_url.is_empty() {
+                weak_win
+                    .upgrade_in_event_loop(move |window| {
+                        window.set_lcu_running(false);
+                    })
+                    .unwrap();
+
                 tokio::time::sleep(Duration::from_millis(2500)).await;
                 continue;
             }
@@ -89,6 +96,12 @@ async fn main() -> Result<(), slint::PlatformError> {
                         .unwrap();
                 }
             }
+
+            weak_win
+                .upgrade_in_event_loop(move |window| {
+                    window.set_lcu_running(true);
+                })
+                .unwrap();
 
             weak_rune_window
                 .upgrade_in_event_loop(move |rune_window| {

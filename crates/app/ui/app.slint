@@ -1,4 +1,4 @@
-import { Button, VerticalBox, CheckBox } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, Spinner } from "std-widgets.slint";
 
 struct UiSource {
     name: string,
@@ -12,24 +12,39 @@ export component AppWindow inherits Window {
     height: 500px;
     title: "ChampR";
 
-    in-out property <[UiSource]> source-list: [];
-    callback apply-builds();
+    in-out property <[UiSource]> source_list: [];
+    in property <bool> lcu_running: false;
+    callback apply_builds();
 
-    VerticalBox {
-        for source[i] in root.source-list: CheckBox {
+    if root.source_list.length == 0: VerticalBox {
+        Spinner {
+            max-height: 50px;
+            max-width: 50px;
+            indeterminate: true;
+        }
+    }
+
+    if root.source_list.length > 0: VerticalBox {
+        for source[i] in root.source_list: CheckBox {
             text: source.name;
             checked: source.checked;
             toggled => {
                 source.checked = !source.checked;
             }
         }
-        
-        Button {
-            height: 30px;
-            width: 200px;
-            text: "Apply Selected Sources";
-            clicked => {
-                root.apply-builds();
+        if root.lcu_running: VerticalBox {
+            Button {
+                height: 30px;
+                width: 200px;
+                text: "Apply Selected Sources";
+                clicked => {
+                    root.apply_builds();
+                }
+            }
+        }
+        if !root.lcu_running: VerticalBox {
+            Text {
+                text: "League is not running, please start it first.";
             }
         }
     }
