@@ -95,7 +95,7 @@ impl eframe::App for RuneUI {
                         Some((perks_result, champions_result, styles_result)) => {
                             match perks_result {
                                 Ok(perks) => {
-                                    self.all_perks = perks.clone();
+                                    self.all_perks.clone_from(perks);
                                 }
                                 Err(err) => {
                                     ui.label(format!("Failed to list perks: {:?}", err));
@@ -103,7 +103,7 @@ impl eframe::App for RuneUI {
                             };
                             match champions_result {
                                 Ok(champions) => {
-                                    self.all_champions = champions.clone();
+                                    self.all_champions.clone_from(champions);
     
                                     if cid > 0 {
                                         let cur_champion = champions.iter().find(|c| c.id == cid);
@@ -126,7 +126,7 @@ impl eframe::App for RuneUI {
                             };
                             match styles_result {
                                 Ok(styles) => {
-                                    self.all_styles = styles.clone();
+                                    self.all_styles.clone_from(styles);
                                 }
                                 Err(err) => {
                                     ui.label(format!("Failed to list styles: {:?}", err));
@@ -156,9 +156,9 @@ impl eframe::App for RuneUI {
                                 ui.spinner();
                             }
                             Some(Ok(list)) => {
-                                self.sources = list.clone();
+                                self.sources.clone_from(list);
                                 if self.selected_source.is_empty() {
-                                    self.selected_source = list[0].value.clone();
+                                    self.selected_source.clone_from(&list[0].value);
                                 }
     
                                 let prev_selected = self.selected_source.clone();
@@ -210,7 +210,7 @@ impl eframe::App for RuneUI {
                                 ui.spinner();
                             }
                             Some(Ok(builds)) => {
-                                self.builds = builds.clone();
+                                self.builds.clone_from(builds);
     
                                 builds.iter().for_each(|build| {
                                     build.runes.iter().for_each(|rune| {
@@ -225,10 +225,8 @@ impl eframe::App for RuneUI {
                                                 .iter()
                                                 .find(|p| p.id == rune.sub_style_id);
     
-                                            let icon_paths = vec![
-                                                primary_perk.map(|p| p.icon_path.clone()),
-                                                sub_perk.map(|p| p.icon_path.clone()),
-                                            ];
+                                            let icon_paths = [primary_perk.map(|p| p.icon_path.clone()),
+                                                sub_perk.map(|p| p.icon_path.clone())];
     
                                             icon_paths.iter().enumerate().for_each(
                                                 |(idx, icon_path)| {

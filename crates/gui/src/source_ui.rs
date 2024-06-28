@@ -85,7 +85,7 @@ impl eframe::App for SourceUI {
                             ui.spinner();
                         }
                         Some(Ok(list)) => {
-                            self.sources = list.clone();
+                            self.sources.clone_from(list);
 
                             let mut indexes = list
                                 .iter()
