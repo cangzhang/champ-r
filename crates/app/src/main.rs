@@ -167,7 +167,7 @@ async fn main() -> Result<(), slint::PlatformError> {
             let auth_url = format!("https://{}", cmd_output.auth_url);
             if let Ok(champion_id) = api::get_session(&auth_url).await {
                 let cid = if champion_id.is_some() {
-                    champion_id.clone().unwrap()
+                    champion_id.unwrap()
                 } else {
                     0
                 };
@@ -179,11 +179,11 @@ async fn main() -> Result<(), slint::PlatformError> {
                             if cid > 0 {
                                 rune_window.set_champion_id(cid.try_into().unwrap());
                                 let _ = rune_window.show();
-                                let _ = rune_window.set_on_top(true);
+                                rune_window.set_on_top(true);
                                 info!("rune_window: got champion id: {}", cid);
                             } else {
                                 // rune_window.set_champion("No champion selected".into());
-                                let _ = rune_window.set_on_top(false);
+                                rune_window.set_on_top(false);
                                 // info!("rune_window: no champion selected");
                             }
                         })
