@@ -6,14 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gui = { path = "../gui" }
 lcu = { path = "../lcu" }
 tokio = { version = "1", features = ["full"] }
 futures = "0.3.28"
 kv-log-macro = "1.0.7"
 femme = "2.2.1"
-slint = "1.6.0"
 anyhow = "1.0.86"
-
-[build-dependencies]
-slint-build = "1.6"
+vizia = { git = "https://github.com/vizia/vizia" }
