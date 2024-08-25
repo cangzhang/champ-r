@@ -62,7 +62,7 @@ impl Model for AppData {
 
             AppEvent::UpdateCurrentChampionId(champion_id) => {
                 self.current_champion_id = champion_id.clone();
-                cx.emit(WindowEvent::SetAlwaysOnTop(true));
+                cx.emit(WindowEvent::SetAlwaysOnTop(*champion_id > 0));
             }
 
             AppEvent::SetLcuAuthUrl(auth_url) => {
