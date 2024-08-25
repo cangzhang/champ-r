@@ -7,80 +7,37 @@ use kv_log_macro::{error, info};
 use lcu::{api, cmd, source, web};
 use vizia::prelude::*;
 
-const STYLE: &str = r#"
-
-    .modal {
-        space: 1s;
-        child-space: 8px;
-        child-left: 1s;
-        child-right: 1s;
-        background-color: white;
-        border-radius: 3px;
-        border-width: 1px;
-        border-color: #999999;
-        outer-shadow: 0 3 10 #00000055;
-        overflow: visible;
-        child-space: 10px;
-        height: auto;
-    }
-
-    .modal>vstack>label {
-        width: auto;
-        height: auto;
-        space: 5px;
-        child-space: 1s;
-    }
-
-    .modal button {
-        border-radius: 3px;
-        child-space: 1s;
-    }
-
-    .modal hstack {
-        col-between: 20px;
-        size: auto;
-    }
-"#;
-
 #[derive(Lens, Default)]
 pub struct AppData {
-    is_saved: bool,
-    show_dialog: bool,
     source_list: Vec<source::SourceItem>,
     checked_sources: Vec<String>,
     lcu_running: bool,
     current_champion_id: i64,
+    lcu_auth_url: String,
 }
 
 impl Model for AppData {
     fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
         event.map(|window_event, meta| {
-            // Intercept WindowClose event to show a dialog if not 'saved'.
             if let WindowEvent::WindowClose = window_event {
-                if !self.is_saved {
-                    self.show_dialog = true;
-                    meta.consume();
-                }
+                meta.consume();
+            }
+
+            if let WindowEvent::SetAlwaysOnTop(true) = window_event {
+                // meta.consume();
             }
         });
 
         event.map(|app_event, _| match app_event {
-            AppEvent::HideModal => {
-                self.show_dialog = false;
-            }
+            AppEvent::HideModal => {}
 
-            AppEvent::Save => {
-                self.is_saved = true;
-            }
+            AppEvent::Save => {}
 
             AppEvent::SaveAndClose => {
-                self.is_saved = true;
                 cx.emit(WindowEvent::WindowClose);
             }
 
-            AppEvent::Cancel => {
-                self.is_saved = false;
-            }
+            AppEvent::Cancel => {}
 
             AppEvent::FetchedSources(sources) => {
                 self.source_list = sources.clone();
@@ -99,11 +56,17 @@ impl Model for AppData {
 
                 if !running {
                     self.current_champion_id = 0;
+                    self.lcu_auth_url = String::new();
                 }
             }
 
             AppEvent::UpdateCurrentChampionId(champion_id) => {
                 self.current_champion_id = champion_id.clone();
+                cx.emit(WindowEvent::SetAlwaysOnTop(true));
+            }
+
+            AppEvent::SetLcuAuthUrl(auth_url) => {
+                self.lcu_auth_url = auth_url.clone();
             }
         });
     }
@@ -118,6 +81,7 @@ pub enum AppEvent {
     ToggleSource(String),
     UpdateLcuStatus(bool),
     UpdateCurrentChampionId(i64),
+    SetLcuAuthUrl(String),
 }
 
 #[tokio::main]
@@ -125,10 +89,10 @@ async fn main() -> Result<(), ApplicationError> {
     femme::with_level(femme::LevelFilter::Info);
 
     let app = Application::new(|cx| {
-        cx.add_stylesheet(STYLE).expect("Failed to add stylesheet");
+        cx.add_stylesheet(include_style!("src/style.css"))
+            .expect("Failed to add stylesheet");
+
         AppData {
-            is_saved: false,
-            show_dialog: false,
             ..Default::default()
         }
         .build(cx);
@@ -150,8 +114,9 @@ async fn main() -> Result<(), ApplicationError> {
                             })
                         },
                         &source.get(cx).label,
-                    );
-                });
+                    ).class("source");
+                })
+                .class("source-list");
             })
             .height(Stretch(1.))
             .class("source-list");
@@ -166,7 +131,19 @@ async fn main() -> Result<(), ApplicationError> {
                     }
                 }),
             );
+            HStack::new(cx, |cx| {
+                Label::new(
+                    cx,
+                    AppData::lcu_auth_url.map(|url| format!("🔑 Auth URL: {}", url)),
+                )
+                .font_style(FontStyle::Italic)
+                // .font_stretch(FontStretch::Condensed)
+                .class("lcu-auth-url");
+            })
+            .text_align(TextAlign::Center)
+            .height(Auto);
         })
+        .child_space(Pixels(16.0))
         .height(Stretch(1.));
     })
     .title("ChampR")
@@ -206,9 +183,11 @@ async fn main() -> Result<(), ApplicationError> {
             proxy
                 .emit(AppEvent::UpdateLcuStatus(true))
                 .expect("Failed to emit event");
-            info!("rune_window: auth url: {}", cmd_output.auth_url);
 
             let auth_url = format!("https://{}", cmd_output.auth_url);
+            proxy
+                .emit(AppEvent::SetLcuAuthUrl(auth_url.clone()))
+                .expect("Failed to emit event");
             if let Ok(champion_id) = api::get_session(&auth_url).await {
                 let cid = if champion_id.is_some() {
                     champion_id.unwrap()
@@ -216,7 +195,7 @@ async fn main() -> Result<(), ApplicationError> {
                     0
                 };
                 if prev_cid != cid {
-                    info!("rune_window: champion id changed to: {}", cid);
+                    info!("champion id changed to: {}", cid);
                     prev_cid = cid;
                 }
 

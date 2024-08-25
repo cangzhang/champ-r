@@ -1,0 +1,46 @@
+.modal {
+  space: 1s;
+  child-space: 8px;
+  child-left: 1s;
+  child-right: 1s;
+  background-color: white;
+  border-radius: 3px;
+  border-width: 1px;
+  border-color: #999999;
+  outer-shadow: 0 3 10 #00000055;
+  overflow: visible;
+  child-space: 10px;
+  height: auto;
+}
+
+.modal>vstack>label {
+  width: auto;
+  height: auto;
+  space: 5px;
+  child-space: 1s;
+}
+
+.modal button {
+  border-radius: 3px;
+  child-space: 1s;
+}
+
+.modal hstack {
+  col-between: 20px;
+  size: auto;
+}
+
+.lcu-auth-url {
+  font-family: 'Fira Code';
+  overflow: visible;
+}
+
+.source-list {
+  border-wdith: 1px;
+  border-color: #999999;
+  col-between: 20px;
+}
+
+.source {
+  child-space: 4px;
+}
