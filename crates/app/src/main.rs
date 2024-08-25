@@ -20,7 +20,7 @@ impl Model for AppData {
     fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
         event.map(|window_event, meta| {
             if let WindowEvent::WindowClose = window_event {
-                meta.consume();
+                // meta.consume();
             }
 
             if let WindowEvent::SetAlwaysOnTop(true) = window_event {
