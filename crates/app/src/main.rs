@@ -14,6 +14,9 @@ pub struct AppData {
     lcu_running: bool,
     current_champion_id: i64,
     lcu_auth_url: String,
+
+    // UI
+    pub tabs: Vec<&'static str>,
 }
 
 impl Model for AppData {
@@ -93,58 +96,95 @@ async fn main() -> Result<(), ApplicationError> {
             .expect("Failed to add stylesheet");
 
         AppData {
+            tabs: vec!["Builds", "Runes", "Settings"],
             ..Default::default()
         }
         .build(cx);
 
-        VStack::new(cx, |cx| {
-            ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
-                List::new(cx, AppData::source_list, |cx, _, source| {
-                    let val = source.get(cx).value.clone();
-                    let val2 = val.clone();
-                    let checked =
-                        AppData::checked_sources.map(move |sources| sources.contains(&val));
+        TabView::new(cx, AppData::tabs, |cx, item| match item.get(cx) {
+            "Builds" => TabPair::new(
+                move |cx| {
+                    Label::new(cx, item).class("tab-name").hoverable(false);
+                },
+                |cx| {
+                    VStack::new(cx, |cx| {
+                        ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                            List::new(cx, AppData::source_list, |cx, _, source| {
+                                let val = source.get(cx).value.clone();
+                                let val2 = val.clone();
+                                let checked = AppData::checked_sources
+                                    .map(move |sources| sources.contains(&val));
 
-                    FormControl::new(
-                        cx,
-                        move |cx| {
-                            let val2 = val2.clone();
-                            Checkbox::new(cx, checked).on_toggle(move |cx| {
-                                cx.emit(AppEvent::ToggleSource(val2.clone()));
+                                FormControl::new(
+                                    cx,
+                                    move |cx| {
+                                        let val2 = val2.clone();
+                                        Checkbox::new(cx, checked).on_toggle(move |cx| {
+                                            cx.emit(AppEvent::ToggleSource(val2.clone()));
+                                        })
+                                    },
+                                    &source.get(cx).label,
+                                )
+                                .class("source");
                             })
-                        },
-                        &source.get(cx).label,
-                    ).class("source");
-                })
-                .class("source-list");
-            })
-            .height(Stretch(1.))
-            .class("source-list");
+                            .class("source-list");
+                        })
+                        .height(Stretch(1.))
+                        .class("source-list");
 
-            Label::new(
-                cx,
-                AppData::lcu_running.map(|&running| {
-                    if running {
-                        "LCU is running"
-                    } else {
-                        "LCU is not running"
-                    }
-                }),
-            );
-            HStack::new(cx, |cx| {
-                Label::new(
-                    cx,
-                    AppData::lcu_auth_url.map(|url| format!("🔑 Auth URL: {}", url)),
-                )
-                .font_style(FontStyle::Italic)
-                // .font_stretch(FontStretch::Condensed)
-                .class("lcu-auth-url");
-            })
-            .text_align(TextAlign::Center)
-            .height(Auto);
-        })
-        .child_space(Pixels(16.0))
-        .height(Stretch(1.));
+                        Label::new(
+                            cx,
+                            AppData::lcu_running.map(|&running| {
+                                if running {
+                                    "LCU is running"
+                                } else {
+                                    "LCU is not running"
+                                }
+                            }),
+                        );
+                        HStack::new(cx, |cx| {
+                            Label::new(
+                                cx,
+                                AppData::lcu_auth_url.map(|url| format!("🔑 Auth URL: {}", url)),
+                            )
+                            .font_style(FontStyle::Italic)
+                            // .font_stretch(FontStretch::Condensed)
+                            .class("lcu-auth-url");
+                        })
+                        .text_align(TextAlign::Center)
+                        .height(Auto);
+                    })
+                    .child_space(Pixels(16.0))
+                    .height(Stretch(1.));
+                },
+            ),
+
+            "Runes" => TabPair::new(
+                move |cx| {
+                    Label::new(cx, item).class("tab-name").hoverable(false);
+                },
+                |cx| {
+                    ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                        Label::new(cx, "Runes");
+                    })
+                    .class("widgets");
+                },
+            ),
+
+            "Settings" => TabPair::new(
+                move |cx| {
+                    Label::new(cx, item).class("tab-name").hoverable(false);
+                },
+                |cx| {
+                    ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                        Label::new(cx, "Settings");
+                    })
+                    .class("widgets");
+                },
+            ),
+
+            _ => TabPair::new(|_| {}, |_| {}),
+        });
     })
     .title("ChampR")
     .inner_size((500, 400));
