@@ -12,4 +12,4 @@ futures = "0.3.28"
 kv-log-macro = "1.0.7"
 femme = "2.2.1"
 anyhow = "1.0.86"
-vizia = { git = "https://github.com/cangzhang/vizia" }
+vizia = { git = "https://github.com/vizia/vizia" }

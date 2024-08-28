@@ -21,7 +21,7 @@ pub struct AppData {
 
 impl Model for AppData {
     fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
-        event.map(|window_event, meta| {
+        event.map(|window_event, _meta| {
             if let WindowEvent::WindowClose = window_event {
                 // meta.consume();
             }
@@ -115,22 +115,22 @@ async fn main() -> Result<(), ApplicationError> {
                                 let checked = AppData::checked_sources
                                     .map(move |sources| sources.contains(&val));
 
-                                FormControl::new(
-                                    cx,
-                                    move |cx| {
-                                        let val2 = val2.clone();
-                                        Checkbox::new(cx, checked).on_toggle(move |cx| {
-                                            cx.emit(AppEvent::ToggleSource(val2.clone()));
-                                        })
-                                    },
-                                    &source.get(cx).label,
-                                )
-                                .class("source");
+                                let label = source.get(cx).label.clone();
+                                HStack::new(cx, |cx| {
+                                    Checkbox::new(cx, checked).on_toggle(move |cx| {
+                                        cx.emit(AppEvent::ToggleSource(val2.clone()));
+                                    });
+                                    Label::new(cx, label).describing("check");
+                                })
+                                .size(Auto)
+                                .child_top(Stretch(1.0))
+                                .child_bottom(Stretch(1.0))
+                                .col_between(Pixels(8.0));
                             })
                             .class("source-list");
                         })
                         .height(Stretch(1.))
-                        .class("source-list");
+                        .class("list-container");
 
                         Label::new(
                             cx,
@@ -146,13 +146,11 @@ async fn main() -> Result<(), ApplicationError> {
                             Label::new(
                                 cx,
                                 AppData::lcu_auth_url.map(|url| format!("🔑 Auth URL: {}", url)),
-                            )
-                            .font_style(FontStyle::Italic)
-                            // .font_stretch(FontStretch::Condensed)
-                            .class("lcu-auth-url");
+                            );
                         })
                         .text_align(TextAlign::Center)
-                        .height(Auto);
+                        .height(Auto)
+                        .font_family(vec![FamilyOwned::Named(String::from("Courier New"))]);
                     })
                     .child_space(Pixels(16.0))
                     .height(Stretch(1.));
