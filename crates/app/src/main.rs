@@ -115,18 +115,22 @@ async fn main() -> Result<(), ApplicationError> {
                                 let checked = AppData::checked_sources
                                     .map(move |sources| sources.contains(&val));
 
-                                let label = source.get(cx).label.clone();
+                                let label = source.get(cx).label.clone().to_uppercase();
                                 HStack::new(cx, |cx| {
-                                    Checkbox::new(cx, checked).on_toggle(move |cx| {
-                                        cx.emit(AppEvent::ToggleSource(val2.clone()));
-                                    });
-                                    Label::new(cx, label).describing("check");
+                                    let v = val2.clone();
+                                    Checkbox::new(cx, checked)
+                                        .on_toggle(move |cx| {
+                                            cx.emit(AppEvent::ToggleSource(v.clone()));
+                                        })
+                                        .id(val2.clone());
+                                    Label::new(cx, label).describing(val2.clone()).class("source-name");
                                 })
                                 .size(Auto)
-                                .child_top(Stretch(1.0))
-                                .child_bottom(Stretch(1.0))
-                                .col_between(Pixels(8.0));
+                                .child_top(Pixels(4.))
+                                .child_bottom(Pixels(4.))
+                                .col_between(Pixels(8.));
                             })
+
                             .class("source-list");
                         })
                         .height(Stretch(1.))

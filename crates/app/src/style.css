@@ -44,3 +44,8 @@
 .source {
   child-space: 4px;
 }
+
+.source-name {
+  font-size: 14;
+  font-weight: 500;
+}
