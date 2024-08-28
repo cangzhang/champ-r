@@ -3,20 +3,35 @@
     windows_subsystem = "windows"
 )]
 
+use std::fmt::format;
+
 use kv_log_macro::{error, info};
 use lcu::{api, cmd, source, web};
 use vizia::prelude::*;
 
 #[derive(Lens, Default)]
 pub struct AppData {
-    source_list: Vec<source::SourceItem>,
-    checked_sources: Vec<String>,
-    lcu_running: bool,
-    current_champion_id: i64,
-    lcu_auth_url: String,
+    pub source_list: Vec<source::SourceItem>,
+    pub checked_sources: Vec<String>,
+    pub lcu_running: bool,
+    pub current_champion_id: i64,
+    pub lcu_auth_url: String,
 
     // UI
     pub tabs: Vec<&'static str>,
+    pub show_rune_window: bool,
+    pub rune_source: String,
+}
+
+pub enum AppEvent {
+    FetchedSources(Vec<source::SourceItem>),
+    ToggleSource(String),
+    UpdateLcuStatus(bool),
+    UpdateCurrentChampionId(i64),
+    SetLcuAuthUrl(String),
+    ToggleRuneWindow(bool),
+    CloseRuneWindow,
+    SetRuneSource(String),
 }
 
 impl Model for AppData {
@@ -32,18 +47,9 @@ impl Model for AppData {
         });
 
         event.map(|app_event, _| match app_event {
-            AppEvent::HideModal => {}
-
-            AppEvent::Save => {}
-
-            AppEvent::SaveAndClose => {
-                cx.emit(WindowEvent::WindowClose);
-            }
-
-            AppEvent::Cancel => {}
-
             AppEvent::FetchedSources(sources) => {
                 self.source_list = sources.clone();
+                self.rune_source = self.source_list.first().unwrap().value.clone();
             }
 
             AppEvent::ToggleSource(source_id) => {
@@ -65,26 +71,27 @@ impl Model for AppData {
 
             AppEvent::UpdateCurrentChampionId(champion_id) => {
                 self.current_champion_id = champion_id.clone();
-                cx.emit(WindowEvent::SetAlwaysOnTop(*champion_id > 0));
+                // cx.emit(WindowEvent::SetAlwaysOnTop(*champion_id > 0));
+                self.show_rune_window = *champion_id > 0;
             }
 
             AppEvent::SetLcuAuthUrl(auth_url) => {
                 self.lcu_auth_url = auth_url.clone();
             }
+
+            AppEvent::ToggleRuneWindow(show) => {
+                self.show_rune_window = show.clone();
+            }
+
+            AppEvent::CloseRuneWindow => {
+                self.show_rune_window = false;
+            }
+
+            AppEvent::SetRuneSource(source) => {
+                self.rune_source = source.clone();
+            }
         });
     }
-}
-
-pub enum AppEvent {
-    HideModal,
-    Save,
-    SaveAndClose,
-    Cancel,
-    FetchedSources(Vec<source::SourceItem>),
-    ToggleSource(String),
-    UpdateLcuStatus(bool),
-    UpdateCurrentChampionId(i64),
-    SetLcuAuthUrl(String),
 }
 
 #[tokio::main]
@@ -96,7 +103,7 @@ async fn main() -> Result<(), ApplicationError> {
             .expect("Failed to add stylesheet");
 
         AppData {
-            tabs: vec!["Builds", "Runes", "Settings"],
+            tabs: vec!["Builds", "Settings"],
             ..Default::default()
         }
         .build(cx);
@@ -123,14 +130,15 @@ async fn main() -> Result<(), ApplicationError> {
                                             cx.emit(AppEvent::ToggleSource(v.clone()));
                                         })
                                         .id(val2.clone());
-                                    Label::new(cx, label).describing(val2.clone()).class("source-name");
+                                    Label::new(cx, label)
+                                        .describing(val2.clone())
+                                        .class("source-name");
                                 })
                                 .size(Auto)
                                 .child_top(Pixels(4.))
                                 .child_bottom(Pixels(4.))
                                 .col_between(Pixels(8.));
                             })
-
                             .class("source-list");
                         })
                         .height(Stretch(1.))
@@ -161,21 +169,11 @@ async fn main() -> Result<(), ApplicationError> {
                 },
             ),
 
-            "Runes" => TabPair::new(
-                move |cx| {
-                    Label::new(cx, item).class("tab-name").hoverable(false);
-                },
-                |cx| {
-                    ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
-                        Label::new(cx, "Runes");
-                    })
-                    .class("widgets");
-                },
-            ),
-
             "Settings" => TabPair::new(
                 move |cx| {
-                    Label::new(cx, item).class("tab-name").hoverable(false);
+                    Label::new(cx, item)
+                        .hoverable(false)
+                        .class("tab-name");
                 },
                 |cx| {
                     ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
@@ -186,6 +184,54 @@ async fn main() -> Result<(), ApplicationError> {
             ),
 
             _ => TabPair::new(|_| {}, |_| {}),
+        });
+
+        Binding::new(cx, AppData::show_rune_window, |cx, show_subwindow| {
+            if show_subwindow.get(cx) {
+                Window::new(cx, |cx| {
+                    VStack::new(cx, |cx| {
+                        Label::new(cx, "Rune window");
+                        Label::new(
+                            cx,
+                            AppData::current_champion_id.map(|id| format!("Champion ID: {}", id)),
+                        );
+
+                        Dropdown::new(
+                            cx,
+                            move |cx| {
+                                Button::new(cx, |cx| Label::new(cx, AppData::rune_source))
+                                    .on_press(|cx| cx.emit(PopupEvent::Switch));
+                            },
+                            move |cx| {
+                                List::new(cx, AppData::source_list, |cx, _, item| {
+                                    let label = item.get(cx).label.clone();
+                                    let value = item.get(cx).value.clone();
+                                    Label::new(cx, label)
+                                        .cursor(CursorIcon::Hand)
+                                        .bind(AppData::rune_source, move |handle, selected| {
+                                            if item.get(&handle).value.eq(&selected.get(&handle)) {
+                                                handle.checked(true);
+                                            }
+                                        })
+                                        .on_press(move |cx| {
+                                            cx.emit(AppEvent::SetRuneSource(value.clone()));
+                                            cx.emit(PopupEvent::Close);
+                                        });
+                                });
+                            },
+                        )
+                        .top(Pixels(40.0))
+                        .width(Pixels(100.0));
+                    });
+                })
+                .on_close(|cx| {
+                    cx.emit(AppEvent::CloseRuneWindow);
+                })
+                .always_on_top(true)
+                .title("Runes")
+                .inner_size((400, 200))
+                .position((500, 100));
+            }
         });
     })
     .title("ChampR")

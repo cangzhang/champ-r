@@ -49,3 +49,8 @@
   font-size: 14;
   font-weight: 500;
 }
+
+.tab-name {
+  font-weight: 700;
+  font-style: italic;
+}
