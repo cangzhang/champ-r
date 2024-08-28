@@ -3,7 +3,6 @@
     windows_subsystem = "windows"
 )]
 
-use std::fmt::format;
 
 use kv_log_macro::{error, info};
 use lcu::{api, cmd, source, web};
@@ -53,7 +52,7 @@ impl Model for AppData {
             }
 
             AppEvent::ToggleSource(source_id) => {
-                if self.checked_sources.contains(&source_id) {
+                if self.checked_sources.contains(source_id) {
                     self.checked_sources.retain(|id| id.ne(source_id));
                 } else {
                     self.checked_sources.push(source_id.clone());
@@ -61,7 +60,7 @@ impl Model for AppData {
             }
 
             AppEvent::UpdateLcuStatus(running) => {
-                self.lcu_running = running.clone();
+                self.lcu_running = *running;
 
                 if !running {
                     self.current_champion_id = 0;
@@ -70,7 +69,7 @@ impl Model for AppData {
             }
 
             AppEvent::UpdateCurrentChampionId(champion_id) => {
-                self.current_champion_id = champion_id.clone();
+                self.current_champion_id = *champion_id;
                 // cx.emit(WindowEvent::SetAlwaysOnTop(*champion_id > 0));
                 self.show_rune_window = *champion_id > 0;
             }
@@ -80,7 +79,7 @@ impl Model for AppData {
             }
 
             AppEvent::ToggleRuneWindow(show) => {
-                self.show_rune_window = show.clone();
+                self.show_rune_window = *show;
             }
 
             AppEvent::CloseRuneWindow => {
