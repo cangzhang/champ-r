@@ -3,9 +3,8 @@
     windows_subsystem = "windows"
 )]
 
-
 use kv_log_macro::{error, info};
-use lcu::{api, cmd, source, web};
+use lcu::{api, builds, cmd, source, web};
 use vizia::prelude::*;
 
 #[derive(Lens, Default)]
@@ -20,6 +19,8 @@ pub struct AppData {
     pub tabs: Vec<&'static str>,
     pub show_rune_window: bool,
     pub rune_source: String,
+    pub runes: Vec<builds::Rune>,
+    pub builds: Vec<builds::ItemBuild>,
 }
 
 pub enum AppEvent {
@@ -31,6 +32,8 @@ pub enum AppEvent {
     ToggleRuneWindow(bool),
     CloseRuneWindow,
     SetRuneSource(String),
+    UpdateBuilds(Vec<builds::BuildSection>),
+    ReFetchRunes,
 }
 
 impl Model for AppData {
@@ -52,7 +55,7 @@ impl Model for AppData {
             }
 
             AppEvent::ToggleSource(source_id) => {
-                if self.checked_sources.contains(source_id) {
+                if self.checked_sources.contains(&source_id) {
                     self.checked_sources.retain(|id| id.ne(source_id));
                 } else {
                     self.checked_sources.push(source_id.clone());
@@ -69,9 +72,54 @@ impl Model for AppData {
             }
 
             AppEvent::UpdateCurrentChampionId(champion_id) => {
-                self.current_champion_id = *champion_id;
-                // cx.emit(WindowEvent::SetAlwaysOnTop(*champion_id > 0));
-                self.show_rune_window = *champion_id > 0;
+                if *champion_id != self.current_champion_id {
+                    self.current_champion_id = *champion_id;
+                    self.show_rune_window = *champion_id > 0;
+                    if *champion_id > 0 {
+                        // cx.emit(WindowEvent::SetAlwaysOnTop(*champion_id > 0));
+                        cx.emit(AppEvent::ReFetchRunes);
+                    } else {
+                        self.runes = vec![];
+                        self.builds = vec![];
+                    }
+                }
+            }
+
+            AppEvent::ReFetchRunes => {
+                let mut proxy = cx.get_proxy();
+                if self.current_champion_id > 0 && !self.rune_source.is_empty() {
+                    let rune_source = self.rune_source.clone();
+                    let current_champion_id = self.current_champion_id;
+                    tokio::spawn(async move {
+                        let runes = web::list_builds_by_id(&rune_source, current_champion_id).await;
+                        match runes {
+                            Ok(runes) => {
+                                info!(
+                                    "Fetched runes for : {:?} {:?}",
+                                    rune_source, current_champion_id
+                                );
+                                proxy
+                                    .emit(AppEvent::UpdateBuilds(runes))
+                                    .expect("Failed to emit event");
+                            }
+                            Err(err) => {
+                                error!("Failed to fetch runes: {:?}", err);
+                            }
+                        }
+                    });
+                }
+            }
+
+            AppEvent::UpdateBuilds(builds) => {
+                self.runes = builds
+                    .iter()
+                    .flat_map(|build| build.runes.clone())
+                    .collect();
+                self.builds = builds
+                    .iter()
+                    .flat_map(|build| build.item_builds.clone())
+                    .collect();
+                // cx.emit(WindowEvent::Redraw);
             }
 
             AppEvent::SetLcuAuthUrl(auth_url) => {
@@ -88,6 +136,7 @@ impl Model for AppData {
 
             AppEvent::SetRuneSource(source) => {
                 self.rune_source = source.clone();
+                // cx.emit(AppEvent::ReFetchRunes);
             }
         });
     }
@@ -170,9 +219,7 @@ async fn main() -> Result<(), ApplicationError> {
 
             "Settings" => TabPair::new(
                 move |cx| {
-                    Label::new(cx, item)
-                        .hoverable(false)
-                        .class("tab-name");
+                    Label::new(cx, item).hoverable(false).class("tab-name");
                 },
                 |cx| {
                     ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
@@ -215,12 +262,29 @@ async fn main() -> Result<(), ApplicationError> {
                                         .on_press(move |cx| {
                                             cx.emit(AppEvent::SetRuneSource(value.clone()));
                                             cx.emit(PopupEvent::Close);
+                                            cx.emit(AppEvent::ReFetchRunes);
                                         });
                                 });
                             },
                         )
                         .top(Pixels(40.0))
                         .width(Pixels(100.0));
+
+                        Binding::new(cx, AppData::runes, |cx, _| {
+                            ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                                List::new(cx, AppData::runes, |cx, _, rune| {
+                                    Label::new(cx, rune.get(cx).name.clone());
+                                });
+                            });
+                        });
+
+                        Binding::new(cx, AppData::builds, |cx, _| {
+                            ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                                List::new(cx, AppData::builds, |cx, _, build| {
+                                    Label::new(cx, build.get(cx).title.clone());
+                                });
+                            });
+                        });
                     });
                 })
                 .on_close(|cx| {
@@ -228,8 +292,7 @@ async fn main() -> Result<(), ApplicationError> {
                 })
                 .always_on_top(true)
                 .title("Runes")
-                .inner_size((400, 200))
-                .position((500, 100));
+                .inner_size((400, 500));
             }
         });
     })

@@ -1,14 +1,13 @@
 use futures::StreamExt;
-
 use kv_log_macro::info;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::{
     fs,
     io::Write,
     path::Path,
     sync::{Arc, Mutex},
 };
+use vizia::prelude::*;
 
 use crate::web::{self, ChampionsMap, FetchError};
 
@@ -33,7 +32,7 @@ pub struct BuildSection {
     pub runes: Vec<Rune>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Data)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemBuild {
     pub title: String,
@@ -42,14 +41,14 @@ pub struct ItemBuild {
     pub blocks: Vec<Block>,
     pub map: String,
     pub mode: String,
-    pub preferred_item_slots: Option<Vec<Value>>,
+    pub preferred_item_slots: Option<Vec<String>>,
     pub sortrank: i64,
     pub started_from: String,
     #[serde(rename = "type")]
     pub type_field: Option<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Data)]
 #[serde(rename_all = "camelCase")]
 pub struct Block {
     #[serde(rename = "type")]
@@ -57,14 +56,14 @@ pub struct Block {
     pub items: Option<Vec<Item>>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Data)]
 #[serde(rename_all = "camelCase")]
 pub struct Item {
     pub id: String,
     pub count: u8,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Data)]
 #[serde(rename_all = "camelCase")]
 pub struct Rune {
     pub alias: String,

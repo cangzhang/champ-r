@@ -1632,6 +1632,7 @@ dependencies = [
  "tar",
  "tokio",
  "url",
+ "vizia",
 ]
 
 [[package]]
