@@ -3,7 +3,9 @@
     windows_subsystem = "windows"
 )]
 
+use bytes::Bytes;
 use kv_log_macro::{error, info};
+use std::collections::HashMap;
 use vizia::prelude::*;
 
 use lcu::{api, builds, cmd, source, web};
@@ -22,6 +24,8 @@ pub struct AppData {
     pub rune_source: String,
     pub runes: Vec<builds::Rune>,
     pub builds: Vec<builds::ItemBuild>,
+    pub perks: Vec<api::Perk>,
+    pub rune_images: HashMap<i64, Bytes>,
 }
 
 pub enum AppEvent {
@@ -35,6 +39,8 @@ pub enum AppEvent {
     SetRuneSource(String),
     UpdateBuilds(Vec<builds::BuildSection>),
     ReFetchRunes,
+    SetPerks(Vec<api::Perk>),
+    SetRuneImage(Bytes),
 }
 
 impl Model for AppData {
@@ -96,7 +102,7 @@ impl Model for AppData {
                         match runes {
                             Ok(runes) => {
                                 info!(
-                                    "Fetched runes for : {:?} {:?}",
+                                    "Fetched runes for: {:?} {:?}",
                                     rune_source, current_champion_id
                                 );
                                 proxy
@@ -111,20 +117,80 @@ impl Model for AppData {
                 }
             }
 
+            AppEvent::SetRuneImage(rune_image) => {
+                self.rune_images
+                    .insert(self.current_champion_id, rune_image.clone());
+            }
+
             AppEvent::UpdateBuilds(builds) => {
-                self.runes = builds
+                let runes: Vec<builds::Rune> = builds
                     .iter()
                     .flat_map(|build| build.runes.clone())
                     .collect();
+                self.runes = runes.clone();
+
                 self.builds = builds
                     .iter()
                     .flat_map(|build| build.item_builds.clone())
                     .collect();
-                // cx.emit(WindowEvent::Redraw);
+
+                let mut proxy = cx.get_proxy();
+                let perks = self.perks.clone();
+                let auth_url = self.lcu_auth_url.clone();
+                tokio::spawn(async move {
+                    for rune in runes {
+                        let r = perks.iter().find(|p| p.style_id == rune.primary_style_id);
+                        if let Some(rune_perk) = r {
+                            let img_url = format!("{}{}", auth_url, rune_perk.icon_path);
+                            let rune_image = api::fetch_rune_image(&img_url).await;
+                            match rune_image {
+                                Ok(rune_image) => {
+                                    let img_name = format!("rune_{}.png", rune_perk.style_id);
+                                    proxy
+                                        .load_image(
+                                            img_name,
+                                            rune_image.as_ref(),
+                                            ImageRetentionPolicy::DropWhenUnusedForOneFrame,
+                                        )
+                                        .expect("Failed to load image");
+                                }
+                                Err(err) => {
+                                    error!("Failed to fetch rune image: {:?}", err);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            AppEvent::SetPerks(perks) => {
+                self.perks = perks.clone();
             }
 
             AppEvent::SetLcuAuthUrl(auth_url) => {
-                self.lcu_auth_url = auth_url.clone();
+                if !self.lcu_auth_url.eq(auth_url) {
+                    info!("LCU auth url changed to: {}", auth_url);
+                    self.lcu_auth_url = auth_url.clone();
+                }
+
+                let mut proxy = cx.get_proxy();
+                if self.perks.is_empty() && !self.lcu_auth_url.is_empty() {
+                    let auth_url = auth_url.clone();
+                    tokio::spawn(async move {
+                        let perks = api::list_all_perks(&auth_url).await;
+                        match perks {
+                            Ok(perks) => {
+                                info!("Fetched lcu perks: {:?}", perks.len());
+                                proxy
+                                    .emit(AppEvent::SetPerks(perks))
+                                    .expect("Failed to emit event");
+                            }
+                            Err(err) => {
+                                error!("Failed to fetch perks: {:?}", err);
+                            }
+                        }
+                    });
+                }
             }
 
             AppEvent::ToggleRuneWindow(show) => {
@@ -275,6 +341,10 @@ async fn main() -> Result<(), ApplicationError> {
                             ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
                                 List::new(cx, AppData::runes, |cx, _, rune| {
                                     Label::new(cx, rune.get(cx).name.clone());
+
+                                    let primary_style_id = rune.get(cx).primary_style_id;
+                                    let img_name = format!("rune_{}.png", primary_style_id);
+                                    Image::new(cx, img_name);
                                 });
                             });
                         });
