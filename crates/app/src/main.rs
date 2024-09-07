@@ -4,8 +4,9 @@
 )]
 
 use kv_log_macro::{error, info};
-use lcu::{api, builds, cmd, source, web};
 use vizia::prelude::*;
+
+use lcu::{api, builds, cmd, source, web};
 
 #[derive(Lens, Default)]
 pub struct AppData {
