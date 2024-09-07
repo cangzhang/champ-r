@@ -55,7 +55,7 @@ impl Model for AppData {
             }
 
             AppEvent::ToggleSource(source_id) => {
-                if self.checked_sources.contains(&source_id) {
+                if self.checked_sources.contains(source_id) {
                     self.checked_sources.retain(|id| id.ne(source_id));
                 } else {
                     self.checked_sources.push(source_id.clone());
@@ -339,11 +339,7 @@ async fn main() -> Result<(), ApplicationError> {
                 .emit(AppEvent::SetLcuAuthUrl(auth_url.clone()))
                 .expect("Failed to emit event");
             if let Ok(champion_id) = api::get_session(&auth_url).await {
-                let cid = if champion_id.is_some() {
-                    champion_id.unwrap()
-                } else {
-                    0
-                };
+                let cid = champion_id.unwrap_or_default();
                 if prev_cid != cid {
                     info!("champion id changed to: {}", cid);
                     prev_cid = cid;
