@@ -4,10 +4,10 @@
   child-left: 1s;
   child-right: 1s;
   background-color: white;
-  border-radius: 3px;
+  /* border-radius: 3px; */
   border-width: 1px;
   border-color: #999999;
-  outer-shadow: 0 3 10 #00000055;
+  /* outer-shadow: 0 3 10 #00000055; */
   overflow: visible;
   child-space: 10px;
   height: auto;
@@ -21,7 +21,7 @@
 }
 
 .modal button {
-  border-radius: 3px;
+  /* border-radius: 3px; */
   child-space: 1s;
 }
 
@@ -36,7 +36,6 @@
 }
 
 .source-list {
-  border-wdith: 1px;
   border-color: #999999;
   col-between: 20px;
 }
@@ -52,5 +51,5 @@
 
 .tab-name {
   font-weight: 700;
-  font-style: italic;
+  /* font-style: italic; */
 }
