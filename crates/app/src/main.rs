@@ -67,6 +67,7 @@ async fn main() {
     // shared variables
     let auth_url = Arc::new(ArcSwap::from(Arc::new(String::new())));
     let champion_id = ArcSwap::from(Arc::new(0 as i64));
+    let auto_close_rune_window = Arc::new(ArcSwap::from(Arc::new(true)));
 
     tokio::spawn(async move {
         let sources = web::fetch_sources().await;
@@ -120,7 +121,9 @@ async fn main() {
 
     let mut source_list_el = Flex::default_fill().column();
     let mut btn = Button::new(0, 0, 50, 300, "show rune window");
+    let acrw = Arc::clone(&auto_close_rune_window);
     btn.set_callback(move |_| {
+        acrw.store(Arc::new(false));
         s.send(Message::ToggleRuneWindow(true));
     });
     source_list_el.end();
@@ -135,6 +138,7 @@ async fn main() {
     rune_win.end();
 
     let auth_url = Arc::clone(&auth_url);
+    let acrw = Arc::clone(&auto_close_rune_window);
     while main_app.wait() {
         if let Some(msg) = r.recv() {
             match msg {
@@ -158,7 +162,10 @@ async fn main() {
                     if show {
                         rune_win.show();
                     } else {
-                        rune_win.hide();
+                        let auto_close = acrw.load();
+                        if **auto_close {
+                            rune_win.hide();
+                        }
                     }
                 }
 
