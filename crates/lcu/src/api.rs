@@ -250,7 +250,7 @@ pub async fn list_all_perks(endpoint: &String) -> Result<Vec<Perk>, LcuError> {
     make_get_request(&url).await
 }
 
-pub async fn fetch_rune_image(url: &String) -> Result<Bytes, FetchError> {
+pub async fn fetch_image_data(url: &String) -> Result<Bytes, FetchError> {
     let client = make_client();
     match client.get(url).send().await.map_err(|_| FetchError::Failed) {
         Ok(res) => {
@@ -264,6 +264,11 @@ pub async fn fetch_rune_image(url: &String) -> Result<Bytes, FetchError> {
             Err(FetchError::Failed)
         }
     }
+}
+
+pub async fn fetch_rune_image(endpoint: &String, icon_path: &String) -> Result<Bytes, FetchError> {
+    let url = format!("{endpoint}{icon_path}");
+    fetch_image_data(&url).await
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -302,4 +307,9 @@ pub struct SubStyleBonu {
 pub async fn list_all_styles(endpoint: &String) -> Result<Vec<RuneStyle>, LcuError> {
     let url = format!("{endpoint}/lol-perks/v1/styles");
     make_get_request(&url).await
+}
+
+pub async fn get_champion_icon_by_id(endpoint: &String, id: i64) -> Result<Bytes, FetchError> {
+    let url = format!("{endpoint}/lol-game-data/assets/v1/champion-icons/{id}.png");
+    fetch_image_data(&url).await
 }
