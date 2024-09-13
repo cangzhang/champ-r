@@ -5,7 +5,6 @@ use lazy_static::lazy_static;
 use serde::de::DeserializeOwned;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
-use vizia::prelude::*;
 
 use crate::{
     builds::{ItemBuild, Rune},
@@ -231,7 +230,7 @@ pub async fn list_available_champions(
     make_get_request(&url).await
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Data)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Perk {
     pub icon_path: String,

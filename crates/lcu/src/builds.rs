@@ -7,7 +7,6 @@ use std::{
     path::Path,
     sync::{Arc, Mutex},
 };
-use vizia::prelude::*;
 
 use crate::web::{self, ChampionsMap, FetchError};
 
@@ -32,7 +31,7 @@ pub struct BuildSection {
     pub runes: Vec<Rune>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Data)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemBuild {
     pub title: String,
@@ -48,7 +47,7 @@ pub struct ItemBuild {
     pub type_field: Option<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Data)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Block {
     #[serde(rename = "type")]
@@ -56,14 +55,14 @@ pub struct Block {
     pub items: Option<Vec<Item>>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Data)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Item {
     pub id: String,
     pub count: u8,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Data)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Rune {
     pub alias: String,
