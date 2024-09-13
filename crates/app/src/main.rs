@@ -4,7 +4,7 @@
 )]
 
 use bytes::Bytes;
-use fltk::{app, button::Button, frame::Frame, group::Pack, prelude::*, window::Window};
+use fltk::{app, button::Button, frame::Frame, group::{Flex, Pack}, prelude::*, window::Window};
 use kv_log_macro::{error, info};
 use std::{collections::HashMap, time::Duration};
 
@@ -50,26 +50,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (s, r) = app::channel::<Message>();
     let main_app = app::App::default();
-    let mut wind = Window::new(100, 100, 400, 300, "ChampR").center_screen();
-    wind.make_resizable(true);
+    let mut win = Window::new(0, 0, 400, 300, "ChampR").center_screen();
+    win.make_resizable(true);
     
     let mut frame = Frame::default_fill();
     frame.set_label("loading...");
-
+    
+    let s_thread = s.clone();
     tokio::spawn(async move {
         let sources = web::fetch_sources().await;
-
+        
         match sources {
             Ok(sources) => {
                 info!("Fetched sources: {:?}", sources);
-                s.send(Message::FetchedSources(sources));
+                s_thread.send(Message::FetchedSources(sources));
             }
             Err(err) => {
                 error!("Failed to fetch sources: {:?}", err);
             }
         }
     });
-
+    
+    let s_rune = s.clone();
     tokio::spawn(async move {
         let mut prev_cid: i64 = 0;
         let sleep_duration = Duration::from_millis(2500);
@@ -88,22 +90,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     info!("champion id changed to: {}", cid);
                     prev_cid = cid;
                 }
+                s_rune.send(Message::ToggleRuneWindow(true));
             }
 
             tokio::time::sleep(sleep_duration).await;
         }
     });
 
-    let mut pack = Pack::default_fill();
+    let mut pack = Flex::default_fill().column();
+    let mut btn = Button::new(0, 0, 50, 300, "show rune window");
     pack.end();
+    let s_btn = s.clone();
+    btn.set_callback(move |_| {
+        s_btn.send(Message::ToggleRuneWindow(true));
+    });
 
-    wind.end();
-    wind.show();
+    win.end();
+    win.show();
+
+    let mut rune_win = Window::new(0, 0, 400, 300, "Runes");
+    rune_win.end();
+
     while main_app.wait() {
         if let Some(msg) = r.recv() {
             match msg {
                 Message::FetchedSources(sources) => {
-                    pack.clear();
+                    // pack.clear();
                     for source in sources {
                         let mut button = Button::new(0, 0, 400, 30, Some(source.label.as_str()));
                         button.set_callback({
@@ -113,8 +125,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         });
                         pack.add(&button);
                     }
-                    // pack.redraw();
-                    wind.redraw();
+                    pack.redraw();
+                    win.redraw();
+                }
+
+                Message::ToggleRuneWindow(show) => {
+                    if show {
+                        rune_win.show();
+                    }
                 }
                 _ => {}
             }
