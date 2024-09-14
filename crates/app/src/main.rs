@@ -176,21 +176,23 @@ async fn main() {
                         let idle = auth_url.is_empty();
                         if !idle {
                             let tmp_folder = tmp_folder.clone();
-                            tokio::spawn(async move {
-                                if let Ok(b) =
-                                    lcu::api::get_champion_icon_by_id(&auth_url, cid).await
-                                {
-                                    // Save under tmp folder
-                                    let file_path =
-                                        tmp_folder.join(format!("champion_{}.png", cid));
-                                    if !file_path.exists() {
+                            let file_path = tmp_folder.join(format!("champion_{}.png", cid));
+                            if file_path.exists() {
+                                info!("champion icon exists: {cid}");
+                                s.send(Message::UpdateChampionIconPath(file_path));
+                            } else {
+                                tokio::spawn(async move {
+                                    if let Ok(b) =
+                                        lcu::api::get_champion_icon_by_id(&auth_url, cid).await
+                                    {
+                                        info!("fetched champion image by id {cid}");
                                         if let Err(e) = tokio::fs::write(&file_path, &b).await {
                                             error!("Failed to save champion icon: {:?}", e);
                                         }
+                                        s.send(Message::UpdateChampionIconPath(file_path));
                                     }
-                                    s.send(Message::UpdateChampionIconPath(file_path));
-                                }
-                            });
+                                });
+                            }
                         }
                     }
                 }
