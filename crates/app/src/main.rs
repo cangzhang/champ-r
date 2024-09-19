@@ -5,7 +5,9 @@
 
 use arc_swap::ArcSwap;
 use bytes::Bytes;
-use fltk::{app, button::Button, frame::Frame, group::Flex, image, prelude::*, window::Window};
+use fltk::{
+    app, button::Button, enums, frame::Frame, group::Flex, image, menu, prelude::*, window::Window,
+};
 use kv_log_macro::{error, info};
 use std::{collections::HashMap, env, path::PathBuf, sync::Arc, time::Duration};
 
@@ -68,12 +70,14 @@ async fn main() {
     let auth_url = Arc::new(ArcSwap::from(Arc::new(String::new())));
     let champion_id = ArcSwap::from(Arc::new(0 as i64));
     let auto_close_rune_window = Arc::new(ArcSwap::from(Arc::new(true)));
+    let source_list = Arc::new(ArcSwap::from(Arc::new(vec![])));
+    let rune_source = Arc::new(ArcSwap::from(Arc::new(String::from("op.gg"))));
 
+    let source_list_clone = Arc::clone(&source_list);
     tokio::spawn(async move {
-        let sources = web::fetch_sources().await;
-
-        match sources {
+        match web::fetch_sources().await {
             Ok(sources) => {
+                source_list_clone.store(Arc::new(sources.clone()));
                 s_thread.send(Message::FetchedSources(sources));
             }
             Err(err) => {
@@ -132,27 +136,48 @@ async fn main() {
     win.show();
 
     let mut rune_win = Window::new(0, 0, 400, 300, "Runes");
-    // let mut top_row = Flex::new(0, 0, 300, 100, "Top row").row();
+    let mut choice = menu::Choice::default()
+        .with_size(200, 30)
+        .with_label("Select source");
+    // let top_row = Flex::new(0, 0, 300, 100, "").row();
     let mut champion_frame = Frame::new(0, 20, 100, 100, "");
     // top_row.end();
     rune_win.end();
 
     let auth_url = Arc::clone(&auth_url);
     let acrw = Arc::clone(&auto_close_rune_window);
+    let source_list_clone = Arc::clone(&source_list);
+
     while main_app.wait() {
         if let Some(msg) = r.recv() {
             match msg {
                 Message::FetchedSources(sources) => {
                     // pack.clear();
                     frame.set_label("");
-                    for source in sources {
+                    for source in sources.iter() {
                         let mut button = Button::new(0, 0, 400, 30, Some(source.label.as_str()));
+                        let val = source.value.clone();
                         button.set_callback({
+                            let val = val.clone();
                             move |_| {
-                                info!("clicked {}", &source.value);
+                                info!("clicked {}", &val);
                             }
                         });
                         source_list_el.add(&button);
+
+                        // let rune_source = Arc::clone(&rune_source);
+                        let val = source.value.clone();
+                        let s_thread = s_thread_clone.clone();
+                        choice.add(
+                            source.label.as_str(),
+                            enums::Shortcut::None,
+                            menu::MenuFlag::Normal,
+                            move |_| {
+                                let val = val.clone();
+                                // rune_source.store(Arc::new(val.clone()));
+                                s_thread.send(Message::SetRuneSource(val.clone()));
+                            },
+                        );
                     }
                     source_list_el.redraw();
                     // win.redraw();
@@ -172,6 +197,10 @@ async fn main() {
                 Message::UpdateCurrentChampionId(cid) => {
                     if cid > 0 {
                         let s = s_thread_clone.clone();
+                        let rune_source = rune_source.load();
+                        let rune_source = (**rune_source).clone();
+                        s.send(Message::SetRuneSource(rune_source));
+
                         let auth_url = auth_url.load();
                         let idle = auth_url.is_empty();
                         if !idle {
@@ -205,6 +234,16 @@ async fn main() {
                     } else {
                         error!("Failed to create png image from data");
                     }
+                }
+
+                Message::SetRuneSource(source) => {
+                    rune_source.store(Arc::new(source.clone()));
+                    let idx = source_list_clone
+                        .load()
+                        .iter()
+                        .position(|s| s.value.eq(&source))
+                        .unwrap_or(0);
+                    choice.set_value(idx as i32);
                 }
 
                 _ => {}
