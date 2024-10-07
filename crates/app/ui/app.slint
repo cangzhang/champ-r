@@ -1,0 +1,69 @@
+import { Button, VerticalBox, CheckBox, Spinner, StandardButton } from "std-widgets.slint";
+
+struct UiSource {
+    name: string,
+    source: string,
+    // version: string,
+    checked: bool,
+}
+
+export component AppWindow inherits Window {
+    width: 400px;
+    height: 500px;
+    title: "ChampR";
+
+    in-out property <[UiSource]> source_list: [];
+    in property <bool> lcu_running: false;
+    callback apply_builds();
+
+    if root.source_list.length == 0: VerticalBox {
+        Spinner {
+            max-height: 50px;
+            max-width: 50px;
+            indeterminate: true;
+        }
+    }
+
+    if root.source_list.length > 0: VerticalBox {
+        for source[i] in root.source_list: CheckBox {
+            text: source.name;
+            checked: source.checked;
+            toggled => {
+                source.checked = !source.checked;
+            }
+        }
+        if root.lcu_running: VerticalBox {
+            Button {
+                height: 30px;
+                width: 200px;
+                text: "Apply Selected Sources";
+                clicked => {
+                    root.apply_builds();
+                }
+            }
+        }
+        if !root.lcu_running: VerticalBox {
+            Text {
+                text: "League is not running, please start it first.";
+            }
+        }
+    }
+}
+
+export component RuneWindow inherits Dialog {
+    title: "Settings";
+    always-on-top: true;
+    width: 400px;
+    height: 500px;
+
+    in-out property <string> lcu_auth: "";
+    in-out property <int> champion_id: 0;
+    in-out property <bool> on_top: false;
+    in-out property <[string]> source_list: [];
+
+    VerticalBox {
+        Text {
+            text: "Settings";
+        }
+    }
+}
