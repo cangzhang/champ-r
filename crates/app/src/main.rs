@@ -4,12 +4,15 @@
 )]
 
 use kv_log_macro::{error, info};
-use slint::{SharedString, VecModel, Model};
-use std::{rc::Rc, time::Duration};
+use slint::{Image, Model, Rgb8Pixel, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
+use std::{env, fs::File, io::Write, path::Path, rc::Rc, time::Duration};
+// use image::{ImageBuffer, Rgb};
 
 use lcu::{api, cmd, web};
 
 slint::include_modules!();
+
+const INTERVAL: Duration = Duration::from_millis(2500);
 
 #[tokio::main]
 async fn main() -> Result<(), slint::PlatformError> {
@@ -19,25 +22,25 @@ async fn main() -> Result<(), slint::PlatformError> {
     let rune_window = RuneWindow::new()?;
 
     // let weak_rune_win = rune_window.as_weak();
-    // rune_window.on_refetch_data(move |cid, source| {
-    //     if source.is_empty() {
-    //         return;
-    //     }
+    rune_window.on_refetch_data(move |source, cid| {
+        if source.is_empty() || cid == 0 {
+            return;
+        }
 
-    //     info!("[rune_window] refetch data for {}, {}", cid, source);
-    //     tokio::spawn(async move {
-    //         let champion_id: i64 = cid.to_string().parse().unwrap_or_default();
-    //         let runes = web::list_builds_by_id(&source.to_string(), champion_id).await;
-    //         match runes {
-    //             Ok(runes) => {
-    //                 info!("[rune_window]: fetched runes {:?}", runes);
-    //             }
-    //             Err(err) => {
-    //                 error!("[rune_window]: failed to fetch runes: {:?}", err);
-    //             }
-    //         };
-    //     });
-    // });
+        info!("[rune_window] refetch data for {}, {}", cid, source);
+        tokio::spawn(async move {
+            let champion_id: i64 = cid.to_string().parse().unwrap_or_default();
+            let runes = web::list_builds_by_id(&source.to_string(), champion_id).await;
+            match runes {
+                Ok(runes) => {
+                    info!("[rune_window]: fetched runes {:?}", runes);
+                }
+                Err(err) => {
+                    error!("[rune_window]: failed to fetch runes: {:?}", err);
+                }
+            };
+        });
+    });
 
     let weak_win = window.as_weak();
     let weak_rune_win = rune_window.as_weak();
@@ -64,14 +67,19 @@ async fn main() -> Result<(), slint::PlatformError> {
                     })
                     .unwrap();
 
-                let list = sources
+                let mut list = sources
                     .iter()
                     .map(|s| s.value.clone().into())
                     .collect::<Vec<SharedString>>();
+                list.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
                 weak_rune_win
                     .upgrade_in_event_loop(move |rune_win| {
-                        let ui_list = Rc::new(VecModel::from(list));
+                        let list_ui = list.clone();
+                        // let selected_source = list[0].clone();
+                        let ui_list = Rc::new(VecModel::from(list_ui));
                         rune_win.set_source_list(ui_list.into());
+                        rune_win.set_selected_source_index(0);
+
                         info!("rune_window: updated sources");
                     })
                     .unwrap();
@@ -86,6 +94,7 @@ async fn main() -> Result<(), slint::PlatformError> {
     let weak_rune_window = rune_window.as_weak();
     tokio::spawn(async move {
         let mut prev_cid: i64 = 0;
+        let mut prev_auth_url = String::new();
 
         loop {
             let cmd_output = cmd::get_commandline();
@@ -96,11 +105,16 @@ async fn main() -> Result<(), slint::PlatformError> {
                     })
                     .unwrap();
 
-                tokio::time::sleep(Duration::from_millis(2500)).await;
+                tokio::time::sleep(INTERVAL).await;
                 continue;
             }
 
             let auth_url = format!("https://{}", cmd_output.auth_url);
+            if !prev_auth_url.eq(&auth_url) {
+                info!("lcu auth: {}", auth_url);
+                prev_auth_url = auth_url.clone();
+            }
+
             if let Ok(champion_id) = api::get_session(&auth_url).await {
                 let cid = if champion_id.is_some() {
                     champion_id.unwrap()
@@ -110,20 +124,43 @@ async fn main() -> Result<(), slint::PlatformError> {
                 if prev_cid != cid {
                     info!("rune_window: champion id changed to: {}", cid);
                     prev_cid = cid;
-                    weak_rune_window
-                        .upgrade_in_event_loop(move |rune_window| {
-                            if cid > 0 {
-                                rune_window.set_champion_id(cid.try_into().unwrap());
-                                let _ = rune_window.show();
-                                rune_window.set_on_top(true);
-                                info!("rune_window: got champion id: {}", cid);
-                            } else {
-                                // rune_window.set_champion("No champion selected".into());
-                                rune_window.set_on_top(false);
-                                // info!("rune_window: no champion selected");
-                            }
-                        })
-                        .unwrap();
+
+                    let weak_rune_window2 = weak_rune_window.clone();
+                    tokio::spawn(async move {
+                        let tmp_folder = env::temp_dir();
+                        let icon_path = format!(
+                            "{}/champion_{}.png",
+                            tmp_folder.to_string_lossy(),
+                            cid.to_string()
+                        );
+                        // if file exists, skip downloading
+                        if !Path::new(&icon_path).exists() {
+                            match api::get_champion_icon_by_id(&auth_url, cid).await {
+                                Ok(b) => {
+                                    let mut file = File::create(icon_path.clone()).unwrap();
+                                    file.write(&b).unwrap();
+
+                                    info!("Champion icon saved to {}", &icon_path);
+                                }
+                                Err(_) => {
+                                    error!("Failed to fetch champion icon");
+                                }
+                            };
+                        }
+                        info!("Champion icon already exists");
+                        let img = image::open(Path::new(&icon_path)).unwrap().into_rgb8();
+                        let buffer = SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
+                            img.as_raw(),
+                            img.width(),
+                            img.height(),
+                        );
+                        weak_rune_window2
+                            .upgrade_in_event_loop(move |rune_window| {
+                                let buffer = buffer.clone();
+                                rune_window.set_champion_icon(Image::from_rgba8(buffer));
+                            })
+                            .unwrap();
+                    });
                 }
             }
 
@@ -137,7 +174,7 @@ async fn main() -> Result<(), slint::PlatformError> {
                     rune_window.set_lcu_auth(cmd_output.auth_url.clone().into());
                 })
                 .unwrap();
-            tokio::time::sleep(Duration::from_millis(2500)).await;
+            tokio::time::sleep(INTERVAL).await;
         }
     });
 
@@ -154,6 +191,7 @@ async fn main() -> Result<(), slint::PlatformError> {
     });
 
     window.show()?;
+    rune_window.show()?;
     slint::run_event_loop()?;
     Ok(())
 }

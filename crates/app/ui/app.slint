@@ -1,4 +1,4 @@
-import { Button, VerticalBox, CheckBox, Spinner, StandardButton } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, Spinner, StandardButton, ComboBox, HorizontalBox } from "std-widgets.slint";
 
 struct UiSource {
     name: string,
@@ -37,6 +37,7 @@ export component AppWindow inherits Window {
                 height: 30px;
                 width: 200px;
                 text: "Apply Selected Sources";
+                primary: true;
                 clicked => {
                     root.apply_builds();
                 }
@@ -51,8 +52,8 @@ export component AppWindow inherits Window {
 }
 
 export component RuneWindow inherits Dialog {
-    title: "Settings";
-    always-on-top: true;
+    title: "Runes";
+    // always-on-top: true;
     width: 400px;
     height: 500px;
 
@@ -60,10 +61,38 @@ export component RuneWindow inherits Dialog {
     in-out property <int> champion_id: 0;
     in-out property <bool> on_top: false;
     in-out property <[string]> source_list: [];
+    in-out property <string> selected_source: "";
+    in-out property <int> selected_source_index: 0;
+    in-out property <image> champion_icon: @image-url("");
+
+    callback refetch_data(string, int);
+
+    changed champion_id => {
+        debug("champion_id changed to: ", root.champion_id);
+        root.refetch_data(root.source_list[root.selected_source_index], root.champion_id);
+    }
+    changed selected_source_index => {
+        debug("selected_source_index: changed to", root.selected_source_index);
+        root.refetch_data(root.source_list[root.selected_source_index], root.champion_id);
+    }
 
     VerticalBox {
-        Text {
-            text: "Settings";
+        HorizontalBox {
+            Image {
+                height: 30px;
+                width: 30px;
+                source: root.champion_icon;
+            }
+
+            ComboBox {
+                height: 30px;
+                model: root.source_list;
+                current-index: root.selected_source_index;
+                changed current-index => {
+                    root.selected_source_index = self.current-index;
+                    root.selected_source = self.current-value;
+                }
+            }
         }
     }
 }
