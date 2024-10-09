@@ -4,9 +4,8 @@
 )]
 
 use kv_log_macro::{error, info};
-use slint::{Image, Model, Rgb8Pixel, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
+use slint::{Image, Model, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
 use std::{env, fs::File, io::Write, path::Path, rc::Rc, time::Duration};
-// use image::{ImageBuffer, Rgb};
 
 use lcu::{api, cmd, web};
 
