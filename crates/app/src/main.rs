@@ -72,7 +72,7 @@ async fn main() -> Result<(), slint::PlatformError> {
                     .iter()
                     .map(|s| s.value.clone().into())
                     .collect::<Vec<SharedString>>();
-                list.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+                list.sort_by_key(|a| a.to_lowercase());
                 weak_rune_win
                     .upgrade_in_event_loop(move |rune_win| {
                         let list_ui = list.clone();
