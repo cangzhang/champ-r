@@ -69,6 +69,7 @@ export component RuneWindow inherits Dialog {
 
     changed champion_id => {
         debug("champion_id changed to: ", root.champion_id);
+        root.champion_id = root.champion_id;
         root.refetch_data(root.source_list[root.selected_source_index], root.champion_id);
     }
     changed selected_source_index => {

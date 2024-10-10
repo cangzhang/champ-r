@@ -23,6 +23,7 @@ async fn main() -> Result<(), slint::PlatformError> {
 
     // let weak_rune_win = rune_window.as_weak();
     rune_window.on_refetch_data(move |source, cid| {
+        info!("[rune_window] refetch data for {}, {}", cid, source);
         if source.is_empty() || cid == 0 {
             return;
         }
@@ -49,8 +50,7 @@ async fn main() -> Result<(), slint::PlatformError> {
         match sources {
             Ok(sources) => {
                 info!("fetched source list");
-
-                let list = sources
+                let mut list = sources
                     .iter()
                     .map(|s| UiSource {
                         name: s.label.clone().into(),
@@ -58,6 +58,7 @@ async fn main() -> Result<(), slint::PlatformError> {
                         checked: false,
                     })
                     .collect::<Vec<UiSource>>();
+                list.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
 
                 weak_win
                     .upgrade_in_event_loop(move |window| {
@@ -151,17 +152,19 @@ async fn main() -> Result<(), slint::PlatformError> {
                             };
                         });
                     }
+
+                    weak_rune_window
+                        .upgrade_in_event_loop(move |rune_window| {
+                            rune_window.set_lcu_auth(cmd_output.auth_url.clone().into());
+                            rune_window.set_champion_id(cid as i32);
+                        })
+                        .unwrap();
                 }
             }
 
             weak_win
                 .upgrade_in_event_loop(move |window| {
                     window.set_lcu_running(true);
-                })
-                .unwrap();
-            weak_rune_window
-                .upgrade_in_event_loop(move |rune_window| {
-                    rune_window.set_lcu_auth(cmd_output.auth_url.clone().into());
                 })
                 .unwrap();
             tokio::time::sleep(INTERVAL).await;
