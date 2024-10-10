@@ -5,7 +5,8 @@
 
 use kv_log_macro::{error, info};
 use slint::{Image, Model, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
-use std::{env, fs::File, io::Write, path::Path, rc::Rc, time::Duration};
+use std::rc::Rc;
+use std::time::Duration;
 
 use lcu::{api, cmd, web};
 
@@ -124,42 +125,32 @@ async fn main() -> Result<(), slint::PlatformError> {
                     info!("rune_window: champion id changed to: {}", cid);
                     prev_cid = cid;
 
-                    let weak_rune_window2 = weak_rune_window.clone();
-                    tokio::spawn(async move {
-                        let tmp_folder = env::temp_dir();
-                        let icon_path = format!(
-                            "{}/champion_{}.png",
-                            tmp_folder.to_string_lossy(),
-                            cid.to_string()
-                        );
-                        // if file exists, skip downloading
-                        if !Path::new(&icon_path).exists() {
+                    if cid > 0 {
+                        let weak_rune_window2 = weak_rune_window.clone();
+                        tokio::spawn(async move {
                             match api::get_champion_icon_by_id(&auth_url, cid).await {
                                 Ok(b) => {
-                                    let mut file = File::create(icon_path.clone()).unwrap();
-                                    file.write(&b).unwrap();
-
-                                    info!("Champion icon saved to {}", &icon_path);
+                                    let img = image::load_from_memory(&b).unwrap();
+                                    let rgba_image = img.to_rgba8();
+                                    let buffer = SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
+                                        rgba_image.as_raw(),
+                                        rgba_image.width(),
+                                        rgba_image.height(),
+                                    );
+                                    weak_rune_window2
+                                        .upgrade_in_event_loop(move |rune_window| {
+                                            rune_window
+                                                .set_champion_icon(Image::from_rgba8(buffer));
+                                        })
+                                        .unwrap();
+                                    info!("fetched champion icon for id {}", cid);
                                 }
                                 Err(_) => {
-                                    error!("Failed to fetch champion icon");
+                                    error!("Failed to fetch champion icon for id {}", cid);
                                 }
                             };
-                        }
-                        info!("Champion icon already exists");
-                        let img = image::open(Path::new(&icon_path)).unwrap().into_rgb8();
-                        let buffer = SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
-                            img.as_raw(),
-                            img.width(),
-                            img.height(),
-                        );
-                        weak_rune_window2
-                            .upgrade_in_event_loop(move |rune_window| {
-                                let buffer = buffer.clone();
-                                rune_window.set_champion_icon(Image::from_rgba8(buffer));
-                            })
-                            .unwrap();
-                    });
+                        });
+                    }
                 }
             }
 
