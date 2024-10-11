@@ -1,10 +1,18 @@
-import { Button, VerticalBox, CheckBox, Spinner, StandardButton, ComboBox, HorizontalBox } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, Spinner, StandardButton, ComboBox, HorizontalBox, GridBox } from "std-widgets.slint";
 
 struct UiSource {
     name: string,
     source: string,
     // version: string,
     checked: bool,
+}
+
+struct UiRune {
+    name: string,
+    position: string,
+    rune_image1: image,
+    rune_image2: image,
+    rune_image3: image,
 }
 
 export component AppWindow inherits Window {
@@ -64,6 +72,7 @@ export component RuneWindow inherits Dialog {
     in-out property <string> selected_source: "";
     in-out property <int> selected_source_index: 0;
     in-out property <image> champion_icon: @image-url("../../../assets/logo.png");
+    in-out property <[UiRune]> rune_list: [];
 
     callback refetch_data(string, int);
 
@@ -77,7 +86,7 @@ export component RuneWindow inherits Dialog {
         root.refetch_data(root.source_list[root.selected_source_index], root.champion_id);
     }
 
-    VerticalBox {
+    VerticalLayout {
         HorizontalBox {
             Image {
                 height: 30px;
@@ -94,6 +103,39 @@ export component RuneWindow inherits Dialog {
                     root.selected_source = self.current-value;
                 }
             }
+        }
+
+        for rune[i] in root.rune_list: VerticalBox {
+            HorizontalBox {
+                Text {
+                    height: 30px;
+                    text: rune.name;
+                }
+    
+                Text {
+                    height: 30px;
+                    text: rune.position;
+                }
+            }
+    
+            HorizontalBox {
+                Image {
+                    height: 30px;
+                    width: 30px;
+                    source: rune.rune_image1;
+                }
+    
+                Image {
+                    height: 30px;
+                    width: 30px;
+                    source: rune.rune_image2;
+                }
+                // Image {
+                    //     height: 30px;
+                    //     width: 30px;
+                    //     source: rune.rune_image3;
+                    // }
+                }
         }
     }
 }

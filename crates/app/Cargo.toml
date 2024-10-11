@@ -14,6 +14,7 @@ femme = "2.2.1"
 slint = "1.8.0"
 anyhow = "1.0.86"
 image = "0.25.2"
+arc-swap = "1.7.1"
 
 [build-dependencies]
 slint-build = "1.8.0"
