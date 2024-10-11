@@ -1,8 +1,6 @@
 use futures::StreamExt;
-
 use kv_log_macro::info;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::{
     fs,
     io::Write,
@@ -42,7 +40,7 @@ pub struct ItemBuild {
     pub blocks: Vec<Block>,
     pub map: String,
     pub mode: String,
-    pub preferred_item_slots: Option<Vec<Value>>,
+    pub preferred_item_slots: Option<Vec<String>>,
     pub sortrank: i64,
     pub started_from: String,
     #[serde(rename = "type")]
