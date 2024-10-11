@@ -8,7 +8,6 @@ use kv_log_macro::{error, info};
 use slint::{Image, Model, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
 use std::{
     collections::HashMap,
-    path::Path,
     rc::Rc,
     sync::{Arc, Mutex},
     time::Duration,
