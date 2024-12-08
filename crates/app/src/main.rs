@@ -7,10 +7,7 @@ use arc_swap::ArcSwap;
 use kv_log_macro::{error, info};
 use slint::{Image, Model, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
 use std::{
-    collections::HashMap,
-    rc::Rc,
-    sync::{Arc, Mutex},
-    time::Duration,
+    collections::HashMap, env, fs, path::PathBuf, rc::Rc, sync::{Arc, Mutex}, time::Duration
 };
 
 use lcu::{
@@ -25,14 +22,20 @@ const INTERVAL: Duration = Duration::from_millis(2500);
 struct UiBufferRune {
     name: String,
     position: String,
-    rune_image1: SharedPixelBuffer<Rgba8Pixel>,
-    rune_image2: SharedPixelBuffer<Rgba8Pixel>,
-    rune_image3: SharedPixelBuffer<Rgba8Pixel>,
+    rune_image1: Option<PathBuf>,
+    rune_image2: Option<PathBuf>,
+    rune_image3: Option<PathBuf>,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), slint::PlatformError> {
     femme::with_level(femme::LevelFilter::Info);
+
+    let tmp_dir = env::temp_dir();
+    let mut tmp_perks_dir = tmp_dir.clone();
+    tmp_perks_dir.push("perks");
+    let _ = fs::create_dir(&tmp_perks_dir);
+    info!("temp perks dir: {}", tmp_perks_dir.display());
 
     let window = AppWindow::new()?;
     let rune_window = RuneWindow::new()?;
@@ -40,7 +43,7 @@ async fn main() -> Result<(), slint::PlatformError> {
     let all_perks = Arc::new(ArcSwap::from_pointee(Vec::<Perk>::new()));
     let lcu_auth_url = Arc::new(ArcSwap::from_pointee(String::new()));
     let all_perk_images = Arc::new(Mutex::new(
-        HashMap::<i32, SharedPixelBuffer<Rgba8Pixel>>::new(),
+        HashMap::<i32, Option<PathBuf>>::new(),
     ));
 
     let all_perks_clone = Arc::clone(&all_perks);
@@ -60,6 +63,7 @@ async fn main() -> Result<(), slint::PlatformError> {
         let all_perk_images_clone = all_perk_images_clone.clone();
 
         let weak_rune_win = weak_rune_win.clone();
+        let tmp_perks_dir = tmp_perks_dir.clone();
         tokio::spawn(async move {
             let champion_id: i64 = cid.to_string().parse().unwrap_or_default();
             let lcu_auth_url = &*lcu_auth_url_clone.load();
@@ -80,22 +84,26 @@ async fn main() -> Result<(), slint::PlatformError> {
                             let rune_ids = vec![rune.primary_style_id, rune.sub_style_id];
                             for rid in rune_ids {
                                 if let Some(perk) = all_perks.iter().find(|p| p.style_id == rid) {
+                                    let img_path = tmp_perks_dir.join(format!("{}.png", perk.id));
+                                    if fs::metadata(&img_path).is_ok() {
+                                        all_perk_images_clone
+                                            .lock()
+                                            .unwrap()
+                                            .insert(perk.style_id as i32, Some(img_path));
+                                        continue;
+                                    }
+
+                                    info!("fetching rune image for id:{} {}", perk.id, perk.icon_path);
                                     match api::fetch_rune_image(&lcu_auth_url, &perk.icon_path)
                                         .await
                                     {
                                         Ok(bt) => {
-                                            let img = image::load_from_memory(&bt).unwrap();
-                                            let rgba_image = img.to_rgba8();
-                                            let buffer =
-                                                SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
-                                                    rgba_image.as_raw(),
-                                                    rgba_image.width(),
-                                                    rgba_image.height(),
-                                                );
+                                            let path = tmp_perks_dir.join(format!("{}.png", perk.id));
+                                            fs::write(&path, &bt).unwrap();
                                             all_perk_images_clone
-                                                .lock()
+                                            .lock()
                                                 .unwrap()
-                                                .insert(perk.style_id as i32, buffer);
+                                                .insert(perk.style_id as i32, Some(path));
                                         }
                                         Err(_) => {
                                             error!(
@@ -124,7 +132,7 @@ async fn main() -> Result<(), slint::PlatformError> {
                                 position: r.position.clone().into(),
                                 rune_image1: primary_rune_img,
                                 rune_image2: secondary_rune_img,
-                                rune_image3: SharedPixelBuffer::<Rgba8Pixel>::new(0, 0),
+                                rune_image3: None,
                             }
                         })
                         .collect::<Vec<UiBufferRune>>();
@@ -136,9 +144,9 @@ async fn main() -> Result<(), slint::PlatformError> {
                                     .map(|r| UiRune {
                                         name: r.name.clone().into(),
                                         position: r.position.clone().into(),
-                                        rune_image1: Image::from_rgba8(r.rune_image1.clone()),
-                                        rune_image2: Image::from_rgba8(r.rune_image2.clone()),
-                                        rune_image3: Image::from_rgba8(r.rune_image3.clone()),
+                                        rune_image1: Image::load_from_path(&r.rune_image1.clone().unwrap()).unwrap(),
+                                        rune_image2: Image::load_from_path(&r.rune_image2.clone().unwrap()).unwrap(),
+                                        rune_image3: Image::default(),
                                     })
                                     .collect::<Vec<UiRune>>(),
                             ));
