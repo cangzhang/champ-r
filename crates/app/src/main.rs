@@ -7,7 +7,12 @@ use arc_swap::ArcSwap;
 use kv_log_macro::{error, info};
 use slint::{Image, Model, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
 use std::{
-    collections::HashMap, env, fs, path::PathBuf, rc::Rc, sync::{Arc, Mutex}, time::Duration
+    collections::HashMap,
+    env, fs,
+    path::PathBuf,
+    rc::Rc,
+    sync::{Arc, Mutex},
+    time::Duration,
 };
 
 use lcu::{
@@ -42,9 +47,7 @@ async fn main() -> Result<(), slint::PlatformError> {
 
     let all_perks = Arc::new(ArcSwap::from_pointee(Vec::<Perk>::new()));
     let lcu_auth_url = Arc::new(ArcSwap::from_pointee(String::new()));
-    let all_perk_images = Arc::new(Mutex::new(
-        HashMap::<i32, Option<PathBuf>>::new(),
-    ));
+    let all_perk_images = Arc::new(Mutex::new(HashMap::<i32, Option<PathBuf>>::new()));
 
     let all_perks_clone = Arc::clone(&all_perks);
     let lcu_auth_url_clone = Arc::clone(&lcu_auth_url);
@@ -81,29 +84,50 @@ async fn main() -> Result<(), slint::PlatformError> {
                     let all_perks = &*all_perks_clone.load();
                     for b in runes.iter() {
                         for rune in b.runes.iter() {
-                            let rune_ids = vec![rune.primary_style_id, rune.sub_style_id];
-                            for rid in rune_ids {
-                                if let Some(perk) = all_perks.iter().find(|p| p.style_id == rid) {
+                            let rune_ids = vec![
+                                rune.primary_style_id,
+                                rune.sub_style_id,
+                                rune.selected_perk_ids[0],
+                            ];
+                            for (idx, rid) in rune_ids.iter().enumerate() {
+                                if let Some(perk) = all_perks.iter().find(|p| {
+                                    if idx == 2 {
+                                        return p.id == rune.selected_perk_ids[0];
+                                    }
+                                    return p.style_id == *rid;
+                                }) {
                                     let img_path = tmp_perks_dir.join(format!("{}.png", perk.id));
                                     if fs::metadata(&img_path).is_ok() {
-                                        all_perk_images_clone
-                                            .lock()
-                                            .unwrap()
-                                            .insert(perk.style_id as i32, Some(img_path));
+                                        all_perk_images_clone.lock().unwrap().insert(
+                                            if idx == 2 {
+                                                perk.id as i32
+                                            } else {
+                                                perk.style_id as i32
+                                            },
+                                            Some(img_path),
+                                        );
                                         continue;
                                     }
 
-                                    info!("fetching rune image for id:{} {}", perk.id, perk.icon_path);
+                                    info!(
+                                        "fetching rune image for id:{} {}",
+                                        perk.id, perk.icon_path
+                                    );
                                     match api::fetch_rune_image(&lcu_auth_url, &perk.icon_path)
                                         .await
                                     {
                                         Ok(bt) => {
-                                            let path = tmp_perks_dir.join(format!("{}.png", perk.id));
+                                            let path =
+                                                tmp_perks_dir.join(format!("{}.png", perk.id));
                                             fs::write(&path, &bt).unwrap();
-                                            all_perk_images_clone
-                                            .lock()
-                                                .unwrap()
-                                                .insert(perk.style_id as i32, Some(path));
+                                            all_perk_images_clone.lock().unwrap().insert(
+                                                if idx == 2 {
+                                                    perk.id as i32
+                                                } else {
+                                                    perk.style_id as i32
+                                                },
+                                                Some(path),
+                                            );
                                         }
                                         Err(_) => {
                                             error!(
@@ -117,25 +141,27 @@ async fn main() -> Result<(), slint::PlatformError> {
                         }
                     }
 
-                    let rune_list = runes
-                        .iter()
-                        .map(|r| {
+                    let mut rune_list = Vec::<UiBufferRune>::new();
+                    for b in runes.iter() {
+                        for r in b.runes.iter() {
                             let all_perk_images = all_perk_images_clone.lock().unwrap();
-                            let r = &r.runes[0];
                             let pid = r.primary_style_id as i32;
                             let sid = r.sub_style_id as i32;
                             let primary_rune_img = all_perk_images.get(&pid).unwrap().clone();
                             let secondary_rune_img = all_perk_images.get(&sid).unwrap().clone();
-
-                            UiBufferRune {
+                            let last_rune_img = all_perk_images
+                                .get(&(r.selected_perk_ids[0] as i32))
+                                .unwrap()
+                                .clone();
+                            rune_list.push(UiBufferRune {
                                 name: r.name.clone().into(),
                                 position: r.position.clone().into(),
                                 rune_image1: primary_rune_img,
                                 rune_image2: secondary_rune_img,
-                                rune_image3: None,
-                            }
-                        })
-                        .collect::<Vec<UiBufferRune>>();
+                                rune_image3: last_rune_img,
+                            });
+                        }
+                    }
                     weak_rune_win
                         .upgrade_in_event_loop(move |rune_window| {
                             let ui_list = Rc::new(VecModel::from(
@@ -144,9 +170,18 @@ async fn main() -> Result<(), slint::PlatformError> {
                                     .map(|r| UiRune {
                                         name: r.name.clone().into(),
                                         position: r.position.clone().into(),
-                                        rune_image1: Image::load_from_path(&r.rune_image1.clone().unwrap()).unwrap(),
-                                        rune_image2: Image::load_from_path(&r.rune_image2.clone().unwrap()).unwrap(),
-                                        rune_image3: Image::default(),
+                                        rune_image1: Image::load_from_path(
+                                            &r.rune_image1.clone().unwrap(),
+                                        )
+                                        .unwrap(),
+                                        rune_image2: Image::load_from_path(
+                                            &r.rune_image2.clone().unwrap(),
+                                        )
+                                        .unwrap(),
+                                        rune_image3: Image::load_from_path(
+                                            &r.rune_image3.clone().unwrap(),
+                                        )
+                                        .unwrap(),
                                     })
                                     .collect::<Vec<UiRune>>(),
                             ));
