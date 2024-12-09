@@ -27,5 +27,5 @@ tar = "0.4.40"
 femme = "2.2.1"
 kv-log-macro = "1.0.7"
 powershell_script = "1.1.0"
+nanoid = "0.4.0"
 # vizia = { git = "https://github.com/vizia/vizia.git", rev = "7dccf72a9fe4e2c15569ce453e547fce49e20032" }
-

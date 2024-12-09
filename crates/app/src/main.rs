@@ -25,6 +25,7 @@ slint::include_modules!();
 const INTERVAL: Duration = Duration::from_millis(2500);
 
 struct UiBufferRune {
+    uuid: String,
     name: String,
     position: String,
     rune_image1: Option<PathBuf>,
@@ -154,6 +155,7 @@ async fn main() -> Result<(), slint::PlatformError> {
                                 .unwrap()
                                 .clone();
                             rune_list.push(UiBufferRune {
+                                uuid: r.uuid.clone().into(),
                                 name: r.name.clone().into(),
                                 position: r.position.clone().into(),
                                 rune_image1: primary_rune_img,
@@ -168,6 +170,7 @@ async fn main() -> Result<(), slint::PlatformError> {
                                 rune_list
                                     .iter()
                                     .map(|r| UiRune {
+                                        uuid: r.uuid.clone().into(),
                                         name: r.name.clone().into(),
                                         position: r.position.clone().into(),
                                         rune_image1: Image::load_from_path(

@@ -8,6 +8,7 @@ struct UiSource {
 }
 
 struct UiRune {
+    uuid: string,
     name: string,
     position: string,
     rune_image1: image,
@@ -62,7 +63,7 @@ export component AppWindow inherits Window {
 export component RuneWindow inherits Dialog {
     title: "Runes";
     // always-on-top: true;
-    width: 400px;
+    width: 600px;
     height: 500px;
 
     in-out property <string> lcu_auth: "";
@@ -111,13 +112,18 @@ export component RuneWindow inherits Dialog {
                     height: 30px;
                     text: rune.name;
                 }
-    
+
                 Text {
                     height: 30px;
                     text: rune.position;
                 }
+
+                Text {
+                    height: 30px;
+                    text: rune.uuid;
+                }
             }
-    
+
             HorizontalBox {
                 Image {
                     height: 30px;
