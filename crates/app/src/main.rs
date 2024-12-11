@@ -5,6 +5,7 @@
 
 use arc_swap::ArcSwap;
 use kv_log_macro::{error, info};
+use rand::Rng;
 use slint::{Image, Model, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
 use std::{
     collections::HashMap,
@@ -49,10 +50,13 @@ async fn main() -> Result<(), slint::PlatformError> {
     let all_perks = Arc::new(ArcSwap::from_pointee(Vec::<Perk>::new()));
     let lcu_auth_url = Arc::new(ArcSwap::from_pointee(String::new()));
     let all_perk_images = Arc::new(Mutex::new(HashMap::<i32, Option<PathBuf>>::new()));
+    let random_champion_mode = Arc::new(Mutex::new(false));
+    let random_champion = Arc::new(Mutex::new(0));
 
     let all_perks_clone = Arc::clone(&all_perks);
     let lcu_auth_url_clone = Arc::clone(&lcu_auth_url);
     let all_perk_images_clone = all_perk_images.clone();
+    let random_champion_mode_clone = Arc::clone(&random_champion_mode);
 
     let weak_rune_win = rune_window.as_weak();
     rune_window.on_refetch_data(move |source, cid| {
@@ -199,6 +203,25 @@ async fn main() -> Result<(), slint::PlatformError> {
         });
     });
 
+    let weak_rune_win = rune_window.as_weak();
+    let random_champion_clone = Arc::clone(&random_champion);
+    rune_window.on_random_champion(move |current| {
+        let mut random_champion_mode = random_champion_mode_clone.lock().unwrap();
+        let next = !current;
+        *random_champion_mode = next;
+        if next {
+            let cid = rand::thread_rng().gen_range(1..150);
+            info!("got random champion id: {cid}");
+            *random_champion_clone.lock().unwrap() = cid;
+        }
+
+        weak_rune_win
+            .upgrade_in_event_loop(move |win| {
+                win.set_random_champion_mode(next);
+            })
+            .unwrap();
+    });
+
     let weak_win = window.as_weak();
     let weak_rune_win = rune_window.as_weak();
     tokio::spawn(async move {
@@ -253,6 +276,9 @@ async fn main() -> Result<(), slint::PlatformError> {
         let mut prev_cid: i64 = 0;
         let mut prev_auth_url = String::new();
 
+        let random_champion_mode = random_champion_mode.clone();
+        let random_champion = random_champion.clone();
+
         loop {
             let cmd_output = cmd::get_commandline();
             if cmd_output.auth_url.is_empty() {
@@ -294,7 +320,11 @@ async fn main() -> Result<(), slint::PlatformError> {
                 let cid = if champion_id.is_some() {
                     champion_id.unwrap()
                 } else {
-                    0
+                    if *random_champion_mode.lock().unwrap() {
+                        *random_champion.lock().unwrap()
+                    } else {
+                        0
+                    }
                 };
                 if prev_cid != cid {
                     info!("rune_window: champion id changed to: {}", cid);

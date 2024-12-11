@@ -74,9 +74,10 @@ export component RuneWindow inherits Dialog {
     in-out property <int> selected_source_index: 0;
     in-out property <image> champion_icon: @image-url("../../../assets/logo.png");
     in-out property <[UiRune]> rune_list: [];
+    in-out property <bool> random_champion_mode: false;
 
     callback refetch_data(string, int);
-
+    callback random_champion(bool);
     changed champion_id => {
         debug("champion_id changed to: ", root.champion_id);
         root.champion_id = root.champion_id;
@@ -102,6 +103,13 @@ export component RuneWindow inherits Dialog {
                 changed current-index => {
                     root.selected_source_index = self.current-index;
                     root.selected_source = self.current-value;
+                }
+            }
+
+            Button {
+                text: "Random Champion Mode: " + (root.random_champion_mode ? "ON" : "OFF");
+                clicked => {
+                    root.random_champion(root.random_champion_mode);
                 }
             }
         }
