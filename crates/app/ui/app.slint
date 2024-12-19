@@ -1,4 +1,4 @@
-import { Button, VerticalBox, CheckBox, Spinner, StandardButton, ComboBox, HorizontalBox, GridBox } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, Spinner, StandardButton, ComboBox, HorizontalBox, GridBox, ScrollView, GroupBox, ListView } from "std-widgets.slint";
 
 struct UiSource {
     name: string,
@@ -78,6 +78,8 @@ export component RuneWindow inherits Dialog {
 
     callback refetch_data(string, int);
     callback random_champion(bool);
+    callback apply_rune(int, string);
+
     changed champion_id => {
         debug("champion_id changed to: ", root.champion_id);
         root.champion_id = root.champion_id;
@@ -88,65 +90,93 @@ export component RuneWindow inherits Dialog {
         root.refetch_data(root.source_list[root.selected_source_index], root.champion_id);
     }
 
-    VerticalLayout {
-        HorizontalBox {
-            Image {
-                height: 30px;
-                width: 30px;
-                source: root.champion_icon;
-            }
-
-            ComboBox {
-                height: 30px;
-                model: root.source_list;
-                current-index: root.selected_source_index;
-                changed current-index => {
-                    root.selected_source_index = self.current-index;
-                    root.selected_source = self.current-value;
-                }
-            }
-
-            Button {
-                text: "Random Champion Mode: " + (root.random_champion_mode ? "ON" : "OFF");
-                clicked => {
-                    root.random_champion(root.random_champion_mode);
-                }
-            }
-        }
-
-        for rune[i] in root.rune_list: VerticalBox {
-            HorizontalBox {
-                Text {
-                    height: 30px;
-                    text: rune.name;
-                }
-
-                Text {
-                    height: 30px;
-                    text: rune.position;
-                }
-
-                Text {
-                    height: 30px;
-                    text: rune.uuid;
-                }
-            }
+    ScrollView {
+        VerticalLayout {
+            height: parent.height;
 
             HorizontalBox {
                 Image {
                     height: 30px;
                     width: 30px;
-                    source: rune.rune_image1;
+                    source: root.champion_icon;
                 }
-                Image {
+
+                ComboBox {
+                    width: 200px;
                     height: 30px;
-                    width: 30px;
-                    source: rune.rune_image2;
+                    model: root.source_list;
+                    current-index: root.selected_source_index;
+                    changed current-index => {
+                        root.selected_source_index = self.current-index;
+                        root.selected_source = self.current-value;
+                    }
                 }
-                Image {
-                    height: 30px;
-                    width: 30px;
-                    source: rune.rune_image3;
+
+                Button {
+                    text: "Random Champion Mode: " + (root.random_champion_mode ? "ON" : "OFF");
+                    clicked => {
+                        root.random_champion(root.random_champion_mode);
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Runes";
+
+                ListView {
+                    for rune[i] in root.rune_list: Rectangle {
+                        height: 100px;
+
+                        HorizontalBox {
+                            vertical-stretch: 0.0;
+                            Text {
+                                text: rune.name;
+                            }
+
+                            Text {
+                                text: rune.position;
+                            }
+
+                            Text {
+                                text: rune.uuid;
+                            }
+                        }
+
+                        HorizontalBox {
+                            spacing: 6px;
+                            height: 36px;
+                            vertical-stretch: 0.0;
+                            Image {
+                                horizontal-stretch: 0.0;
+                                height: 24px;
+                                width: 24px;
+                                source: rune.rune_image1;
+                            }
+
+                            Image {
+                                horizontal-stretch: 0.0;
+                                height: 24px;
+                                width: 24px;
+                                source: rune.rune_image2;
+                            }
+
+                            Image {
+                                horizontal-stretch: 0.0;
+                                height: 24px;
+                                width: 24px;
+                                source: rune.rune_image3;
+                            }
+
+                            Button {
+                                height: parent.height;
+                                width: 10rem;
+                                text: "Apply Rune";
+                                clicked => {
+                                    root.apply_rune(root.champion_id, rune.uuid);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -20,7 +20,7 @@ use crate::{
     source::SourceItem,
 };
 
-pub const SERVICE_URL: &str = "https://c.lbj.moe";
+pub const SERVICE_URL: &str = "http://150.230.215.177:3030";
 
 #[derive(Debug, Clone)]
 pub enum FetchError {

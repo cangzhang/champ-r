@@ -18,6 +18,7 @@ use std::{
 
 use lcu::{
     api::{self, Perk},
+    builds::Rune,
     cmd, web,
 };
 
@@ -52,6 +53,7 @@ async fn main() -> Result<(), slint::PlatformError> {
     let all_perk_images = Arc::new(Mutex::new(HashMap::<i32, Option<PathBuf>>::new()));
     let random_champion_mode = Arc::new(Mutex::new(false));
     let random_champion = Arc::new(Mutex::new(0));
+    let current_champion_runes: Arc<Mutex<(i64, Vec<Rune>)>> = Arc::new(Mutex::new((0, vec![])));
 
     let all_perks_clone = Arc::clone(&all_perks);
     let lcu_auth_url_clone = Arc::clone(&lcu_auth_url);
@@ -59,6 +61,7 @@ async fn main() -> Result<(), slint::PlatformError> {
     let random_champion_mode_clone = Arc::clone(&random_champion_mode);
 
     let weak_rune_win = rune_window.as_weak();
+    let current_champion_runes_clone = current_champion_runes.clone();
     rune_window.on_refetch_data(move |source, cid| {
         if source.is_empty() || cid == 0 {
             return;
@@ -66,6 +69,7 @@ async fn main() -> Result<(), slint::PlatformError> {
 
         info!("[rune_window] refetch data for {}, {}", cid, source);
 
+        let current_champion_runes_clone = current_champion_runes_clone.clone();
         let all_perks_clone = Arc::clone(&all_perks_clone);
         let lcu_auth_url_clone = Arc::clone(&lcu_auth_url_clone);
         let all_perk_images_clone = all_perk_images_clone.clone();
@@ -85,6 +89,13 @@ async fn main() -> Result<(), slint::PlatformError> {
                         cid,
                         source
                     );
+
+                    // extract all runes from Vec<BuildSection>, to a flat list
+                    let list = runes
+                        .iter()
+                        .flat_map(|b| b.runes.clone())
+                        .collect::<Vec<Rune>>();
+                    *current_champion_runes_clone.lock().unwrap() = (champion_id, list);
 
                     let all_perks = &*all_perks_clone.load();
                     for b in runes.iter() {
@@ -222,6 +233,19 @@ async fn main() -> Result<(), slint::PlatformError> {
             .unwrap();
     });
 
+    // let weak_rune_win = rune_window.as_weak();
+    let champion_runes_clone = Arc::clone(&current_champion_runes);
+    rune_window.on_apply_rune(move |champ_id, rune_uuid| {
+        info!("champion id: {champ_id},rune uuid: {rune_uuid}");
+        let current_champion_runes = champion_runes_clone.clone();
+        let a = current_champion_runes.lock().unwrap();
+        let (_cid, runes) = &*a;
+        let rune = runes.iter().find(|r| rune_uuid.to_string().eq(&r.uuid));
+        if let Some(rune) = rune {
+            info!("selected rune: {:?}", rune);
+        }
+    });
+
     let weak_win = window.as_weak();
     let weak_rune_win = rune_window.as_weak();
     tokio::spawn(async move {
@@ -323,7 +347,7 @@ async fn main() -> Result<(), slint::PlatformError> {
                     if *random_champion_mode.lock().unwrap() {
                         *random_champion.lock().unwrap()
                     } else {
-                        0
+                        1
                     }
                 };
                 if prev_cid != cid {
