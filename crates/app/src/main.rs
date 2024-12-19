@@ -238,8 +238,7 @@ async fn main() -> Result<(), slint::PlatformError> {
     rune_window.on_apply_rune(move |champ_id, rune_uuid| {
         info!("champion id: {champ_id},rune uuid: {rune_uuid}");
         let current_champion_runes = champion_runes_clone.clone();
-        let a = current_champion_runes.lock().unwrap();
-        let (_cid, runes) = &*a;
+        let (_cid, runes) = &*(current_champion_runes.lock().unwrap());
         let rune = runes.iter().find(|r| rune_uuid.to_string().eq(&r.uuid));
         if let Some(rune) = rune {
             info!("selected rune: {:?}", rune);
