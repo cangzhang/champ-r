@@ -98,6 +98,9 @@ async fn main() -> Result<(), slint::PlatformError> {
                     *current_champion_runes_clone.lock().unwrap() = (champion_id, list);
 
                     let all_perks = &*all_perks_clone.load();
+                    let mut fetch_tasks = Vec::new();
+                    let mut seen_perk_ids = std::collections::HashSet::new();
+
                     for b in runes.iter() {
                         for rune in b.runes.iter() {
                             let rune_ids = vec![
@@ -112,49 +115,53 @@ async fn main() -> Result<(), slint::PlatformError> {
                                     }
                                     return p.style_id == *rid;
                                 }) {
+                                    // Skip if we've already processed this perk
+                                    if !seen_perk_ids.insert(perk.id) {
+                                        continue;
+                                    }
+
                                     let img_path = tmp_perks_dir.join(format!("{}.png", perk.id));
                                     if fs::metadata(&img_path).is_ok() {
                                         all_perk_images_clone.lock().unwrap().insert(
-                                            if idx == 2 {
-                                                perk.id as i32
-                                            } else {
-                                                perk.style_id as i32
-                                            },
+                                            if idx == 2 { perk.id as i32 } else { perk.style_id as i32 },
                                             Some(img_path),
                                         );
                                         continue;
                                     }
 
-                                    info!(
-                                        "fetching rune image for id:{} {}",
-                                        perk.id, perk.icon_path
-                                    );
-                                    match api::fetch_rune_image(&lcu_auth_url, &perk.icon_path)
-                                        .await
-                                    {
-                                        Ok(bt) => {
-                                            let path =
-                                                tmp_perks_dir.join(format!("{}.png", perk.id));
-                                            fs::write(&path, &bt).unwrap();
-                                            all_perk_images_clone.lock().unwrap().insert(
-                                                if idx == 2 {
-                                                    perk.id as i32
-                                                } else {
-                                                    perk.style_id as i32
-                                                },
-                                                Some(path),
-                                            );
+                                    let lcu_auth_url = lcu_auth_url.to_string();
+                                    let icon_path = perk.icon_path.clone();
+                                    let perk_id = perk.id;
+                                    let style_id = perk.style_id;
+                                    let tmp_perks_dir = tmp_perks_dir.clone();
+                                    let all_perk_images_clone = all_perk_images_clone.clone();
+                                    let idx = idx;
+
+                                    fetch_tasks.push(tokio::spawn(async move {
+                                        info!("fetching rune image for id:{} {}", perk_id, icon_path);
+                                        match api::fetch_rune_image(&lcu_auth_url, &icon_path).await {
+                                            Ok(bt) => {
+                                                let path = tmp_perks_dir.join(format!("{}.png", perk_id));
+                                                if let Ok(_) = fs::write(&path, &bt) {
+                                                    all_perk_images_clone.lock().unwrap().insert(
+                                                        if idx == 2 { perk_id as i32 } else { style_id as i32 },
+                                                        Some(path),
+                                                    );
+                                                }
+                                            }
+                                            Err(_) => {
+                                                error!("Failed to fetch rune image for {}", icon_path);
+                                            }
                                         }
-                                        Err(_) => {
-                                            error!(
-                                                "Failed to fetch rune image for {}",
-                                                perk.icon_path
-                                            );
-                                        }
-                                    }
+                                    }));
                                 }
                             }
                         }
+                    }
+
+                    // Wait for all fetch tasks to complete
+                    for task in fetch_tasks {
+                        let _ = task.await;
                     }
 
                     let mut rune_list = Vec::<UiBufferRune>::new();
