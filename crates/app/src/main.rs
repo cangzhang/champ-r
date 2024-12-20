@@ -103,17 +103,15 @@ async fn main() -> Result<(), slint::PlatformError> {
 
                     for b in runes.iter() {
                         for rune in b.runes.iter() {
-                            let rune_ids = vec![
-                                rune.primary_style_id,
+                            let rune_ids = [rune.primary_style_id,
                                 rune.sub_style_id,
-                                rune.selected_perk_ids[0],
-                            ];
+                                rune.selected_perk_ids[0]];
                             for (idx, rid) in rune_ids.iter().enumerate() {
                                 if let Some(perk) = all_perks.iter().find(|p| {
                                     if idx == 2 {
                                         return p.id == rune.selected_perk_ids[0];
                                     }
-                                    return p.style_id == *rid;
+                                    p.style_id == *rid
                                 }) {
                                     // Skip if we've already processed this perk
                                     if !seen_perk_ids.insert(perk.id) {
@@ -177,9 +175,9 @@ async fn main() -> Result<(), slint::PlatformError> {
                                 .unwrap()
                                 .clone();
                             rune_list.push(UiBufferRune {
-                                uuid: r.uuid.clone().into(),
-                                name: r.name.clone().into(),
-                                position: r.position.clone().into(),
+                                uuid: r.uuid.clone(),
+                                name: r.name.clone(),
+                                position: r.position.clone(),
                                 rune_image1: primary_rune_img,
                                 rune_image2: secondary_rune_img,
                                 rune_image3: last_rune_img,
@@ -356,12 +354,10 @@ async fn main() -> Result<(), slint::PlatformError> {
             if let Ok(champion_id) = api::get_session(&auth_url).await {
                 let cid = if champion_id.is_some() {
                     champion_id.unwrap()
+                } else if *random_champion_mode.lock().unwrap() {
+                    *random_champion.lock().unwrap()
                 } else {
-                    if *random_champion_mode.lock().unwrap() {
-                        *random_champion.lock().unwrap()
-                    } else {
-                        1
-                    }
+                    1
                 };
                 if prev_cid != cid {
                     info!("rune_window: champion id changed to: {}", cid);
