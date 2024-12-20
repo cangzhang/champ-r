@@ -112,12 +112,12 @@ export component RuneWindow inherits Dialog {
                     }
                 }
 
-                Button {
-                    text: "Random Champion Mode: " + (root.random_champion_mode ? "ON" : "OFF");
-                    clicked => {
-                        root.random_champion(root.random_champion_mode);
-                    }
-                }
+                // Button {
+                //     text: "Random Champion Mode: " + (root.random_champion_mode ? "ON" : "OFF");
+                //     clicked => {
+                //         root.random_champion(root.random_champion_mode);
+                //     }
+                // }
             }
 
             GroupBox {
@@ -125,54 +125,63 @@ export component RuneWindow inherits Dialog {
 
                 ListView {
                     for rune[i] in root.rune_list: Rectangle {
-                        height: 100px;
-
+                        border-width: 1px;
+                        border-color: #F6F6FA;
+                        border-radius: 4px;
                         HorizontalBox {
-                            vertical-stretch: 0.0;
-                            Text {
-                                text: rune.name;
+                            height: 100px;
+                            alignment: space-around;
+
+                            VerticalBox {
+                                Rectangle {
+                                    vertical-stretch: 0.0;
+                                    Text {
+                                        text: rune.name;
+                                    }
+                                }
+
+                                HorizontalBox {
+                                    height: 36px;
+                                    vertical-stretch: 0.0;
+                                    Image {
+                                        horizontal-stretch: 0.0;
+                                        height: 24px;
+                                        width: 24px;
+                                        source: rune.rune_image1;
+                                    }
+
+                                    Image {
+                                        horizontal-stretch: 0.0;
+                                        height: 24px;
+                                        width: 24px;
+                                        source: rune.rune_image2;
+                                    }
+
+                                    Image {
+                                        horizontal-stretch: 0.0;
+                                        height: 24px;
+                                        width: 24px;
+                                        source: rune.rune_image3;
+                                    }
+
+                                    Rectangle {
+                                        vertical-stretch: 1;
+                                        Text {
+                                            text: rune.position;
+                                        }
+                                    }
+                                }
                             }
 
-                            Text {
-                                text: rune.position;
-                            }
-
-                            Text {
-                                text: rune.uuid;
-                            }
-                        }
-
-                        HorizontalBox {
-                            spacing: 6px;
-                            height: 36px;
-                            vertical-stretch: 0.0;
-                            Image {
-                                horizontal-stretch: 0.0;
-                                height: 24px;
-                                width: 24px;
-                                source: rune.rune_image1;
-                            }
-
-                            Image {
-                                horizontal-stretch: 0.0;
-                                height: 24px;
-                                width: 24px;
-                                source: rune.rune_image2;
-                            }
-
-                            Image {
-                                horizontal-stretch: 0.0;
-                                height: 24px;
-                                width: 24px;
-                                source: rune.rune_image3;
-                            }
-
-                            Button {
+                            VerticalBox {
                                 height: parent.height;
-                                width: 10rem;
-                                text: "Apply Rune";
-                                clicked => {
-                                    root.apply_rune(root.champion_id, rune.uuid);
+                                alignment: center;
+                                Button {
+                                    text: "Apply Rune";
+                                    width: 10rem;
+                                    clicked => {
+                                        root.apply_rune(root.champion_id, rune.uuid);
+                                    }
                                 }
                             }
                         }
