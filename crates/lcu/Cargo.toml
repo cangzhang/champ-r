@@ -17,7 +17,7 @@ bytes = "*"
 base64 = "0.21.5"
 tokio = { version = "1", features = ["full"] }
 futures = "0.3.28"
-reqwest = { version = "0.11", features = ["json", "stream", "rustls-tls", "blocking"] }
+reqwest = { version = "0.12", features = ["json", "stream", "rustls-tls", "blocking"] }
 log = { version = "0.4", features = ["std"] }
 url = "2.4.1"
 image = "0.24.7"

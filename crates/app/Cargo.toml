@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 lcu = { path = "../lcu" }
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.44.0", features = ["full"] }
 futures = "0.3.28"
 kv-log-macro = "1.0.7"
 femme = "2.2.1"
@@ -16,6 +16,7 @@ anyhow = "1.0.86"
 image = "0.25.2"
 arc-swap = "1.7.1"
 rand = "0.8.5"
+cushy = { git = "https://github.com/khonsulabs/cushy.git", branch = "main", features = ["tokio"] }
 
 [build-dependencies]
 slint-build = "1.8.0"
