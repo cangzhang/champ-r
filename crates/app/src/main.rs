@@ -1,6 +1,6 @@
 use cushy::animation::ZeroToOne;
 use cushy::reactive::value::{Destination, Dynamic, Switchable};
-use cushy::widget::{MakeWidget, Widget, WidgetList};
+use cushy::widget::{MakeWidget, WidgetList};
 use cushy::widgets::progress::{Progress, Progressable};
 use cushy::{Open, PendingApp, TokioRuntime};
 use kv_log_macro::info;
@@ -13,7 +13,8 @@ struct Task {
     progress: Dynamic<Progress>,
 }
 
-fn main() -> cushy::Result<()> {
+#[tokio::main]
+async fn main() -> cushy::Result<()> {
     femme::with_level(femme::LevelFilter::Info);
 
     let tmp_dir = env::temp_dir();
@@ -26,6 +27,7 @@ fn main() -> cushy::Result<()> {
     let task = Dynamic::new(None::<Task>);
 
     let source_list = Dynamic::new(None::<Vec<SourceItem>>);
+    tokio::spawn(load_source_list(source_list.clone()));
 
     task.switcher(|task, dynamic| {
         if let Some(task) = task {
