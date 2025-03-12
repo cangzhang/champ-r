@@ -1,9 +1,12 @@
 use cushy::animation::ZeroToOne;
-use cushy::reactive::value::{Destination, Dynamic, Switchable};
+use cushy::reactive::value::{Destination, Dynamic, Source, Switchable};
 use cushy::widget::{MakeWidget, WidgetList};
+use cushy::widgets::checkbox::{Checkable, CheckboxState};
+use cushy::widgets::label::Displayable;
 use cushy::widgets::progress::{Progress, Progressable};
 use cushy::{Open, PendingApp, TokioRuntime};
 use kv_log_macro::info;
+use std::vec;
 use std::{env, fs, time::Duration};
 
 use lcu::{source::SourceItem, web};
@@ -26,6 +29,8 @@ async fn main() -> cushy::Result<()> {
     let app = PendingApp::new(TokioRuntime::default());
     let task = Dynamic::new(None::<Task>);
 
+    let selected_sources: Dynamic<Vec<String>> = Dynamic::new(vec![]);
+    let selected_sources2 = selected_sources.clone();
     let source_list = Dynamic::new(None::<Vec<SourceItem>>);
     tokio::spawn(load_source_list(source_list.clone()));
 
@@ -48,26 +53,57 @@ async fn main() -> cushy::Result<()> {
                 .make_widget()
         }
     })
-    .and(
-        "Load Source List"
-            .into_button()
-            .on_click({
-                let source_list = source_list.clone();
-                move |_| {
-                    tokio::spawn(load_source_list(source_list.clone()));
-                }
-            })
-            .make_widget(),
-    )
+    // .and(
+    //     "Load Source List"
+    //         .into_button()
+    //         .on_click({
+    //             let source_list = source_list.clone();
+    //             move |_| {
+    //                 tokio::spawn(load_source_list(source_list.clone()));
+    //             }
+    //         })
+    //         .make_widget(),
+    // )
     .and(
         source_list
-            .switcher(|source_list, _| {
+            .switcher(move |source_list, _| {
                 if let Some(source_list) = source_list {
+                    let selected_sources = selected_sources.clone();
                     source_list
                         .into_iter()
-                        .map(|s| {
-                            s.label.clone().into_checkbox(cushy::reactive::value::Dynamic::new(false)).make_widget()
-                        }).collect::<WidgetList>()
+                        .map(move |s| {
+                            let selected_sources = selected_sources.clone();
+                            let label = s.label.clone();
+                            let value = s.value.clone();
+                            let checkbox_state = Dynamic::new(CheckboxState::Unchecked);
+                            checkbox_state.map_each(move |state| {
+                                let selected_sources = selected_sources.clone();
+                                match state {
+                                    CheckboxState::Checked => {
+                                        let selected_sources = selected_sources.clone();
+                                        let mut next = selected_sources.get();
+                                        if !next.contains(&value) {
+                                            next.push(value.clone());
+                                            info!("selected sources: {:?}", next);
+                                            selected_sources.set(next);
+                                        }
+                                    }
+                                    CheckboxState::Unchecked => {
+                                        let selected_sources = selected_sources.clone();
+                                        let mut next = selected_sources.get();
+                                        next.retain(|src| src != &value);
+                                        info!("selected sources: {:?}", next);
+                                        selected_sources.set(next);
+                                    }
+                                    CheckboxState::Indeterminant => (),
+                                }
+                            });
+                            checkbox_state
+                                .to_checkbox()
+                                .labelled_by(label)
+                                .make_widget()
+                        })
+                        .collect::<WidgetList>()
                         .into_rows()
                         .make_widget()
                 } else {
@@ -76,6 +112,20 @@ async fn main() -> cushy::Result<()> {
             })
             .centered(),
     )
+    .and(selected_sources2.switcher({
+        move |selected_sources, _| {
+            if selected_sources.is_empty() {
+                "No sources selected".into_label().make_widget()
+            } else {
+                selected_sources
+                    .iter()
+                    .map(|s| s.clone().into_button().make_widget())
+                    .collect::<WidgetList>()
+                    .into_rows()
+                    .make_widget()
+            }
+        }
+    }))
     .into_rows()
     .centered()
     .run_in(app)
