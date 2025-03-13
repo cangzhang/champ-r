@@ -53,17 +53,6 @@ async fn main() -> cushy::Result<()> {
                 .make_widget()
         }
     })
-    // .and(
-    //     "Load Source List"
-    //         .into_button()
-    //         .on_click({
-    //             let source_list = source_list.clone();
-    //             move |_| {
-    //                 tokio::spawn(load_source_list(source_list.clone()));
-    //             }
-    //         })
-    //         .make_widget(),
-    // )
     .and(
         source_list
             .switcher(move |source_list, _| {
@@ -75,29 +64,32 @@ async fn main() -> cushy::Result<()> {
                             let selected_sources = selected_sources.clone();
                             let label = s.label.clone();
                             let value = s.value.clone();
+
                             let checkbox_state = Dynamic::new(CheckboxState::Unchecked);
-                            checkbox_state.map_each(move |state| {
-                                let selected_sources = selected_sources.clone();
-                                match state {
-                                    CheckboxState::Checked => {
-                                        let selected_sources = selected_sources.clone();
-                                        let mut next = selected_sources.get();
-                                        if !next.contains(&value) {
-                                            next.push(value.clone());
-                                            info!("selected sources: {:?}", next);
+                            let checkbox_state = checkbox_state
+                                .with_for_each(move |state| {
+                                    let selected_sources = selected_sources.clone();
+                                    match state {
+                                        CheckboxState::Checked => {
+                                            let selected_sources = selected_sources.clone();
+                                            let mut next = selected_sources.get();
+                                            if !next.contains(&value) {
+                                                next.push(value.clone());
+                                                info!("selected sources: {:?}", next);
+                                                selected_sources.set(next);
+                                            }
+                                        }
+                                        CheckboxState::Unchecked => {
+                                            let selected_sources = selected_sources.clone();
+                                            let mut next = selected_sources.get();
+                                            info!("source to remove: {:?}", value);
+                                            next.retain(|s| s != &value);
                                             selected_sources.set(next);
                                         }
+                                        CheckboxState::Indeterminant => (),
                                     }
-                                    CheckboxState::Unchecked => {
-                                        let selected_sources = selected_sources.clone();
-                                        let mut next = selected_sources.get();
-                                        next.retain(|src| src != &value);
-                                        info!("selected sources: {:?}", next);
-                                        selected_sources.set(next);
-                                    }
-                                    CheckboxState::Indeterminant => (),
-                                }
-                            });
+                                });
+
                             checkbox_state
                                 .to_checkbox()
                                 .labelled_by(label)
@@ -119,9 +111,9 @@ async fn main() -> cushy::Result<()> {
             } else {
                 selected_sources
                     .iter()
-                    .map(|s| s.clone().into_button().make_widget())
+                    .map(|s| s.clone().into_label().make_widget())
                     .collect::<WidgetList>()
-                    .into_rows()
+                    .into_columns()
                     .make_widget()
             }
         }
