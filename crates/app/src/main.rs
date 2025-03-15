@@ -2,6 +2,7 @@ use cushy::reactive::value::{Destination, Dynamic, Source, Switchable};
 use cushy::widget::{MakeWidget, WidgetList};
 use cushy::widgets::checkbox::{Checkable, CheckboxState};
 use cushy::widgets::label::Displayable;
+use cushy::window::PendingWindow;
 use cushy::{Open, PendingApp, TokioRuntime};
 use kv_log_macro::info;
 use std::vec;
@@ -9,6 +10,7 @@ use std::{env, fs, time::Duration};
 
 use lcu::cmd::{CommandLineOutput, get_commandline};
 use lcu::{source::SourceItem, web};
+use lcu::api::get_session;
 
 #[tokio::main]
 async fn main() -> cushy::Result<()> {
@@ -27,14 +29,30 @@ async fn main() -> cushy::Result<()> {
 
     let source_list = Dynamic::new(None::<Vec<SourceItem>>);
     tokio::spawn(load_source_list(source_list.clone()));
-    
+
     let lcu_auth = Dynamic::new(None::<CommandLineOutput>);
     let lcu_auth2 = lcu_auth.clone();
     tokio::spawn(async move {
-        let lcu_auth = lcu_auth.clone();
         loop {
             if let Ok(output) = get_commandline() {
-                lcu_auth.replace(Some(output));
+                lcu_auth2.replace(Some(output));
+            }
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
+    });
+
+    let lcu_auth3 = lcu_auth.clone();
+    let rune_window = PendingWindow::default();
+    let rune_handle = rune_window.handle();
+    tokio::spawn(async move {
+        loop {
+            if let Some(lcu_auth) = lcu_auth3.get() {
+                if let Ok(session) = get_session(&lcu_auth.auth_url).await {
+                    if let Some(champion_id) = session {
+                        info!("champion_id: {}", champion_id);
+                    }
+                    
+                }
             }
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
@@ -103,7 +121,7 @@ async fn main() -> cushy::Result<()> {
             }
         }))
         .and(
-            lcu_auth2.switcher({
+            lcu_auth.switcher({
                 move |lcu_auth, _| {
                     if let Some(lcu_auth) = lcu_auth {
                         lcu_auth.auth_url.clone().into_label().make_widget()
