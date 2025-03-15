@@ -45,7 +45,7 @@ async fn main() -> cushy::Result<()> {
             if let Some(source_list) = source_list {
                 let selected_sources = selected_sources.clone();
                 source_list
-                    .into_iter()
+                    .iter()
                     .map(move |s| {
                         let selected_sources = selected_sources.clone();
                         let label = s.label.clone();
