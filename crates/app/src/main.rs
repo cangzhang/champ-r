@@ -1,9 +1,7 @@
-use cushy::animation::ZeroToOne;
 use cushy::reactive::value::{Destination, Dynamic, Source, Switchable};
 use cushy::widget::{MakeWidget, WidgetList};
 use cushy::widgets::checkbox::{Checkable, CheckboxState};
 use cushy::widgets::label::Displayable;
-use cushy::widgets::progress::{Progress, Progressable};
 use cushy::{Open, PendingApp, TokioRuntime};
 use kv_log_macro::info;
 use std::vec;
@@ -110,7 +108,7 @@ async fn main() -> cushy::Result<()> {
                     if let Some(lcu_auth) = lcu_auth {
                         lcu_auth.auth_url.clone().into_label().make_widget()
                     } else {
-                        "No LCU auth".into_label().make_widget()
+                        "⚠️ League client is not running.".into_label().make_widget()
                     }
                 }
             })
