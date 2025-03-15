@@ -220,24 +220,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
-name = "app"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "arc-swap",
- "cushy",
- "femme",
- "futures",
- "image 0.25.2",
- "kv-log-macro",
- "lcu",
- "rand",
- "slint",
- "slint-build",
- "tokio",
-]
-
-[[package]]
 name = "appit"
 version = "0.4.0"
 source = "git+https://github.com/khonsulabs/appit#be6918d5ebb6a2ad7911f621bb7db3676ce8b290"
@@ -933,6 +915,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ced0551234e87afee12411d535648dd89d2e7f34c78b753395567aff3d447ff"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "champr"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "arc-swap",
+ "cushy",
+ "femme",
+ "futures",
+ "image 0.25.2",
+ "kv-log-macro",
+ "lcu",
+ "rand",
+ "slint",
+ "slint-build",
+ "tokio",
 ]
 
 [[package]]

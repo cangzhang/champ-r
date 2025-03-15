@@ -9,12 +9,8 @@ use kv_log_macro::info;
 use std::vec;
 use std::{env, fs, time::Duration};
 
+use lcu::cmd::{CommandLineOutput, get_commandline};
 use lcu::{source::SourceItem, web};
-
-#[derive(Debug, Default, Eq, PartialEq)]
-struct Task {
-    progress: Dynamic<Progress>,
-}
 
 #[tokio::main]
 async fn main() -> cushy::Result<()> {
@@ -27,114 +23,101 @@ async fn main() -> cushy::Result<()> {
     info!("temp perks dir: {}", tmp_perks_dir.display());
 
     let app = PendingApp::new(TokioRuntime::default());
-    let task = Dynamic::new(None::<Task>);
 
     let selected_sources: Dynamic<Vec<String>> = Dynamic::new(vec![]);
     let selected_sources2 = selected_sources.clone();
+
     let source_list = Dynamic::new(None::<Vec<SourceItem>>);
     tokio::spawn(load_source_list(source_list.clone()));
-
-    task.switcher(|task, dynamic| {
-        if let Some(task) = task {
-            // A background thread is running, show a progress bar.
-            task.progress.clone().progress_bar().make_widget()
-        } else {
-            // There is no background task. Show a button that will start one.
-            "Start"
-                .into_button()
-                .on_click({
-                    let task = dynamic.clone();
-                    move |_| {
-                        let background_task = Task::default();
-                        spawn_background_thread(&background_task.progress, &task);
-                        task.set(Some(background_task));
-                    }
-                })
-                .make_widget()
+    
+    let lcu_auth = Dynamic::new(None::<CommandLineOutput>);
+    let lcu_auth2 = lcu_auth.clone();
+    tokio::spawn(async move {
+        let lcu_auth = lcu_auth.clone();
+        loop {
+            if let Ok(output) = get_commandline() {
+                lcu_auth.replace(Some(output));
+            }
+            tokio::time::sleep(Duration::from_secs(2)).await;
         }
-    })
-    .and(
-        source_list
-            .switcher(move |source_list, _| {
-                if let Some(source_list) = source_list {
-                    let selected_sources = selected_sources.clone();
-                    source_list
-                        .into_iter()
-                        .map(move |s| {
+    });
+
+    source_list
+        .switcher(move |source_list, _| {
+            if let Some(source_list) = source_list {
+                let selected_sources = selected_sources.clone();
+                source_list
+                    .into_iter()
+                    .map(move |s| {
+                        let selected_sources = selected_sources.clone();
+                        let label = s.label.clone();
+                        let value = s.value.clone();
+
+                        let checkbox_state = Dynamic::new(CheckboxState::Unchecked);
+                        let checkbox_state = checkbox_state.with_for_each(move |state| {
                             let selected_sources = selected_sources.clone();
-                            let label = s.label.clone();
-                            let value = s.value.clone();
-
-                            let checkbox_state = Dynamic::new(CheckboxState::Unchecked);
-                            let checkbox_state = checkbox_state
-                                .with_for_each(move |state| {
+                            match state {
+                                CheckboxState::Checked => {
                                     let selected_sources = selected_sources.clone();
-                                    match state {
-                                        CheckboxState::Checked => {
-                                            let selected_sources = selected_sources.clone();
-                                            let mut next = selected_sources.get();
-                                            if !next.contains(&value) {
-                                                next.push(value.clone());
-                                                info!("selected sources: {:?}", next);
-                                                selected_sources.set(next);
-                                            }
-                                        }
-                                        CheckboxState::Unchecked => {
-                                            let selected_sources = selected_sources.clone();
-                                            let mut next = selected_sources.get();
-                                            info!("source to remove: {:?}", value);
-                                            next.retain(|s| s != &value);
-                                            selected_sources.set(next);
-                                        }
-                                        CheckboxState::Indeterminant => (),
+                                    let mut next = selected_sources.get();
+                                    if !next.contains(&value) {
+                                        next.push(value.clone());
+                                        info!("selected sources: {:?}", next);
+                                        selected_sources.set(next);
                                     }
-                                });
+                                }
+                                CheckboxState::Unchecked => {
+                                    let selected_sources = selected_sources.clone();
+                                    let mut next = selected_sources.get();
+                                    info!("source to remove: {:?}", value);
+                                    next.retain(|s| s != &value);
+                                    selected_sources.set(next);
+                                }
+                                CheckboxState::Indeterminant => (),
+                            }
+                        });
 
-                            checkbox_state
-                                .to_checkbox()
-                                .labelled_by(label)
-                                .make_widget()
-                        })
-                        .collect::<WidgetList>()
-                        .into_rows()
-                        .make_widget()
+                        checkbox_state
+                            .to_checkbox()
+                            .labelled_by(label)
+                            .make_widget()
+                    })
+                    .collect::<WidgetList>()
+                    .into_rows()
+                    .make_widget()
+            } else {
+                "No source list loaded".into_button().make_widget()
+            }
+        })
+        .centered()
+        .and(selected_sources2.switcher({
+            move |selected_sources, _| {
+                if selected_sources.is_empty() {
+                    "No sources selected".into_label().make_widget()
                 } else {
-                    "No source list loaded".into_button().make_widget()
+                    selected_sources
+                        .iter()
+                        .map(|s| s.clone().into_label().make_widget())
+                        .collect::<WidgetList>()
+                        .into_columns()
+                        .make_widget()
+                }
+            }
+        }))
+        .and(
+            lcu_auth2.switcher({
+                move |lcu_auth, _| {
+                    if let Some(lcu_auth) = lcu_auth {
+                        lcu_auth.auth_url.clone().into_label().make_widget()
+                    } else {
+                        "No LCU auth".into_label().make_widget()
+                    }
                 }
             })
-            .centered(),
-    )
-    .and(selected_sources2.switcher({
-        move |selected_sources, _| {
-            if selected_sources.is_empty() {
-                "No sources selected".into_label().make_widget()
-            } else {
-                selected_sources
-                    .iter()
-                    .map(|s| s.clone().into_label().make_widget())
-                    .collect::<WidgetList>()
-                    .into_columns()
-                    .make_widget()
-            }
-        }
-    }))
-    .into_rows()
-    .centered()
-    .run_in(app)
-}
-
-fn spawn_background_thread(progress: &Dynamic<Progress>, task: &Dynamic<Option<Task>>) {
-    let progress = progress.clone();
-    let task = task.clone();
-    std::thread::spawn(move || background_task(&progress, &task));
-}
-
-fn background_task(progress: &Dynamic<Progress>, task: &Dynamic<Option<Task>>) {
-    for i in 0_u8..=10 {
-        progress.set(Progress::Percent(ZeroToOne::new(f32::from(i) / 10.)));
-        std::thread::sleep(Duration::from_millis(100));
-    }
-    task.set(None);
+        )
+        .into_rows()
+        .centered()
+        .run_in(app)
 }
 
 async fn load_source_list(list: Dynamic<Option<Vec<SourceItem>>>) {

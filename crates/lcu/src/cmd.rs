@@ -28,7 +28,7 @@ pub fn make_auth_url(token: &String, port: &String) -> String {
     format!("riot:{token}@127.0.0.1:{port}")
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CommandLineOutput {
     pub auth_url: String,
     pub is_tencent: bool,
@@ -38,7 +38,7 @@ pub struct CommandLineOutput {
 }
 
 #[cfg(target_os = "windows")]
-pub fn get_commandline() -> CommandLineOutput {
+pub fn get_commandline() -> Result<CommandLineOutput, ()> {
     use powershell_script::PsScriptBuilder;
 
     let ps = PsScriptBuilder::new()
@@ -61,13 +61,11 @@ pub fn get_commandline() -> CommandLineOutput {
         Err(err) => error!("cmd error: {:?}", err),
     }
 
-    CommandLineOutput {
-        ..Default::default()
-    }
+    Err(())
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn get_commandline() -> CommandLineOutput {
+pub fn get_commandline() -> Result<CommandLineOutput, ()>{
     use std::io::{BufRead, BufReader};
     use std::process::{Command, Stdio};
 
@@ -109,19 +107,20 @@ pub fn get_commandline() -> CommandLineOutput {
                 }
                 Err(e) => {
                     info!("[cmd::get_commandline] {:?}", e);
+                    return Err(())
                 }
             }
         }
     }
     cmd.wait().unwrap();
 
-    CommandLineOutput {
+    Ok(CommandLineOutput {
         auth_url,
         is_tencent,
         token,
         port,
         dir,
-    }
+    })
 }
 
 pub fn match_stdout(stdout: &str) -> CommandLineOutput {
@@ -292,15 +291,19 @@ pub async fn test_connectivity() -> anyhow::Result<bool> {
 }
 
 pub fn check_if_lol_running() -> bool {
-    let CommandLineOutput { port, token, .. } = get_commandline();
-    !token.is_empty() && !port.is_empty()
+    if let Ok(auth) = get_commandline() {
+        return !auth.auth_url.is_empty();
+    }
+
+    false
 }
 
 pub fn start_check_cmd_task() {}
 
 pub fn update_cmd_output_task(output: &Arc<Mutex<CommandLineOutput>>) {
-    let result = get_commandline();
-    *output.lock().unwrap() = result;
+    if let Ok(result) = get_commandline() {
+        *output.lock().unwrap() = result;
+    }
 }
 
 #[cfg(test)]
