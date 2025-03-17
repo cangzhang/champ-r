@@ -8,9 +8,9 @@ use kv_log_macro::info;
 use std::vec;
 use std::{env, fs, time::Duration};
 
-use lcu::cmd::{CommandLineOutput, get_commandline};
-use lcu::{source::SourceItem, web};
 use lcu::api::get_session;
+use lcu::cmd::{get_commandline, CommandLineOutput};
+use lcu::{source::SourceItem, web};
 
 #[tokio::main]
 async fn main() -> cushy::Result<()> {
@@ -22,7 +22,7 @@ async fn main() -> cushy::Result<()> {
     let _ = fs::create_dir(&tmp_perks_dir);
     info!("temp perks dir: {}", tmp_perks_dir.display());
 
-    let app = PendingApp::new(TokioRuntime::default());
+    let mut app = PendingApp::new(TokioRuntime::default());
 
     let selected_sources: Dynamic<Vec<String>> = Dynamic::new(vec![]);
     let selected_sources2 = selected_sources.clone();
@@ -42,21 +42,39 @@ async fn main() -> cushy::Result<()> {
     });
 
     let lcu_auth3 = lcu_auth.clone();
-    let rune_window = PendingWindow::default();
-    let rune_handle = rune_window.handle();
+    let rune_pw = PendingWindow::default();
+    // let rune_handle = rune_pw.handle();
+    let rune_window_visible = Dynamic::new(false);
+    let rune_window_visible2 = rune_window_visible.clone();
+    let rune_window = rune_pw
+        .with_root("Runes".into_label().make_widget())
+        .titled("Runes")
+        .visible(rune_window_visible);
     tokio::spawn(async move {
+        let visible = rune_window_visible2.clone();
         loop {
             if let Some(lcu_auth) = lcu_auth3.get() {
-                if let Ok(session) = get_session(&lcu_auth.auth_url).await {
+                let auth_url = format!("https://{}", &lcu_auth.auth_url);
+                if let Ok(session) = get_session(&auth_url).await {
                     if let Some(champion_id) = session {
                         info!("champion_id: {}", champion_id);
+                        if champion_id > 0 {
+                            if !visible.get() {
+                                visible.set(true);
+                            }
+                        }
+                        tokio::time::sleep(Duration::from_secs(2)).await;
+                        continue;
                     }
-                    
                 }
             }
+
+            visible.set(false);
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
     });
+
+    rune_window.open(&mut app)?;
 
     source_list
         .switcher(move |source_list, _| {
@@ -120,19 +138,22 @@ async fn main() -> cushy::Result<()> {
                 }
             }
         }))
-        .and(
-            lcu_auth.switcher({
-                move |lcu_auth, _| {
-                    if let Some(lcu_auth) = lcu_auth {
-                        lcu_auth.auth_url.clone().into_label().make_widget()
-                    } else {
-                        "⚠️ League client is not running.".into_label().make_widget()
-                    }
+        .and(lcu_auth.switcher({
+            move |lcu_auth, _| {
+                if let Some(lcu_auth) = lcu_auth {
+                    lcu_auth.auth_url.clone().into_label().make_widget()
+                } else {
+                    "⚠️ League client is not running."
+                        .into_label()
+                        .make_widget()
                 }
-            })
-        )
+            }
+        }))
         .into_rows()
         .centered()
+        .make_widget()
+        .to_window()
+        .titled("ChampR")
         .run_in(app)
 }
 
