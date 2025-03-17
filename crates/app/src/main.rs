@@ -58,10 +58,8 @@ async fn main() -> cushy::Result<()> {
                 if let Ok(session) = get_session(&auth_url).await {
                     if let Some(champion_id) = session {
                         info!("champion_id: {}", champion_id);
-                        if champion_id > 0 {
-                            if !visible.get() {
-                                visible.set(true);
-                            }
+                        if champion_id > 0 && !visible.get() {
+                            visible.set(true);
                         }
                         tokio::time::sleep(Duration::from_secs(2)).await;
                         continue;
