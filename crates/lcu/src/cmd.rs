@@ -38,7 +38,7 @@ pub struct CommandLineOutput {
 }
 
 #[cfg(target_os = "windows")]
-pub fn get_commandline() -> Result<CommandLineOutput, ()> {
+pub fn get_cmd_output() -> Result<CommandLineOutput, ()> {
     use powershell_script::PsScriptBuilder;
 
     let ps = PsScriptBuilder::new()
@@ -65,7 +65,7 @@ pub fn get_commandline() -> Result<CommandLineOutput, ()> {
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn get_commandline() -> Result<CommandLineOutput, ()>{
+pub fn get_cmd_output() -> Result<CommandLineOutput, ()>{
     use std::io::{BufRead, BufReader};
     use std::process::{Command, Stdio};
 
@@ -106,7 +106,7 @@ pub fn get_commandline() -> Result<CommandLineOutput, ()>{
                     }
                 }
                 Err(e) => {
-                    info!("[cmd::get_commandline] {:?}", e);
+                    info!("[cmd::get_cmd_output] {:?}", e);
                     return Err(())
                 }
             }
@@ -199,7 +199,7 @@ pub async fn check_if_server_ready() -> anyhow::Result<bool> {
 
     let CommandLineOutput {
         dir, is_tencent, ..
-    } = get_commandline();
+    } = get_cmd_output();
 
     if dir.is_empty() {
         info!("[cmd::check_if_tencent_server_ready] cannot get lcu install dir");
@@ -227,44 +227,12 @@ pub async fn check_if_server_ready() -> anyhow::Result<bool> {
 }
 
 #[cfg(target_os = "windows")]
-pub async fn fix_tencent_server() -> anyhow::Result<bool> {
-    use std::io::{BufRead, BufReader, Error, ErrorKind};
-    use std::os::windows::process::CommandExt;
-    use std::process::{Command, Stdio};
-
-    let CommandLineOutput { dir, .. } = get_commandline();
-
-    let stdout = Command::new("./LeagueClient.exe")
-        .args(["fix", &dir])
-        .creation_flags(0x08000000)
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output."))?;
-
-    let mut ready = false;
-    let reader = BufReader::new(stdout);
-    reader.lines().map_while(Result::ok).for_each(|line| {
-        if line.starts_with("=== tencent_fucked") {
-            ready = true;
-        }
-    });
-
-    Ok(ready)
-}
-
-#[cfg(not(target_os = "windows"))]
-pub async fn fix_tencent_server() -> anyhow::Result<bool> {
-    Ok(true)
-}
-
-#[cfg(target_os = "windows")]
 pub async fn test_connectivity() -> anyhow::Result<bool> {
     use std::io::{BufRead, BufReader, Error, ErrorKind};
     use std::os::windows::process::CommandExt;
     use std::process::{Command, Stdio};
 
-    let CommandLineOutput { port, token, .. } = get_commandline();
+    let CommandLineOutput { port, token, .. } = get_cmd_output();
 
     let stdout = Command::new("./LeagueClient.exe")
         .args(["test", &token, &port])
@@ -291,7 +259,7 @@ pub async fn test_connectivity() -> anyhow::Result<bool> {
 }
 
 pub fn check_if_lol_running() -> bool {
-    if let Ok(auth) = get_commandline() {
+    if let Ok(auth) = get_cmd_output() {
         return !auth.auth_url.is_empty();
     }
 
@@ -301,7 +269,7 @@ pub fn check_if_lol_running() -> bool {
 pub fn start_check_cmd_task() {}
 
 pub fn update_cmd_output_task(output: &Arc<Mutex<CommandLineOutput>>) {
-    if let Ok(result) = get_commandline() {
+    if let Ok(result) = get_cmd_output() {
         *output.lock().unwrap() = result;
     }
 }
@@ -312,7 +280,7 @@ mod tests {
 
     #[tokio::test]
     async fn run_cmd() {
-        let ret = get_commandline();
+        let ret = get_cmd_output();
         println!("{:?}", ret);
     }
 }

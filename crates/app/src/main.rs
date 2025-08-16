@@ -3,10 +3,10 @@
     windows_subsystem = "windows"
 )]
 
-use std::collections::HashSet;
+use std::{collections::HashSet, time::Duration};
 use freya::prelude::*;
 
-use lcu::{source::SourceItem, web::fetch_sources};
+use lcu::{cmd::get_cmd_output, source::SourceItem, web::fetch_sources};
 
 fn main() {
     launch_cfg(
@@ -44,6 +44,25 @@ fn app() -> Element {
             }
         });
     });
+
+    let mut lcu_auth_url = use_signal(|| String::new());
+    use_effect(move || {
+        spawn(async move {
+            loop {
+                let url = lcu_auth_url.read().clone();
+                if let Ok(ret) = get_cmd_output() {
+                    if !url.eq(&ret.auth_url) {
+                        lcu_auth_url.write().clear();
+                        *lcu_auth_url.write() = ret.auth_url.clone();
+                    }
+                } else {
+                    println!("error getting auth url output");
+                }
+                tokio::time::sleep(Duration::from_millis(2500)).await;
+            }
+        });
+    });
+
 
     let mut selected = use_signal::<HashSet<String>>(HashSet::default);
 
@@ -116,6 +135,25 @@ fn app() -> Element {
             Button {
                 onpress,
                 label { "New window" }
+            }
+        }
+        {
+            let auth_url = lcu_auth_url.read().clone();
+            if !auth_url.is_empty() {
+                rsx!(
+                    rect {
+                        font_size: "12",
+                        font_family: "Consolas, Menlo",
+                        // font_family: "monospace",
+                        label {
+                            "Auth URL: {auth_url}"
+                        }
+                    }
+                )
+            } else {
+                rsx!(
+                    rect {}
+                )
             }
         }
     )
