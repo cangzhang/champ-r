@@ -1,8 +1,7 @@
 use futures::StreamExt;
-
 use kv_log_macro::info;
+use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::{
     fs,
     io::Write,
@@ -42,7 +41,7 @@ pub struct ItemBuild {
     pub blocks: Vec<Block>,
     pub map: String,
     pub mode: String,
-    pub preferred_item_slots: Option<Vec<Value>>,
+    pub preferred_item_slots: Option<Vec<String>>,
     pub sortrank: i64,
     pub started_from: String,
     #[serde(rename = "type")]
@@ -67,6 +66,8 @@ pub struct Item {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Rune {
+    #[serde(default = "gen_uuid")]
+    pub uuid: String,
     pub alias: String,
     pub name: String,
     pub position: String,
@@ -78,6 +79,10 @@ pub struct Rune {
     pub score: Option<f64>,
     #[serde(rename = "type", default = "empty_rune_type")]
     pub type_field: String,
+}
+
+pub fn gen_uuid() -> String {
+    nanoid!(10)
 }
 
 pub fn empty_rune_type() -> String {
