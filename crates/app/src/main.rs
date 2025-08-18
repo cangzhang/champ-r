@@ -18,7 +18,7 @@ use lcu::{
 };
 
 fn main() {
-    femme::with_level(femme::LevelFilter::Trace);
+    femme::with_level(femme::LevelFilter::Info);
     launch_cfg(
         LaunchConfig::new()
             .with_window(WindowConfig::new(app).with_title("Sources - ChampR")),
@@ -72,11 +72,14 @@ fn app() -> Element {
             }
         });
     });
+
+    let mut champion_id = use_signal::<u64>(|| 0);
     use_effect(move || {
         let endpoint = lcu_auth_url.read().clone();
         if endpoint.is_empty() {
             return;
         }
+        let cur_cid = champion_id.read().clone();
         spawn(async move {
             let ws = make_ws_client(&endpoint).await;
             if let Ok(ws) = ws {
@@ -104,17 +107,26 @@ fn app() -> Element {
                                     let uri = data
                                         .and_then(|v| v.get("uri"))
                                         .and_then(|v| v.as_str());
+                                    if uri.is_none() {
+                                        continue;
+                                    }
                                     if let Some(uri) = uri {
                                         if uri != "/lol-champ-select/v1/summoners/0" {
                                             continue;
                                         }
                                     }
+                                    // info!("[ws] data {:?}", data);
                                     let cid = data
                                         .and_then(|v| v.get("data"))
                                         .and_then(|v| v.get("championId"))
                                         .and_then(|v| v.as_u64());
                                     if let Some(cid) = cid {
-                                        info!("Champion ID: {:?}", cid);
+                                        if cur_cid != cid {
+                                            info!("update champion id: {:?}", cid);
+                                            *champion_id.write() = cid;
+                                        }
+                                    } else {
+                                        *champion_id.write() = 0;
                                     }
                                 }
                             }
@@ -215,6 +227,25 @@ fn app() -> Element {
                         // font_family: "monospace",
                         label {
                             "Auth URL: {auth_url}"
+                        }
+                    }
+                )
+            } else {
+                rsx!(
+                    rect {}
+                )
+            }
+        }
+        {
+            let champion_id = champion_id.read().clone();
+            info!("[ui] Champion ID: {champion_id}");
+            if champion_id > 0 {
+                rsx!(
+                    rect {
+                        font_size: "12",
+                        font_family: "Consolas, Menlo",
+                        label {
+                            "Champion ID: {champion_id}"
                         }
                     }
                 )
