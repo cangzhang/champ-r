@@ -6,10 +6,12 @@
 use std::{collections::HashSet, time::Duration};
 use freya::prelude::*;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
+use kv_log_macro::{self as log, info};
 
 use lcu::{api::{make_sub_msg, make_ws_client}, cmd::get_cmd_output, source::SourceItem, web::fetch_sources};
 
 fn main() {
+    femme::with_level(femme::LevelFilter::Trace);
     launch_cfg(
         LaunchConfig::new()
             .with_window(WindowConfig::new(app).with_title("Sources - ChampR")),
@@ -57,7 +59,7 @@ fn app() -> Element {
                         *lcu_auth_url.write() = ret.auth_url.clone();
                     }
                 } else {
-                    println!("error getting auth url output");
+                    info!("error getting auth url output");
                 }
                 tokio::time::sleep(Duration::from_millis(2500)).await;
             }
@@ -65,7 +67,7 @@ fn app() -> Element {
     });
     use_effect(move || {
         let endpoint = lcu_auth_url.read().clone();
-        println!("[ws] {endpoint}");
+        info!("[ws] {endpoint}");
         if endpoint.is_empty() {
             return;
         }
@@ -74,16 +76,16 @@ fn app() -> Element {
             if let Ok(ws) = ws {
                 let (mut tx, mut rx) = ws.split();
                 if let Err(e) = tx.send(make_sub_msg()).await {
-                    println!("error sending message: {}", e);
+                    info!("error sending message: {}", e);
                 }
                 loop {
                     while let Some(msg) = rx.next().await {
                         match msg {
                             Ok(msg) => {
-                                println!("received: {:?}", msg);
+                                info!("received: {:?}", msg);
                             }
                             Err(e) => {
-                                println!("error receiving message: {}", e);
+                                info!("error receiving message: {}", e);
                                 return;
                             }
                         }
@@ -91,7 +93,7 @@ fn app() -> Element {
                 }
             }
            if let Err(e) = ws {
-                println!("error creating websocket client: {}", e);
+                info!("error creating websocket client: {}", e);
             }
         });
     });
