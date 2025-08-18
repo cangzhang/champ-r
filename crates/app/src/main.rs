@@ -4,17 +4,17 @@
 )]
 
 use std::{collections::HashSet, time::Duration};
-use freya::prelude::*;
+use freya::prelude::{reexports::winit::window::WindowLevel, *};
 use futures_util::{SinkExt, StreamExt};
 use kv_log_macro::{info, warn};
 
 use lcu::{
-    api::{make_sub_msg, make_ws_client},
     cmd::get_cmd_output,
-    source::SourceItem,
-    web::fetch_sources,
+    lcu_api::{make_champion_avatar_url, make_sub_msg, make_ws_client},
     reqwest_websocket::Message,
-    serde_json::{Value, from_str},
+    serde_json::{from_str, Value},
+    source::SourceItem,
+    web::fetch_sources
 };
 
 fn main() {
@@ -33,15 +33,6 @@ enum SourceListStatus {
 }
 
 fn app() -> Element {
-    let platform = use_platform();
-
-    let onpress = move |_| {
-        platform.new_window(
-            WindowConfig::new_with_props(another_window, another_windowProps { value: 123 })
-                .with_title("Another window"),
-        )
-    };
-
     let mut source_list = use_signal::<Vec<SourceItem>>(|| vec![]);
     let mut source_list_status = use_signal::<SourceListStatus>(|| SourceListStatus::Loading);
     use_effect(move || {
@@ -54,6 +45,84 @@ fn app() -> Element {
             }
         });
     });
+
+    let platform = use_platform();
+    let _rune_window = use_signal(|| platform.new_window(
+        WindowConfig::new(another_window)
+            .with_title("Runes")
+            .with_size(500., 600.)
+            .with_visible(false),
+    ));
+
+    let mut selected = use_signal::<HashSet<String>>(HashSet::default);
+
+    rsx!(
+        rect {
+            width: "fill",
+            text_align: "center",
+            font_size: "48",
+            font_weight: "bold",
+            // border: "2 inner black",
+            main_align: "center",
+            cross_align: "center",
+            label { "ChampR" }
+        }
+        rect {
+            width: "100%",
+            {
+                let status = source_list_status.read().clone();
+                match &status {
+                    SourceListStatus::Loading => {
+                        rsx!(
+                            rect {
+                                label { "Loading..." }
+                            }
+                        )
+                    }
+                    SourceListStatus::Success => {
+                        rsx!(
+                            for source in source_list.read().clone() {
+                                {
+                                    let val = source.value.clone();
+                                    let sv = val.clone();
+                                    rsx!(
+                                        Tile {
+                                            onselect: move |_| {
+                                                if selected.read().contains(&val) {
+                                                    selected.write().remove(&val);
+                                                } else {
+                                                    selected.write().insert(val.clone());
+                                                }
+                                            },
+                                            leading: rsx!(
+                                                Checkbox {
+                                                    selected: selected.read().contains(&sv),
+                                                }
+                                            ),
+                                            label { "{source.label}" }
+                                        }
+                                    )
+                                }
+                            }
+                        )
+                    }
+                    SourceListStatus::Error => {
+                        rsx!(
+                            rect {
+                                label { "Got Error when loading source list" }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    )
+}
+
+#[component]
+fn another_window() -> Element {
+    let platform = use_platform();
+    let onpress = move |_| platform.close_window();
 
     let mut lcu_auth_url = use_signal(|| String::new());
     use_effect(move || {
@@ -144,90 +213,26 @@ fn app() -> Element {
         });
     });
 
-    let mut selected = use_signal::<HashSet<String>>(HashSet::default);
+    use_effect(move || {
+        let champion_id = champion_id.read().clone();
+        platform.with_window(move |w| {
+            let have_champion = champion_id > 0;
+            w.set_window_level(if have_champion { WindowLevel::AlwaysOnTop } else { WindowLevel::Normal });
+            w.set_visible(have_champion);
+        });
+    });
 
     rsx!(
-        rect {
-            width: "fill",
-            text_align: "center",
-            font_size: "48",
-            font_weight: "bold",
-            // border: "2 inner black",
-            main_align: "center",
-            cross_align: "center",
-            label { "ChampR" }
-        }
-        rect {
-            width: "100%",
-            {
-                let status = source_list_status.read().clone();
-                match &status {
-                    SourceListStatus::Loading => {
-                        rsx!(
-                            rect {
-                                label { "Loading..." }
-                            }
-                        )
-                    }
-                    SourceListStatus::Success => {
-                        rsx!(
-                            for source in source_list.read().clone() {
-                                {
-                                    let val = source.value.clone();
-                                    let sv = val.clone();
-                                    rsx!(
-                                        Tile {
-                                            onselect: move |_| {
-                                                if selected.read().contains(&val) {
-                                                    selected.write().remove(&val);
-                                                } else {
-                                                    selected.write().insert(val.clone());
-                                                }
-                                            },
-                                            leading: rsx!(
-                                                Checkbox {
-                                                    selected: selected.read().contains(&sv),
-                                                }
-                                            ),
-                                            label { "{source.label}" }
-                                        }
-                                    )
-                                }
-                            }
-                        )
-                    }
-                    SourceListStatus::Error => {
-                        rsx!(
-                            rect {
-                                label { "Got Error when loading source list" }
-                            }
-                        )
-                    }
-                }
-            }
-        }
-        rect {
-            width: "100%",
-            main_align: "center",
-            cross_align: "center",
-            background: "white",
-            color: "white",
-            Button {
-                onpress,
-                label { "New window" }
-            }
-        }
         {
-            let auth_url = lcu_auth_url.read().clone();
-            if !auth_url.is_empty() {
+            let cid = champion_id.read().clone();
+            if cid > 0 {
+                let lcu_auth_url = lcu_auth_url.read().clone();
+                let champion_avatar = make_champion_avatar_url(&lcu_auth_url, cid);
                 rsx!(
-                    rect {
-                        font_size: "12",
-                        font_family: "Consolas, Menlo",
-                        // font_family: "monospace",
-                        label {
-                            "Auth URL: {auth_url}"
-                        }
+                    NetworkImage {
+                        url: champion_avatar,
+                        width: "64",
+                        height: "64",
                     }
                 )
             } else {
@@ -236,35 +241,6 @@ fn app() -> Element {
                 )
             }
         }
-        {
-            let champion_id = champion_id.read().clone();
-            info!("[ui] Champion ID: {champion_id}");
-            if champion_id > 0 {
-                rsx!(
-                    rect {
-                        font_size: "12",
-                        font_family: "Consolas, Menlo",
-                        label {
-                            "Champion ID: {champion_id}"
-                        }
-                    }
-                )
-            } else {
-                rsx!(
-                    rect {}
-                )
-            }
-        }
-    )
-}
-
-#[component]
-fn another_window(value: i32) -> Element {
-    let platform = use_platform();
-
-    let onpress = move |_| platform.close_window();
-
-    rsx!(
         rect {
             height: "100%",
             width: "100%",
@@ -273,7 +249,7 @@ fn another_window(value: i32) -> Element {
             background: "white",
             font_size: "30",
             label {
-                "Value: {value}"
+                "Champion ID: {champion_id}"
             }
             Button {
                 onpress,

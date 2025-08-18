@@ -1,7 +1,7 @@
 use std::{collections::HashMap, time::Duration};
 use bytes::Bytes;
 use lazy_static::lazy_static;
-use reqwest::Client;
+use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
@@ -325,4 +325,8 @@ pub async fn make_ws_client(endpoint: &String) -> Result<WebSocket, reqwest_webs
 
 pub fn make_sub_msg() -> Message {
     Message::Text("[5, \"OnJsonApiEvent\"]".into())
+}
+
+pub fn make_champion_avatar_url(endpoint: &String, id: u64) -> Url {
+    format!("https://{endpoint}/lol-game-data/assets/v1/champion-icons/{id}.png").parse::<Url>().unwrap()
 }

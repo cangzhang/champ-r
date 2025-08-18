@@ -1478,6 +1478,7 @@ name = "freya-components"
 version = "0.4.0"
 source = "git+https://github.com/marc2332/freya.git#09b29af06dbd87a77c5080914e55c7290c3cfb4b"
 dependencies = [
+ "bytes",
  "dioxus",
  "freya-core",
  "freya-elements",
@@ -1486,6 +1487,7 @@ dependencies = [
  "freya-router",
  "futures-util",
  "open",
+ "reqwest",
  "tokio",
  "torin",
  "tracing",
