@@ -6,3 +6,6 @@ pub mod lcu_error;
 pub mod source;
 pub mod task;
 pub mod web;
+
+pub use reqwest_websocket;
+pub use serde_json;
