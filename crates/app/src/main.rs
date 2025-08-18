@@ -5,10 +5,17 @@
 
 use std::{collections::HashSet, time::Duration};
 use freya::prelude::*;
-use futures_util::{SinkExt, StreamExt, TryStreamExt};
-use kv_log_macro::{self as log, info};
+use futures_util::{SinkExt, StreamExt};
+use kv_log_macro::{info, warn};
 
-use lcu::{api::{make_sub_msg, make_ws_client}, cmd::get_cmd_output, source::SourceItem, web::fetch_sources};
+use lcu::{
+    api::{make_sub_msg, make_ws_client},
+    cmd::get_cmd_output,
+    source::SourceItem,
+    web::fetch_sources,
+    reqwest_websocket::Message,
+    serde_json::{Value, from_str},
+};
 
 fn main() {
     femme::with_level(femme::LevelFilter::Trace);
@@ -59,7 +66,7 @@ fn app() -> Element {
                         *lcu_auth_url.write() = ret.auth_url.clone();
                     }
                 } else {
-                    info!("error getting auth url output");
+                    warn!("error getting auth url output");
                 }
                 tokio::time::sleep(Duration::from_millis(2500)).await;
             }
@@ -67,7 +74,6 @@ fn app() -> Element {
     });
     use_effect(move || {
         let endpoint = lcu_auth_url.read().clone();
-        info!("[ws] {endpoint}");
         if endpoint.is_empty() {
             return;
         }
@@ -82,10 +88,38 @@ fn app() -> Element {
                     while let Some(msg) = rx.next().await {
                         match msg {
                             Ok(msg) => {
-                                info!("received: {:?}", msg);
+                                if let Message::Text(msg) = msg {
+                                    if msg.is_empty() {
+                                        continue;
+                                    }
+                                    let parsed: Value = match from_str(&msg) {
+                                        Ok(parsed) => parsed,
+                                        Err(e) => {
+                                            warn!("error parsing ws message: {}", e);
+                                            continue;
+                                        }
+                                    };
+                                    let data = parsed.get(2)
+                                        .and_then(|v| v.as_object());
+                                    let uri = data
+                                        .and_then(|v| v.get("uri"))
+                                        .and_then(|v| v.as_str());
+                                    if let Some(uri) = uri {
+                                        if uri != "/lol-champ-select/v1/summoners/0" {
+                                            continue;
+                                        }
+                                    }
+                                    let cid = data
+                                        .and_then(|v| v.get("data"))
+                                        .and_then(|v| v.get("championId"))
+                                        .and_then(|v| v.as_u64());
+                                    if let Some(cid) = cid {
+                                        info!("Champion ID: {:?}", cid);
+                                    }
+                                }
                             }
                             Err(e) => {
-                                info!("error receiving message: {}", e);
+                                warn!("error receiving message: {}", e);
                                 return;
                             }
                         }
@@ -93,7 +127,7 @@ fn app() -> Element {
                 }
             }
            if let Err(e) = ws {
-                info!("error creating websocket client: {}", e);
+                warn!("error creating websocket client: {}", e);
             }
         });
     });
