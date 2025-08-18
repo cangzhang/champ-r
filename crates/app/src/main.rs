@@ -5,8 +5,9 @@
 
 use std::{collections::HashSet, time::Duration};
 use freya::prelude::*;
+use futures_util::{SinkExt, StreamExt, TryStreamExt};
 
-use lcu::{cmd::get_cmd_output, source::SourceItem, web::fetch_sources};
+use lcu::{api::{make_sub_msg, make_ws_client}, cmd::get_cmd_output, source::SourceItem, web::fetch_sources};
 
 fn main() {
     launch_cfg(
@@ -62,7 +63,38 @@ fn app() -> Element {
             }
         });
     });
-
+    use_effect(move || {
+        let endpoint = lcu_auth_url.read().clone();
+        println!("[ws] {endpoint}");
+        if endpoint.is_empty() {
+            return;
+        }
+        spawn(async move {
+            let ws = make_ws_client(&endpoint).await;
+            if let Ok(ws) = ws {
+                let (mut tx, mut rx) = ws.split();
+                if let Err(e) = tx.send(make_sub_msg()).await {
+                    println!("error sending message: {}", e);
+                }
+                loop {
+                    while let Some(msg) = rx.next().await {
+                        match msg {
+                            Ok(msg) => {
+                                println!("received: {:?}", msg);
+                            }
+                            Err(e) => {
+                                println!("error receiving message: {}", e);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+           if let Err(e) = ws {
+                println!("error creating websocket client: {}", e);
+            }
+        });
+    });
 
     let mut selected = use_signal::<HashSet<String>>(HashSet::default);
 

@@ -1,10 +1,11 @@
 use std::{collections::HashMap, time::Duration};
-
 use bytes::Bytes;
 use lazy_static::lazy_static;
+use reqwest::Client;
 use serde::de::DeserializeOwned;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
+use reqwest_websocket::{RequestBuilderExt, WebSocket, Message};
 
 use crate::{
     builds::{ItemBuild, Rune},
@@ -312,4 +313,16 @@ pub async fn list_all_styles(endpoint: &String) -> Result<Vec<RuneStyle>, LcuErr
 pub async fn get_champion_icon_by_id(endpoint: &String, id: i64) -> Result<Bytes, FetchError> {
     let url = format!("{endpoint}/lol-game-data/assets/v1/champion-icons/{id}.png");
     fetch_image_data(&url).await
+}
+
+pub async fn make_ws_client(endpoint: &String) -> Result<WebSocket, reqwest_websocket::Error> {
+    let url = format!("wss://{endpoint}");
+    let client = Client::default();
+    let response = client.get(url).upgrade().send().await?;
+    let ws = response.into_websocket().await?;
+    Ok(ws)
+}
+
+pub fn make_sub_msg() -> Message {
+    Message::Text("[5, \"OnJsonApiEvent\"]".into())
 }

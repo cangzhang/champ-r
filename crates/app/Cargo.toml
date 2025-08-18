@@ -17,3 +17,4 @@ arc-swap = "1.7.1"
 rand = "0.8.5"
 freya = { git = "https://github.com/marc2332/freya.git" }
 bitflags = "2.9.1"
+futures-util = "0.3.31"
